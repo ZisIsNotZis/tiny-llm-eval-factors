@@ -1,0 +1,13 @@
+{
+ "cv": {
+  "checkpoint": 0.1952153074264618,
+  "family": 0.2942262136881427,
+  "family_dataset": 0.27710322555743133,
+  "random": 0.19352839248791875
+ },
+ "n_checkpoints": 181,
+ "n_datasets": 2,
+ "n_dedup": 1749,
+ "n_families": 25,
+ "train_rmse": 0.185980317057402
+}

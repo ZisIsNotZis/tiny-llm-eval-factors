@@ -1,0 +1,12 @@
+# large / regenerable artifacts
+evalplus_results/
+*.gguf
+*.pth
+*.safetensors
+__pycache__/
+*.pyc
+*.log
+.cache/
+*.sqlite-wal
+*.sqlite-shm
+.scratch/
