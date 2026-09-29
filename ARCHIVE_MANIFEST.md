@@ -1,6 +1,6 @@
 # Archive manifest
 
-DB rows: **1881**  |  models referenced: **181**  |  present: **22 (12.2%)**  |  missing: **159**
+DB rows: **1881**  |  models referenced: **181**  |  present: **25 (13.8%)**  |  missing: **156**
 
 Raw eval results recovered: **63 / 1881 (3.3%)**
 
@@ -24,19 +24,22 @@ Raw eval results recovered: **63 / 1881 (3.3%)**
 - Qwen3.5-4B-UD-Q2_K_XL.gguf
 - Qwen3.5-4B-UD-Q3_K_XL.gguf
 - Qwen3.5-4B-UD-Q4_K_XL.gguf
+- Qwen3.5-9B-UD-Q2_K_XL.gguf
+- Qwen3.5-9B-UD-Q3_K_XL.gguf
 - Qwen3.5-9B-UD-Q4_K_XL.gguf
 - Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
 - Qwythos-9B-Claude-Mythos-5-1M-MTP-Q4_K_M.gguf
 - gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-31B-it-qat-UD-Q4_K_XL.gguf
+- gemma-4-E2B-it-UD-Q3_K_XL.gguf
 - gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf
 - gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf
 - gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf
 - gemma4-v2-Q4_K_M.gguf
 
-## Missing model files (159)
+## Missing model files (156)
 
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_S.gguf
@@ -129,8 +132,6 @@ Raw eval results recovered: **63 / 1881 (3.3%)**
 - Qwen3.5-9B-DeepSeek-V4-Flash-Q4_K_M.gguf
 - Qwen3.5-9B-UD-IQ2_M.gguf
 - Qwen3.5-9B-UD-IQ3_XXS.gguf
-- Qwen3.5-9B-UD-Q2_K_XL.gguf
-- Qwen3.5-9B-UD-Q3_K_XL.gguf
 - Qwen3.6-27B-UD-IQ2_M.gguf
 - Qwen3.6-27B-UD-IQ2_XXS.gguf
 - Qwen3.6-27B-UD-IQ3_XXS.gguf
@@ -176,7 +177,6 @@ Raw eval results recovered: **63 / 1881 (3.3%)**
 - gemma-4-E2B-it-UD-IQ2_M.gguf
 - gemma-4-E2B-it-UD-IQ3_XXS.gguf
 - gemma-4-E2B-it-UD-Q2_K_XL.gguf
-- gemma-4-E2B-it-UD-Q3_K_XL.gguf
 - gemma-4-E2B-it-UD-Q4_K_XL.gguf
 - gemma-4-E2B-it-UD-Q5_K_XL.gguf
 - gemma-4-E4B-it-UD-IQ3_XXS.gguf
