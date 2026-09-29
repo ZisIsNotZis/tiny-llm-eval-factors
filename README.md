@@ -34,15 +34,21 @@ negative / confounded results are reported as such.
 
 ## Results
 
-Score model (checkpoint-held-out RMSE **0.195**, vs ridge baseline 0.210). Generalization is graded by
-how strictly the held-out split is chosen (`python3 cv_generalization.py`):
+Score model, compared with a linear ridge baseline under the **same** held-out
+regime (`python3 cv_generalization.py` + `python3 ridge_baseline.py`):
 
-| held-out regime | meaning | RMSE |
-|---|---|---|
-| random | random rows (optimistic; same-run leakage) | 0.194 |
-| checkpoint | new GGUF of a seen family | 0.195 |
-| **family + dataset** | **new architecture AND new benchmark** | **0.277** |
-| family | new architecture | 0.294 |
+| held-out regime | meaning | structural model | ridge baseline | winner |
+|---|---|---|---|---|
+| random | random rows (optimistic; same-run leakage) | 0.194 | 0.224 | model |
+| checkpoint | new GGUF of a seen family | 0.195 | 0.225 | model |
+| family + dataset | new architecture AND new benchmark | 0.277 | 0.256 | **ridge** |
+| family | new architecture | 0.294 | 0.282 | **ridge** |
+
+**Honest reading:** the physical-constraint model wins in-distribution and on a
+new checkpoint of a seen family, but it does **not** beat a plain linear baseline
+once the split is strict enough to hold out a whole architecture. The value of
+the study is the **controlled effect estimates and the negative results**, not a
+generalizing predictor.
 
 Wall-time model: all-factor ridge, CV RMSE(log) **0.311** (~36% multiplicative error).
 
