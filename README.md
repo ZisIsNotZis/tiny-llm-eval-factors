@@ -34,6 +34,11 @@ negative / confounded results are reported as such.
 
 ## Results
 
+> **Read every number below against `resolution.md`.** The honest headline of the wrap-up is
+> that most of this study's claims sit *below its own noise floor*: with HumanEval+MBPP (542
+> items) a single-config capability effect below ~0.084 cannot be resolved, and only **4 of 36**
+> documented conclusions clear that bar. See `WRAPUP.md` and `CLAIMS_RESOLUTION.md`.
+
 Score model, compared with a linear ridge baseline under the **same** held-out
 regime (`python3 cv_generalization.py` + `python3 ridge_baseline.py`):
 
@@ -89,12 +94,34 @@ regenerable, so they are git-ignored; the curated DB is committed.
 
 ## Status & limitations
 
-- **Ongoing, paused for compute** (single RTX 4090 + slow network). Conclusions are scoped to the
-  observed panel; several are single-model local effects, not universal laws.
-- HumanEval / MBPP are **too easy** to separate models at the margin — the next step is Harness-level
-  benchmarks (Terminal-Bench / SWE-bench style), which are far slower here.
+- **Frozen / archived as of the wrap-up.** Not expected to resume on this host.
+- **Evidence base is no longer end-to-end reproducible:** only 22/181 model files (12%) and
+  63/1881 raw eval results (3%) survive. See `ARCHIVE_MANIFEST.md`.
+- **The dominant limitation is item count, not benchmark difficulty.** HumanEval+MBPP = 542
+  items → single-config MDE ≈ 0.084. Resolving the 0.03–0.05 effects the study cares about needs
+  ~1,500–4,000 items. The right addition is *more items at similar difficulty* (MultiPL-E,
+  18×164 ≈ 2952 items → MDE ≈ 0.036), **not** a harder harness benchmark — BigCodeBench / SWE /
+  Terminal-Bench would floor the 0.2B–9B panel near 0 and are compute-hostile.
+- `ctx_size`, `parallel_slots`, `start_time`, `reason` and `seed` are **absent from the DB schema**,
+  so every conclusion phrased with `ctx=`/`parallel=` is unauditable, and run stochasticity was
+  unmeasured until the `W1` repeat experiment (`.wrapup/run_w1.sh`).
 - 25 families / 181 checkpoints are **downloaded weights evaluated**, not self-trained; this is an
   evaluation study, not a training study.
+
+## Wrap-up artifacts
+
+| file | purpose |
+|---|---|
+| `resolution.py` → `resolution.json` / `resolution.md` | measured noise floors + MDE table |
+| `claims_ledger.py` → `claims_ledger.csv` / `CLAIMS_RESOLUTION.md` | every claim tagged by resolvability |
+| `archive_manifest.py` → `archive_manifest.json` / `ARCHIVE_MANIFEST.md` | what evidence still exists |
+| `build_wrapup.py` → `WRAPUP.md` | the honest closing report |
+| `.wrapup/run_w1.sh` | repeat-noise experiment (the measurement the study lacked) |
+
+```sh
+python3 resolution.py && python3 claims_ledger.py
+python3 archive_manifest.py && python3 build_wrapup.py
+```
 
 ## License
 

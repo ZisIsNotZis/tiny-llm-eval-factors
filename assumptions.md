@@ -1,5 +1,11 @@
 # Assumptions
 
+> **WRAP-UP NOTE.** These are hypotheses, not established facts — the resolution audit
+> (`resolution.md`, `CLAIMS_RESOLUTION.md`) shows the panel can only resolve single-config
+> effects ≥ ~0.084. Several entries below assert direction/sign that is inside that floor.
+> The reasoning entries in particular are superseded by `REANALYSIS.md` (the DB `reasoning`
+> factor conflates clean and chaotic-sampling regimes).
+
 * [low] Generic architecture ranking remains unresolved because the strict same-scale 35B family comparison is blocked on this host. | evidence: with fully matched `archprobe2`/`archprobe2b` settings (`ctx=8192`, `parallel=1`, `q8/q8`, reasoning off), Gemma4-E4B is above Qwen3.5-4B on both `humaneval` and `mbpp`, while Gemma4-E2B is below Qwen3.5-2B on both datasets; a 35B strict q8/q8 family anchor could not be loaded on this 24GB GPU (`cudaMalloc failed: out of memory`). | upgrade needed: lower-quant/offload hardware or a different GPU class.
 * [low] Generic KV cache quant coefficients/effects are still not identified across architectures/datasets, despite stronger within-model stability in the current Qwen panel. | evidence: only one architecture family has dense `k/v × ctx × parallel` coverage so far, and a strict 35B continuation OOMed on the current 24GB GPU | upgrade needed: not continuable at current scale; continuation requires lower-quant/offload hardware or a different GPU class.
 * [low] EvalPerf is the highest-yield existing generalization benchmark to add next because it is already supported in the harness and adds an efficiency-oriented axis beyond raw correctness. | evidence: evalplus docs and existing EvalPerf support | upgrade needed: not continuable on this host because EvalPerf requires Linux perf permissions (`perf_event_paranoid`) we cannot change here.

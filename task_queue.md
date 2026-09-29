@@ -30,3 +30,9 @@
 | larger-scale-quantmix-anchor-r15 | pending | 1 | Run same quant-mix ladder (`Q2->Q3` at `q8/q8` plus `Q3 q8/q5_1`) on largest feasible Qwen/Gemma anchor to test scale generalization of weight-dominant local effect. |
 | third-family-longctx-kv-r15 | pending | 1 | Run one additional long-context one-sided KV panel on a third family anchor (`f16/f16`, `q8_0/f16`, `f16/q8_0`) to resolve contradictory long-context KV behavior. |
 | additional-reasoning-strict-pair-r15 | pending | 2 | Run one strict reasoning on/off pair on another family anchor with fixed controls to strengthen reasoning sign/time generalization. |
+| **wrapup-resolution-analysis-r16** | completed | 1 | Measured resolution floors + MDE (`resolution.py`/`resolution.md`); tagged all 36 claims (`claims_ledger.py`/`CLAIMS_RESOLUTION.md`). |
+| **wrapup-archive-manifest-r16** | completed | 1 | Inventoried surviving evidence (`archive_manifest.py`/`ARCHIVE_MANIFEST.md`): 22/181 models, 63/1881 eval results. |
+| **wrapup-reanalysis-r16** | completed | 1 | Strict re-check of headline claims (`reanalysis.py`/`REANALYSIS.md`): falsified the validity-collapse claim; verified matched reasoning + weight-quant ladders. |
+| **wrapup-w1-repeat-noise-r16** | running | 1 | Repeat-noise experiment on frozen protocol (`Qwen3.5-2B-UD-Q4_K_XL`, HE greedy x3 + sampling x5, MBPP sampling x3): the measurement the DB never had. |
+| **wrapup-w2-scale-ladder-r16** | pending | 1 | Scale-generalisation ladder on restored weights: `Qwen3.5-9B` Q2/Q3 and `Qwen3.5-4B` Q2/Q3 on HumanEval, 2 reps each. |
+| **wrapup-report-r16** | completed | 1 | Honest closing report (`build_wrapup.py`/`WRAPUP.md`) + README rewrite; blocked items formally closed. |

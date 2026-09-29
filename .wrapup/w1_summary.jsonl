@@ -1,0 +1,11 @@
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.0, "rep": 1, "score": 0.2804878048780488, "bad_rate": 0.4878048780487805}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.0, "rep": 2, "score": 0.2804878048780488, "bad_rate": 0.4878048780487805}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.0, "rep": 3, "score": 0.2804878048780488, "bad_rate": 0.4878048780487805}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.3, "rep": 1, "score": 0.22560975609756098, "bad_rate": 0.5304878048780488}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.3, "rep": 2, "score": 0.23780487804878048, "bad_rate": 0.5}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.3, "rep": 3, "score": 0.2621951219512195, "bad_rate": 0.47560975609756095}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.3, "rep": 4, "score": 0.25609756097560976, "bad_rate": 0.524390243902439}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "humaneval", "temp": 0.3, "rep": 5, "score": 0.23780487804878048, "bad_rate": 0.4878048780487805}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "mbpp", "temp": 0.3, "rep": 1, "score": 0.34656084656084657, "bad_rate": 0.2566137566137566}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "mbpp", "temp": 0.3, "rep": 2, "score": 0.335978835978836, "bad_rate": 0.2698412698412698}
+{"model": "Qwen3.5-2B-UD-Q4_K_XL", "bench": "mbpp", "temp": 0.3, "rep": 3, "score": 0.3783068783068783, "bad_rate": 0.2619047619047619}

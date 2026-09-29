@@ -10,3 +10,12 @@ __pycache__/
 *.sqlite-wal
 *.sqlite-shm
 .scratch/
+
+# wrap-up working dirs (keep the scripts + summaries, ignore venvs/results)
+.wrapup/evalpy/
+.wrapup/msenv/
+.wrapup/wres/
+
+# DB backups
+experiments.sqlite.bak*
+.pi/
