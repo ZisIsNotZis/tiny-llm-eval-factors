@@ -6,3 +6,9 @@
 {"model": "q08b-q3", "lang": "java", "n": 158, "pass": 15, "score": 0.0949367088607595, "protocol": "mpl-raw-greedy-768"}
 {"model": "q08b-q3", "lang": "js", "n": 161, "pass": 21, "score": 0.13043478260869565, "protocol": "mpl-raw-greedy-768"}
 {"model": "q08b-q3", "lang": "py", "n": 161, "pass": 21, "score": 0.13043478260869565, "protocol": "mpl-raw-greedy-768"}
+{"model": "g12b-q2", "lang": "cpp", "n": 161, "pass": 0, "score": 0.0, "protocol": "mpl-raw-greedy-768"}
+{"model": "g12b-q2", "lang": "java", "n": 158, "pass": 0, "score": 0.0, "protocol": "mpl-raw-greedy-768"}
+{"model": "q36-35b-q2", "lang": "cpp", "n": 161, "pass": 114, "score": 0.7080745341614907, "protocol": "mpl-raw-greedy-768"}
+{"model": "q36-35b-q2", "lang": "py", "n": 161, "pass": 112, "score": 0.6956521739130435, "protocol": "mpl-raw-greedy-768"}
+{"model": "q36-35b-q3", "lang": "cpp", "n": 161, "pass": 116, "score": 0.7204968944099379, "protocol": "mpl-raw-greedy-768"}
+{"model": "q36-35b-q3", "lang": "py", "n": 161, "pass": 122, "score": 0.7577639751552795, "protocol": "mpl-raw-greedy-768"}

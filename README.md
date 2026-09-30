@@ -111,16 +111,19 @@ regenerable, so they are git-ignored; the curated DB is committed.
   (MultiPL-E, 3 languages) the effect is flat from `IQ2_M` to `Q2`, jumps once at `Q2→Q3`
   (**+0.155**), then saturates: `Q3→Q4 +0.008` and `Q4→Q5 -0.006` (CIs cross 0), while
   `IQ2_XXS` collapses the model (~0.006). Operational rule: **use ≥ Q3; there is nothing
-  above it.** The `Q2→Q3` step is positive in **all 6 anchors / 3 families** tested
-  (Qwen3.5 2B/4B/9B, gemma-4 E2B/E4B, granite-4.1-3b), mean **+0.203** (range +0.142..+0.344).
-  See `LADDER_TOOLS.md` / `MULTIPLE.md`.
-- **Tool calling is now measured (BFCL, 1,240 items) and is more quant-sensitive at small
-  scale than code.** Native OpenAI tool calling (`tools=`; the model decides when to call):
-  `Qwen3.5-2B` gains **+0.20** from `Q2→Q3` and `Qwen3.5-4B` **+0.08**, with Q3 better on
-  essentially every category (4B: simple +0.08, multiple +0.05, parallel +0.22,
-  parallel_multiple +0.20). An earlier *forced-JSON* protocol had suggested a 4B "profile
-  flip"; that did not survive the native protocol. **Protocol choice changes the sign of
-  quant conclusions** — report it always. See `LADDER_TOOLS.md` / `WRAPUP.md` §7b.
+  above it.** The `Q2→Q3` step is positive in **all 8 anchors / 4 families** tested (Qwen3.5
+  0.8B/2B/4B/9B, Qwen3.6-35B-A3B, gemma-4 E2B/E4B, granite-4.1-3b), but its **size tracks how
+  badly Q2 damages the model**, not a constant: `granite-4.1-3b +0.344` and `gemma-4-E2B +0.215`
+  (Q2 nearly destroys them) vs `Qwen3.6-35B-A3B +0.037` (already ~0.70 at Q2). See
+  `LADDER_TOOLS.md` / `MULTIPLE.md`.
+- **Tool calling is now measured (BFCL, 1,240 items) across families, and is quant-sensitive in a
+  family-dependent way.** Native OpenAI tool calling (`tools=`), overall `Q2→Q3`: `granite-4.1-3b
+  +0.377`, `Qwen3.5-2B +0.202`, `Qwen3.5-4B +0.077`, `gemma-4-E2B +0.040`, `gemma-4-E4B +0.010`.
+  `gemma-4` is nearly quant-robust for tool use; `granite`/`Qwen3.5-2B` are not. Beware the
+  degenerate case: `granite` at `Q2` scores 0.99 on `irrelevance` only because it *never calls
+  anything*. An earlier *forced-JSON* protocol had suggested a 4B "profile flip"; that did not
+  survive the native protocol, i.e. **protocol choice changes the sign of quant conclusions**.
+  See `LADDER_TOOLS.md` / `WRAPUP.md` §7b.
 - **The DB now has a proper schema for this work** (`migrate_db.py`): `run_tag, rep, ctx_size,
   parallel_slots, seed, protocol, language, bench_family, max_tokens, source_file,
   completed_at` were added, and the unique index that **forbade replicates** was dropped.

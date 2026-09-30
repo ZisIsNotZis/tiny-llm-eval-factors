@@ -259,8 +259,10 @@ def ingest_m7(con):
 
 M6_MODELS = {
     "q08b-q2": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf", "q08b-q3": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
-    "g12b-q2": "gemma-4-12b-it-UD-Q2_K_XL.gguf", "g12b-q3": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
     "q36-35b-q2": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf", "q36-35b-q3": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
+    # gemma-4-12B is intentionally EXCLUDED: in raw-completion mode it emits its
+    # <|channel>thought thinking channel, which breaks code generation at every quant,
+    # so its Q2/Q3 scores are not a quantization measurement.
 }
 
 

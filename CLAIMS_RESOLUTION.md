@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 13 | 27% |
+| resolved | 14 | 27% |
 | underpowered | 3 | 6% |
-| noise_level | 3 | 6% |
+| noise_level | 4 | 8% |
 | unauditable | 8 | 16% |
-| model_fit | 13 | 27% |
+| model_fit | 13 | 25% |
 | qualitative | 9 | 18% |
 
-## resolved (13)
+## resolved (14)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -42,6 +42,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.4800 >= MDE 0.108 at n=1_
 - Δ=0.377 — **[VERIFIED, wrap-up M7] Native tool-calling is quant-sensitive in a strongly family-dependent way.** Overall BFCL (native `tools=`, 1,240 items) `Q2->Q3`: `granite-4.1-3b +0.377`, `Qwen3.5-2B +0.202`, `Qwen3.5-4B +0.077`, `gemma-4-E2B +0.040`, `gemma-4-E4B +0.010`. So `gemma-4` is nearly quant-robust for tool use, `Qwen3.5-2B` and `granite-4.1-3b` are not. Note the degenerate case: `granite-4.1-3b` at `Q2_K` scores 0.99 on `irrelevance` only because it never calls anything (0.01-0.02 elsewhere), so a high abstention score is not evidence of good calibration.
   - _|Δ|=0.3770 >= MDE 0.108 at n=1_
+- Δ=0.8 — **[VERIFIED, wrap-up M6] The `Q2->Q3` step is not a universal constant — its size tracks how badly `Q2` damages the model.** Across 8 anchors / 4 architecture families (MultiPL-E, raw completion, greedy): `granite-4.1-3b +0.344`, `gemma-4-E2B +0.215`, `gemma-4-E4B +0.222`, `Qwen3.5-2B +0.155`, `Qwen3.5-4B +0.142`, `Qwen3.5-9B +0.143`, `Qwen3.5-0.8B +0.061`, and `Qwen3.6-35B-A3B **+0.037 (CI [-0.011, +0.086])**`. The strong MoE `Qwen3.6-35B-A3B` already scores ~0.70 at `Q2`, so `Q3` adds nothing — while `granite-4.1-3b` at `Q2_K` is nearly destroyed (0.04-0.06). **The right question is not "how much does Q3 help?" but "does Q2 break this model?"**
+  - _|Δ|=0.8000 >= MDE 0.108 at n=1_
 
 ## underpowered (3)
 
@@ -52,7 +54,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - Δ=0.062 — **[VERIFIED, wrap-up] Matched weight-quant ladder is the study's most reproducible effect.** Restricting to clean fixed decoding and matching on model family + KV + decoding, the local step effects are: `Q2->Q3 +0.062` (n=85, CI [+0.042,+0.082]), `Q3->Q4 +0.015` (n=53, CI [+0.008,+0.023]), `Q4->Q5 +0.021` (n=18, CI [+0.009,+0.034]). All CIs exclude zero; the `Q2->Q3` step is the dominant one.
   - _|Δ|=0.0620 < MDE 0.108 at n=1_
 
-## noise_level (3)
+## noise_level (4)
 
 - Δ=0.0122 — On unseen-architecture `granite-4.1-3b-UD-Q3_K_XL` one-sided KV split at fixed controls (`ctx2048`, baseline sampling, reasoning off), both K-only (`q8_0/f16`) and V-only (`f16/q8_0`) improve Humaneval equally (`+0.0122`) and are neutral on MBPP (`+0.0000`), while wall-time shifts are near-neutral (within ~`±4.4s`).
   - _|Δ|=0.0122 < repeat floor 0.022_
@@ -60,6 +62,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0061 < repeat floor 0.022_
 - Δ=0.0185 — On `Gemma-4-E2B-it` at `Q3_K_XL`, switching KV from `q8_0/q8_0` to `q8_0/q5_1` is near-neutral to slightly negative on score (`Humaneval +0.0061`, `MBPP -0.0185`) and slightly slower (`+6.0s`, `+18.3s`).
   - _|Δ|=0.0185 < repeat floor 0.022_
+- Δ=0.01 — **[EXCLUDED observation] `gemma-4-12B-it` is unusable under the raw-completion protocol.** It emits its `<|channel>thought` thinking channel mid-completion, producing syntactically broken code at *both* Q2 and Q3 (~0.00-0.01), so its scores measure protocol incompatibility, not quantization. Excluded from all ladders.
+  - _|Δ|=0.0100 < repeat floor 0.022_
 
 ## unauditable (8)
 
