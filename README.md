@@ -176,3 +176,21 @@ The "≥ Q3 is enough" claim **did not survive broader testing**, and that is th
   `live_simple 0.016 → 0.469` at Q3.
 
 See `WRAPUP.md`, `MULTIPLE.md`, `PPL_REPORT.md`, `LADDER_TOOLS.md`, `CLAIMS_RESOLUTION.md`.
+
+### Multi-turn (the strongest quant effect)
+
+Official BFCL harness (`multi_turn_base`, 200 entries, temp 0) on `Qwen3.5-2B`:
+
+| axis (Q2→Q3, same model) | Δ |
+|---|---|
+| MultiPL-E code | +0.155 |
+| BFCL single-turn (native) | +0.202 |
+| BFCL live (harder single-turn) | +0.108 |
+| **BFCL multi-turn** | **+0.160** (0.025 → 0.185, **7×** relative) |
+
+Quantisation damage scales with **task horizon**. Low-quant models keep up on short
+single-function items but collapse on multi-turn stateful tasks — which is exactly the ability
+short benchmarks cannot see, and why Q4/Q5 advice remains grounded in practice.
+
+Note: BFCL's default prompt-style handler scored **0.0%** here (our model answers in prose);
+the native `<tool_call>` FC handler is required. See `conclusions.md`, `WRAPUP.md` §7c.

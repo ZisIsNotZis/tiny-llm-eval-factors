@@ -308,6 +308,37 @@ def ingest_m10g(con):
                       "m10_granite_summary.jsonl", model_map=M10G_MODELS)
 
 
+M9_MODELS = {
+    "qwen2b-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf", "qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
+}
+
+
+def ingest_m9(con):
+    """Multi-turn BFCL via the official bfcl-eval harness (one row per model x category)."""
+    path = ".wrapup/m9_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m9 summary)")
+        return 0
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in M9_MODELS or r.get("accuracy") is None:
+            continue
+        row = base_row(M9_MODELS[r["model"]], f"bfcl-{r['category']}", 0.0, r["accuracy"], None)
+        row.update({"run_tag": "m9-bfcl-multiturn", "rep": 1, "ctx_size": 98304,
+                    "parallel_slots": 2,
+                    "protocol": r.get("protocol", "bfcl-official-multiturn-temp0"),
+                    "language": "python", "bench_family": "bfcl-multiturn",
+                    "source_file": "m9_summary.jsonl"})
+        insert(con, row)
+        n += 1
+    return n
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -367,9 +398,10 @@ def main():
     n10 = once("m8-bfcl-live", ingest_m8)
     n11 = once("m10-family-ladder", ingest_m10)
     n12 = once("m10-granite-q34", ingest_m10g)
+    n13 = once("m9-bfcl-multiturn", ingest_m9)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))

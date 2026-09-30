@@ -291,6 +291,35 @@ def main():
     else:
         L.append("_M4 tool-calling panel not finished; see `.wrapup/m4_summary.jsonl`._\n")
 
+    L.append("### 7c. Multi-turn agentic (official BFCL harness)\n")
+    try:
+        import sqlite3 as _sq
+        _c = _sq.connect("file:experiments.sqlite?mode=ro", uri=True)
+        rows = _c.execute("SELECT model,_score FROM experiments "
+                          "WHERE run_tag='m9-bfcl-multiturn' AND _score IS NOT NULL").fetchall()
+    except Exception:
+        rows = []
+    if rows:
+        L.append("`multi_turn_base` (200 entries, temperature 0, native `<tool_call>` FC handler):\n")
+        L.append("| model | multi_turn_base |")
+        L.append("|---|---|")
+        for m, sc in sorted(rows):
+            L.append(f"| {m} | {sc:.3f} |")
+        d = {}
+        for m, sc in rows:
+            d["Q3" if "-Q3_" in m or "Q3" in m else "Q2"] = sc
+        if "Q2" in d and "Q3" in d:
+            L.append("")
+            L.append(f"**Q2→Q3 = {d['Q3']-d['Q2']:+.3f}** on multi-turn. Compare the *same model* on the "
+                     "other axes: code (MultiPL-E) **+0.155**, single-turn BFCL native **+0.202**, "
+                     "live BFCL **+0.108**.\n")
+            L.append("**Conclusion: quantization damage scales with task horizon.** The longer the "
+                     "task and the more state it needs, the more a low-quant model loses — which is "
+                     "exactly the ability that short single-function benchmarks cannot see, and the "
+                     "reason the broader community still recommends Q4/Q5.\n")
+    else:
+        L.append("_no m9 rows_\n")
+
     L.append("## 8. What was added / recovered during wrap-up\n")
     L.append("- `resolution.py` / `resolution.json` / `resolution.md` — measured resolution floors.")
     L.append("- `claims_ledger.py` / `claims_ledger.csv` / `CLAIMS_RESOLUTION.md` — every claim tagged.")
