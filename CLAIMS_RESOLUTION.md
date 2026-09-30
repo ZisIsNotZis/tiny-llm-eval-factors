@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 12 | 25% |
+| resolved | 13 | 27% |
 | underpowered | 3 | 6% |
 | noise_level | 3 | 6% |
-| unauditable | 8 | 17% |
+| unauditable | 8 | 16% |
 | model_fit | 13 | 27% |
-| qualitative | 9 | 19% |
+| qualitative | 9 | 18% |
 
-## resolved (12)
+## resolved (13)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -40,6 +40,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1430 >= MDE 0.108 at n=1_
 - Δ=0.48 — **[VERIFIED, wrap-up M5] The `Q2->Q3` weight-quant step replicates in every architecture family tested, at every size, in every language.** MultiPL-E (raw completion, greedy, 3 languages each) gives: `Qwen3.5-2B +0.155`, `Qwen3.5-4B +0.142`, `Qwen3.5-9B +0.143`, `gemma-4-E2B-it +0.215`, `gemma-4-E4B-it +0.222`, `granite-4.1-3b +0.344`. **6 anchors / 3 architecture families, all sign-consistent, mean +0.203** (range +0.142 .. +0.344). `granite-4.1-3b` at `Q2_K` is nearly destroyed (0.04-0.06) and recovers fully at `Q3_K_M` (0.24-0.48).
   - _|Δ|=0.4800 >= MDE 0.108 at n=1_
+- Δ=0.377 — **[VERIFIED, wrap-up M7] Native tool-calling is quant-sensitive in a strongly family-dependent way.** Overall BFCL (native `tools=`, 1,240 items) `Q2->Q3`: `granite-4.1-3b +0.377`, `Qwen3.5-2B +0.202`, `Qwen3.5-4B +0.077`, `gemma-4-E2B +0.040`, `gemma-4-E4B +0.010`. So `gemma-4` is nearly quant-robust for tool use, `Qwen3.5-2B` and `granite-4.1-3b` are not. Note the degenerate case: `granite-4.1-3b` at `Q2_K` scores 0.99 on `irrelevance` only because it never calls anything (0.01-0.02 elsewhere), so a high abstention score is not evidence of good calibration.
+  - _|Δ|=0.3770 >= MDE 0.108 at n=1_
 
 ## underpowered (3)
 

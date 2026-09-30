@@ -1,0 +1,5 @@
+{"model":"gemma-4-E2B-it-UD-Q3_K_XL","template_tools":"yes","result":"tool_call:get_current_weather {"city":"Paris"}"}
+{"model":"gemma-4-E4B-it-UD-Q3_K_XL","template_tools":"yes","result":"tool_call:get_current_weather {"city":"Paris"}"}
+{"model":"granite-4.1-3b-Q3_K_M","template_tools":"yes","result":"tool_call:get_current_weather {"city": "Paris"}"}
+{"model":"Qwen3.5-2B-UD-Q3_K_XL","template_tools":"yes","result":"tool_call:get_current_weather {"city":"Paris"}"}
+=== PROBE END ===

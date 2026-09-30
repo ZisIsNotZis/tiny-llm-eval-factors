@@ -244,12 +244,38 @@ def ingest_m4b(con):
                         "bfcl-native-tools-nothink-greedy", "m4b_summary.jsonl")
 
 
+M7_MODELS = {
+    "e2b-q2": "gemma-4-E2B-it-UD-Q2_K_XL.gguf", "e2b-q3": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+    "e4b-q2": "gemma-4-E4B-it-UD-Q2_K_XL.gguf", "e4b-q3": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+    "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
+}
+
+
+def ingest_m7(con):
+    return _ingest_bfcl(con, ".wrapup/m7_summary.jsonl", "m7-tool-calling-native",
+                        "bfcl-native-tools-nothink-greedy", "m7_summary.jsonl",
+                        model_map=M7_MODELS)
+
+
+M6_MODELS = {
+    "q08b-q2": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf", "q08b-q3": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+    "g12b-q2": "gemma-4-12b-it-UD-Q2_K_XL.gguf", "g12b-q3": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+    "q36-35b-q2": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf", "q36-35b-q3": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
+}
+
+
+def ingest_m6(con):
+    return ingest_mpl(con, ".wrapup/m6_summary.jsonl", "m6-family-ladder",
+                      "m6_summary.jsonl", model_map=M6_MODELS)
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
 
 
-def _ingest_bfcl(con, path, run_tag, protocol, source):
+def _ingest_bfcl(con, path, run_tag, protocol, source, model_map=None):
+    model_map = model_map or M4_MODELS
     """One DB row per BFCL category (so per-capability behaviour is visible)."""
     if not os.path.exists(path):
         print("  (no m4 summary)")
@@ -260,10 +286,10 @@ def _ingest_bfcl(con, path, run_tag, protocol, source):
         if not line:
             continue
         r = json.loads(line)
-        if r["model"] not in M4_MODELS:
+        if r["model"] not in model_map:
             continue
         for cat, d in r.get("per_category", {}).items():
-            row = base_row(M4_MODELS[r["model"]], f"bfcl-{cat}", 0.0, d["acc"], None)
+            row = base_row(model_map[r["model"]], f"bfcl-{cat}", 0.0, d["acc"], None)
             row.update({"run_tag": run_tag, "rep": 1, "ctx_size": 8192,
                         "parallel_slots": 1, "protocol": protocol,
                         "language": "python", "bench_family": "bfcl",
@@ -297,9 +323,11 @@ def main():
     n6 = once("m4-tool-calling", ingest_m4)
     n6b = once("m4b-tool-calling-native", ingest_m4b)
     n7 = once("m5-family-ladder", ingest_m5)
+    n8 = once("m6-family-ladder", ingest_m6)
+    n9 = once("m7-tool-calling-native", ingest_m7)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))

@@ -84,6 +84,27 @@ def main():
                 tsteps[f"{ob} vs {base} ({mode_of[key]})"] = {
                     c: round(tgrid[other][c] - tgrid[key][c], 4) for c in sorted(shared)}
     out["tools_steps"] = tsteps
+    # overall BFCL score (category counts: simple 400, multiple/parallel/parallel_multiple 200, irrelevance 240)
+    W = {"simple_python": 400, "multiple": 200, "parallel": 200,
+         "parallel_multiple": 200, "irrelevance": 240}
+    overall = {}
+    for m, d in tgrid.items():
+        num = sum(W.get(c, 0) * v for c, v in d.items())
+        den = sum(W.get(c, 0) for c in d)
+        if den:
+            overall[m] = round(num / den, 4)
+    out["tools_overall"] = overall
+    q23t = {}
+    for key in sorted(tgrid):
+        base = key.split(" | ")[0]
+        for other in sorted(tgrid):
+            ob = other.split(" | ")[0]
+            if ob.rsplit("-", 1)[0] != base.rsplit("-", 1)[0] or other == key:
+                continue
+            if "Q2" in base and "Q3" in ob and mode_of[other] == mode_of[key]:
+                if key in overall and other in overall:
+                    q23t[f"{ob} ({mode_of[key]})"] = round(overall[other] - overall[key], 4)
+    out["tools_Q2_Q3"] = q23t
 
     with open("ladder_tools.json", "w") as f:
         json.dump(out, f, indent=1)
@@ -124,6 +145,15 @@ def main():
         for tag, d in out.get("tools_steps", {}).items():
             L.append(f"- **{tag}** per category: "
                      + ", ".join(f"`{k}` {v:+.3f}" for k, v in d.items()))
+        L.append("")
+        L.append("**Overall BFCL (weighted) and the native Q2->Q3 step:**\n")
+        L.append("| model | mode | overall |")
+        L.append("|---|---|---|")
+        for m, s in sorted((out.get("tools_overall") or {}).items()):
+            L.append(f"| {m.split(' | ')[0]} | {out.get('tools_mode', {}).get(m, '?')} | {s:.4f} |")
+        L.append("")
+        for k, v in (out.get("tools_Q2_Q3") or {}).items():
+            L.append(f"- **{k}: {v:+.4f}** overall")
         L.append("")
         L.append("Two protocols: **forced** (prompt asks for a JSON call) and **native** "
                  "(OpenAI `tools=`; the model decides whether to call). They disagree in "
