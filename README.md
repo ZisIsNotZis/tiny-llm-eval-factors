@@ -155,3 +155,24 @@ python3 migrate_db.py && python3 multipl_e_analysis.py && python3 build_wrapup.p
 ## License
 
 MIT (see `LICENSE`).
+
+## Final status (overnight sweep complete)
+
+The "≥ Q3 is enough" claim **did not survive broader testing**, and that is the main result:
+
+- **13 MultiPL-E anchors** (Qwen3.5 0.8B/2B/4B/9B, Qwen3.6-35B-A3B, Qwen3.8-27B, gemma-4
+  E2B/E4B/26B-A4B, granite-4.1-3b, MiniCPM5-2B, Nemotron-3-Nano-4B, LFM2.5-8B-A1B):
+  `Q2→Q3` ranges from **−0.022 (LFM2.5-8B, negative!)** through ~0 to **+0.344 (granite)**.
+  It is not a universal rule; it depends on whether that quant file actually helps that model.
+- **`≥ Q3` is conditional**: granite's large above-Q3 PPL drop (−14%) *does* produce a score gain
+  (`Q3→Q4 +0.078`, item CI [+0.002, +0.153]); Qwen3.5's tiny above-Q3 PPL gains produce none.
+- **PPL is a weak proxy**: its direction agrees with the score direction in 5/7 anchors and fails
+  in both directions (`LFM2.5-8B`: PPL −2.9% but score −0.022; `gemma-4-E2B`: PPL +13.9% but
+  score +0.215).
+- **A continuous per-test metric does not rescue Q4/Q5**: it separates `Q2→Q3`
+  (`+0.216`, CI [+0.177,+0.254]) but not `Q3→Q4` (`+0.002`, CI [−0.029,+0.033]).
+- **Harder agentic tasks**: aggregate BFCL again hides the truth — granite Q2's apparent
+  `live_irrelevance 0.976` is the degenerate "never call anything" behaviour, masking
+  `live_simple 0.016 → 0.469` at Q3.
+
+See `WRAPUP.md`, `MULTIPLE.md`, `PPL_REPORT.md`, `LADDER_TOOLS.md`, `CLAIMS_RESOLUTION.md`.

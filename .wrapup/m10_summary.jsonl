@@ -16,3 +16,9 @@
 {"model": "mcp5-2b-q3", "lang": "py", "n": 161, "pass": 65, "score": 0.40372670807453415, "protocol": "mpl-raw-greedy-768"}
 {"model": "lfm25-8b-q2", "lang": "cpp", "n": 161, "pass": 26, "score": 0.16149068322981366, "protocol": "mpl-raw-greedy-768"}
 {"model": "lfm25-8b-q2", "lang": "py", "n": 161, "pass": 10, "score": 0.062111801242236024, "protocol": "mpl-raw-greedy-768"}
+{"model": "lfm25-8b-q3", "lang": "cpp", "n": 161, "pass": 23, "score": 0.14285714285714285, "protocol": "mpl-raw-greedy-768"}
+{"model": "lfm25-8b-q3", "lang": "py", "n": 161, "pass": 6, "score": 0.037267080745341616, "protocol": "mpl-raw-greedy-768"}
+{"model": "orn9b-q4", "lang": "cpp", "n": 161, "pass": 98, "score": 0.6086956521739131, "protocol": "mpl-raw-greedy-768"}
+{"model": "orn9b-q4", "lang": "py", "n": 161, "pass": 68, "score": 0.422360248447205, "protocol": "mpl-raw-greedy-768"}
+{"model": "orn9b-q5", "lang": "cpp", "n": 161, "pass": 100, "score": 0.6211180124223602, "protocol": "mpl-raw-greedy-768"}
+{"model": "orn9b-q5", "lang": "py", "n": 161, "pass": 76, "score": 0.4720496894409938, "protocol": "mpl-raw-greedy-768"}

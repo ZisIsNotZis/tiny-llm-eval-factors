@@ -1,8 +1,8 @@
 # Archive manifest
 
-DB rows: **2034**  |  models referenced: **185**  |  present: **38 (20.5%)**  |  missing: **147**
+DB rows: **2086**  |  models referenced: **192**  |  present: **51 (26.6%)**  |  missing: **141**
 
-Raw eval results recovered: **63 / 2034 (3.1%)**
+Raw eval results recovered: **63 / 2086 (3.0%)**
 
 ## Artifacts by bench
 
@@ -13,7 +13,15 @@ Raw eval results recovered: **63 / 2034 (3.1%)**
 
 ## Present model files
 
+- LFM2.5-8B-A1B-UD-Q2_K_XL.gguf
+- LFM2.5-8B-A1B-UD-Q3_K_XL.gguf
 - MiniCPM5-1B-Q4_K_M.gguf
+- MiniCPM5-2B-Q2_K.gguf
+- MiniCPM5-2B-Q3_K_M.gguf
+- NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf
+- NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf
+- Ornith-1.5-9B-Q4_K_M.gguf
+- Ornith-1.5-9B-Q5_K_M.gguf
 - Qwen3.5-0.8B-UD-IQ2_M.gguf
 - Qwen3.5-0.8B-UD-Q2_K_XL.gguf
 - Qwen3.5-0.8B-UD-Q3_K_XL.gguf
@@ -34,10 +42,14 @@ Raw eval results recovered: **63 / 2034 (3.1%)**
 - Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
 - Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf
 - Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf
+- Qwen3.8-27B-UD-Q2_K_XL.gguf
+- Qwen3.8-27B-UD-Q3_K_XL.gguf
 - Qwythos-9B-Claude-Mythos-5-1M-MTP-Q4_K_M.gguf
 - gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-12b-it-UD-Q2_K_XL.gguf
 - gemma-4-12b-it-UD-Q3_K_XL.gguf
+- gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf
+- gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf
 - gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-31B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-E2B-it-UD-Q2_K_XL.gguf
@@ -51,8 +63,9 @@ Raw eval results recovered: **63 / 2034 (3.1%)**
 - gemma4-v2-Q4_K_M.gguf
 - granite-4.1-3b-Q2_K.gguf
 - granite-4.1-3b-Q3_K_M.gguf
+- granite-4.1-3b-Q4_K_M.gguf
 
-## Missing model files (147)
+## Missing model files (141)
 
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_S.gguf
@@ -101,9 +114,7 @@ Raw eval results recovered: **63 / 2034 (3.1%)**
 - LFM2.5-8B-A1B-UD-IQ3_XXS.gguf
 - LFM2.5-8B-A1B-UD-IQ4_NL.gguf
 - LFM2.5-8B-A1B-UD-IQ4_XS.gguf
-- LFM2.5-8B-A1B-UD-Q2_K_XL.gguf
 - LFM2.5-8B-A1B-UD-Q3_K_M.gguf
-- LFM2.5-8B-A1B-UD-Q3_K_XL.gguf
 - LFM2.5-8B-A1B-UD-Q4_K_M.gguf
 - LFM2.5-8B-A1B-UD-Q4_K_S.gguf
 - LFM2.5-8B-A1B-UD-Q4_K_XL.gguf
@@ -115,8 +126,6 @@ Raw eval results recovered: **63 / 2034 (3.1%)**
 - NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_M.gguf
 - NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_XXS.gguf
 - NVIDIA-Nemotron-3-Nano-4B-UD-IQ3_XXS.gguf
-- NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf
-- NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf
 - NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL.gguf
 - NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ2_M.gguf
 - NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ2_XXS.gguf
@@ -172,9 +181,7 @@ Raw eval results recovered: **63 / 2034 (3.1%)**
 - gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf
 - gemma-4-26B-A4B-it-UD-IQ3_S.gguf
 - gemma-4-26B-A4B-it-UD-IQ3_XXS.gguf
-- gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf
 - gemma-4-26B-A4B-it-UD-Q3_K_M.gguf
-- gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf
 - gemma-4-31B-it-UD-IQ2_M.gguf
 - gemma-4-31B-it-UD-IQ2_XXS.gguf
 - gemma-4-31B-it-UD-IQ3_XXS.gguf

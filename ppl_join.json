@@ -125,18 +125,18 @@
    {
     "level": 3,
     "ppl": 2.0526,
-    "pass_at_1": 0.3913
+    "pass_at_1": 0.3789
    },
    {
     "level": 4,
     "ppl": 1.7657,
-    "pass_at_1": null
+    "pass_at_1": 0.4379
    }
   ],
   "verdict": {
-   "score_saturates_at_level": 3,
-   "max_score": 0.3913,
-   "ppl_improves_above_saturation": true
+   "score_saturates_at_level": 4,
+   "max_score": 0.4379,
+   "ppl_improves_above_saturation": false
   }
  }
 }

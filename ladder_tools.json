@@ -108,14 +108,26 @@
    "multiple": 0.175,
    "parallel": 0.035,
    "parallel_multiple": 0.195,
-   "irrelevance": 0.8458333333333333
+   "irrelevance": 0.8458333333333333,
+   "live_simple": 0.22093023255813954,
+   "live_multiple": 0.1842355175688509,
+   "live_parallel": 0.125,
+   "live_parallel_multiple": 0.125,
+   "live_irrelevance": 0.9095022624434389,
+   "live_relevance": 0.25
   },
   "Qwen3.5-2B-UD-Q3_K_XL.gguf | native": {
    "simple_python": 0.505,
    "multiple": 0.54,
    "parallel": 0.235,
    "parallel_multiple": 0.225,
-   "irrelevance": 0.9166666666666666
+   "irrelevance": 0.9166666666666666,
+   "live_simple": 0.38372093023255816,
+   "live_multiple": 0.4178537511870845,
+   "live_parallel": 0.4375,
+   "live_parallel_multiple": 0.4166666666666667,
+   "live_irrelevance": 0.8416289592760181,
+   "live_relevance": 0.4375
   },
   "Qwen3.5-4B-UD-Q2_K_XL.gguf | native": {
    "simple_python": 0.58,
@@ -164,18 +176,36 @@
    "multiple": 0.02,
    "parallel": 0.01,
    "parallel_multiple": 0.01,
-   "irrelevance": 0.9875
+   "irrelevance": 0.9875,
+   "live_simple": 0.015503875968992248,
+   "live_multiple": 0.00949667616334283,
+   "live_parallel": 0.0,
+   "live_parallel_multiple": 0.0,
+   "live_irrelevance": 0.9762443438914027,
+   "live_relevance": 0.125
   },
   "granite-4.1-3b-Q3_K_M.gguf | native": {
    "simple_python": 0.66,
    "multiple": 0.585,
    "parallel": 0.7,
    "parallel_multiple": 0.575,
-   "irrelevance": 0.3458333333333333
+   "irrelevance": 0.3458333333333333,
+   "live_simple": 0.4689922480620155,
+   "live_multiple": 0.3570750237416904,
+   "live_parallel": 0.4375,
+   "live_parallel_multiple": 0.2916666666666667,
+   "live_irrelevance": 0.248868778280543,
+   "live_relevance": 1.0
   }
  },
  "tools_categories": [
   "irrelevance",
+  "live_irrelevance",
+  "live_multiple",
+  "live_parallel",
+  "live_parallel_multiple",
+  "live_relevance",
+  "live_simple",
   "multiple",
   "parallel",
   "parallel_multiple",
@@ -207,6 +237,12 @@
   },
   "Qwen3.5-2B-UD-Q3_K_XL.gguf vs Qwen3.5-2B-UD-Q2_K_XL.gguf (native)": {
    "irrelevance": 0.0708,
+   "live_irrelevance": -0.0679,
+   "live_multiple": 0.2336,
+   "live_parallel": 0.3125,
+   "live_parallel_multiple": 0.2917,
+   "live_relevance": 0.1875,
+   "live_simple": 0.1628,
    "multiple": 0.365,
    "parallel": 0.2,
    "parallel_multiple": 0.03,
@@ -242,6 +278,12 @@
   },
   "granite-4.1-3b-Q3_K_M.gguf vs granite-4.1-3b-Q2_K.gguf (native)": {
    "irrelevance": -0.6417,
+   "live_irrelevance": -0.7274,
+   "live_multiple": 0.3476,
+   "live_parallel": 0.4375,
+   "live_parallel_multiple": 0.2917,
+   "live_relevance": 0.875,
+   "live_simple": 0.4535,
    "multiple": 0.565,
    "parallel": 0.69,
    "parallel_multiple": 0.565,

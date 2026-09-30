@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 16 | 29% |
-| underpowered | 3 | 5% |
+| resolved | 20 | 33% |
+| underpowered | 4 | 7% |
 | noise_level | 4 | 7% |
-| unauditable | 8 | 15% |
-| model_fit | 13 | 24% |
-| qualitative | 11 | 20% |
+| unauditable | 8 | 13% |
+| model_fit | 13 | 22% |
+| qualitative | 11 | 18% |
 
-## resolved (16)
+## resolved (20)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -38,7 +38,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.2200 >= MDE 0.108 at n=1_
 - Δ=0.143 — **[METHOD, wrap-up] Protocol choice changes the sign of quantization conclusions, twice over.** (1) Code: HumanEval *chat/thinking* said Qwen3.5-9B `Q2->Q3 = -0.073`, MultiPL-E *raw completion* says `+0.143`. (2) Tool calling: *forced JSON* said 4B `Q2->Q3` is a profile flip, *native tools* says it is a uniform improvement. Any quant-effect claim must name its generation protocol.
   - _|Δ|=0.1430 >= MDE 0.108 at n=1_
-- Δ=0.48 — **[VERIFIED, wrap-up M5] The `Q2->Q3` weight-quant step replicates in every architecture family tested, at every size, in every language.** MultiPL-E (raw completion, greedy, 3 languages each) gives: `Qwen3.5-2B +0.155`, `Qwen3.5-4B +0.142`, `Qwen3.5-9B +0.143`, `gemma-4-E2B-it +0.215`, `gemma-4-E4B-it +0.222`, `granite-4.1-3b +0.344`. **6 anchors / 3 architecture families, all sign-consistent, mean +0.203** (range +0.142 .. +0.344). `granite-4.1-3b` at `Q2_K` is nearly destroyed (0.04-0.06) and recovers fully at `Q3_K_M` (0.24-0.48).
+- Δ=0.48 — **[VERIFIED, wrap-up M5] The `Q2->Q3` weight-quant step replicates in every architecture family tested, at every size, in every language.** MultiPL-E (raw completion, greedy, 3 languages each) gives: `Qwen3.5-2B +0.155`, `Qwen3.5-4B +0.142`, `Qwen3.5-9B +0.143`, `gemma-4-E2B-it +0.215`, `gemma-4-E4B-it +0.222`, `granite-4.1-3b +0.344`. **6 anchors / 3 architecture families (superseded — see the 13-anchor correction below)** (range +0.142 .. +0.344). `granite-4.1-3b` at `Q2_K` is nearly destroyed (0.04-0.06) and recovers fully at `Q3_K_M` (0.24-0.48).
   - _|Δ|=0.4800 >= MDE 0.108 at n=1_
 - Δ=0.377 — **[VERIFIED, wrap-up M7] Native tool-calling is quant-sensitive in a strongly family-dependent way.** Overall BFCL (native `tools=`, 1,240 items) `Q2->Q3`: `granite-4.1-3b +0.377`, `Qwen3.5-2B +0.202`, `Qwen3.5-4B +0.077`, `gemma-4-E2B +0.040`, `gemma-4-E4B +0.010`. So `gemma-4` is nearly quant-robust for tool use, `Qwen3.5-2B` and `granite-4.1-3b` are not. Note the degenerate case: `granite-4.1-3b` at `Q2_K` scores 0.99 on `irrelevance` only because it never calls anything (0.01-0.02 elsewhere), so a high abstention score is not evidence of good calibration.
   - _|Δ|=0.3770 >= MDE 0.108 at n=1_
@@ -48,8 +48,16 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.8000 >= MDE 0.108 at n=1_
 - Δ=0.2153 — **[VERIFIED, wrap-up T1] PPL is NOT a valid proxy for task capability, in either direction — counterexample.** On `gemma-4-E2B-it`, `UD-Q3_K_XL` has **worse** PPL than `UD-Q2_K_XL` on all three corpora (`code_python 4.117 -> 4.595`, `code_multi 3.107 -> 3.538`, `nl_english 23.6 -> 29.2`) while MultiPL-E pass@1 **doubles** (`0.2008 -> 0.4161`). So for aggressive quants of some architectures, lower PPL and higher capability can be anti-correlated. Any "PPL predicts quality" claim must be demonstrated per-family, not assumed.
   - _|Δ|=0.2153 >= MDE 0.108 at n=1_
+- Δ=0.8 — **[FINAL CORRECTION, 13 anchors] The `Q2->Q3` step is NOT universally positive — "use >= Q3" is not a law.** Across all 13 MultiPL-E anchors (raw greedy, 2-3 languages each): large positive `granite-4.1-3b +0.344`, `MiniCPM5-2B +0.314`, `gemma-4-E2B +0.215`, `gemma-4-E4B +0.222`, `Qwen3.5-2B +0.155`, `Qwen3.5-4B +0.142`, `Qwen3.5-9B +0.143`; small `Qwen3.5-0.8B +0.061`, `Qwen3.6-35B-A3B +0.037`, `NVIDIA-Nemotron-3-Nano-4B +0.019`, `Qwen3.8-27B +0.019`; ~0 `gemma-4-26B-A4B-it -0.009`; **negative `LFM2.5-8B-A1B -0.022`** (Q3_K_XL is worse than Q2_K_XL on both cpp and py). The step size tracks **whether that particular quant file actually helps that model**, not a universal rule.
+  - _|Δ|=0.8000 >= MDE 0.108 at n=1_
+- Δ=0.8 — **[FINAL] PPL direction is a weak proxy for capability direction: agrees in 5/7 anchors, fails in both directions.** Measured `code_multi` PPL Q2->Q3 vs pass@1 Q2->Q3: `Qwen3.5-0.8B/2B/4B` and `MiniCPM5-2B`, `granite-4.1-3b` agree (PPL down, score up); **`LFM2.5-8B-A1B` disagrees (PPL -2.9% but score -0.022)** and **`gemma-4-E2B-it` disagrees in the opposite direction (PPL +13.9% but score +0.215)**.
+  - _|Δ|=0.8000 >= MDE 0.108 at n=1_
+- Δ=0.216 — **[FINAL, T2 with CIs] The above-Q3 plateau is not metric coarseness.** A continuous per-test pass-fraction metric **does** separate `Q2->Q3` (pooled cpp+js+py `mean_frac` `+0.216`, 95% CI [+0.177,+0.254]; +112/-17 items) but shows **no** `Q3->Q4` (`+0.0019`, CI [-0.029,+0.033]; +54/-52) or `Q3->Q5` (`-0.0015`, CI [-0.033,+0.030]; +53/-58) difference.
+  - _|Δ|=0.2160 >= MDE 0.108 at n=1_
+- Δ=0.727 — **[FINAL, m8] On harder (live) BFCL, aggregate scores again hide the real effect.** `granite-4.1-3b` overall `Q2 0.390 -> Q3 0.332` looks like a regression, but the *real* categories improve massively: `live_simple 0.016 -> 0.469`, `live_multiple 0.009 -> 0.357`, `live_parallel 0.000 -> 0.438`. The aggregate is inverted only by `live_irrelevance` (`0.976 -> 0.249`), i.e. Q2's high score there is the degenerate "never call anything" behaviour. `Qwen3.5-2B` improves overall `0.473 -> 0.581`.
+  - _|Δ|=0.7270 >= MDE 0.108 at n=1_
 
-## underpowered (3)
+## underpowered (4)
 
 - Δ=0.0488 — On unseen-architecture `NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL` under fixed controls (`ctx2048`, `q8_0/q8_0`, no-MTP), `top_k:40->20` decreases plus score on both datasets (Humaneval `-0.0061`, MBPP `-0.0317`) with small wall-time increases, and `reasoning off->on` decreases plus score on both datasets (Humaneval `-0.0488`, MBPP `-0.0265`) with large wall-time penalties (Humaneval `+288.7s`, MBPP `+473.3s`).
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
@@ -57,6 +65,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0854 < MDE 0.108 at n=1_
 - Δ=0.062 — **[VERIFIED, wrap-up] Matched weight-quant ladder is the study's most reproducible effect.** Restricting to clean fixed decoding and matching on model family + KV + decoding, the local step effects are: `Q2->Q3 +0.062` (n=85, CI [+0.042,+0.082]), `Q3->Q4 +0.015` (n=53, CI [+0.008,+0.023]), `Q4->Q5 +0.021` (n=18, CI [+0.009,+0.034]). All CIs exclude zero; the `Q2->Q3` step is the dominant one.
   - _|Δ|=0.0620 < MDE 0.108 at n=1_
+- Δ=0.093 — **[FINAL, decisive test] ">= Q3 is enough" is conditional, not universal.** `granite-4.1-3b` has the largest above-Q3 PPL drop (Q3 2.053 -> Q4 1.766, -14%) and it **does** translate into score: `Q3->Q4` pass@1 `+0.093` (cpp) and `+0.062` (py), pooled `+0.078` (item-level 95% CI [+0.002, +0.153], 322 items/side). So when the next quant level genuinely helps the model, benchmark scores follow; where Q3 already saturates (Qwen3.5 family), they do not.
+  - _|Δ|=0.0930 < MDE 0.108 at n=1_
 
 ## noise_level (4)
 

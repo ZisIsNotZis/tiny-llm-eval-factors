@@ -1,0 +1,4 @@
+{"model": "gr3b-q3", "lang": "cpp", "n": 161, "pass": 77, "score": 0.4782608695652174, "protocol": "mpl-raw-greedy-768"}
+{"model": "gr3b-q3", "lang": "py", "n": 161, "pass": 39, "score": 0.2422360248447205, "protocol": "mpl-raw-greedy-768"}
+{"model": "gr3b-q4", "lang": "cpp", "n": 161, "pass": 92, "score": 0.5714285714285714, "protocol": "mpl-raw-greedy-768"}
+{"model": "gr3b-q4", "lang": "py", "n": 161, "pass": 49, "score": 0.30434782608695654, "protocol": "mpl-raw-greedy-768"}
