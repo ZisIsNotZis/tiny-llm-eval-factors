@@ -69,6 +69,22 @@ def truncate_at_stops(text, stops):
     return text[:cut]
 
 
+def strip_thought(text):
+    """Drop a leading gemma-4 reasoning channel, keeping the answer after it.
+
+    gemma-4 models may emit `<|channel>thought ... <channel|>ANSWER` when the
+    chat template's ``enable_thinking`` is not suppressed. Everything up to and
+    including the last closing `<channel|>` is the reasoning trace, so keep only
+    what follows it. If an opening `<|channel>` survives with no closing token we
+    truncate there instead.
+    """
+    if "<channel|>" in text:
+        text = text.rsplit("<channel|>", 1)[1]
+    if "<|channel>" in text:
+        text = text.split("<|channel>", 1)[0]
+    return text
+
+
 def gen(args):
     problems = [json.loads(l) for l in open(f"{PROMPTS}/humaneval-{args.lang}.jsonl")]
     if args.limit:
@@ -80,7 +96,10 @@ def gen(args):
     t0 = time.time()
     for i, p in enumerate(problems):
         prompt = p["prompt"]
-        stops = p.get("stop_tokens") or []
+        if getattr(args, "prompt_suffix", ""):
+            prompt = prompt + args.prompt_suffix
+        stops = list(p.get("stop_tokens") or [])
+        stops += [s for s in getattr(args, "extra_stop", "").split(",") if s]
         try:
             if args.mode == "raw":
                 payload = {"prompt": prompt, "temperature": float(args.temperature),
@@ -99,8 +118,13 @@ def gen(args):
                            "max_tokens": args.max_tokens, "stop": stops}
                 if args.greedy:
                     payload["temperature"] = 0.0
+                ck = getattr(args, "chat_kwargs", "")
+                if ck:
+                    payload["chat_template_kwargs"] = json.loads(ck)
                 r = post(base + "/v1/chat/completions", payload)
                 text = r["choices"][0]["message"].get("content") or ""
+            if getattr(args, "strip_thought", False):
+                text = strip_thought(text)
         except Exception as e:
             print(f"  ! request failed on {p['name']}: {e}", file=sys.stderr)
             text = ""
@@ -210,6 +234,14 @@ def main():
     g.add_argument("--greedy", action="store_true")
     g.add_argument("--limit", type=int, default=0)
     g.add_argument("--mode", choices=["raw", "chat"], default="raw")
+    g.add_argument("--extra-stop", default="",
+                   help="comma-separated extra stop strings appended to the dataset stops")
+    g.add_argument("--chat-kwargs", default="",
+                   help="JSON chat_template_kwargs, e.g. {\"enable_thinking\": false} (chat mode)")
+    g.add_argument("--strip-thought", action="store_true",
+                   help="drop a leading <|channel>thought...<channel|> reasoning trace")
+    g.add_argument("--prompt-suffix", default="",
+                   help="literal string appended to the raw prompt (e.g. an empty thinking-channel prime)")
     g.set_defaults(fn=gen)
     e = sub.add_parser("eval")
     e.add_argument("--lang", required=True, choices=list(LANGS))
@@ -226,6 +258,10 @@ def main():
         r.add_argument("--greedy", action="store_true")
         r.add_argument("--limit", type=int, default=0)
         r.add_argument("--mode", choices=["raw", "chat"], default="raw")
+        r.add_argument("--extra-stop", default="")
+        r.add_argument("--chat-kwargs", default="")
+        r.add_argument("--strip-thought", action="store_true")
+        r.add_argument("--prompt-suffix", default="")
         r.set_defaults(fn=lambda a: (gen(a), run_eval(a)))
     args = ap.parse_args()
     args.fn(args)

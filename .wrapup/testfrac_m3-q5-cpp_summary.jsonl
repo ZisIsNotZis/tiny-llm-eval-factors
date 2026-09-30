@@ -1,0 +1,1 @@
+{"samples": "mres/m3-q5-cpp.jsonl", "lang": "cpp", "n": 161, "pass": 42, "pass_at_1": 0.26087, "mean_frac": 0.43445, "micro_frac": 0.415044, "mean_tests_per_item": 7.019}

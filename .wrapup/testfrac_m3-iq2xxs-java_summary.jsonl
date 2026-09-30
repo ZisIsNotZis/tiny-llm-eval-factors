@@ -1,0 +1,1 @@
+{"samples": "mres/m3-iq2xxs-java.jsonl", "lang": "java", "n": 158, "pass": 2, "pass_at_1": 0.012658, "mean_frac": 0.065639, "micro_frac": 0.064428, "mean_tests_per_item": 6.975}

@@ -1,0 +1,1 @@
+{"samples": "mres/m3-iq2xxs-cpp.jsonl", "lang": "cpp", "n": 161, "pass": 1, "pass_at_1": 0.006211, "mean_frac": 0.022967, "micro_frac": 0.018584, "mean_tests_per_item": 7.019}

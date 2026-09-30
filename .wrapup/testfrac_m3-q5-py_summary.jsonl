@@ -1,0 +1,1 @@
+{"samples": "mres/m3-q5-py.jsonl", "lang": "py", "n": 161, "pass": 45, "pass_at_1": 0.279503, "mean_frac": 0.397543, "micro_frac": 0.369912, "mean_tests_per_item": 7.019}

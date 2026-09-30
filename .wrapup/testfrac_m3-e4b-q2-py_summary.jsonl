@@ -1,0 +1,1 @@
+{"samples": "mres/m3-e4b-q2-py.jsonl", "lang": "py", "n": 161, "pass": 80, "pass_at_1": 0.496894, "mean_frac": 0.580448, "micro_frac": 0.580531, "mean_tests_per_item": 7.019}

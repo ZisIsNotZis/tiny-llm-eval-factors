@@ -30,7 +30,9 @@ QDIR = BFCL
 ADIR = os.path.join(BFCL, "possible_answer")
 
 VALID = {"simple_python", "simple_java", "simple_javascript", "multiple",
-         "parallel", "parallel_multiple", "irrelevance"}
+         "parallel", "parallel_multiple", "irrelevance",
+         "live_simple", "live_multiple", "live_parallel",
+         "live_parallel_multiple", "live_irrelevance", "live_relevance"}
 
 
 def load_jsonl(path):
@@ -228,8 +230,13 @@ def evaluate(args):
                              for r in load_jsonl(os.path.join(ADIR, f"BFCL_v4_{cat}.json"))}
         gt = gt_cache[cat].get(s["id"], [])
         calls = s.get("calls") or []
-        if cat == "irrelevance":
+        if "irrelevance" in cat:
+            # irrelevance (incl. live_irrelevance): no function call is correct.
             ok = len(calls) == 0
+        elif "relevance" in cat:
+            # live_relevance: a function call must be made (empty list is wrong);
+            # the bundled dataset ships no possible_answer, so only presence is checked.
+            ok = len(calls) > 0
         else:
             ok = (len(calls) == len(gt)
                   and all(any(call_ok(c, g) for c in calls) for g in gt))

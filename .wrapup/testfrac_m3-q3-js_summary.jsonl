@@ -1,0 +1,1 @@
+{"samples": "mres/m3-q3-js.jsonl", "lang": "js", "n": 161, "pass": 51, "pass_at_1": 0.31677, "mean_frac": 0.478486, "micro_frac": 0.465487, "mean_tests_per_item": 7.019}

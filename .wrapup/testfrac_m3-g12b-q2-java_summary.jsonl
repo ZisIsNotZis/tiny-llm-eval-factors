@@ -1,0 +1,1 @@
+{"samples": "mres/m3-g12b-q2-java.jsonl", "lang": "java", "n": 158, "pass": 0, "pass_at_1": 0.0, "mean_frac": 0.0, "micro_frac": 0.0, "mean_tests_per_item": 6.975}

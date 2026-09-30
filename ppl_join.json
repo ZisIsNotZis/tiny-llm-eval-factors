@@ -1,0 +1,142 @@
+{
+ "Qwen3.5-2B": {
+  "levels": [
+   {
+    "level": 2,
+    "ppl": 1.9044,
+    "pass_at_1": 0.1201
+   },
+   {
+    "level": 2,
+    "ppl": 1.9665,
+    "pass_at_1": 0.1387
+   },
+   {
+    "level": 2,
+    "ppl": 2.3317,
+    "pass_at_1": 0.0062
+   },
+   {
+    "level": 3,
+    "ppl": 1.8059,
+    "pass_at_1": 0.2754
+   },
+   {
+    "level": 4,
+    "ppl": 1.7834,
+    "pass_at_1": 0.2836
+   },
+   {
+    "level": 5,
+    "ppl": 1.7788,
+    "pass_at_1": 0.2774
+   }
+  ],
+  "verdict": {
+   "score_saturates_at_level": 3,
+   "max_score": 0.2836,
+   "ppl_improves_above_saturation": true
+  }
+ },
+ "Qwen3.5-0.8B": {
+  "levels": [
+   {
+    "level": 2,
+    "ppl": 2.2559,
+    "pass_at_1": 0.0451
+   },
+   {
+    "level": 3,
+    "ppl": 1.9677,
+    "pass_at_1": 0.106
+   },
+   {
+    "level": 4,
+    "ppl": 1.9343,
+    "pass_at_1": null
+   },
+   {
+    "level": 5,
+    "ppl": 1.9264,
+    "pass_at_1": null
+   }
+  ],
+  "verdict": {
+   "score_saturates_at_level": 3,
+   "max_score": 0.106,
+   "ppl_improves_above_saturation": true
+  }
+ },
+ "Qwen3.5-4B": {
+  "levels": [
+   {
+    "level": 2,
+    "ppl": 1.7446,
+    "pass_at_1": 0.3142
+   },
+   {
+    "level": 3,
+    "ppl": 1.6872,
+    "pass_at_1": 0.4565
+   },
+   {
+    "level": 4,
+    "ppl": 1.6685,
+    "pass_at_1": null
+   },
+   {
+    "level": 5,
+    "ppl": 1.6625,
+    "pass_at_1": null
+   }
+  ],
+  "verdict": {
+   "score_saturates_at_level": 3,
+   "max_score": 0.4565,
+   "ppl_improves_above_saturation": true
+  }
+ },
+ "gemma-4-E2B-it": {
+  "levels": [
+   {
+    "level": 2,
+    "ppl": 3.1067,
+    "pass_at_1": 0.2008
+   },
+   {
+    "level": 3,
+    "ppl": 3.5378,
+    "pass_at_1": 0.4161
+   }
+  ],
+  "verdict": {
+   "score_saturates_at_level": 3,
+   "max_score": 0.4161,
+   "ppl_improves_above_saturation": false
+  }
+ },
+ "granite-4.1-3b": {
+  "levels": [
+   {
+    "level": 2,
+    "ppl": 2.4728,
+    "pass_at_1": 0.0476
+   },
+   {
+    "level": 3,
+    "ppl": 2.0526,
+    "pass_at_1": 0.3913
+   },
+   {
+    "level": 4,
+    "ppl": 1.7657,
+    "pass_at_1": null
+   }
+  ],
+  "verdict": {
+   "score_saturates_at_level": 3,
+   "max_score": 0.3913,
+   "ppl_improves_above_saturation": true
+  }
+ }
+}

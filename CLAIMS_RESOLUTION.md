@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 14 | 27% |
-| underpowered | 3 | 6% |
-| noise_level | 4 | 8% |
-| unauditable | 8 | 16% |
-| model_fit | 13 | 25% |
-| qualitative | 9 | 18% |
+| resolved | 16 | 29% |
+| underpowered | 3 | 5% |
+| noise_level | 4 | 7% |
+| unauditable | 8 | 15% |
+| model_fit | 13 | 24% |
+| qualitative | 11 | 20% |
 
-## resolved (14)
+## resolved (16)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -44,6 +44,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.3770 >= MDE 0.108 at n=1_
 - Δ=0.8 — **[VERIFIED, wrap-up M6] The `Q2->Q3` step is not a universal constant — its size tracks how badly `Q2` damages the model.** Across 8 anchors / 4 architecture families (MultiPL-E, raw completion, greedy): `granite-4.1-3b +0.344`, `gemma-4-E2B +0.215`, `gemma-4-E4B +0.222`, `Qwen3.5-2B +0.155`, `Qwen3.5-4B +0.142`, `Qwen3.5-9B +0.143`, `Qwen3.5-0.8B +0.061`, and `Qwen3.6-35B-A3B **+0.037 (CI [-0.011, +0.086])**`. The strong MoE `Qwen3.6-35B-A3B` already scores ~0.70 at `Q2`, so `Q3` adds nothing — while `granite-4.1-3b` at `Q2_K` is nearly destroyed (0.04-0.06). **The right question is not "how much does Q3 help?" but "does Q2 break this model?"**
   - _|Δ|=0.8000 >= MDE 0.108 at n=1_
+- Δ=0.8 — **[VERIFIED, wrap-up T1] The "\u2265 Q3 is enough" rule is a statement about benchmark sensitivity, not about model quality.** Measuring PPL with `llama-perplexity` on three held-out corpora (`code_python`, `code_multi`, `nl_english`; 40 chunks, ctx 2048, KV `q8_0/q8_0`) alongside MultiPL-E pass@1: for **4 of 5 anchors PPL keeps improving above the level where pass@1 saturates**. `Qwen3.5-2B` code_multi PPL `Q3 1.806 -> Q4 1.783 -> Q5 1.779` (-1.5%) while pass@1 is flat (`0.275/0.284/0.277`); likewise `Qwen3.5-4B` (`1.687 -> 1.669 -> 1.663`) and `Qwen3.5-0.8B` (`1.968 -> 1.934 -> 1.926`). So Q4/Q5 are not wasted: the extra quality exists in the likelihood distribution, but short single-function code benchmarks cannot express it.
+  - _|Δ|=0.8000 >= MDE 0.108 at n=1_
+- Δ=0.2153 — **[VERIFIED, wrap-up T1] PPL is NOT a valid proxy for task capability, in either direction — counterexample.** On `gemma-4-E2B-it`, `UD-Q3_K_XL` has **worse** PPL than `UD-Q2_K_XL` on all three corpora (`code_python 4.117 -> 4.595`, `code_multi 3.107 -> 3.538`, `nl_english 23.6 -> 29.2`) while MultiPL-E pass@1 **doubles** (`0.2008 -> 0.4161`). So for aggressive quants of some architectures, lower PPL and higher capability can be anti-correlated. Any "PPL predicts quality" claim must be demonstrated per-family, not assumed.
+  - _|Δ|=0.2153 >= MDE 0.108 at n=1_
 
 ## underpowered (3)
 
@@ -113,7 +117,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (9)
+## qualitative (11)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -132,5 +136,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, wrap-up W1] Run-to-run noise is now measured, and is far below the item floor.** Greedy decoding is **exactly deterministic** (HumanEval score 0.2805 and bad_rate 0.488 identical across 3 runs; likewise at 4B and 9B); sampling at `temp=0.3` gives sd 0.0149 (HumanEval, n=5) and 0.0220 (MBPP, n=3). So for greedy protocols the whole uncertainty budget is *item sampling* (0.039 HE / 0.026 MBPP), not server stochasticity.
   - _no numeric contrast in the claim_
 - — **[INFRA, wrap-up] The DB schema was upgraded so replicates are representable.** Added `run_tag, rep, ctx_size, parallel_slots, seed, protocol, language, bench_family, max_tokens, source_file, completed_at`; dropped the unique index `uq_experiments_args_bench` that made identical configurations unrecordable. W1/W2/M1/M2 runs are ingested.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, wrap-up T2] The saturation above Q3 is not merely binary-metric coarseness (H2 refuted).** A continuous per-test pass-fraction metric over the same completions shows no `Q3 -> Q4 -> Q5` separation beyond noise: `Qwen3.5-2B` mean fraction cpp `0.431/0.408/0.435`, js `0.479/0.534/0.518`, py `0.444/0.418/0.398` (1 SE \u2248 0.039). The extra PPL therefore does not translate into *any* increase in partial task success on these items.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, wrap-up T4] `gemma-4-12B`'s near-zero MultiPL-E scores were a protocol artifact, not quantization.** In raw `/completion` it leaks its `<|channel>thought` thinking channel and produces broken code at every quant; with a chat protocol and thinking disabled it scores 2/40 while all raw variants score 0/40. Re-measured via `mpl-chat-nothink-greedy-768`.
   - _no numeric contrast in the claim_
 

@@ -1,0 +1,1 @@
+{"samples": "mres/m3-iq2m-js.jsonl", "lang": "js", "n": 161, "pass": 23, "pass_at_1": 0.142857, "mean_frac": 0.252905, "micro_frac": 0.218584, "mean_tests_per_item": 7.019}
