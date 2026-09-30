@@ -1,0 +1,16 @@
+{"model": "iq2xxs", "lang": "cpp", "n": 161, "pass": 1, "score": 0.006211180124223602, "protocol": "mpl-raw-greedy-768"}
+{"model": "iq2m", "lang": "cpp", "n": 161, "pass": 18, "score": 0.11180124223602485, "protocol": "mpl-raw-greedy-768"}
+{"model": "iq2m", "lang": "js", "n": 161, "pass": 23, "score": 0.14285714285714285, "protocol": "mpl-raw-greedy-768"}
+{"model": "iq2m", "lang": "py", "n": 161, "pass": 26, "score": 0.16149068322981366, "protocol": "mpl-raw-greedy-768"}
+{"model": "q2", "lang": "cpp", "n": 161, "pass": 18, "score": 0.11180124223602485, "protocol": "mpl-raw-greedy-768"}
+{"model": "q2", "lang": "js", "n": 161, "pass": 18, "score": 0.11180124223602485, "protocol": "mpl-raw-greedy-768"}
+{"model": "q2", "lang": "py", "n": 161, "pass": 22, "score": 0.13664596273291926, "protocol": "mpl-raw-greedy-768"}
+{"model": "q3", "lang": "cpp", "n": 161, "pass": 39, "score": 0.2422360248447205, "protocol": "mpl-raw-greedy-768"}
+{"model": "q3", "lang": "js", "n": 161, "pass": 51, "score": 0.3167701863354037, "protocol": "mpl-raw-greedy-768"}
+{"model": "q3", "lang": "py", "n": 161, "pass": 43, "score": 0.2670807453416149, "protocol": "mpl-raw-greedy-768"}
+{"model": "q4", "lang": "cpp", "n": 161, "pass": 37, "score": 0.22981366459627328, "protocol": "mpl-raw-greedy-768"}
+{"model": "q4", "lang": "js", "n": 161, "pass": 56, "score": 0.34782608695652173, "protocol": "mpl-raw-greedy-768"}
+{"model": "q4", "lang": "py", "n": 161, "pass": 44, "score": 0.2732919254658385, "protocol": "mpl-raw-greedy-768"}
+{"model": "q5", "lang": "cpp", "n": 161, "pass": 42, "score": 0.2608695652173913, "protocol": "mpl-raw-greedy-768"}
+{"model": "q5", "lang": "js", "n": 161, "pass": 47, "score": 0.2919254658385093, "protocol": "mpl-raw-greedy-768"}
+{"model": "q5", "lang": "py", "n": 161, "pass": 45, "score": 0.2795031055900621, "protocol": "mpl-raw-greedy-768"}

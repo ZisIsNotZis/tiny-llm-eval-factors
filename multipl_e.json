@@ -1,5 +1,5 @@
 {
- "n_rows": 18,
+ "n_rows": 34,
  "table": {
   "Qwen3.5-4B-UD-Q2_K_XL.gguf|cpp": 0.3416,
   "Qwen3.5-4B-UD-Q2_K_XL.gguf|java": 0.3228,
@@ -18,22 +18,50 @@
   "Qwen3.5-9B-UD-Q2_K_XL.gguf|py": 0.3478,
   "Qwen3.5-9B-UD-Q3_K_XL.gguf|cpp": 0.5839,
   "Qwen3.5-9B-UD-Q3_K_XL.gguf|js": 0.6087,
-  "Qwen3.5-9B-UD-Q3_K_XL.gguf|py": 0.5217
+  "Qwen3.5-9B-UD-Q3_K_XL.gguf|py": 0.5217,
+  "Qwen3.5-2B-UD-IQ2_XXS.gguf|cpp": 0.0062,
+  "Qwen3.5-2B-UD-IQ2_M.gguf|cpp": 0.1118,
+  "Qwen3.5-2B-UD-IQ2_M.gguf|js": 0.1429,
+  "Qwen3.5-2B-UD-IQ2_M.gguf|py": 0.1615,
+  "Qwen3.5-2B-UD-Q2_K_XL.gguf|cpp": 0.1118,
+  "Qwen3.5-2B-UD-Q2_K_XL.gguf|js": 0.1118,
+  "Qwen3.5-2B-UD-Q2_K_XL.gguf|py": 0.1366,
+  "Qwen3.5-2B-UD-Q3_K_XL.gguf|cpp": 0.2422,
+  "Qwen3.5-2B-UD-Q3_K_XL.gguf|js": 0.3168,
+  "Qwen3.5-2B-UD-Q3_K_XL.gguf|py": 0.2671,
+  "Qwen3.5-2B-UD-Q4_K_XL.gguf|cpp": 0.2298,
+  "Qwen3.5-2B-UD-Q4_K_XL.gguf|js": 0.3478,
+  "Qwen3.5-2B-UD-Q4_K_XL.gguf|py": 0.2733,
+  "Qwen3.5-2B-UD-Q5_K_XL.gguf|cpp": 0.2609,
+  "Qwen3.5-2B-UD-Q5_K_XL.gguf|js": 0.2919,
+  "Qwen3.5-2B-UD-Q5_K_XL.gguf|py": 0.2795
  },
  "deltas": {
   "UD-Q2_K_XL->UD-Q3_K_XL": {
    "Qwen3.5-4B": {
-    "java": 0.16455696202531644,
     "py": 0.1490683229813664,
-    "rb": 0.08074534161490682,
-    "js": 0.1925465838509317,
     "rs": 0.15483870967741936,
-    "cpp": 0.11180124223602489
+    "js": 0.1925465838509317,
+    "rb": 0.08074534161490682,
+    "cpp": 0.11180124223602489,
+    "java": 0.16455696202531644
    },
    "Qwen3.5-9B": {
     "py": 0.17391304347826086,
-    "js": 0.10559006211180133,
-    "cpp": 0.14906832298136646
+    "cpp": 0.14906832298136646,
+    "js": 0.10559006211180133
+   },
+   "Qwen3.5-2B": {
+    "py": 0.13043478260869565,
+    "cpp": 0.13043478260869568,
+    "js": 0.20496894409937888
+   }
+  },
+  "UD-Q3_K_XL->UD-Q4_K_XL": {
+   "Qwen3.5-2B": {
+    "py": 0.006211180124223614,
+    "cpp": -0.012422360248447228,
+    "js": 0.031055900621118016
    }
   }
  },
@@ -50,6 +78,20 @@
     "mean": 0.1429,
     "ci_low": 0.1037,
     "ci_high": 0.182
+   },
+   "Qwen3.5-2B": {
+    "n": 3,
+    "mean": 0.1553,
+    "ci_low": 0.1066,
+    "ci_high": 0.204
+   }
+  },
+  "UD-Q3_K_XL->UD-Q4_K_XL": {
+   "Qwen3.5-2B": {
+    "n": 3,
+    "mean": 0.0083,
+    "ci_low": -0.0164,
+    "ci_high": 0.033
    }
   }
  }

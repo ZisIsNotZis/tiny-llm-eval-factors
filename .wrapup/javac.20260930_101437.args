@@ -1,0 +1,7 @@
+-encoding
+UTF8
+-cp
+/home/z/hf/research/.wrapup/jars/javatuples-1.2.jar
+-d
+/tmp/tmph_hi26g6/out
+/tmp/tmph_hi26g6/Problem.java

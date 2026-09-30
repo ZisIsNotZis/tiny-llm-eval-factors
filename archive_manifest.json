@@ -1,9 +1,9 @@
 {
- "db_rows": 1918,
- "models_referenced": 181,
- "models_present": 25,
- "models_missing": 156,
- "model_coverage_pct": 13.8,
+ "db_rows": 1954,
+ "models_referenced": 182,
+ "models_present": 28,
+ "models_missing": 154,
+ "model_coverage_pct": 15.4,
  "artifacts": {
   "humaneval": {
    "eval_results": 28,
@@ -19,12 +19,15 @@
   }
  },
  "eval_results_recovered": 63,
- "eval_results_coverage_pct": 3.3,
+ "eval_results_coverage_pct": 3.2,
  "present_models": [
   "MiniCPM5-1B-Q4_K_M.gguf",
+  "Qwen3.5-0.8B-UD-IQ2_M.gguf",
   "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
   "Qwen3.5-0.8B-UD-Q4_K_XL.gguf",
   "Qwen3.5-0.8B-UD-Q5_K_XL.gguf",
+  "Qwen3.5-2B-UD-IQ2_M.gguf",
+  "Qwen3.5-2B-UD-IQ2_XXS.gguf",
   "Qwen3.5-2B-UD-Q2_K_XL.gguf",
   "Qwen3.5-2B-UD-Q3_K_XL.gguf",
   "Qwen3.5-2B-UD-Q4_K_XL.gguf",
@@ -128,10 +131,8 @@
   "North-Mini-Code-1.0-UD-Q2_K_XL.gguf",
   "North-Mini-Code-1.0-UD-Q3_K_M.gguf",
   "North-Mini-Code-1.0-UD-Q3_K_XL.gguf",
-  "Qwen3.5-0.8B-UD-IQ2_M.gguf",
   "Qwen3.5-0.8B-UD-IQ3_XXS.gguf",
   "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
-  "Qwen3.5-2B-UD-IQ2_M.gguf",
   "Qwen3.5-2B-UD-IQ3_XXS.gguf",
   "Qwen3.5-4B-UD-IQ2_M.gguf",
   "Qwen3.5-4B-UD-IQ3_XXS.gguf",

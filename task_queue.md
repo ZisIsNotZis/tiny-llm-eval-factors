@@ -41,3 +41,5 @@
 | **multipl-e-resolution-panel-m1-r17** | completed | 1 | `Qwen3.5-4B` Q2/Q3 × 6 languages (~957 items/side). Result: `Q2->Q3 = +0.142` 95% CI [+0.110,+0.174], positive in every language. |
 | **multipl-e-scale-panel-m2-r17** | completed | 1 | `Qwen3.5-9B` Q2/Q3 × 3 languages. Result: `+0.143` 95% CI [+0.104,+0.182] — confirms the effect at 9B and shows the HumanEval 9B "flip" was a chat-protocol artifact. |
 | **db-ingest-wrapup-runs-r17** | completed | 1 | Ingested W1 (11) + W2 (8) + M1 (12) + M2 (6) = 37 new rows; DB now 1918 rows, held-out schema for protocol/ctx/rep. |
+| **quant-ladder-panel-m3-r18** | completed | 1 | `Qwen3.5-2B` full quant ladder (IQ2_XXS, IQ2_M, Q2, Q3, Q4, Q5) × 3 languages. Result: one step `Q2→Q3 = +0.155`, flat IQ2_M≈Q2 and Q3≈Q4≈Q5, IQ2_XXS collapses. Answers the Q4/Q5 question: **no effect above Q3**. |
+| **tool-calling-panel-m4-r18** | completed | 1 | BFCL harness (`bfcl_run.py`) + panel: 4B and 2B Q2/Q3 × 1,240 items (simple/multiple/parallel/parallel_multiple/irrelevance). Result: 2B `+0.256`, 4B flat but opposing per-category shifts (abstention up, parallel_multiple down). New agentic axis. |

@@ -1,0 +1,130 @@
+{
+ "ladder": {
+  "levels": [
+   "UD-IQ2_XXS",
+   "UD-IQ2_M",
+   "UD-Q2_K_XL",
+   "UD-Q3_K_XL",
+   "UD-Q4_K_XL",
+   "UD-Q5_K_XL"
+  ],
+  "per_language": {
+   "UD-IQ2_XXS": {
+    "cpp": 0.006211180124223602
+   },
+   "UD-IQ2_M": {
+    "cpp": 0.11180124223602485,
+    "js": 0.14285714285714285,
+    "py": 0.16149068322981366
+   },
+   "UD-Q2_K_XL": {
+    "cpp": 0.11180124223602485,
+    "js": 0.11180124223602485,
+    "py": 0.13664596273291926
+   },
+   "UD-Q3_K_XL": {
+    "cpp": 0.2422360248447205,
+    "js": 0.3167701863354037,
+    "py": 0.2670807453416149
+   },
+   "UD-Q4_K_XL": {
+    "cpp": 0.22981366459627328,
+    "js": 0.34782608695652173,
+    "py": 0.2732919254658385
+   },
+   "UD-Q5_K_XL": {
+    "cpp": 0.2608695652173913,
+    "js": 0.2919254658385093,
+    "py": 0.2795031055900621
+   }
+  },
+  "pooled_mean": {
+   "UD-IQ2_XXS": 0.0062,
+   "UD-IQ2_M": 0.1387,
+   "UD-Q2_K_XL": 0.1201,
+   "UD-Q3_K_XL": 0.2754,
+   "UD-Q4_K_XL": 0.2836,
+   "UD-Q5_K_XL": 0.2774
+  },
+  "steps": {
+   "UD-IQ2_XXS->UD-IQ2_M": null,
+   "UD-IQ2_M->UD-Q2_K_XL": {
+    "n": 3,
+    "mean": -0.0186,
+    "ci_low": -0.0372,
+    "ci_high": -0.0
+   },
+   "UD-Q2_K_XL->UD-Q3_K_XL": {
+    "n": 3,
+    "mean": 0.1553,
+    "ci_low": 0.1066,
+    "ci_high": 0.204
+   },
+   "UD-Q3_K_XL->UD-Q4_K_XL": {
+    "n": 3,
+    "mean": 0.0083,
+    "ci_low": -0.0164,
+    "ci_high": 0.033
+   },
+   "UD-Q4_K_XL->UD-Q5_K_XL": {
+    "n": 3,
+    "mean": -0.0062,
+    "ci_low": -0.0569,
+    "ci_high": 0.0445
+   }
+  }
+ },
+ "tools": {
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf": {
+   "simple_python": 0.7825,
+   "multiple": 0.73,
+   "parallel": 0.46,
+   "parallel_multiple": 0.545,
+   "irrelevance": 0.3875
+  },
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf": {
+   "simple_python": 0.7475,
+   "multiple": 0.75,
+   "parallel": 0.425,
+   "parallel_multiple": 0.26,
+   "irrelevance": 0.8041666666666667
+  },
+  "Qwen3.5-2B-UD-Q2_K_XL.gguf": {
+   "simple_python": 0.6025,
+   "multiple": 0.53,
+   "parallel": 0.055,
+   "parallel_multiple": 0.175,
+   "irrelevance": 0.7083333333333334
+  },
+  "Qwen3.5-2B-UD-Q3_K_XL.gguf": {
+   "simple_python": 0.7775,
+   "multiple": 0.79,
+   "parallel": 0.625,
+   "parallel_multiple": 0.7,
+   "irrelevance": 0.6083333333333333
+  }
+ },
+ "tools_categories": [
+  "irrelevance",
+  "multiple",
+  "parallel",
+  "parallel_multiple",
+  "simple_python"
+ ],
+ "tools_steps": {
+  "2B-UD-Q3_K_XL.gguf vs 2B-UD-Q2_K_XL.gguf": {
+   "irrelevance": -0.1,
+   "multiple": 0.26,
+   "parallel": 0.57,
+   "parallel_multiple": 0.525,
+   "simple_python": 0.175
+  },
+  "4B-UD-Q3_K_XL.gguf vs 4B-UD-Q2_K_XL.gguf": {
+   "irrelevance": 0.4167,
+   "multiple": 0.02,
+   "parallel": -0.035,
+   "parallel_multiple": -0.285,
+   "simple_python": -0.035
+  }
+ }
+}

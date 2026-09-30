@@ -1,8 +1,8 @@
 # Archive manifest
 
-DB rows: **1918**  |  models referenced: **181**  |  present: **25 (13.8%)**  |  missing: **156**
+DB rows: **1954**  |  models referenced: **182**  |  present: **28 (15.4%)**  |  missing: **154**
 
-Raw eval results recovered: **63 / 1918 (3.3%)**
+Raw eval results recovered: **63 / 1954 (3.2%)**
 
 ## Artifacts by bench
 
@@ -14,9 +14,12 @@ Raw eval results recovered: **63 / 1918 (3.3%)**
 ## Present model files
 
 - MiniCPM5-1B-Q4_K_M.gguf
+- Qwen3.5-0.8B-UD-IQ2_M.gguf
 - Qwen3.5-0.8B-UD-Q3_K_XL.gguf
 - Qwen3.5-0.8B-UD-Q4_K_XL.gguf
 - Qwen3.5-0.8B-UD-Q5_K_XL.gguf
+- Qwen3.5-2B-UD-IQ2_M.gguf
+- Qwen3.5-2B-UD-IQ2_XXS.gguf
 - Qwen3.5-2B-UD-Q2_K_XL.gguf
 - Qwen3.5-2B-UD-Q3_K_XL.gguf
 - Qwen3.5-2B-UD-Q4_K_XL.gguf
@@ -39,7 +42,7 @@ Raw eval results recovered: **63 / 1918 (3.3%)**
 - gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf
 - gemma4-v2-Q4_K_M.gguf
 
-## Missing model files (156)
+## Missing model files (154)
 
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_S.gguf
@@ -121,10 +124,8 @@ Raw eval results recovered: **63 / 1918 (3.3%)**
 - North-Mini-Code-1.0-UD-Q2_K_XL.gguf
 - North-Mini-Code-1.0-UD-Q3_K_M.gguf
 - North-Mini-Code-1.0-UD-Q3_K_XL.gguf
-- Qwen3.5-0.8B-UD-IQ2_M.gguf
 - Qwen3.5-0.8B-UD-IQ3_XXS.gguf
 - Qwen3.5-0.8B-UD-Q2_K_XL.gguf
-- Qwen3.5-2B-UD-IQ2_M.gguf
 - Qwen3.5-2B-UD-IQ3_XXS.gguf
 - Qwen3.5-4B-UD-IQ2_M.gguf
 - Qwen3.5-4B-UD-IQ3_XXS.gguf

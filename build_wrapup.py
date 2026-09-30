@@ -250,7 +250,49 @@ def main():
     else:
         L.append("_MultiPL-E panel not finished; see `.wrapup/m1_summary.jsonl`._\n")
 
-    L.append("## 7. What was added / recovered during wrap-up\n")
+    L.append("## 7. Quant ladder + tool calling (M3 / M4)\n")
+    lt = load_json("ladder_tools.json", None)
+    if lt and lt.get("ladder", {}).get("levels"):
+        lad = lt["ladder"]
+        L.append("### 7a. Where does the quant curve saturate? (`Qwen3.5-2B`, MultiPL-E)\n")
+        langs = sorted({l for lv in lad["levels"] for l in lad["per_language"][lv]})
+        L.append("| quant | " + " | ".join(langs) + " | pooled |")
+        L.append("|---|" + "---|" * (len(langs) + 1))
+        for lv in lad["levels"]:
+            cells = [str(round(lad["per_language"][lv].get(l, float('nan')), 3)) for l in langs]
+            L.append(f"| {lv} | " + " | ".join(cells) + f" | {lad['pooled_mean'][lv]} |")
+        L.append("")
+        L.append("| step | mean Δ | 95% CI | langs |")
+        L.append("|---|---|---|---|")
+        for k, v in lad.get("steps", {}).items():
+            if v:
+                L.append(f"| {k} | {v['mean']:+.4f} | [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] | {v['n']} |")
+        L.append("")
+        L.append("> **Answer to \"should we run Q4/Q5?\"** — yes, and the result is that there is "
+                 "**no effect above Q3**: the one meaningful step is `Q2->Q3`, IQ2≈Q2, and "
+                 "Q3≈Q4≈Q5. The operational rule is simply \">= Q3\".\n")
+    if lt and lt.get("tools"):
+        L.append("### 7b. Tool calling (BFCL, prompt mode, thinking off)\n")
+        cats = lt.get("tools_categories") or []
+        L.append("| model | " + " | ".join(cats) + " |")
+        L.append("|---|" + "---|" * len(cats))
+        for m, d in sorted(lt["tools"].items()):
+            L.append(f"| {m} | " + " | ".join(
+                f"{d.get(c, float('nan')):.4f}" for c in cats) + " |")
+        L.append("")
+        for tag, d in (lt.get("tools_steps") or {}).items():
+            L.append(f"- **{tag}** per category: "
+                     + ", ".join(f"`{k}` {v:+.3f}" for k, v in d.items()))
+        L.append("")
+        L.append("Aggregate BFCL hides opposing effects: at 4B, Q2 and Q3 tie overall "
+                 "(+0.02) while abstention improves (+0.42 irrelevance) and multi-call "
+                 "composition collapses (-0.29 parallel_multiple). At 2B, aggressive "
+                 "quantisation is devastating for tool use (parallel 0.055 at Q2 vs 0.625 "
+                 "at Q3). Tool calling is more quant-sensitive at small scale than code is.\n")
+    else:
+        L.append("_M4 tool-calling panel not finished; see `.wrapup/m4_summary.jsonl`._\n")
+
+    L.append("## 8. What was added / recovered during wrap-up\n")
     L.append("- `resolution.py` / `resolution.json` / `resolution.md` — measured resolution floors.")
     L.append("- `claims_ledger.py` / `claims_ledger.csv` / `CLAIMS_RESOLUTION.md` — every claim tagged.")
     L.append("- `archive_manifest.py` / `archive_manifest.json` / `ARCHIVE_MANIFEST.md` — evidence inventory.")
@@ -258,12 +300,14 @@ def main():
     L.append("- `reanalysis.py` / `reanalysis.json` / `REANALYSIS.md` — strict re-check of headline claims.")
     L.append("- `mpl_run.py` + `.wrapup/run_m1.sh` / `run_m2.sh` — MultiPL-E generation + execution harness.")
     L.append("- `multipl_e_analysis.py` / `multipl_e.json` / `MULTIPLE.md` — cross-language panel.")
-    L.append("- `migrate_db.py` — schema upgrade (replicates enabled) + ingestion of W1/W2/M1/M2.")
+    L.append("- `ladder_analysis.py` / `ladder_tools.json` / `LADDER_TOOLS.md` — quant ladder (M3) + BFCL (M4).")
+    L.append("- `.wrapup/bfcl_run.py` + `run_m3.sh` / `run_m4.sh` — tool-calling and quant-ladder harnesses.")
+    L.append("- `migrate_db.py` — schema upgrade (replicates enabled) + ingestion of W1/W2/M1/M2/M3/M4.")
     L.append("- Model weights re-fetched via **ModelScope** (HF direct + hf-mirror are intermittently "
              "blocked here): `Qwen3.5-2B/4B/9B` Q2/Q3, `gemma-4-E4B` Q3.")
     L.append("- EvalPlus datasets (`HumanEvalPlus`, `MbppPlus`) re-fetched via GitHub / ghfast.top proxy.\n")
 
-    L.append("## 8. Provenance warnings (read before citing any number)\n")
+    L.append("## 9. Provenance warnings (read before citing any number)\n")
     L.append(f"DB schema is missing nothing essential now: `migrate_db.py` added "
              "`run_tag, rep, ctx_size, parallel_slots, seed, protocol, language, "
              "bench_family, max_tokens, source_file, completed_at` and **removed the unique "
@@ -276,7 +320,7 @@ def main():
     L.append("- Exact-score ties across models are **not** duplication evidence (the k/164 grid "
              "produces them; observed ties are *below* the shuffled null).\n")
 
-    L.append("## 9. Status of the knowledge base\n")
+    L.append("## 10. Status of the knowledge base\n")
     L.append("| status | claims |")
     L.append("|---|---|")
     for k in ("resolved", "underpowered", "noise_level", "unauditable", "model_fit", "qualitative"):
@@ -286,7 +330,7 @@ def main():
     L.append("`resolved` = survives the noise floor. `underpowered` = plausible but not "
              "established at this item count. `unauditable` = cannot be checked against the DB.\n")
 
-    L.append("## 10. Blocked / closed items\n")
+    L.append("## 11. Blocked / closed items\n")
     L.append("- **EvalPerf** — needs `perf_event_paranoid` change; `=4` here. Closed.")
     L.append("- **35B strict same-scale family anchor** — OOM on 24 GB. Closed (9B/12B used as "
              "degraded substitutes instead).")

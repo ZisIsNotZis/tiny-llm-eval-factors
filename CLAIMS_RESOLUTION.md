@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 6 | 14% |
+| resolved | 9 | 20% |
 | underpowered | 3 | 7% |
 | noise_level | 3 | 7% |
-| unauditable | 8 | 19% |
-| model_fit | 13 | 31% |
-| qualitative | 9 | 21% |
+| unauditable | 8 | 18% |
+| model_fit | 13 | 29% |
+| qualitative | 9 | 20% |
 
-## resolved (6)
+## resolved (9)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -28,6 +28,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1460 >= MDE 0.108 at n=1_
 - Δ=0.193 — **[VERIFIED, wrap-up M1] The local `Q2->Q3` weight-quant step replicates across programming languages.** Running the frozen protocol (raw completion, greedy, `q8_0/q8_0`, ctx 4096) on a MultiPL-E panel of 6 languages gives `Qwen3.5-4B: +0.142` (95% CI [+0.099, +0.185], ~957 paired items per side), **positive in every language** (cpp +0.112, java +0.165, js +0.193, py +0.149, rs +0.155, rb +0.081). This raises the effect above the single-benchmark resolution floor and makes it the study's most robust quantitative result.
   - _|Δ|=0.1930 >= MDE 0.108 at n=1_
+- Δ=0.155 — **[VERIFIED, wrap-up M3] The weight-quant effect is a single step at Q2->Q3, then saturates.** On `Qwen3.5-2B` (MultiPL-E, 3 languages, greedy, raw completion): `IQ2_XXS` collapses (~0.006), `IQ2_M ≈ Q2`, then the one large move `Q2->Q3 = +0.155` (95% CI [+0.107, +0.204], n=3 langs), after which `Q3->Q4 = +0.008` (CI crosses 0) and `Q4->Q5 = -0.006` (CI crosses 0). So **there is no reward above Q3 and no gradient between IQ2 and Q2**; the actionable decision is simply "use >= Q3".
+  - _|Δ|=0.1550 >= MDE 0.108 at n=1_
+- Δ=0.57 — **[VERIFIED, wrap-up M4] Tool calling has an agentic axis the study previously lacked, and quantization damages it more at small scale than code does.** On BFCL (1,240 items: simple/multiple/parallel/parallel_multiple/irrelevance; prompt mode, thinking off, greedy): `Qwen3.5-2B` improves **+0.256 overall** from Q2 to Q3 (parallel 0.055 -> 0.625, parallel_multiple 0.175 -> 0.700), while `Qwen3.5-4B` is **flat overall (+0.021)** yet its profile flips (irrelevance 0.388 -> 0.804, parallel_multiple 0.545 -> 0.260).
+  - _|Δ|=0.5700 >= MDE 0.108 at n=1_
+- Δ=0.4 — **[METHOD, wrap-up] Aggregate benchmark scores can hide opposing effects.** Both findings above (2B tool-calling gains, and the 4B category-profile flip) are invisible in a single averaged number; quant levels that tie on average can differ by 0.3-0.4 on individual capabilities.
+  - _|Δ|=0.4000 >= MDE 0.108 at n=1_
 
 ## underpowered (3)
 

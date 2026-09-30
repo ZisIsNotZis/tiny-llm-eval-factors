@@ -164,7 +164,8 @@ MPL_MODELS = {
 }
 
 
-def ingest_mpl(con, path, run_tag, source):
+def ingest_mpl(con, path, run_tag, source, model_map=None):
+    model_map = model_map or MPL_MODELS
     if not os.path.exists(path):
         print(f"  (no {source})")
         return 0
@@ -174,10 +175,10 @@ def ingest_mpl(con, path, run_tag, source):
         if not line:
             continue
         r = json.loads(line)
-        if r["model"] not in MPL_MODELS:
+        if r["model"] not in model_map:
             continue
         lang = r["lang"]
-        row = base_row(MPL_MODELS[r["model"]], f"humaneval-{lang}", 0.0, r["score"], None)
+        row = base_row(model_map[r["model"]], f"humaneval-{lang}", 0.0, r["score"], None)
         row.update({"run_tag": run_tag, "rep": 1, "ctx_size": 4096,
                     "parallel_slots": 1, "protocol": "multipl-e-raw-greedy-768",
                     "language": lang, "bench_family": "humaneval-multipl-e",
@@ -193,6 +194,59 @@ def ingest_m1(con):
 
 def ingest_m2(con):
     return ingest_mpl(con, ".wrapup/m2_summary.jsonl", "m2-multipl-e", "m2_summary.jsonl")
+
+
+M_LADDER_MODELS = {
+    "iq2xxs": "Qwen3.5-2B-UD-IQ2_XXS.gguf",
+    "iq2m": "Qwen3.5-2B-UD-IQ2_M.gguf",
+    "q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "q4": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
+    "q5": "Qwen3.5-2B-UD-Q5_K_XL.gguf",
+}
+
+
+def ingest_m3(con):
+    return ingest_mpl(con, ".wrapup/m3_summary.jsonl", "m3-quant-ladder",
+                      "m3_summary.jsonl", model_map=M_LADDER_MODELS)
+
+
+M4_MODELS = {
+    "q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+    "q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+    "q4": "Qwen3.5-4B-UD-Q4_K_XL.gguf",
+    "q5": "Qwen3.5-4B-UD-Q5_K_XL.gguf",
+    "2bq4": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
+    "2bq3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "2bq5": "Qwen3.5-2B-UD-Q5_K_XL.gguf",
+    "2bq2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "iq2m": "Qwen3.5-2B-UD-IQ2_M.gguf",
+}
+
+
+def ingest_m4(con):
+    """One DB row per BFCL category (so the split behaviour is visible)."""
+    path = ".wrapup/m4_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m4 summary)")
+        return 0
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in M4_MODELS:
+            continue
+        for cat, d in r.get("per_category", {}).items():
+            row = base_row(M4_MODELS[r["model"]], f"bfcl-{cat}", 0.0, d["acc"], None)
+            row.update({"run_tag": "m4-tool-calling", "rep": 1, "ctx_size": 8192,
+                        "parallel_slots": 1, "protocol": "bfcl-prompt-nothink-greedy",
+                        "language": "python", "bench_family": "bfcl",
+                        "max_tokens": 512, "source_file": "m4_summary.jsonl"})
+            insert(con, row)
+            n += 1
+    return n
 
 
 def main():
@@ -215,9 +269,11 @@ def main():
     n2 = once("w2-scale-ladder", ingest_w2)
     n3 = once("m1-multipl-e", ingest_m1)
     n4 = once("m2-multipl-e", ingest_m2)
+    n5 = once("m3-quant-ladder", ingest_m3)
+    n6 = once("m4-tool-calling", ingest_m4)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))
