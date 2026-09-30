@@ -1,8 +1,8 @@
 # Archive manifest
 
-DB rows: **1992**  |  models referenced: **185**  |  present: **33 (17.8%)**  |  missing: **152**
+DB rows: **2034**  |  models referenced: **185**  |  present: **38 (20.5%)**  |  missing: **147**
 
-Raw eval results recovered: **63 / 1992 (3.2%)**
+Raw eval results recovered: **63 / 2034 (3.1%)**
 
 ## Artifacts by bench
 
@@ -15,6 +15,7 @@ Raw eval results recovered: **63 / 1992 (3.2%)**
 
 - MiniCPM5-1B-Q4_K_M.gguf
 - Qwen3.5-0.8B-UD-IQ2_M.gguf
+- Qwen3.5-0.8B-UD-Q2_K_XL.gguf
 - Qwen3.5-0.8B-UD-Q3_K_XL.gguf
 - Qwen3.5-0.8B-UD-Q4_K_XL.gguf
 - Qwen3.5-0.8B-UD-Q5_K_XL.gguf
@@ -31,8 +32,12 @@ Raw eval results recovered: **63 / 1992 (3.2%)**
 - Qwen3.5-9B-UD-Q3_K_XL.gguf
 - Qwen3.5-9B-UD-Q4_K_XL.gguf
 - Qwen3.6-35B-A3B-UD-IQ4_XS.gguf
+- Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf
+- Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf
 - Qwythos-9B-Claude-Mythos-5-1M-MTP-Q4_K_M.gguf
 - gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
+- gemma-4-12b-it-UD-Q2_K_XL.gguf
+- gemma-4-12b-it-UD-Q3_K_XL.gguf
 - gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-31B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-E2B-it-UD-Q2_K_XL.gguf
@@ -47,7 +52,7 @@ Raw eval results recovered: **63 / 1992 (3.2%)**
 - granite-4.1-3b-Q2_K.gguf
 - granite-4.1-3b-Q3_K_M.gguf
 
-## Missing model files (152)
+## Missing model files (147)
 
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_S.gguf
@@ -130,7 +135,6 @@ Raw eval results recovered: **63 / 1992 (3.2%)**
 - North-Mini-Code-1.0-UD-Q3_K_M.gguf
 - North-Mini-Code-1.0-UD-Q3_K_XL.gguf
 - Qwen3.5-0.8B-UD-IQ3_XXS.gguf
-- Qwen3.5-0.8B-UD-Q2_K_XL.gguf
 - Qwen3.5-2B-UD-IQ3_XXS.gguf
 - Qwen3.5-4B-UD-IQ2_M.gguf
 - Qwen3.5-4B-UD-IQ3_XXS.gguf
@@ -150,9 +154,7 @@ Raw eval results recovered: **63 / 1992 (3.2%)**
 - Qwen3.6-35B-A3B-UD-IQ3_S.gguf
 - Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf
 - Qwen3.6-35B-A3B-UD-IQ4_NL.gguf
-- Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf
 - Qwen3.6-35B-A3B-UD-Q3_K_M.gguf
-- Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf
 - Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf
 - Qwythos-9B-v2-MTP-Q4_K_M.gguf
 - ThinkingCap-Qwen3.6-27B-Q4_K_M.gguf
@@ -165,8 +167,6 @@ Raw eval results recovered: **63 / 1992 (3.2%)**
 - functiongemma-270m-it-UD-Q5_K_XL.gguf
 - gemma-4-12b-it-UD-IQ2_M.gguf
 - gemma-4-12b-it-UD-IQ3_XXS.gguf
-- gemma-4-12b-it-UD-Q2_K_XL.gguf
-- gemma-4-12b-it-UD-Q3_K_XL.gguf
 - gemma-4-12b-it-UD-Q4_K_XL.gguf
 - gemma-4-26B-A4B-it-UD-IQ2_M.gguf
 - gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf

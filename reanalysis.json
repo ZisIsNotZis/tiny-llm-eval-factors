@@ -3,8 +3,8 @@
   "groups": 209,
   "extra_rows": 217,
   "by_spec_type": {
-   "none": 9,
-   "draft-mtp": 200
+   "draft-mtp": 200,
+   "none": 9
   },
   "identical_scores": 58
  },
