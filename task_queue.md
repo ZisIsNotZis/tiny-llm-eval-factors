@@ -36,3 +36,8 @@
 | **wrapup-w1-repeat-noise-r16** | running | 1 | Repeat-noise experiment on frozen protocol (`Qwen3.5-2B-UD-Q4_K_XL`, HE greedy x3 + sampling x5, MBPP sampling x3): the measurement the DB never had. |
 | **wrapup-w2-scale-ladder-r16** | pending | 1 | Scale-generalisation ladder on restored weights: `Qwen3.5-9B` Q2/Q3 and `Qwen3.5-4B` Q2/Q3 on HumanEval, 2 reps each. |
 | **wrapup-report-r16** | completed | 1 | Honest closing report (`build_wrapup.py`/`WRAPUP.md`) + README rewrite; blocked items formally closed. |
+| **db-schema-replicates-r17** | completed | 1 | Schema upgrade (`migrate_db.py`): added `run_tag, rep, ctx_size, parallel_slots, seed, protocol, language, bench_family, max_tokens, source_file, completed_at`; dropped the unique index that forbade replicates. |
+| **multipl-e-harness-r17** | completed | 1 | Built `mpl_run.py` (raw-completion generation + per-language execution) and generated 7 language datasets locally from the MultiPL-E translators. |
+| **multipl-e-resolution-panel-m1-r17** | completed | 1 | `Qwen3.5-4B` Q2/Q3 × 6 languages (~957 items/side). Result: `Q2->Q3 = +0.142` 95% CI [+0.110,+0.174], positive in every language. |
+| **multipl-e-scale-panel-m2-r17** | completed | 1 | `Qwen3.5-9B` Q2/Q3 × 3 languages. Result: `+0.143` 95% CI [+0.104,+0.182] — confirms the effect at 9B and shows the HumanEval 9B "flip" was a chat-protocol artifact. |
+| **db-ingest-wrapup-runs-r17** | completed | 1 | Ingested W1 (11) + W2 (8) + M1 (12) + M2 (6) = 37 new rows; DB now 1918 rows, held-out schema for protocol/ctx/rep. |

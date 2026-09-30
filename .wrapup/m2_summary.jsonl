@@ -1,0 +1,6 @@
+{"model": "qwen9b-q2", "lang": "cpp", "n": 161, "pass": 70, "score": 0.43478260869565216, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen9b-q2", "lang": "js", "n": 161, "pass": 81, "score": 0.5031055900621118, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen9b-q2", "lang": "py", "n": 161, "pass": 56, "score": 0.34782608695652173, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen9b-q3", "lang": "cpp", "n": 161, "pass": 94, "score": 0.5838509316770186, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen9b-q3", "lang": "js", "n": 161, "pass": 98, "score": 0.6086956521739131, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen9b-q3", "lang": "py", "n": 161, "pass": 84, "score": 0.5217391304347826, "protocol": "mpl-raw-greedy-768"}

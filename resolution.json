@@ -1,5 +1,5 @@
 {
- "n_rows": 1880,
+ "n_rows": 1899,
  "measured_repeat_noise": {
   "humaneval@temp0.0": {
    "n": 3,
@@ -36,72 +36,72 @@
  },
  "datasets": {
   "humaneval": {
-   "n_runs": 1126,
+   "n_runs": 1142,
    "n_items": 164,
-   "mean": 0.5034,
-   "median": 0.6829,
-   "sd_across_runs": 0.3756,
-   "frac_gt_0.8": 0.3783,
+   "mean": 0.5008,
+   "median": 0.6707,
+   "sd_across_runs": 0.3737,
+   "frac_gt_0.8": 0.373,
    "distinct_score_values": 140,
    "binomial_se_at_mean": 0.039,
    "binomial_se_worstcase": 0.039
   },
   "mbpp": {
-   "n_runs": 754,
+   "n_runs": 757,
    "n_items": 378,
-   "mean": 0.4553,
-   "median": 0.5238,
-   "sd_across_runs": 0.2801,
+   "mean": 0.4549,
+   "median": 0.5212,
+   "sd_across_runs": 0.2796,
    "frac_gt_0.8": 0.0,
-   "distinct_score_values": 238,
+   "distinct_score_values": 239,
    "binomial_se_at_mean": 0.0256,
    "binomial_se_worstcase": 0.0257
   }
  },
  "relaxation": {
   "<none>": {
-   "n_multi_cells": 0,
-   "dof": 0,
-   "pooled_sd": null
+   "n_multi_cells": 7,
+   "dof": 12,
+   "pooled_sd": 0.0125
   },
   "presence_penalty": {
-   "n_multi_cells": 2,
-   "dof": 2,
-   "pooled_sd": 0.003
+   "n_multi_cells": 9,
+   "dof": 14,
+   "pooled_sd": 0.0116
   },
   "min_p": {
-   "n_multi_cells": 2,
-   "dof": 2,
-   "pooled_sd": 0.01
+   "n_multi_cells": 9,
+   "dof": 14,
+   "pooled_sd": 0.0121
   },
   "top_p": {
-   "n_multi_cells": 2,
-   "dof": 2,
-   "pooled_sd": 0.0073
+   "n_multi_cells": 9,
+   "dof": 14,
+   "pooled_sd": 0.0119
   },
   "presence_penalty+min_p": {
-   "n_multi_cells": 2,
-   "dof": 4,
-   "pooled_sd": 0.0073
+   "n_multi_cells": 9,
+   "dof": 16,
+   "pooled_sd": 0.0114
   },
   "presence_penalty+min_p+top_p": {
-   "n_multi_cells": 2,
-   "dof": 6,
-   "pooled_sd": 0.0082
+   "n_multi_cells": 9,
+   "dof": 18,
+   "pooled_sd": 0.0112
   },
   "spec_draft_n_max": {
-   "n_multi_cells": 200,
-   "dof": 200,
-   "pooled_sd": 0.008
+   "n_multi_cells": 207,
+   "dof": 212,
+   "pooled_sd": 0.0083
   },
   "temp": {
-   "n_multi_cells": 79,
-   "dof": 79,
-   "pooled_sd": 0.0945
+   "n_multi_cells": 85,
+   "dof": 92,
+   "pooled_sd": 0.0878
   }
  },
  "tier1_repeat_floor": 0.022,
- "tier1_repeat_floor_inferred": 0.008,
+ "tier1_repeat_floor_inferred": 0.0083,
  "tier2_item_floor": {
   "humaneval": 0.039,
   "mbpp": 0.0257
@@ -155,7 +155,7 @@
   "analytic_item_floor_mbpp": 0.0257,
   "verdict": "unsourced: no data cell reproduces 0.088; nearest defensible floors are the measured repeat floor and the analytic item floor"
  },
- "no_replicates": true,
+ "no_replicates": false,
  "provenance": {
   "schema_missing": [
    "ctx_size",

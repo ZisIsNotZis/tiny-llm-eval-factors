@@ -1,0 +1,5 @@
+{"name": "HumanEval_0_has_close_elements", "completion": "    for i in range(len(numbers)):\n        for j in range(i + 1, len(numbers)):\n            if abs(numbers[i] - numbers[j]) < threshold:\n                return True\n    return False\n"}
+{"name": "HumanEval_1_separate_paren_groups", "completion": "    # Your code goes here\n    pass\n"}
+{"name": "HumanEval_2_truncate_number", "completion": "    return number - int(number)\n"}
+{"name": "HumanEval_3_below_zero", "completion": "    balance = 0\n    for op in operations:\n        balance += op\n        if balance < 0:\n            return True\n    return False\n"}
+{"name": "HumanEval_4_mean_absolute_deviation", "completion": "    # Calculate the mean of the dataset\n    mean = sum(numbers) / len(numbers)\n    \n    # Calculate the absolute difference between each number and the mean\n    absolute_diffs = [abs(x - mean) for x in numbers]\n    \n    # Calculate the mean of the absolute differences\n    mad = sum(absolute_diffs) / len(absolute_diffs)\n    \n    return mad\n"}

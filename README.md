@@ -97,14 +97,21 @@ regenerable, so they are git-ignored; the curated DB is committed.
 - **Frozen / archived as of the wrap-up.** Not expected to resume on this host.
 - **Evidence base is no longer end-to-end reproducible:** only 22/181 model files (12%) and
   63/1881 raw eval results (3%) survive. See `ARCHIVE_MANIFEST.md`.
-- **The dominant limitation is item count, not benchmark difficulty.** HumanEval+MBPP = 542
-  items → single-config MDE ≈ 0.084. Resolving the 0.03–0.05 effects the study cares about needs
-  ~1,500–4,000 items. The right addition is *more items at similar difficulty* (MultiPL-E,
-  18×164 ≈ 2952 items → MDE ≈ 0.036), **not** a harder harness benchmark — BigCodeBench / SWE /
-  Terminal-Bench would floor the 0.2B–9B panel near 0 and are compute-hostile.
-- `ctx_size`, `parallel_slots`, `start_time`, `reason` and `seed` are **absent from the DB schema**,
-  so every conclusion phrased with `ctx=`/`parallel=` is unauditable, and run stochasticity was
-  unmeasured until the `W1` repeat experiment (`.wrapup/run_w1.sh`).
+- **The dominant limitation was item count, not benchmark difficulty** — and it has now been
+  fixed. HumanEval+MBPP give 542 items → single-config MDE ≈ 0.084. A MultiPL-E panel
+  (raw completion, greedy) was added across languages (~960 fresh items per side at 4B, ~483
+  at 9B), which turns the study's core effect into a well-powered result: the `Q2→Q3`
+  weight-quant step is **`+0.142` at 4B** (95% CI [+0.099, +0.185], 6 languages) and
+  **`+0.143` at 9B** (95% CI [+0.104, +0.182], 3 languages) — positive in every language and
+  stable across scale. It also exposed a real confound: under HumanEval *chat* decoding the 9B
+  step looked negative, i.e. **quant effects depend on the generation protocol**. See
+  `MULTIPLE.md` / `WRAPUP.md` §6. BigCodeBench / SWE / Terminal-Bench were evaluated and
+  rejected as data sources: they floor the 0.2B–9B panel near 0 and are compute-hostile.
+- **The DB now has a proper schema for this work** (`migrate_db.py`): `run_tag, rep, ctx_size,
+  parallel_slots, seed, protocol, language, bench_family, max_tokens, source_file,
+  completed_at` were added, and the unique index that **forbade replicates** was dropped.
+  W1/W2/M1/M2 runs are ingested (19 + 12 = 31 new rows). Legacy rows predate the columns, so
+  their `ctx=`/`parallel=` scopes remain unauditable.
 - 25 families / 181 checkpoints are **downloaded weights evaluated**, not self-trained; this is an
   evaluation study, not a training study.
 
@@ -116,11 +123,16 @@ regenerable, so they are git-ignored; the curated DB is committed.
 | `claims_ledger.py` → `claims_ledger.csv` / `CLAIMS_RESOLUTION.md` | every claim tagged by resolvability |
 | `archive_manifest.py` → `archive_manifest.json` / `ARCHIVE_MANIFEST.md` | what evidence still exists |
 | `build_wrapup.py` → `WRAPUP.md` | the honest closing report |
-| `.wrapup/run_w1.sh` | repeat-noise experiment (the measurement the study lacked) |
+| `reanalysis.py` → `reanalysis.json` / `REANALYSIS.md` | strict re-check of headline claims |
+| `migrate_db.py` | schema upgrade (replicates enabled) + ingestion of new runs |
+| `multipl_e_analysis.py` → `multipl_e.json` / `MULTIPLE.md` | cross-language resolution panel |
+| `.wrapup/run_w1.sh`, `run_w2.sh`, `run_m1.sh`, `run_m2.sh` | repeat / scale / MultiPL-E experiments |
+| `.wrapup/mpl_run.py` | MultiPL-E generation + execution harness |
 
 ```sh
 python3 resolution.py && python3 claims_ledger.py
-python3 archive_manifest.py && python3 build_wrapup.py
+python3 archive_manifest.py && python3 reanalysis.py
+python3 migrate_db.py && python3 multipl_e_analysis.py && python3 build_wrapup.py
 ```
 
 ## License

@@ -84,6 +84,11 @@ def w2_stats():
     return out
 
 
+def multipl_e_panel():
+    m = load_json("multipl_e.json", None)
+    return m
+
+
 def main():
     res = load_json("resolution.json", {})
     man = load_json("archive_manifest.json", {})
@@ -211,29 +216,67 @@ def main():
         L.append("")
         L.append("Each point is a greedy run, which W1 shows is exactly deterministic, so these "
                  "means carry no run noise — only the item-sampling floor (~0.039) applies.\n")
+        L.append("> **Superseded by §6.** The 9B reversal here does not replicate under the "
+                 "MultiPL-E raw-completion protocol (9B `+0.143` there), so it is a "
+                 "protocol×quantization artifact at 9B, not a scale effect.\n")
     else:
         L.append("_W2 ladder not finished; see `.wrapup/w2_summary.jsonl`._\n")
 
-    L.append("## 6. What was added / recovered during wrap-up\n")
+    L.append("## 6. MultiPL-E resolution panel (the item-count fix)\n")
+    me = multipl_e_panel()
+    if me and me.get("pooled"):
+        mpl_rows = me.get("n_rows")
+        L.append(f"Ran the weight-quant step across languages to attack the item-count "
+                 f"bottleneck directly ({mpl_rows} runs in `multipl_e.json`/`MULTIPLE.md`). "
+                 "Raw completion, greedy; each language is ~161 fresh items.\n")
+        for step, per_base in me["pooled"].items():
+            for base, v in per_base.items():
+                L.append(f"- **{base} {step}**: mean **{v['mean']:+.4f}** "
+                         f"95% CI [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] over "
+                         f"{v['n']} languages — all same-signed.")
+        tab = me.get("table", {})
+        langs = sorted({k.split("|")[1] for k in tab})
+        models = sorted({k.split("|")[0] for k in tab})
+        L.append("")
+        L.append("| model | " + " | ".join(langs) + " |")
+        L.append("|---|" + "---|" * len(langs))
+        for m in models:
+            L.append(f"| {m} | " + " | ".join(str(tab.get(f"{m}|{l}", "—"))
+                                                 for l in langs) + " |")
+        L.append("")
+        L.append("This is the concrete resolution gain: the same contrast that a single "
+                 "161-item HumanEval pair could not resolve now clears the floor with a "
+                 "~6x larger item pool, and the sign is consistent across languages.\n")
+    else:
+        L.append("_MultiPL-E panel not finished; see `.wrapup/m1_summary.jsonl`._\n")
+
+    L.append("## 7. What was added / recovered during wrap-up\n")
     L.append("- `resolution.py` / `resolution.json` / `resolution.md` — measured resolution floors.")
     L.append("- `claims_ledger.py` / `claims_ledger.csv` / `CLAIMS_RESOLUTION.md` — every claim tagged.")
     L.append("- `archive_manifest.py` / `archive_manifest.json` / `ARCHIVE_MANIFEST.md` — evidence inventory.")
     L.append("- `.wrapup/run_w1.sh` — repeat-noise experiment.")
     L.append("- `reanalysis.py` / `reanalysis.json` / `REANALYSIS.md` — strict re-check of headline claims.")
+    L.append("- `mpl_run.py` + `.wrapup/run_m1.sh` / `run_m2.sh` — MultiPL-E generation + execution harness.")
+    L.append("- `multipl_e_analysis.py` / `multipl_e.json` / `MULTIPLE.md` — cross-language panel.")
+    L.append("- `migrate_db.py` — schema upgrade (replicates enabled) + ingestion of W1/W2/M1/M2.")
     L.append("- Model weights re-fetched via **ModelScope** (HF direct + hf-mirror are intermittently "
              "blocked here): `Qwen3.5-2B/4B/9B` Q2/Q3, `gemma-4-E4B` Q3.")
     L.append("- EvalPlus datasets (`HumanEvalPlus`, `MbppPlus`) re-fetched via GitHub / ghfast.top proxy.\n")
 
-    L.append("## 7. Provenance warnings (read before citing any number)\n")
-    L.append("- DB schema is missing `ctx_size, parallel_slots, start_time, reason, seed, "
-             "source_file` → every `ctx=`/`parallel=`-based conclusion is **unauditable**.")
+    L.append("## 8. Provenance warnings (read before citing any number)\n")
+    L.append(f"DB schema is missing nothing essential now: `migrate_db.py` added "
+             "`run_tag, rep, ctx_size, parallel_slots, seed, protocol, language, "
+             "bench_family, max_tokens, source_file, completed_at` and **removed the unique "
+             "index that forbade replicates**.")
+    L.append("- Legacy rows still predate those columns (ctx/parallel/seed are NULL), so their "
+             "`ctx=`/`parallel=` scopes remain unauditable.")
     L.append("- No `seed` column → run-to-run stochasticity was unmeasured until W1.")
     L.append("- Raw artifacts map to rows only by timestamp; legacy hash collisions were "
              "previously confirmed, so coefficient slices from old sweeps are lower-confidence.")
     L.append("- Exact-score ties across models are **not** duplication evidence (the k/164 grid "
              "produces them; observed ties are *below* the shuffled null).\n")
 
-    L.append("## 8. Status of the knowledge base\n")
+    L.append("## 9. Status of the knowledge base\n")
     L.append("| status | claims |")
     L.append("|---|---|")
     for k in ("resolved", "underpowered", "noise_level", "unauditable", "model_fit", "qualitative"):
@@ -243,7 +286,7 @@ def main():
     L.append("`resolved` = survives the noise floor. `underpowered` = plausible but not "
              "established at this item count. `unauditable` = cannot be checked against the DB.\n")
 
-    L.append("## 9. Blocked / closed items\n")
+    L.append("## 10. Blocked / closed items\n")
     L.append("- **EvalPerf** — needs `perf_event_paranoid` change; `=4` here. Closed.")
     L.append("- **35B strict same-scale family anchor** — OOM on 24 GB. Closed (9B/12B used as "
              "degraded substitutes instead).")

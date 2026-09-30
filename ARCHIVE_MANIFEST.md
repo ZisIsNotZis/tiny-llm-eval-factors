@@ -1,8 +1,8 @@
 # Archive manifest
 
-DB rows: **1881**  |  models referenced: **181**  |  present: **25 (13.8%)**  |  missing: **156**
+DB rows: **1918**  |  models referenced: **181**  |  present: **25 (13.8%)**  |  missing: **156**
 
-Raw eval results recovered: **63 / 1881 (3.3%)**
+Raw eval results recovered: **63 / 1918 (3.3%)**
 
 ## Artifacts by bench
 

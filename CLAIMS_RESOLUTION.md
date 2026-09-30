@@ -7,25 +7,27 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 5 | 12% |
-| underpowered | 3 | 8% |
-| noise_level | 3 | 8% |
-| unauditable | 8 | 20% |
-| model_fit | 13 | 32% |
-| qualitative | 8 | 20% |
+| resolved | 6 | 14% |
+| underpowered | 3 | 7% |
+| noise_level | 3 | 7% |
+| unauditable | 8 | 19% |
+| model_fit | 13 | 31% |
+| qualitative | 9 | 21% |
 
-## resolved (5)
+## resolved (6)
 
-- Δ=0.68 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
-  - _|Δ|=0.6800 >= MDE 0.108 at n=1_
+- Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
+  - _|Δ|=0.6200 >= MDE 0.108 at n=1_
 - Δ=0.1585 — On `Gemma-4-E2B-it`, `Q2_K_XL -> Q3_K_XL` under fixed `q8_0/q8_0` KV and decoding controls improves both datasets (`Humaneval +0.1585`, `MBPP +0.0529`), but wall time increases (`+76.4s`, `+143.5s`).
   - _|Δ|=0.1585 >= MDE 0.108 at n=1_
 - Δ=0.1707 — On `Qwen3.5-2B`, `Q2_K_XL -> Q3_K_XL` under fixed `q8_0/q8_0` KV and decoding controls improves both datasets (`Humaneval +0.1707`, `MBPP +0.1429`) while wall time decreases (`-1.3s`, `-33.0s`), and the nearby KV perturbation at `Q3_K_XL` (`q8_0/q8_0 -> q8_0/q5_1`) is much smaller (`Humaneval -0.0122`, `MBPP +0.0265`).
   - _|Δ|=0.1707 >= MDE 0.108 at n=1_
 - Δ=0.0698 — In deduplicated matched local contrasts on expanded data, `Q2_K_XL -> Q3_K_XL` at fixed `q8_0/q8_0` remains positive overall (44 contexts, mean `Δscore≈+0.0698`), while `Q3` KV shift `q8/q8 -> q8/q5_1` remains near-neutral (40 contexts, mean `Δscore≈+0.0028`).
   - _|Δ|=0.0698 >= MDE 0.016 at n=44_
-- Δ=0.1463 — **[VERIFIED, wrap-up W2] The local weight-quant `Q2->Q3` effect does NOT keep its sign across scale.** Under the frozen protocol (ctx 2048, KV `q8_0/q8_0`, greedy HumanEval; greedy is exactly deterministic per W1) the step is **`Qwen3.5-4B: +0.146`** (0.2805 -> 0.4268) but **`Qwen3.5-9B: -0.073`** (0.4207 -> 0.3476). Only the 4B step clears the single-pair MDE (0.108); the 9B reversal is inside the item floor and is therefore suggestive, not established.
-  - _|Δ|=0.1463 >= MDE 0.108 at n=1_
+- Δ=0.146 — **[CORRECTED by M2, wrap-up] The apparent `Q2->Q3` "sign flip with scale" was a protocol artifact, not a scale effect.** Under the HumanEval *chat* protocol, the step was `Qwen3.5-4B +0.146` but `Qwen3.5-9B -0.073` (W2), which looked like a scale-dependent inversion. Under the *raw-completion* MultiPL-E protocol the same step is `Qwen3.5-4B +0.142` and `Qwen3.5-9B +0.143` — positive and near-identical at both scales (M2). So the effect is stable across scale; what flipped was the **generation protocol × quantization interaction at 9B**, i.e. greedy chat/thinking decoding is a confound for quant comparisons.
+  - _|Δ|=0.1460 >= MDE 0.108 at n=1_
+- Δ=0.193 — **[VERIFIED, wrap-up M1] The local `Q2->Q3` weight-quant step replicates across programming languages.** Running the frozen protocol (raw completion, greedy, `q8_0/q8_0`, ctx 4096) on a MultiPL-E panel of 6 languages gives `Qwen3.5-4B: +0.142` (95% CI [+0.099, +0.185], ~957 paired items per side), **positive in every language** (cpp +0.112, java +0.165, js +0.193, py +0.149, rs +0.155, rb +0.081). This raises the effect above the single-benchmark resolution floor and makes it the study's most robust quantitative result.
+  - _|Δ|=0.1930 >= MDE 0.108 at n=1_
 
 ## underpowered (3)
 
@@ -33,8 +35,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
 - Δ=0.0854 — On `Qwen3.5-4B-UD-Q2_K_XL` -> `Qwen3.5-4B-UD-Q3_K_XL` under fixed `q8_0/q8_0` KV and decoding controls, both datasets improve (`Humaneval +0.0854`, `MBPP +0.0397`), but the wall-time response is asymmetric (`Humaneval +10.3s`, `MBPP -280.9s`).
   - _|Δ|=0.0854 < MDE 0.108 at n=1_
-- Δ=0.082 — **[VERIFIED, wrap-up] Matched weight-quant ladder is the study's most reproducible effect.** Restricting to clean fixed decoding and matching on model family + KV + decoding, the local step effects are: `Q2->Q3 +0.062` (n=85, CI [+0.042,+0.082]), `Q3->Q4 +0.015` (n=53, CI [+0.008,+0.023]), `Q4->Q5 +0.021` (n=18, CI [+0.009,+0.034]). All CIs exclude zero; the `Q2->Q3` step is the dominant one.
-  - _|Δ|=0.0820 < MDE 0.108 at n=1_
+- Δ=0.062 — **[VERIFIED, wrap-up] Matched weight-quant ladder is the study's most reproducible effect.** Restricting to clean fixed decoding and matching on model family + KV + decoding, the local step effects are: `Q2->Q3 +0.062` (n=85, CI [+0.042,+0.082]), `Q3->Q4 +0.015` (n=53, CI [+0.008,+0.023]), `Q4->Q5 +0.021` (n=18, CI [+0.009,+0.034]). All CIs exclude zero; the `Q2->Q3` step is the dominant one.
+  - _|Δ|=0.0620 < MDE 0.108 at n=1_
 
 ## noise_level (3)
 
@@ -93,7 +95,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (8)
+## qualitative (9)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -110,5 +112,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[AUDIT, wrap-up] The DB carries 202 disguised duplicate groups** that differ only in `spec_draft_n_max` (200 are legitimate MTP draft-count variants, 2 are spurious `spec_type='none'` rows); only 54 groups have byte-identical scores. This is a redundancy, not an artifact-collision epidemic.
   - _no numeric contrast in the claim_
 - — **[VERIFIED, wrap-up W1] Run-to-run noise is now measured, and is far below the item floor.** Greedy decoding is **exactly deterministic** (HumanEval score 0.2805 and bad_rate 0.488 identical across 3 runs; likewise at 4B and 9B); sampling at `temp=0.3` gives sd 0.0149 (HumanEval, n=5) and 0.0220 (MBPP, n=3). So for greedy protocols the whole uncertainty budget is *item sampling* (0.039 HE / 0.026 MBPP), not server stochasticity.
+  - _no numeric contrast in the claim_
+- — **[INFRA, wrap-up] The DB schema was upgraded so replicates are representable.** Added `run_tag, rep, ctx_size, parallel_slots, seed, protocol, language, bench_family, max_tokens, source_file, completed_at`; dropped the unique index `uq_experiments_args_bench` that made identical configurations unrecordable. W1/W2/M1/M2 runs are ingested.
   - _no numeric contrast in the claim_
 

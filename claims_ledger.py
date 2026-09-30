@@ -42,13 +42,21 @@ def parse_claims(text):
 
 
 def extract_deltas(claim):
-    """Return explicit signed deltas and a->b pair differences."""
+    """Return explicit signed deltas and a->b pair differences.
+
+    Confidence intervals, standard deviations and parenthetical stats are removed
+    first so their numbers are not mistaken for effect sizes.
+    """
+    text = re.sub(r"95%\s*CI\s*\[[^\]]*\]", " ", claim)
+    text = re.sub(r"\[[+-]?0\.\d+,\s*[+-]?0\.\d+\]", " ", text)
+    text = re.sub(r"sd\s*[=:]?\s*0\.\d+", " ", text, flags=re.I)
+    text = re.sub(r"n\s*=\s*\d+", " ", text)
     deltas = []
     # explicit signed decimals: +0.0854 / -0.0317 / Δ...≈+0.0698 / theta=-0.6709
-    for m in re.finditer(r"[+\-−]\s?(0\.\d+)", claim):
+    for m in re.finditer(r"[+\-−]\s?(0\.\d+)", text):
         deltas.append(-float(m.group(1)) if m.group(0)[0] in "−-" else float(m.group(1)))
     # a -> b pairs
-    for m in re.finditer(r"(0\.\d+)\s*(?:->|→|to)\s*(0\.\d+)", claim):
+    for m in re.finditer(r"(0\.\d+)\s*(?:->|→|to)\s*(0\.\d+)", text):
         deltas.append(float(m.group(2)) - float(m.group(1)))
     return deltas
 

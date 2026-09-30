@@ -1,0 +1,56 @@
+{
+ "n_rows": 18,
+ "table": {
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf|cpp": 0.3416,
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf|java": 0.3228,
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf|js": 0.3416,
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf|rs": 0.2581,
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf|py": 0.354,
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf|rb": 0.2671,
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf|cpp": 0.4534,
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf|java": 0.4873,
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf|js": 0.5342,
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf|rs": 0.4129,
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf|py": 0.5031,
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf|rb": 0.3478,
+  "Qwen3.5-9B-UD-Q2_K_XL.gguf|cpp": 0.4348,
+  "Qwen3.5-9B-UD-Q2_K_XL.gguf|js": 0.5031,
+  "Qwen3.5-9B-UD-Q2_K_XL.gguf|py": 0.3478,
+  "Qwen3.5-9B-UD-Q3_K_XL.gguf|cpp": 0.5839,
+  "Qwen3.5-9B-UD-Q3_K_XL.gguf|js": 0.6087,
+  "Qwen3.5-9B-UD-Q3_K_XL.gguf|py": 0.5217
+ },
+ "deltas": {
+  "UD-Q2_K_XL->UD-Q3_K_XL": {
+   "Qwen3.5-4B": {
+    "java": 0.16455696202531644,
+    "py": 0.1490683229813664,
+    "rb": 0.08074534161490682,
+    "js": 0.1925465838509317,
+    "rs": 0.15483870967741936,
+    "cpp": 0.11180124223602489
+   },
+   "Qwen3.5-9B": {
+    "py": 0.17391304347826086,
+    "js": 0.10559006211180133,
+    "cpp": 0.14906832298136646
+   }
+  }
+ },
+ "pooled": {
+  "UD-Q2_K_XL->UD-Q3_K_XL": {
+   "Qwen3.5-4B": {
+    "n": 6,
+    "mean": 0.1423,
+    "ci_low": 0.1104,
+    "ci_high": 0.1742
+   },
+   "Qwen3.5-9B": {
+    "n": 3,
+    "mean": 0.1429,
+    "ci_low": 0.1037,
+    "ci_high": 0.182
+   }
+  }
+ }
+}
