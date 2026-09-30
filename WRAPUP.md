@@ -118,10 +118,10 @@ The `Q2→Q3` step is the study's one firmly established quantitative result: it
 
 > **Answer to "should we run Q4/Q5?"** — yes, and the result is that there is **no effect above Q3**: the one meaningful step is `Q2->Q3`, IQ2≈Q2, and Q3≈Q4≈Q5. The operational rule is simply ">= Q3".
 
-### 7b. Tool calling (BFCL, prompt mode, thinking off)
+### 7b. Tool calling (BFCL, forced vs native, thinking off)
 
-| model | irrelevance | multiple | parallel | parallel_multiple | simple_python |
-|---|---|---|---|---|---|
+| model | mode | irrelevance | multiple | parallel | parallel_multiple | simple_python |
+|---|---|---|---|---|---|---|
 | Qwen3.5-2B-UD-Q2_K_XL.gguf | forced | 0.7083 | 0.5300 | 0.0550 | 0.1750 | 0.6025 |
 | Qwen3.5-2B-UD-Q2_K_XL.gguf | native | 0.8458 | 0.1750 | 0.0350 | 0.1950 | 0.2175 |
 | Qwen3.5-2B-UD-Q3_K_XL.gguf | forced | 0.6083 | 0.7900 | 0.6250 | 0.7000 | 0.7775 |
@@ -136,7 +136,7 @@ The `Q2→Q3` step is the study's one firmly established quantitative result: it
 - **Qwen3.5-4B-UD-Q3_K_XL.gguf vs Qwen3.5-4B-UD-Q2_K_XL.gguf (forced)** per category: `irrelevance` +0.417, `multiple` +0.020, `parallel` -0.035, `parallel_multiple` -0.285, `simple_python` -0.035
 - **Qwen3.5-4B-UD-Q3_K_XL.gguf vs Qwen3.5-4B-UD-Q2_K_XL.gguf (native)** per category: `irrelevance` -0.129, `multiple` +0.050, `parallel` +0.220, `parallel_multiple` +0.200, `simple_python` +0.080
 
-Aggregate BFCL hides opposing effects: at 4B, Q2 and Q3 tie overall (+0.02) while abstention improves (+0.42 irrelevance) and multi-call composition collapses (-0.29 parallel_multiple). At 2B, aggressive quantisation is devastating for tool use (parallel 0.055 at Q2 vs 0.625 at Q3). Tool calling is more quant-sensitive at small scale than code is.
+**Native** (`tools=`, the model decides when to call) is the faithful protocol: `Q2→Q3` is `+0.20` at 2B and `+0.08` at 4B, with Q3 better on essentially every category. The *forced-JSON* protocol had suggested a 4B "profile flip" (abstention up, multi-call down) that does **not** replicate natively. Protocol choice, not quantization, produced that apparent trade-off.
 
 ## 8. What was added / recovered during wrap-up
 

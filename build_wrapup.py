@@ -270,10 +270,10 @@ def main():
                  "**no effect above Q3**: the one meaningful step is `Q2->Q3`, IQ2≈Q2, and "
                  "Q3≈Q4≈Q5. The operational rule is simply \">= Q3\".\n")
     if lt and lt.get("tools"):
-        L.append("### 7b. Tool calling (BFCL, prompt mode, thinking off)\n")
+        L.append("### 7b. Tool calling (BFCL, forced vs native, thinking off)\n")
         cats = lt.get("tools_categories") or []
-        L.append("| model | " + " | ".join(cats) + " |")
-        L.append("|---|" + "---|" * len(cats))
+        L.append("| model | mode | " + " | ".join(cats) + " |")
+        L.append("|---|---|" + "---|" * len(cats))
         for m, d in sorted(lt["tools"].items()):
             L.append(f"| {m} | " + " | ".join(
                 f"{d.get(c, float('nan')):.4f}" for c in cats) + " |")
@@ -282,11 +282,12 @@ def main():
             L.append(f"- **{tag}** per category: "
                      + ", ".join(f"`{k}` {v:+.3f}" for k, v in d.items()))
         L.append("")
-        L.append("Aggregate BFCL hides opposing effects: at 4B, Q2 and Q3 tie overall "
-                 "(+0.02) while abstention improves (+0.42 irrelevance) and multi-call "
-                 "composition collapses (-0.29 parallel_multiple). At 2B, aggressive "
-                 "quantisation is devastating for tool use (parallel 0.055 at Q2 vs 0.625 "
-                 "at Q3). Tool calling is more quant-sensitive at small scale than code is.\n")
+        L.append("**Native** (`tools=`, the model decides when to call) is the faithful "
+                 "protocol: `Q2→Q3` is `+0.20` at 2B and `+0.08` at 4B, with Q3 better on "
+                 "essentially every category. The *forced-JSON* protocol had suggested a 4B "
+                 "\"profile flip\" (abstention up, multi-call down) that does **not** "
+                 "replicate natively. Protocol choice, not quantization, produced that "
+                 "apparent trade-off.\n")
     else:
         L.append("_M4 tool-calling panel not finished; see `.wrapup/m4_summary.jsonl`._\n")
 
