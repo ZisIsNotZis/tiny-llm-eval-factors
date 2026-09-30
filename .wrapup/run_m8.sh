@@ -15,7 +15,7 @@ PORT=8080
 BASE=http://127.0.0.1:$PORT
 PY=python3
 CATS="${CATS:-live_simple,live_multiple,live_parallel,live_parallel_multiple,live_irrelevance,live_relevance}"
-PANELS="${PANELS:-qwen2b-q3:Qwen3.5-2B-UD-Q3_K_XL.gguf qwen4b-q2:Qwen3.5-4B-UD-Q2_K_XL.gguf qwen4b-q3:Qwen3.5-4B-UD-Q3_K_XL.gguf e2b-q2:gemma-4-E2B-it-UD-Q2_K_XL.gguf e2b-q3:gemma-4-E2B-it-UD-Q3_K_XL.gguf gr3b-q2:granite-4.1-3b-Q2_K.gguf gr3b-q3:granite-4.1-3b-Q3_K_M.gguf}"
+PANELS="${PANELS:-qwen2b-q3:Qwen3.5-2B-UD-Q3_K_XL.gguf gr3b-q2:granite-4.1-3b-Q2_K.gguf gr3b-q3:granite-4.1-3b-Q3_K_M.gguf}"
 LIMIT="${LIMIT:-0}"
 
 mkdir -p "$MRES"

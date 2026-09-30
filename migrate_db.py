@@ -271,6 +271,43 @@ def ingest_m6(con):
                       "m6_summary.jsonl", model_map=M6_MODELS)
 
 
+M8_MODELS = {
+    "qwen2b-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf", "qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+    "e2b-q2": "gemma-4-E2B-it-UD-Q2_K_XL.gguf", "e2b-q3": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+    "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
+}
+
+
+def ingest_m8(con):
+    return _ingest_bfcl(con, ".wrapup/m8_summary.jsonl", "m8-bfcl-live",
+                        "bfcl-native-tools-nothink-greedy", "m8_summary.jsonl",
+                        model_map=M8_MODELS)
+
+
+M10_MODELS = {
+    "q38-27b-q2": "Qwen3.8-27B-UD-Q2_K_XL.gguf", "q38-27b-q3": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+    "g26b-q2": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf", "g26b-q3": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+    "nem4b-q2": "NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf", "nem4b-q3": "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf",
+    "mcp5-2b-q2": "MiniCPM5-2B-Q2_K.gguf", "mcp5-2b-q3": "MiniCPM5-2B-Q3_K_M.gguf",
+    "lfm25-8b-q2": "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf", "lfm25-8b-q3": "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf",
+    "orn9b-q4": "Ornith-1.5-9B-Q4_K_M.gguf", "orn9b-q5": "Ornith-1.5-9B-Q5_K_M.gguf",
+}
+
+
+def ingest_m10(con):
+    return ingest_mpl(con, ".wrapup/m10_summary.jsonl", "m10-family-ladder",
+                      "m10_summary.jsonl", model_map=M10_MODELS)
+
+
+M10G_MODELS = {"gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf", "gr3b-q4": "granite-4.1-3b-Q4_K_M.gguf"}
+
+
+def ingest_m10g(con):
+    return ingest_mpl(con, ".wrapup/m10_granite_summary.jsonl", "m10-granite-q34",
+                      "m10_granite_summary.jsonl", model_map=M10G_MODELS)
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -327,9 +364,12 @@ def main():
     n7 = once("m5-family-ladder", ingest_m5)
     n8 = once("m6-family-ladder", ingest_m6)
     n9 = once("m7-tool-calling-native", ingest_m7)
+    n10 = once("m8-bfcl-live", ingest_m8)
+    n11 = once("m10-family-ladder", ingest_m10)
+    n12 = once("m10-granite-q34", ingest_m10g)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))
