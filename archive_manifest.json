@@ -1,9 +1,9 @@
 {
- "db_rows": 1954,
- "models_referenced": 182,
- "models_present": 28,
- "models_missing": 154,
- "model_coverage_pct": 15.4,
+ "db_rows": 1992,
+ "models_referenced": 185,
+ "models_present": 33,
+ "models_missing": 152,
+ "model_coverage_pct": 17.8,
  "artifacts": {
   "humaneval": {
    "eval_results": 28,
@@ -43,12 +43,17 @@
   "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
   "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
   "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf",
+  "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
   "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
   "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
   "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+  "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+  "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
   "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
   "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
-  "gemma4-v2-Q4_K_M.gguf"
+  "gemma4-v2-Q4_K_M.gguf",
+  "granite-4.1-3b-Q2_K.gguf",
+  "granite-4.1-3b-Q3_K_M.gguf"
  ],
  "missing_models": [
   "DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf",
@@ -184,11 +189,9 @@
   "gemma-4-31B-it-UD-Q3_K_XL.gguf",
   "gemma-4-E2B-it-UD-IQ2_M.gguf",
   "gemma-4-E2B-it-UD-IQ3_XXS.gguf",
-  "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
   "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
   "gemma-4-E2B-it-UD-Q5_K_XL.gguf",
   "gemma-4-E4B-it-UD-IQ3_XXS.gguf",
-  "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
   "gemma4-coding-Q2_K.gguf",
   "gemma4-coding-Q3_K_M.gguf",
   "gemma4-coding-Q4_K_M.gguf",

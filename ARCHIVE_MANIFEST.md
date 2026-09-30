@@ -1,8 +1,8 @@
 # Archive manifest
 
-DB rows: **1954**  |  models referenced: **182**  |  present: **28 (15.4%)**  |  missing: **154**
+DB rows: **1992**  |  models referenced: **185**  |  present: **33 (17.8%)**  |  missing: **152**
 
-Raw eval results recovered: **63 / 1954 (3.2%)**
+Raw eval results recovered: **63 / 1992 (3.2%)**
 
 ## Artifacts by bench
 
@@ -35,14 +35,19 @@ Raw eval results recovered: **63 / 1954 (3.2%)**
 - gemma-4-12B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf
 - gemma-4-31B-it-qat-UD-Q4_K_XL.gguf
+- gemma-4-E2B-it-UD-Q2_K_XL.gguf
 - gemma-4-E2B-it-UD-Q3_K_XL.gguf
 - gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf
 - gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf
+- gemma-4-E4B-it-UD-Q2_K_XL.gguf
+- gemma-4-E4B-it-UD-Q3_K_XL.gguf
 - gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf
 - gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf
 - gemma4-v2-Q4_K_M.gguf
+- granite-4.1-3b-Q2_K.gguf
+- granite-4.1-3b-Q3_K_M.gguf
 
-## Missing model files (154)
+## Missing model files (152)
 
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf
 - DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_S.gguf
@@ -177,11 +182,9 @@ Raw eval results recovered: **63 / 1954 (3.2%)**
 - gemma-4-31B-it-UD-Q3_K_XL.gguf
 - gemma-4-E2B-it-UD-IQ2_M.gguf
 - gemma-4-E2B-it-UD-IQ3_XXS.gguf
-- gemma-4-E2B-it-UD-Q2_K_XL.gguf
 - gemma-4-E2B-it-UD-Q4_K_XL.gguf
 - gemma-4-E2B-it-UD-Q5_K_XL.gguf
 - gemma-4-E4B-it-UD-IQ3_XXS.gguf
-- gemma-4-E4B-it-UD-Q2_K_XL.gguf
 - gemma4-coding-Q2_K.gguf
 - gemma4-coding-Q3_K_M.gguf
 - gemma4-coding-Q4_K_M.gguf
