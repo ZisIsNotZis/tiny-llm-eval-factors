@@ -1,1 +1,4 @@
 {"model": "g12b-q2", "lang": "cpp", "n": 161, "pass": 2, "score": 0.012422360248447204, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "g12b-q2", "lang": "py", "n": 161, "pass": 75, "score": 0.4658385093167702, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "g12b-q3", "lang": "cpp", "n": 161, "pass": 130, "score": 0.8074534161490683, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "g12b-q3", "lang": "py", "n": 161, "pass": 5, "score": 0.031055900621118012, "protocol": "mpl-chat-nothink-greedy-768"}
