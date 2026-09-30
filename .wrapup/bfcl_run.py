@@ -118,8 +118,38 @@ def parse_prompt_calls(text):
     return out
 
 
+# BFCL uses Python-ish type names; llama.cpp's json-schema->grammar needs JSON Schema.
+TYPE_MAP = {"dict": "object", "tuple": "array", "list": "array", "float": "number",
+            "int": "integer", "bool": "boolean", "str": "string", "any": None,
+            "Dict": "object", "Tuple": "array", "List": "array", "Float": "number",
+            "Integer": "integer", "String": "string"}
+
+
+def fix_schema(node):
+    if isinstance(node, dict):
+        out = {}
+        for k, v in node.items():
+            if k == "type" and isinstance(v, str):
+                t = TYPE_MAP.get(v, v)
+                if t is not None:
+                    out[k] = t
+            else:
+                out[k] = fix_schema(v)
+        if out.get("type") == "object" and "properties" not in out:
+            out["properties"] = {}
+        return out
+    if isinstance(node, list):
+        return [fix_schema(x) for x in node]
+    return node
+
+
 def tools_schema(functions):
-    return [{"type": "function", "function": f} for f in functions]
+    out = []
+    for f in functions:
+        f = dict(f)
+        f["parameters"] = fix_schema(f.get("parameters") or {"type": "object", "properties": {}})
+        out.append({"type": "function", "function": f})
+    return out
 
 
 def gen(args):

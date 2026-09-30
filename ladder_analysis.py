@@ -57,28 +57,32 @@ def main():
             step[f"{a}->{b}"] = ci95(d)
     out["ladder"]["steps"] = step
 
-    # ---------- M4: tool calling (per category) ----------
-    trows = q(con, """SELECT model, _bench, _score FROM experiments
-                      WHERE run_tag='m4-tool-calling' AND _score IS NOT NULL""")
+    # ---------- M4/M4b: tool calling (per category, per mode) ----------
+    trows = q(con, """SELECT model, _bench, _score, protocol FROM experiments
+                      WHERE bench_family='bfcl' AND _score IS NOT NULL""")
     tgrid = defaultdict(dict)
+    mode_of = {}
     for r in trows:
-        tgrid[r["model"]][r["_bench"].replace("bfcl-", "")] = r["_score"]
+        key = f"{r['model']} | {'native' if 'native' in (r['protocol'] or '') else 'forced'}"
+        mode_of[key] = 'native' if 'native' in (r['protocol'] or '') else 'forced'
+        tgrid[key][r["_bench"].replace("bfcl-", "")] = r["_score"]
     cats = sorted({c for m in tgrid for c in tgrid[m]})
     out["tools"] = {m: tgrid[m] for m in tgrid}
     out["tools_categories"] = cats
-    # paired Q2->Q3 deltas per category, when both quants exist
+    out["tools_mode"] = mode_of
     tsteps = {}
-    models = sorted(tgrid)
-    for i, ma in enumerate(models):
-        for mb in models[i + 1:]:
-            if ma.split("-")[1:2] != mb.split("-")[1:2]:
+    for key in sorted(tgrid):
+        base = key.split(" | ")[0]
+        for other in sorted(tgrid):
+            ob = other.split(" | ")[0]
+            if other == key or ob.rsplit("-", 1)[0] != base.rsplit("-", 1)[0]:
                 continue
-            shared = set(tgrid[ma]) & set(tgrid[mb])
-            if not shared:
+            if not ("Q2" in base and "Q3" in ob) or mode_of[other] != mode_of[key]:
                 continue
-            tag = f"{mb.replace('Qwen3.5-', '')} vs {ma.replace('Qwen3.5-', '')}"
-            tsteps[tag] = {c: round(tgrid[mb][c] - tgrid[ma][c], 4)
-                           for c in sorted(shared)}
+            shared = set(tgrid[key]) & set(tgrid[other])
+            if shared:
+                tsteps[f"{ob} vs {base} ({mode_of[key]})"] = {
+                    c: round(tgrid[other][c] - tgrid[key][c], 4) for c in sorted(shared)}
     out["tools_steps"] = tsteps
 
     with open("ladder_tools.json", "w") as f:
@@ -107,26 +111,27 @@ def main():
     else:
         L.append("_no M3 rows yet_\n")
 
-    L.append("## Tool calling — BFCL (prompt mode, thinking off, greedy)\n")
+    L.append("## Tool calling — BFCL\n")
     cats = out.get("tools_categories") or []
     if out.get("tools") and cats:
-        L.append("| model | " + " | ".join(cats) + " |")
-        L.append("|---|" + "---|" * len(cats))
+        L.append("| model | mode | " + " | ".join(cats) + " |")
+        L.append("|---|---|" + "---|" * len(cats))
         for m, d in sorted(out["tools"].items()):
-            L.append(f"| {m} | " + " | ".join(str(round(d.get(c, float('nan')), 4))
-                                              for c in cats) + " |")
+            mode = out.get("tools_mode", {}).get(m, "?")
+            L.append(f"| {m.split(' | ')[0]} | {mode} | " + " | ".join(
+                str(round(d.get(c, float('nan')), 4)) for c in cats) + " |")
         L.append("")
         for tag, d in out.get("tools_steps", {}).items():
-            L.append(f"**{tag}** per category: "
-                     + ", ".join(f"{k} {v:+.3f}" for k, v in d.items()) + "\n")
-        L.append("Aggregate BFCL scores are misleading twice over. (a) Within 4B the two "
-                 "quant levels score the same overall (+0.02) while the **profile** flips: "
-                 "abstention improves (`irrelevance` +0.42) and multi-call composition "
-                 "collapses (`parallel_multiple` -0.29). (b) The size dependence is large: "
-                 "at 2B aggressive quantisation is devastating for tool use "
-                 "(`parallel` 0.055 vs 0.625 at Q3), whereas 4B-Q2 already tool-calls fine. "
-                 "Tool-calling degradation is thus far more quant-sensitive at small scale "
-                 "than code generation is.\n")
+            L.append(f"- **{tag}** per category: "
+                     + ", ".join(f"`{k}` {v:+.3f}" for k, v in d.items()))
+        L.append("")
+        L.append("Two protocols: **forced** (prompt asks for a JSON call) and **native** "
+                 "(OpenAI `tools=`; the model decides whether to call). They disagree in "
+                 "direction: under *forced* framing the 4B Q2->Q3 step looks like a "
+                 "profile flip (abstention up, multi-call composition down); under the "
+                 "*native* protocol Q3 is better almost everywhere at both sizes. The "
+                 "protocol choice, not quantization, produced the earlier 'flip'. "
+                 "Report the mode; never mix them.\n")
     else:
         L.append("_no M4 rows yet_\n")
 

@@ -107,16 +107,20 @@ regenerable, so they are git-ignored; the curated DB is committed.
   step looked negative, i.e. **quant effects depend on the generation protocol**. See
   `MULTIPLE.md` / `WRAPUP.md` §6. BigCodeBench / SWE / Terminal-Bench were evaluated and
   rejected as data sources: they floor the 0.2B–9B panel near 0 and are compute-hostile.
-- **The quant curve is a single step.** On `Qwen3.5-2B` (MultiPL-E, 3 languages) the effect is
-  flat from `IQ2_M` to `Q2`, jumps once at `Q2→Q3` (**+0.155**), then saturates:
-  `Q3→Q4 +0.008` and `Q4→Q5 -0.006` (both CIs cross 0), and `IQ2_XXS` collapses the model
-  (~0.006). Operational rule: **use ≥ Q3; there is nothing above it.** See `LADDER_TOOLS.md`.
-- **Tool calling is now measured (BFCL, 1,240 items) and behaves differently from code.**
-  `Qwen3.5-2B` gains **+0.256** from `Q2→Q3` (parallel 0.055→0.625), while `Qwen3.5-4B` is
-  **flat overall (+0.021)** yet its profile flips: abstention up (`irrelevance` +0.42),
-  multi-call composition down (`parallel_multiple` -0.29). **Aggregate scores hide opposing
-  effects** — read per-category, per-size. Tool calling is more quant-sensitive at small scale
-  than code generation is.
+- **The quant curve is a single step, and it replicates across families.** On `Qwen3.5-2B`
+  (MultiPL-E, 3 languages) the effect is flat from `IQ2_M` to `Q2`, jumps once at `Q2→Q3`
+  (**+0.155**), then saturates: `Q3→Q4 +0.008` and `Q4→Q5 -0.006` (CIs cross 0), while
+  `IQ2_XXS` collapses the model (~0.006). Operational rule: **use ≥ Q3; there is nothing
+  above it.** The `Q2→Q3` step is positive in **all 6 anchors / 3 families** tested
+  (Qwen3.5 2B/4B/9B, gemma-4 E2B/E4B, granite-4.1-3b), mean **+0.203** (range +0.142..+0.344).
+  See `LADDER_TOOLS.md` / `MULTIPLE.md`.
+- **Tool calling is now measured (BFCL, 1,240 items) and is more quant-sensitive at small
+  scale than code.** Native OpenAI tool calling (`tools=`; the model decides when to call):
+  `Qwen3.5-2B` gains **+0.20** from `Q2→Q3` and `Qwen3.5-4B` **+0.08**, with Q3 better on
+  essentially every category (4B: simple +0.08, multiple +0.05, parallel +0.22,
+  parallel_multiple +0.20). An earlier *forced-JSON* protocol had suggested a 4B "profile
+  flip"; that did not survive the native protocol. **Protocol choice changes the sign of
+  quant conclusions** — report it always. See `LADDER_TOOLS.md` / `WRAPUP.md` §7b.
 - **The DB now has a proper schema for this work** (`migrate_db.py`): `run_tag, rep, ctx_size,
   parallel_slots, seed, protocol, language, bench_family, max_tokens, source_file,
   completed_at` were added, and the unique index that **forbade replicates** was dropped.

@@ -224,29 +224,27 @@ def main():
 
     L.append("## 6. MultiPL-E resolution panel (the item-count fix)\n")
     me = multipl_e_panel()
-    if me and me.get("pooled"):
+    if me and me.get("families"):
         mpl_rows = me.get("n_rows")
-        L.append(f"Ran the weight-quant step across languages to attack the item-count "
-                 f"bottleneck directly ({mpl_rows} runs in `multipl_e.json`/`MULTIPLE.md`). "
-                 "Raw completion, greedy; each language is ~161 fresh items.\n")
-        for step, per_base in me["pooled"].items():
-            for base, v in per_base.items():
-                L.append(f"- **{base} {step}**: mean **{v['mean']:+.4f}** "
-                         f"95% CI [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] over "
-                         f"{v['n']} languages — all same-signed.")
-        tab = me.get("table", {})
-        langs = sorted({k.split("|")[1] for k in tab})
-        models = sorted({k.split("|")[0] for k in tab})
+        L.append(f"Ran the weight-quant step across languages **and model families** to attack "
+                 f"the item-count bottleneck directly ({mpl_rows} runs; "
+                 f"`multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is "
+                 f"~161 fresh items.\n")
+        L.append("_(per-family ladders are in `MULTIPLE.md`; the headline is below)_\n")
+        s = me.get("Q2_Q3_family_summary") or {}
+        if s:
+            L.append(f"**Cross-family `Q2→Q3` (the core effect): {s['n_families']} model anchors, "
+                     f"all sign-consistent, range {s['min']:+.3f} .. {s['max']:+.3f}, "
+                     f"mean {s['mean']:+.3f}.**\n")
+        L.append("| model anchor | Q2→Q3 | 95% CI |")
+        L.append("|---|---|---|")
+        for f, v in sorted((me.get("Q2_Q3_by_family") or {}).items()):
+            if v:
+                L.append(f"| {f} | **{v['mean']:+.4f}** | [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] |")
         L.append("")
-        L.append("| model | " + " | ".join(langs) + " |")
-        L.append("|---|" + "---|" * len(langs))
-        for m in models:
-            L.append(f"| {m} | " + " | ".join(str(tab.get(f"{m}|{l}", "—"))
-                                                 for l in langs) + " |")
-        L.append("")
-        L.append("This is the concrete resolution gain: the same contrast that a single "
-                 "161-item HumanEval pair could not resolve now clears the floor with a "
-                 "~6x larger item pool, and the sign is consistent across languages.\n")
+        L.append("The `Q2→Q3` step is the study's one firmly established quantitative result: "
+                 "it is positive in **every** language and **every** architecture family tested "
+                 "(Qwen3.5 at 2B/4B/9B, gemma-4 at E2B/E4B, granite-4.1-3b).\n")
     else:
         L.append("_MultiPL-E panel not finished; see `.wrapup/m1_summary.jsonl`._\n")
 

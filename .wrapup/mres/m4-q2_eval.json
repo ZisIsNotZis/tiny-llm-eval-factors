@@ -1,1 +1,1 @@
-{"n": 1240, "correct": 753, "score": 0.6072580645161291, "per_category": {"simple_python": {"acc": 0.7825, "n": 400}, "multiple": {"acc": 0.73, "n": 200}, "parallel": {"acc": 0.46, "n": 200}, "parallel_multiple": {"acc": 0.545, "n": 200}, "irrelevance": {"acc": 0.3875, "n": 240}}}
+{"n": 1240, "correct": 762, "score": 0.614516129032258, "per_category": {"simple_python": {"acc": 0.58, "n": 400}, "multiple": {"acc": 0.575, "n": 200}, "parallel": {"acc": 0.495, "n": 200}, "parallel_multiple": {"acc": 0.49, "n": 200}, "irrelevance": {"acc": 0.9083333333333333, "n": 240}}}

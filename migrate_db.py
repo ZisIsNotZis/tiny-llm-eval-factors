@@ -224,9 +224,33 @@ M4_MODELS = {
 }
 
 
+M5_MODELS = {
+    "e2b-q2": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+    "e2b-q3": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+    "e4b-q2": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+    "e4b-q3": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+    "gr3b-q2": "granite-4.1-3b-Q2_K.gguf",
+    "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
+}
+
+
+def ingest_m5(con):
+    return ingest_mpl(con, ".wrapup/m5_summary.jsonl", "m5-family-ladder",
+                      "m5_summary.jsonl", model_map=M5_MODELS)
+
+
+def ingest_m4b(con):
+    return _ingest_bfcl(con, ".wrapup/m4b_summary.jsonl", "m4b-tool-calling-native",
+                        "bfcl-native-tools-nothink-greedy", "m4b_summary.jsonl")
+
+
 def ingest_m4(con):
-    """One DB row per BFCL category (so the split behaviour is visible)."""
-    path = ".wrapup/m4_summary.jsonl"
+    return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
+                        "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
+
+
+def _ingest_bfcl(con, path, run_tag, protocol, source):
+    """One DB row per BFCL category (so per-capability behaviour is visible)."""
     if not os.path.exists(path):
         print("  (no m4 summary)")
         return 0
@@ -240,10 +264,10 @@ def ingest_m4(con):
             continue
         for cat, d in r.get("per_category", {}).items():
             row = base_row(M4_MODELS[r["model"]], f"bfcl-{cat}", 0.0, d["acc"], None)
-            row.update({"run_tag": "m4-tool-calling", "rep": 1, "ctx_size": 8192,
-                        "parallel_slots": 1, "protocol": "bfcl-prompt-nothink-greedy",
+            row.update({"run_tag": run_tag, "rep": 1, "ctx_size": 8192,
+                        "parallel_slots": 1, "protocol": protocol,
                         "language": "python", "bench_family": "bfcl",
-                        "max_tokens": 512, "source_file": "m4_summary.jsonl"})
+                        "max_tokens": 512, "source_file": source})
             insert(con, row)
             n += 1
     return n
@@ -271,9 +295,11 @@ def main():
     n4 = once("m2-multipl-e", ingest_m2)
     n5 = once("m3-quant-ladder", ingest_m3)
     n6 = once("m4-tool-calling", ingest_m4)
+    n6b = once("m4b-tool-calling-native", ingest_m4b)
+    n7 = once("m5-family-ladder", ingest_m5)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))

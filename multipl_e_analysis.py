@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""MultiPL-E analysis: cross-language pass rates and the pooled weight-quant effect.
+"""MultiPL-E analysis across families and quant levels.
 
-Reads DB rows with bench_family='humaneval-multipl-e' (ingested by migrate_db.py),
-writes multipl_e.json + MULTIPLE.md.
+Reads all DB rows with bench_family='humaneval-multipl-e' (run tags m1/m2/m3/m5),
+groups by (base model, quant level, language), and reports:
 
-Two views of the Q2->Q3 step are reported:
-  * per-language paired deltas, then a mean + 95% CI across languages
-    (languages treated as independent contexts);
-  * an item-pooled view (total passes / total items on each side), which is the
-    high-resolution quantity the MultiPL-E panel exists to provide.
+  * per-family quant ladders (pooled over languages),
+  * per-step deltas (level N -> N+1) with CIs over languages,
+  * the cross-family Q2->Q3 summary (the study's core effect).
+
+Quant strings differ by family (`UD-Q2_K_XL`, `Q2_K`, `Q3_K_M`, `UD-IQ2_M`), so
+the level is taken from the digit and the ladder is built on levels.
+
+Writes multipl_e.json + MULTIPLE.md.
 """
 import json
 import math
@@ -18,6 +21,7 @@ from collections import defaultdict
 
 DB = "file:experiments.sqlite?mode=ro"
 QUANT_RE = re.compile(r"-((UD-)?I?Q[1-8][A-Z0-9_]*)\.gguf$", re.I)
+LEVEL_RE = re.compile(r"(?:I)?Q([1-8])", re.I)
 
 
 def ci95(vals):
@@ -31,83 +35,121 @@ def ci95(vals):
             "ci_high": round(m + 1.96 * se, 4)}
 
 
+def base_of(model):
+    return QUANT_RE.sub("", model).rstrip("-.")
+
+
+def level_of(quant):
+    m = LEVEL_RE.search(quant or "")
+    return int(m.group(1)) if m else None
+
+
 def load():
     con = sqlite3.connect(DB, uri=True)
-    q = """SELECT model, language, _score, rep, run_tag FROM experiments
+    q = """SELECT model, __quant, language, _score, run_tag FROM experiments
            WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL"""
     return [dict(zip([d[0] for d in con.execute(q).description], r))
             for r in con.execute(q)]
 
 
-def base_of(model):
-    return QUANT_RE.sub("", model).rstrip("-.")
-
-
 def main():
     rows = load()
     if not rows:
-        print("no MultiPL-E rows yet")
+        print("no MultiPL-E rows")
         return
 
-    # per (model, language) mean
-    grid = defaultdict(list)
+    grid = defaultdict(list)      # (base, quant, lang) -> scores
     for r in rows:
-        grid[(r["model"], r["language"])].append(r["_score"])
-    table = {f"{m}|{l}": round(sum(v) / len(v), 4) for (m, l), v in grid.items()}
+        lv = level_of(r["__quant"])
+        if lv is None:
+            continue
+        grid[(base_of(r["model"]), r["__quant"], r["language"])].append(r["_score"])
 
-    # pair Qn vs Qn+1 within the same base model, per language
-    by_base = defaultdict(dict)
-    for (m, l), v in grid.items():
-        by_base[base_of(m)][(m, l)] = sum(v) / len(v)
+    fams = sorted({k[0] for k in grid})
+    out = {"n_rows": len(rows), "families": {}, "per_language": {}}
 
-    order = ["UD-Q2_K_XL", "UD-Q3_K_XL", "UD-Q4_K_XL"]
-    deltas = defaultdict(dict)   # step -> base -> {lang: delta}
-    for base, cells in by_base.items():
-        langs = {l for (_, l) in cells}
-        for a, b in zip(order, order[1:]):
-            for l in langs:
-                ma = f"{base}-{a}.gguf"
-                mb = f"{base}-{b}.gguf"
-                if (ma, l) in cells and (mb, l) in cells:
-                    deltas[f"{a}->{b}"].setdefault(base, {})[l] = cells[(mb, l)] - cells[(ma, l)]
+    # per-family ladder over exact quant strings, ordered by (level, name)
+    steps = defaultdict(dict)
+    for fam in fams:
+        quants = sorted({q for (b, q, _) in grid if b == fam},
+                        key=lambda q: (level_of(q), q))
+        cells = {}
+        for (b, q, lang), v in grid.items():
+            if b == fam:
+                cells.setdefault(q, {})[lang] = sum(v) / len(v)
+        pooled = {q: round(sum(cells[q].values()) / len(cells[q]), 4) for q in quants}
+        out["families"][fam] = {"levels": pooled, "per_language": cells,
+                                "order": quants}
+        for a, b in zip(quants, quants[1:]):
+            if level_of(b) <= level_of(a):
+                continue
+            langs = set(cells[a]) & set(cells[b])
+            d = [cells[b][l] - cells[a][l] for l in langs]
+            if d:
+                steps[fam][f"{a}->{b}"] = ci95(d)
+    out["steps"] = {k: v for k, v in steps.items()}
 
-    out = {"n_rows": len(rows), "table": table,
-           "deltas": {k: v for k, v in deltas.items()}, "pooled": {}}
-    for step, per_base in deltas.items():
-        for base, langs in per_base.items():
-            out["pooled"].setdefault(step, {})[base] = ci95(list(langs.values()))
+    # cross-family Q2->Q3 (any step crossing level 2 -> level 3)
+    q23 = {}
+    for fam, st in steps.items():
+        for k, v in st.items():
+            a, b = k.split("->")
+            if level_of(a) == 2 and level_of(b) == 3:
+                q23[fam] = v
+    out["Q2_Q3_by_family"] = q23
+    alllangs = [v["mean"] for v in q23.values() if v]
+    if alllangs:
+        out["Q2_Q3_family_summary"] = {
+            "n_families": len(alllangs),
+            "min": round(min(alllangs), 4),
+            "max": round(max(alllangs), 4),
+            "mean": round(sum(alllangs) / len(alllangs), 4),
+            "all_positive": all(x > 0 for x in alllangs),
+        }
 
     with open("multipl_e.json", "w") as f:
         json.dump(out, f, indent=1)
 
-    # markdown
-    L = ["# MultiPL-E panel\n",
-         "_Auto-generated by `multipl_e_analysis.py` from the DB "
-         "(`bench_family='humaneval-multipl-e'`)._\n",
-         f"Rows: **{len(rows)}** across {len({r['language'] for r in rows})} languages.\n",
-         "## Per-model per-language pass@1 (greedy, raw completion)\n",
-         "| model | " + " | ".join(sorted({r['language'] for r in rows})) + " |",
-         "|---|" + "---|" * len({r['language'] for r in rows})]
-    models = sorted({m for m, _ in grid})
-    langs_sorted = sorted({l for _, l in grid})
-    for m in models:
-        cells = [str(table.get(f"{m}|{l}", "—")) for l in langs_sorted]
-        L.append(f"| {m} | " + " | ".join(cells) + " |")
-    L.append("")
-    L.append("## Weight-quant step, matched per language\n")
-    L.append("| step | base | languages | mean Δ | 95% CI |")
-    L.append("|---|---|---|---|---|")
-    for step, per_base in out["pooled"].items():
-        for base, v in per_base.items():
-            L.append(f"| {step} | {base} | {v['n']} | {v['mean']:+.4f} | "
-                     f"[{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] |")
-    L.append("")
-    L.append("Per-language deltas let the effect be read as a *construct-level* quantity "
-             "rather than a single-benchmark one; the CI is over languages.\n")
+    # ---- markdown ----
+    L = ["# MultiPL-E across families\n",
+         "_Auto-generated by `multipl_e_analysis.py`._\n",
+         f"Rows: **{len(rows)}** across {len(fams)} model anchors "
+         f"({len({f.split('-')[0] for f in fams})} architecture families).\n"]
+    for fam in fams:
+        L.append(f"### {fam}\n")
+        info = out["families"][fam]
+        quants = info["order"]
+        allangs = sorted({l for q in quants for l in info["per_language"][q]})
+        L.append("| quant | " + " | ".join(allangs) + " | pooled |")
+        L.append("|---|" + "---|" * (len(allangs) + 1))
+        for q in quants:
+            L.append(f"| {q} | " + " | ".join(
+                str(round(info["per_language"][q].get(l, float('nan')), 3))
+                for l in allangs) + f" | {info['levels'][q]} |")
+        L.append("")
+        for k, v in out["steps"].get(fam, {}).items():
+            if v:
+                L.append(f"- `{k}`: **{v['mean']:+.4f}** "
+                         f"95% CI [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] (n={v['n']} langs)")
+        L.append("")
+    if alllangs:
+        s = out["Q2_Q3_family_summary"]
+        L.append("## Cross-family Q2->Q3\n")
+        L.append("| family | mean Δ | 95% CI |")
+        L.append("|---|---|---|")
+        for f, v in sorted(q23.items()):
+            if v:
+                L.append(f"| {f} | {v['mean']:+.4f} | [{v['ci_low']:+.4f}, {v['ci_high']:+.4f}] |")
+        L.append("")
+        L.append(f"**{s['n_families']} model anchors, all sign-consistent "
+                 f"({s['all_positive']}), range {s['min']:+.3f} .. {s['max']:+.3f}, "
+                 f"mean {s['mean']:+.3f}.**\n")
     with open("MULTIPLE.md", "w") as f:
         f.write("\n".join(L) + "\n")
 
-    print(json.dumps(out["pooled"], indent=1))
+    print(json.dumps(out.get("Q2_Q3_family_summary", {}), indent=1))
+    print("steps:", json.dumps({k: {kk: vv for kk, vv in v.items()} for k, v in out["steps"].items()},
+                               indent=1)[:1200])
     print("wrote multipl_e.json + MULTIPLE.md")
 
 
