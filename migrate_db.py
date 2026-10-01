@@ -231,6 +231,8 @@ M5_MODELS = {
     "e4b-q3": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
     "gr3b-q2": "granite-4.1-3b-Q2_K.gguf",
     "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
+    "gr4b-q2": "granite-4.1-3b-Q2_K.gguf",
+    "gr4b-q3": "granite-4.1-3b-Q3_K_M.gguf",
 }
 
 
