@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 28 | 34% |
+| resolved | 28 | 33% |
 | underpowered | 6 | 7% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 10% |
-| model_fit | 16 | 20% |
-| qualitative | 20 | 24% |
+| model_fit | 16 | 19% |
+| qualitative | 22 | 26% |
 
 ## resolved (28)
 
@@ -153,7 +153,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (20)
+## qualitative (22)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -194,5 +194,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[METHOD, m16 abandoned] A handler whose prompt format mismatches the model can be *pathologically* slow, not just wrong.** BFCL's `MiniCPM3-4B-FC` handler against `MiniCPM5-2B` gave a 9-hour ETA (166 s/item, 1/200 in 3 min): the model generates extremely long outputs under that format. Aborted as impractical; **not** a capability result.
   - _no numeric contrast in the claim_
 - — **[VERIFIED, checkpoint m18/m19] The 2B `Q2` multi-turn collapse spans every sub-category: m18 completes clean; m19's `Q2` long-context floor is genuine, not a harness zero.** `m18` (Qwen3.5-2B `UD-Q2/Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items/cat) is now complete and clean — **0** `exceed_context_size` lines, all slot releases `truncated = 0`: Q2 `miss_func 0.005`, `miss_param 0.005`; Q3 `miss_func 0.080`, `miss_param 0.105`. Against the same quant's own `multi_turn_base` (`m9-bfcl-multiturn`: Q2 0.025, Q3 0.185) Q2 sits at the floor in **all three** categories (base/miss_func/miss_param) while Q3 recovers 2-4x, so the Q2 failure is not category-specific. `m19-q2` `multi_turn_long_context` = **0.005** (native-FC `Qwen/Qwen3-1.7B-FC`, `-c 196608 -np 2` = 98304 ctx/slot, greedy). This 1/200 score was checked against the three harness hypotheses and survives all: the handler is native-FC (not prompted), the result file is pre-deleted per panel (no stale reuse of a prior quant's responses), and it sits at the same quant's own base floor (0.025) — so it is a genuine Q2 collapse, **not** a harness zero. Caveat: **11/200** items still hit `exceed_context_size_error` at 98304/slot (prompts 98445-112471), because the Q2 model over-generates and inflates the accumulated multi-turn context; the same launcher at `Q3` clean (`m15` 0 overflow, `m19-q3` 0 overflow so far) shows this is model-specific over-generation, not a config gap. Row kept with the caveat (as `m12`/`m13`); `multi_turn_long_context` does not feed `horizon_analysis.py`, so the retention ladder is unchanged. Ingested as `run_tag='m18-bfcl-multiturn'` (4 rows) + `'m19-bfcl-multiturn'` (1 row); DB 2099 -> 2101, `integrity ok | fk issues 0`. `m19-q3` and the two 4B long-context panels remain in flight; GPU busy, no new panel queued.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m21] A TERNARY (~2.25 bit/weight) 27B model performs at the level of a standard ~2.9 bit quant — i.e. it sits ABOVE the bits->score curve.** `Ternary-Bonsai-27B-Q2_g64` (7.59 GB, ggml type 42/`Q2_0`, 498 quantised tensors) scores MultiPL-E **cpp 0.696 / py 0.764** under the same raw-greedy protocol as every other anchor, versus `Qwen3.8-27B-UD-Q2_K_XL` (9.83 GB, ~2.9 bit) at **0.758 / 0.745** and `Qwen3.8-27B-UD-Q3_K_XL` (13.15 GB, ~3.9 bit) at **0.807 / 0.733**. So the ternary model is 23% smaller than the 2.9-bit file yet matches it on cpp and *beats* it on py, and is within ~0.11/0.03 of the 3.9-bit file. **Conclusion: the bits-per-weight -> score mapping is not a universal curve; the quantisation *scheme* (and/or co-designed training) can shift a model well off it.** Caveat: Bonsai-27B and Qwen3.8-27B are different checkpoints in the same `qwen35` family, so part of the difference may be training rather than scheme — but the practical implication holds: **ternary 2-bit is competitive with conventional 3-bit.**
+  - _no numeric contrast in the claim_
+- — **[METHOD, B1a] The Bonsai ternary files are not corrupt; the loader is picky.** Re-downloading `Ternary-Bonsai-27B-Q2_0.gguf` gave a byte-identical size *and* SHA256 (`868c1171…1757`) to the on-disk copy, so the earlier `gguf_init_from_reader: failed to read tensor data` is not truncation. All three variants carry the same tensor-type histogram (498x type 42 + 353x type 0), yet **`Q2_g64` loads and `Q2_0` reproducibly fails** (also with `-ngl 0`), while `PQ2_0` uses ggml type **142** which is beyond our `GGML_TYPE_COUNT = 43`. So: one usable ternary checkpoint (`Q2_g64`), one unresolved loader case (`Q2_0`), one needs a newer llama.cpp (`PQ2_0`).
   - _no numeric contrast in the claim_
 

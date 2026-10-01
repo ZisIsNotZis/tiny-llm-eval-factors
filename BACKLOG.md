@@ -47,7 +47,11 @@ Architecture: `general.architecture = qwen35` **with SSM tensors** (`qwen35.ssm.
 **Next steps when B1 is run:** (1) verify file completeness against ModelScope metadata;
 (2) build a *separate* newer llama.cpp (drop-in, do not disturb `/home/z/llama.cpp`) to get type 142 and hybrid-SSM support; (3) then run the same MultiPL-E + multi-turn panel and compare against the fitted curve **at matched bits/weight**, not matched quant name.
 
-**Status:** recon done, still backlog (operator said main line first).
+**Status: PARTIALLY DONE (2026-10-02).** `Q2_g64` loads and is off-curve — see `FINAL_REPORT.md`
+Finding 8 and `run_tag='m21-bonsai-ternary'`. Remaining: (a) resolve the `Q2_0` loader failure
+(SHA-identical re-download rules out truncation; same tensor types as the working g64 variant —
+unexplained); (b) `PQ2_0` needs ggml type 142 -> a newer llama.cpp in a separate directory;
+(c) a clean within-model scheme comparison.
 
 ## B2. Sampling-parameter recommendations from vendors
 

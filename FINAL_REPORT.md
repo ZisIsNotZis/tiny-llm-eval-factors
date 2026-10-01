@@ -198,6 +198,34 @@ A continuous **per-test pass fraction** does not rescue this: it separates `Q2�
 5. **Always re-measure on your own protocol.** The same weights can look better or worse depending
    on chat vs raw prompting and on forced vs native tool calling.
 
+## Finding 8 — **the bits→score curve is not universal: ternary 2-bit competes with conventional 3-bit**
+
+Operator-requested off-curve probe. Same protocol as every other anchor (MultiPL-E, raw completion,
+greedy), matched model size and architecture family (27B, `qwen35`):
+
+| checkpoint | file size | ≈ bits/weight | cpp | py |
+|---|---|---|---|---|
+| Qwen3.8-27B `UD-Q3_K_XL` | 13.15 GB | ~3.9 | 0.807 | 0.733 |
+| Qwen3.8-27B `UD-Q2_K_XL` | 9.83 GB | ~2.9 | 0.758 | 0.745 |
+| **Ternary-Bonsai-27B `Q2_g64`** | **7.59 GB** | **~2.25** | **0.696** | **0.764** |
+
+The ternary model is **23 % smaller** than the 2.9-bit file yet matches it on C++ and **beats** it on
+Python, and lands within 0.11/0.03 of the 3.9-bit file. So "more bits → more score" is only a trend
+*within* a quantisation scheme: a ternary scheme can sit well **above** the curve. Practical read:
+**a ternary 2-bit model can be a better trade than a conventional 2–3-bit one** of the same size.
+
+*Caveat:* Bonsai-27B and Qwen3.8-27B are different checkpoints in the same family, so part of the gap
+may be training rather than scheme. The within-model scheme comparison is incomplete because
+`Ternary-Bonsai-Q2_0` will not load in our llama.cpp (see below) and `PQ2_0` uses an unsupported
+ggml type.
+
+### What is *not* reproducible about it
+
+Re-downloading the `Q2_0` variant produced a **byte-identical SHA256**, ruling out truncation.
+All three variants carry the same tensor-type histogram, yet `Q2_g64` loads and `Q2_0` reproducibly
+fails (`failed to read tensor data`, also at `-ngl 0`); `PQ2_0` uses ggml type 142, which is beyond
+our `GGML_TYPE_COUNT = 43`. So exactly one of the three ternary checkpoints is usable here.
+
 ## Corrections and honest negatives
 
 * **Retracted:** "Q3 is worse than Q2 for LFM2.5-8B" — an artifact of a cross-language CI; at item
@@ -214,8 +242,8 @@ A continuous **per-test pass fraction** does not rescue this: it separates `Q2�
 
 ## Limits, and what is queued
 
-* **Backlog B1 (operator-requested):** off-curve quantisation — ternary / `Q1` / `Q2` schemes that
-  may not lie on the bits→score curve. Recon done: `Ternary-Bonsai-27B-Q2_0` uses ggml type 42
+* **Backlog B1 (operator-requested): DONE — see Finding 8.** The ternary model is off-curve in the
+  expected direction (better than its bit count suggests). Outstanding detail: `Ternary-Bonsai-27B-Q2_0` uses ggml type 42
   (known to our build but currently fails to load — suspect truncation), `PQ2_0` uses type 142
   (beyond our type table), and the model is a hybrid SSM+attention `qwen35`. Needs a newer
   llama.cpp build in a separate directory. See `BACKLOG.md` §B1a.

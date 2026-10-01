@@ -1,0 +1,2 @@
+{"model": "bonsai-q2g64", "lang": "cpp", "n": 161, "pass": 112, "score": 0.6956521739130435, "protocol": "mpl-raw-greedy-768"}
+{"model": "bonsai-q2g64", "lang": "py", "n": 161, "pass": 123, "score": 0.7639751552795031, "protocol": "mpl-raw-greedy-768"}
