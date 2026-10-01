@@ -7,8 +7,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 26 | 34% |
-| underpowered | 4 | 5% |
+| resolved | 26 | 33% |
+| underpowered | 5 | 6% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 10% |
 | model_fit | 15 | 19% |
@@ -64,12 +64,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 - Δ=0.16 — **[SUPERSEDED — see the m18/m19 floor finding below] An earlier claim that the absolute `Q2->Q3` gain is ~+0.15 and CONSTANT across model size and task type — the earlier "horizon effect" was a retention-ratio artifact.** Direct measurement (Qwen3.5, item-level scores): code `2B +0.155 / 4B +0.142 / 9B +0.143`; multi-turn `2B +0.160 / 4B +0.150 / 9B +0.160`. Every cell is +0.142..+0.160. What varies is the *retention ratio* `Q2/Q3` (0.135 .. 0.754), which is driven purely by how high the Q3 baseline sits — multi-turn at 2B starts low (Q3 0.185), so the same +0.16 looks like a 7x relative loss, while multi-turn at 4B starts high (Q3 0.535) and looks like a 28% loss. **So: upgrading Q2->Q3 buys a roughly fixed ~+0.15 of score whatever you run; the "how much of my capability did I lose" framing depends entirely on the baseline and must not be read as a horizon effect.** Retention-ratio check: multi-turn/code = 0.310 [0.119,0.806] at 2B but 1.045 [0.816,1.337] at 4B and 1.005 [0.809,1.248] at 9B, i.e. the apparent horizon penalty exists only where the Q3 baseline is low. Caveat: 3 sizes x 2 axes; the constancy is striking but not yet a law.
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
-- Δ=0.16 — **[VERIFIED, m18/m19] At 2B, `Q2` pins the model at the *floor* across every agentic multi-turn category; `Q3` restores it to a task-dependent ceiling.** BFCL multi-turn, Qwen3.5-2B, native-FC, greedy (Q2 -> Q3): `multi_turn_base` 0.025 -> 0.185 (+0.160), `multi_turn_miss_param` 0.005 -> 0.105 (+0.100), `multi_turn_long_context` 0.005 -> 0.095 (+0.090), `multi_turn_miss_func` 0.005 -> 0.080 (+0.075). So the *gain* is not a constant: it is capped by each task's own Q3 ceiling, and the category ranking is unchanged by quant (base > miss_param > long_context > miss_func at both levels). The invariant is the **floor**: every hard agentic category sits at 0.005 at Q2. This refines the earlier "constant +0.15" statement, which holds only for axes with high ceilings (code, base multi-turn).
+- Δ=0.16 — **[VERIFIED, m18/m19] At 2B, `Q2` pins the model at the *floor* across every agentic multi-turn category; `Q3` restores it to a task-dependent ceiling.** BFCL multi-turn, Qwen3.5-2B, native-FC, greedy (Q2 -> Q3): `multi_turn_base` 0.025 -> 0.185 (+0.160), `multi_turn_miss_param` 0.005 -> 0.105 (+0.100), `multi_turn_long_context` 0.005 -> 0.110 (+0.105), `multi_turn_miss_func` 0.005 -> 0.080 (+0.075). So the *gain* is not a constant: it is capped by each task's own Q3 ceiling, and the category ranking is unchanged by quant (base > miss_param > long_context > miss_func at both levels). The invariant is the **floor**: every hard agentic category sits at 0.005 at Q2. This refines the earlier "constant +0.15" statement, which holds only for axes with high ceilings (code, base multi-turn).
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 - Δ=0.185 — **[CORRECTED, full matrix] The Q2 deficit is NOT a constant — it ranges ~0.08..0.20 and is headroom-limited.** Complete Qwen3.5 matrix (item-level): code `2B 0.155 / 4B 0.142 / 9B 0.143`; tool single-turn `2B 0.202 / 4B 0.077`; tool multi-turn `2B 0.160 / 4B 0.150 / 9B 0.160`. The 4B single-turn cell (0.077) kills any "constant gain" reading: that axis has the smallest deficit precisely because Q2 is already near its Q3 ceiling (0.615 vs 0.691). The only crisp invariant is the **floor**: at 2B every hard agentic category is pinned at ~0.005 at Q2 while Q3 reaches 0.08-0.185, and the category ranking is quant-invariant.
   - _|Δ|=0.1850 >= MDE 0.108 at n=1_
 
-## underpowered (4)
+## underpowered (5)
 
 - Δ=0.0488 — On unseen-architecture `NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL` under fixed controls (`ctx2048`, `q8_0/q8_0`, no-MTP), `top_k:40->20` decreases plus score on both datasets (Humaneval `-0.0061`, MBPP `-0.0317`) with small wall-time increases, and `reasoning off->on` decreases plus score on both datasets (Humaneval `-0.0488`, MBPP `-0.0265`) with large wall-time penalties (Humaneval `+288.7s`, MBPP `+473.3s`).
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
@@ -79,6 +79,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0620 < MDE 0.108 at n=1_
 - Δ=0.093 — **[FINAL, decisive test] ">= Q3 is enough" is conditional, not universal.** `granite-4.1-3b` has the largest above-Q3 PPL drop (Q3 2.053 -> Q4 1.766, -14%) and it **does** translate into score: `Q3->Q4` pass@1 `+0.093` (cpp) and `+0.062` (py), pooled `+0.078` (item-level 95% CI [+0.002, +0.153], 322 items/side). So when the next quant level genuinely helps the model, benchmark scores follow; where Q3 already saturates (Qwen3.5 family), they do not.
   - _|Δ|=0.0930 < MDE 0.108 at n=1_
+- Δ=0.105 — **[VERIFIED, checkpoint m19] The paired 2B long-context cell now completes at 0.005 -> 0.110 (+0.105); the same configuration reproduces only to ~0.015 run-to-run.** `m19-q3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy, 200 items) finished at **0.110** (22/200), ingested as `run_tag='m19-bfcl-multiturn'` (DB 2101 -> 2102 rows, `integrity ok | fk issues 0`). Paired with `m19-q2` (0.005) from the same launcher this is the fourth 2B agentic category and the third pinned to the 0.005 floor at Q2. Harness check (not a 0.00 row, so not re-run): handler is native-FC, the panel pre-deletes the per-category result file, and only **1/200** items hit `exceed_context_size_error` (100749 tokens > 98304/slot); the valid-item estimate is 22/199 = 0.111. **Reproduce note:** the *identical* config ran earlier as `m15` (`qwen2b-lc3`) and scored **0.095** with 0 overflow, so the same cell differs by 0.015 (3/200 items) at greedy — this is the category's run-to-run spread, not overflow.
+  - _|Δ|=0.1050 < MDE 0.108 at n=1_
 
 ## noise_level (4)
 

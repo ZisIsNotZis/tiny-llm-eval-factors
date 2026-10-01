@@ -141,7 +141,7 @@ The sharpest structure is at the hard end. Within BFCL multi-turn at 2B:
 |---|---|---|---|
 | `multi_turn_base` | 0.025 | 0.185 | 0.160 |
 | `multi_turn_miss_param` | 0.005 | 0.105 | 0.100 |
-| `multi_turn_long_context` | 0.005 | 0.095 | 0.090 |
+| `multi_turn_long_context` | 0.005 | 0.110 | 0.105 |
 | `multi_turn_miss_func` | 0.005 | 0.080 | 0.075 |
 
 **At 2B, every hard agentic category is pinned to the floor (0.005) at Q2**, and Q3 lifts each to its
