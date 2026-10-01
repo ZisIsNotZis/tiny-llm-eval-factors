@@ -26,6 +26,11 @@ fi
 
 IFS=',' read -ra CL <<< "$CATS"
 for cat in "${CL[@]}"; do
+  # BFCL `generate` defaults to allow_overwrite=False: without this the second panel that
+  # shares this handler (e.g. qwen4b-q2 then qwen4b-q3) would generate nothing and `evaluate`
+  # would silently re-score the previous quant's responses.
+  RRES=/home/z/hf/research/.wrapup/bfclenv/lib/python3.11/site-packages/result
+  find "$RRES/$(echo "$handler" | tr '/' '_')" -name "BFCL_v4_${cat}_result.json" -delete 2>/dev/null
   echo "[$(date +%H:%M:%S)] gen $tag $cat" >> "$LOG"
   REMOTE_OPENAI_BASE_URL=http://127.0.0.1:8080/v1 REMOTE_OPENAI_TOKENIZER_PATH=$TOK \
     timeout 7200 $BFCL generate --model "$handler" --test-category "$cat" \
