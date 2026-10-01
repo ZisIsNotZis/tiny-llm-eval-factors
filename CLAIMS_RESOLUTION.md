@@ -8,11 +8,11 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 | status | n | share |
 |---|---|---|
 | resolved | 24 | 27% |
-| underpowered | 4 | 5% |
-| noise_level | 4 | 5% |
+| underpowered | 4 | 4% |
+| noise_level | 4 | 4% |
 | unauditable | 8 | 9% |
-| model_fit | 14 | 16% |
-| qualitative | 34 | 39% |
+| model_fit | 15 | 17% |
+| qualitative | 35 | 39% |
 
 ## resolved (24)
 
@@ -106,7 +106,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — On the same unseen `granite-4.1-3b-UD-Q3_K_XL` at long context (`ctx24576`), one-sided KV effects remain non-collapsing and positive on both primary datasets: Humaneval base `0.7317` -> K-only `0.7439` / V-only `0.7439`; MBPP base `0.5529` -> K-only `0.5714` / V-only `0.5661`, with modest wall-time increases (`~+6s` to `+8s`).
   - _depends on variable absent from DB schema_
 
-## model_fit (14)
+## model_fit (15)
 
 - — Residual `wall_time_sec` nulls are unrecoverable from current artifacts: 42 rows still lack timing, and none of those rows have a direct `.txt` sidecar in `evalplus_results`.
   - _model-fit / coefficient statement, not an effect claim_
@@ -136,8 +136,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _model-fit / coefficient statement, not an effect claim_
 - — **[VERIFIED, checkpoint] The M15 long-context multi-turn re-run is generating cleanly and clears M13's residual per-slot ctx overflow.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) had written **136/200** records by 13:42 with **zero** `exceed_context_size` / `Context size has been exceeded` lines, versus M13's 3 overflow failures at 68154/84958/71326 tokens under 65536/slot. No row is emitted before `panel end`, so no new multi-turn row is ingestible yet (expected ~14:05).
   - _model-fit / coefficient statement, not an effect claim_
+- — **[VERIFIED, wrap-up m15] The `multi_turn_long_context` cell now has a CLEAN row (no ctx overflow) and it is nonzero.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) finished with **200/200 valid records, 0 `exceed_context_size`/`Context size has been exceeded` lines**, scoring **0.095**, ingested as `run_tag='m15-bfcl-multiturn'` (DB 2093 -> 2094 rows, `integrity ok | fk issues 0`). This clears M13's residual overflow (68154/84958/71326 tokens vs 65536/slot); the clean score is slightly *below* the ctx-contaminated M12 (`0.135`) and M13 (`0.105`), confirming the earlier rows were not inflated by the overflow and that this category is near floor for the 2B class, not a harness zero.
+  - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (34)
+## qualitative (35)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -206,5 +208,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[INFRA, checkpoint] DB state is unchanged and healthy; all 7 multi-turn rows already ingested; regeneration byte-stable except a stale `WRAPUP.md` claim count.** `python3 migrate_db.py` is a no-op on the already-ingested multi-turn cells (m9=2, m11=2, m12=1, m13=1, m14=1): 2093 `experiments` rows before and after, `integrity ok | fk issues 0`, backup `experiments.sqlite.bak10` taken first. `exp.py check`, `multipl_e_analysis.py`, `ladder_analysis.py`, `horizon_analysis.py`, `claims_ledger.py`, `build_wrapup.py` all exit 0; no new MultiPL-E panels ran, so `MULTIPLE.md`/`LADDER_TOOLS.md`/`HORIZON.md` are byte-stable. The only diff is `WRAPUP.md`, committed stale: the rebuild corrects the claim table from 82 claims / 23 resolved to **85 claims / 24 resolved**, matching the current `claims_ledger.csv` (85 rows). Quant-step CIs remain item-level (`multipl_e_analysis.py ci_items`); no CI code changed.
   - _no numeric contrast in the claim_
 - — **[INFRA, checkpoint] GPU lock is healthy; no orphan to reap.** `fuser -v /tmp/llama_gpu.lock` lists only the live M15 chain (`flock` 297813 -> `run_m9_panel.sh` 297814 -> `llama-server` 297818 -> `bfcl` 297860) with the `llama-server` child decoding on port 8080; no waiter is blocked, so the "kill only orphaned lock-holding children" rule did not fire. GPU 4.10 GB used / 20.01 GB free.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] GPU is idle and the lock is clean; all multi-turn rows ingested; regeneration byte-stable.** No `flock`/`run_m1[12]`/`run_m9_panel`/`llama-server` processes are live, `fuser -v /tmp/llama_gpu.lock` lists no holder, no `:8080` listener, GPU 733 MiB used / 23.4 GB free, so no orphan to reap and no waiter is stuck. `python3 migrate_db.py` ingested the one new cell (`m15=1`; m9=2, m11=2, m12=1, m13=1, m14=1 refreshed idempotently), 2093 -> 2094 rows, `integrity ok | fk issues 0`, zero out-of-range scores, zero null `_bench`/`_score` (only the pre-existing 1 legacy null `bench_family`). No new MultiPL-E panels ran, so `MULTIPLE.md`/`LADDER_TOOLS.md`/`HORIZON.md`/`WRAPUP.md`/`claims_ledger.csv` are byte-stable. Quant-step CIs remain item-level (`multipl_e_analysis.py ci_items`); no CI code changed. Backup `experiments.sqlite.bak11` taken before mutation.
   - _no numeric contrast in the claim_
 

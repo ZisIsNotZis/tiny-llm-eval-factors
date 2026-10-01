@@ -31,6 +31,24 @@ family is off-curve, then "use ≥ Q3" is not just conditional on the model — 
 
 **Status:** backlog. Run after the main-line cross-family/cross-task expansion is complete.
 
+
+### B1a. Bonsai ternary — reconnaissance results (2026-10-01), NOT yet run
+
+Concrete blockers found (so the next attempt is fast):
+
+| file | size | ggml tensor type | verdict |
+|---|---|---|---|
+| `Ternary-Bonsai-27B-Q2_0.gguf` | 7.17 GB | **42** (`Q2_0`) | our llama.cpp 4399 **defines** type 42, but `llama-server` still fails at `gguf_init_from_reader: failed to read tensor data` → suspect a truncated/corrupt download (needs size check vs ModelScope) **or** the hybrid arch |
+| `Ternary-Bonsai-27B-PQ2_0.gguf` | 7.17 GB | **142** | **unsupported**: our `GGML_TYPE_COUNT = 43`, so 142 is beyond the table → needs a newer llama.cpp |
+| `Ternary-Bonsai-27B-Q2_g64.gguf` | 7.59 GB | (not yet parsed) | likely also unsupported grouping |
+
+Architecture: `general.architecture = qwen35` **with SSM tensors** (`qwen35.ssm.conv_kernel/state_size/group_count`, `full_attention_interval = 4`) — a **hybrid attention+SSM** model, unlike the plain Qwen3.5 checkpoints we benchmarked.
+
+**Next steps when B1 is run:** (1) verify file completeness against ModelScope metadata;
+(2) build a *separate* newer llama.cpp (drop-in, do not disturb `/home/z/llama.cpp`) to get type 142 and hybrid-SSM support; (3) then run the same MultiPL-E + multi-turn panel and compare against the fitted curve **at matched bits/weight**, not matched quant name.
+
+**Status:** recon done, still backlog (operator said main line first).
+
 ## B2. Sampling-parameter recommendations from vendors
 
 Unsloth publishes recommended llama.cpp run/sampling parameters per model. We currently use a fixed
