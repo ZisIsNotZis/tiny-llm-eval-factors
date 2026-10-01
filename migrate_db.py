@@ -401,6 +401,11 @@ def ingest_m16(con):
                            "m16_summary.jsonl")
 
 
+def ingest_m17(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m17_summary.jsonl", "m17-bfcl-multiturn",
+                           "m17_summary.jsonl")
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -470,7 +475,7 @@ def main():
     n18 = ingest_m14(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15} m13={n16} m15={n17} m16={n18} m14={n18}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15} m13={n16} m15={n17} m16={n18} m17={n19} m14={n18}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))
