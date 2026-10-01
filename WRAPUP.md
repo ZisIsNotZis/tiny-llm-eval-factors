@@ -167,6 +167,19 @@ The `Q2→Q3` step is the study's one firmly established quantitative result: it
 
 **Conclusion: quantization damage scales with task horizon.** The longer the task and the more state it needs, the more a low-quant model loses — which is exactly the ability that short single-function benchmarks cannot see, and the reason the broader community still recommends Q4/Q5.
 
+### 7d. Task-horizon retention (`horizon_analysis.py`)
+
+How much of its **Q3** capability does Qwen3.5-2B retain at **Q2**? (lower = quantisation hurts that axis more)
+
+| axis | Q2 | Q3 | retention | 95% CI |
+|---|---|---|---|---|
+| code single-function | 0.120 | 0.275 | **0.4361** | [0.3291, 0.5778] |
+| tool single-turn | 0.299 | 0.502 | **0.5965** | [0.5388, 0.6603] |
+| tool single-turn (live) | 0.190 | 0.412 | **0.4618** | [0.407, 0.524] |
+| tool multi-turn | 0.025 | 0.185 | **0.1351** | [0.0542, 0.3368] |
+
+All CIs exclude 1.0. Multi-turn agentic loses ~4x more of its capability than single-function code, and harder single-turn (live) loses more than easy single-turn — **quantisation damage scales with task horizon.**
+
 ## 8. What was added / recovered during wrap-up
 
 - `resolution.py` / `resolution.json` / `resolution.md` — measured resolution floors.

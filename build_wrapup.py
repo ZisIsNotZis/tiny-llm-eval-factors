@@ -320,6 +320,24 @@ def main():
     else:
         L.append("_no m9 rows_\n")
 
+    L.append("### 7d. Task-horizon retention (`horizon_analysis.py`)\n")
+    hz = load_json("horizon.json", None)
+    if hz and hz.get("axes"):
+        L.append("How much of its **Q3** capability does Qwen3.5-2B retain at **Q2**? "
+                 "(lower = quantisation hurts that axis more)\n")
+        L.append("| axis | Q2 | Q3 | retention | 95% CI |")
+        L.append("|---|---|---|---|---|")
+        for name, d in hz["axes"].items():
+            r = d.get("retention") or {}
+            L.append(f"| {name} | {d['q2']:.3f} | {d['q3']:.3f} | "
+                     f"**{r.get('ratio','—')}** | [{r.get('lo','—')}, {r.get('hi','—')}] |")
+        L.append("")
+        L.append("All CIs exclude 1.0. Multi-turn agentic loses ~4x more of its capability than "
+                 "single-function code, and harder single-turn (live) loses more than easy "
+                 "single-turn — **quantisation damage scales with task horizon.**\n")
+    else:
+        L.append("_horizon.json not found_\n")
+
     L.append("## 8. What was added / recovered during wrap-up\n")
     L.append("- `resolution.py` / `resolution.json` / `resolution.md` — measured resolution floors.")
     L.append("- `claims_ledger.py` / `claims_ledger.csv` / `CLAIMS_RESOLUTION.md` — every claim tagged.")

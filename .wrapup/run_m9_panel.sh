@@ -4,14 +4,16 @@
 set -u
 cd /home/z/hf/research
 WR=/home/z/hf/research/.wrapup
-LOG=$WR/m9.log
-SUM=$WR/m9_summary.jsonl
+LOG=${LOG:-$WR/m9.log}
+SUM=${SUM:-$WR/m9_summary.jsonl}
 BFCL=$WR/bfclenv/bin/bfcl
 TOK=/home/z/hf/qwen_tok
 tag="$1"; file="$2"; handler="$3"; CATS="${4:-multi_turn_base}"
+CTX="${CTX:-98304}"
+NP="${NP:-2}"
 
 echo "[$(date +%H:%M:%S)] server $file" >> "$LOG"
-llama-server -m "/home/z/hf/$file" --port 8080 --host 127.0.0.1 -ngl 99 -c 98304 -np 2 --jinja \
+llama-server -m "/home/z/hf/$file" --port 8080 --host 127.0.0.1 -ngl 99 -c $CTX -np $NP --jinja \
   --cache-type-k q8_0 --cache-type-v q8_0 >> "$LOG" 2>&1 &
 srv=$!
 for i in $(seq 1 150); do
