@@ -128,9 +128,21 @@ Direct measurement across **model size × task type** (Qwen3.5, item-level score
 | 9B | code | 0.429 | 0.571 | **+0.143** | 0.750 |
 | 9B | tool multi-turn | 0.490 | 0.650 | **+0.160** | 0.754 |
 
-Every one of the six cells gives **+0.142 … +0.160**. The Q2→Q3 upgrade therefore buys a roughly
-**fixed amount of absolute score**, whether you are doing single-function code or multi-turn agentic
-work, on a 2B or a 9B model.
+The six high-ceiling cells all give **+0.142 … +0.160**. But the harder agentic sub-categories at
+2B show the mechanism more clearly (BFCL multi-turn, `run_tag IN ('m9','m18','m19')`):
+
+| category (Qwen3.5-2B) | Q2 | Q3 | Δ |
+|---|---|---|---|
+| `multi_turn_base` | 0.025 | 0.185 | +0.160 |
+| `multi_turn_miss_param` | 0.005 | 0.105 | +0.100 |
+| `multi_turn_long_context` | 0.005 | 0.095 | +0.090 |
+| `multi_turn_miss_func` | 0.005 | 0.080 | +0.075 |
+
+**The invariant is the floor, not the gain.** At Q2 every hard agentic category sits at ~0.005 — the
+model is pinned to the floor — and Q3 restores it to a **task-dependent ceiling** (0.08–0.185). So the
+gain is *capped by the task's own headroom*, and the task ranking is unchanged by quant
+(`base > miss_param > long_context > miss_func` at both levels). The ~+0.15 constancy holds only
+where the ceiling is high (code, base multi-turn).
 
 What varies is the **retention ratio** (0.135 … 0.754) — and it varies *only* because the Q3 baseline
 differs. Multi-turn at 2B starts low (Q3 = 0.185), so the same +0.16 looks like a 7× relative loss;

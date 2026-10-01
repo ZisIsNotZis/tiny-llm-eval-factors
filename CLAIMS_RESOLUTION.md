@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 24 | 32% |
+| resolved | 25 | 33% |
 | underpowered | 4 | 5% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 11% |
 | model_fit | 15 | 20% |
-| qualitative | 19 | 26% |
+| qualitative | 20 | 26% |
 
-## resolved (24)
+## resolved (25)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -63,6 +63,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - Δ=0.16 — **[VERIFIED, wrap-up m17] The multi-turn quant penalty does NOT scale up with model size — the 9B Q2 anchor retains the least capability of the three.** `Qwen3.5-9B` `UD-Q2_K_XL` on BFCL `multi_turn_base` (native-FC handler `Qwen/Qwen3-8B-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) scores **0.49**, ingested as `run_tag='m17-bfcl-multiturn'` (DB 2094 -> 2095 rows, `integrity ok | fk issues 0`). The panel is clean: 0 `Context size has been exceeded`/`exceed_context_size` lines and 5 `Failed to decode`. For the Q2->Q3 multi-turn step so far: 2B **0.025 -> 0.185** (+0.160), 4B **0.385 -> 0.535** (+0.150), 9B Q2 **0.49** (q3 in flight).
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 - Δ=0.16 — **[CORRECTED, m17 + cross-size] The absolute `Q2->Q3` gain is ~+0.15 and is essentially CONSTANT across model size and task type — the earlier "horizon effect" was a retention-ratio artifact.** Direct measurement (Qwen3.5, item-level scores): code `2B +0.155 / 4B +0.142 / 9B +0.143`; multi-turn `2B +0.160 / 4B +0.150 / 9B +0.160`. Every cell is +0.142..+0.160. What varies is the *retention ratio* `Q2/Q3` (0.135 .. 0.754), which is driven purely by how high the Q3 baseline sits — multi-turn at 2B starts low (Q3 0.185), so the same +0.16 looks like a 7x relative loss, while multi-turn at 4B starts high (Q3 0.535) and looks like a 28% loss. **So: upgrading Q2->Q3 buys a roughly fixed ~+0.15 of score whatever you run; the "how much of my capability did I lose" framing depends entirely on the baseline and must not be read as a horizon effect.** Retention-ratio check: multi-turn/code = 0.310 [0.119,0.806] at 2B but 1.045 [0.816,1.337] at 4B and 1.005 [0.809,1.248] at 9B, i.e. the apparent horizon penalty exists only where the Q3 baseline is low. Caveat: 3 sizes x 2 axes; the constancy is striking but not yet a law.
+  - _|Δ|=0.1600 >= MDE 0.108 at n=1_
+- Δ=0.16 — **[VERIFIED, m18/m19] At 2B, `Q2` pins the model at the *floor* across every agentic multi-turn category; `Q3` restores it to a task-dependent ceiling.** BFCL multi-turn, Qwen3.5-2B, native-FC, greedy (Q2 -> Q3): `multi_turn_base` 0.025 -> 0.185 (+0.160), `multi_turn_miss_param` 0.005 -> 0.105 (+0.100), `multi_turn_long_context` 0.005 -> 0.095 (+0.090), `multi_turn_miss_func` 0.005 -> 0.080 (+0.075). So the *gain* is not a constant: it is capped by each task's own Q3 ceiling, and the category ranking is unchanged by quant (base > miss_param > long_context > miss_func at both levels). The invariant is the **floor**: every hard agentic category sits at 0.005 at Q2. This refines the earlier "constant +0.15" statement, which holds only for axes with high ceilings (code, base multi-turn).
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 
 ## underpowered (4)
@@ -139,7 +141,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, wrap-up m15] The `multi_turn_long_context` cell now has a CLEAN row (no ctx overflow) and it is nonzero.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) finished with **200/200 valid records, 0 `exceed_context_size`/`Context size has been exceeded` lines**, scoring **0.095**, ingested as `run_tag='m15-bfcl-multiturn'` (DB 2093 -> 2094 rows, `integrity ok | fk issues 0`). This clears M13's residual overflow (68154/84958/71326 tokens vs 65536/slot); the clean score is slightly *below* the ctx-contaminated M12 (`0.135`) and M13 (`0.105`), confirming the earlier rows were not inflated by the overflow and that this category is near floor for the 2B class, not a harness zero.
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (19)
+## qualitative (20)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -178,5 +180,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, wrap-up m14] The granite `multi_turn_base` 0.00 was a handler-dialect artifact; the repaired run is nonzero.** With BFCL's `granite-4` handler (`ibm-granite/granite-4.0-350m` -> `Granite4FCHandler`) and `-c 131072 -np 2` (65536 ctx/slot), `granite-4.1-3b` `Q3_K_M` scores **0.175** on `multi_turn_base` (200 items, greedy) — ingested as `run_tag='m14-bfcl-multiturn'` (DB 2092 -> 2093 rows, `integrity ok | fk issues 0`). The panel is clean: 0 context-overflow lines, 1 `Failed to decode`, and the raw result file shows the model emitting real `<tool_call>` JSON blocks. This confirms the earlier diagnosis: the 0.00 from the `granite-3.1` handler was the Granite-3 parser failing on Granite-4.1's tool-call dialect, not capability.
   - _no numeric contrast in the claim_
 - — **[METHOD, m16 abandoned] A handler whose prompt format mismatches the model can be *pathologically* slow, not just wrong.** BFCL's `MiniCPM3-4B-FC` handler against `MiniCPM5-2B` gave a 9-hour ETA (166 s/item, 1/200 in 3 min): the model generates extremely long outputs under that format. Aborted as impractical; **not** a capability result.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, checkpoint m18/m19] The 2B `Q2` multi-turn collapse spans every sub-category: m18 completes clean; m19's `Q2` long-context floor is genuine, not a harness zero.** `m18` (Qwen3.5-2B `UD-Q2/Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items/cat) is now complete and clean — **0** `exceed_context_size` lines, all slot releases `truncated = 0`: Q2 `miss_func 0.005`, `miss_param 0.005`; Q3 `miss_func 0.080`, `miss_param 0.105`. Against the same quant's own `multi_turn_base` (`m9-bfcl-multiturn`: Q2 0.025, Q3 0.185) Q2 sits at the floor in **all three** categories (base/miss_func/miss_param) while Q3 recovers 2-4x, so the Q2 failure is not category-specific. `m19-q2` `multi_turn_long_context` = **0.005** (native-FC `Qwen/Qwen3-1.7B-FC`, `-c 196608 -np 2` = 98304 ctx/slot, greedy). This 1/200 score was checked against the three harness hypotheses and survives all: the handler is native-FC (not prompted), the result file is pre-deleted per panel (no stale reuse of a prior quant's responses), and it sits at the same quant's own base floor (0.025) — so it is a genuine Q2 collapse, **not** a harness zero. Caveat: **11/200** items still hit `exceed_context_size_error` at 98304/slot (prompts 98445-112471), because the Q2 model over-generates and inflates the accumulated multi-turn context; the same launcher at `Q3` clean (`m15` 0 overflow, `m19-q3` 0 overflow so far) shows this is model-specific over-generation, not a config gap. Row kept with the caveat (as `m12`/`m13`); `multi_turn_long_context` does not feed `horizon_analysis.py`, so the retention ladder is unchanged. Ingested as `run_tag='m18-bfcl-multiturn'` (4 rows) + `'m19-bfcl-multiturn'` (1 row); DB 2099 -> 2101, `integrity ok | fk issues 0`. `m19-q3` and the two 4B long-context panels remain in flight; GPU busy, no new panel queued.
   - _no numeric contrast in the claim_
 
