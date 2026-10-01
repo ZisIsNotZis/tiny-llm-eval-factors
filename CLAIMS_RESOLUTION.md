@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 23 | 28% |
+| resolved | 24 | 28% |
 | underpowered | 4 | 5% |
 | noise_level | 4 | 5% |
-| unauditable | 8 | 10% |
-| model_fit | 13 | 16% |
-| qualitative | 30 | 37% |
+| unauditable | 8 | 9% |
+| model_fit | 13 | 15% |
+| qualitative | 32 | 38% |
 
-## resolved (23)
+## resolved (24)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -62,6 +62,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.2930 >= MDE 0.108 at n=1_
 - Δ=0.15 — **[VERIFIED, checkpoint] GPU lock is healthy, no orphan to reap, and no new MultiPL-E rows this checkpoint.** `run_m13.sh` (pid 163764) -> `flock` (163766) -> `run_m9_panel.sh` (163767) -> `llama-server` (163771) -> `bfcl` (163836) is a single live holder chain of `/tmp/llama_gpu.lock`; `fuser -v` lists only that chain, so no waiter is stuck and no orphaned child exists. GPU 3.58 GB used / 20.53 GB free. M11 (Qwen3.5-4B `multi_turn_base` 0.385 -> 0.535) and M12 (Qwen3.5-2B `multi_turn_long_context` 0.135, ctx-contaminated) remain the only multi-turn DB rows; no new MultiPL-E panels ran, so `multipl_e_analysis.py`/`ladder_analysis.py` outputs are unchanged. Regenerated `WRAPUP.md`, `CLAIMS_RESOLUTION.md`, `claims_ledger.csv` are byte-stable.
   - _|Δ|=0.1500 >= MDE 0.108 at n=1_
+- Δ=0.64 — **[VERIFIED, m14] The granite `Q2_K` multi-turn 0.00 survives the handler fix and is a genuine quant cliff, not a harness artifact.** Re-running `granite-4.1-3b` `Q2_K` under the same correct `Granite4FCHandler` still gives **0.0** (734 `Empty response`, 0 `Failed to decode`, 0 context-overflow): the Q2 weights return empty/degenerate assistant turns. This is corroborated on three independent harnesses already in the DB — `granite-4.1-3b-Q2_K` vs `-Q3_K_M`: MultiPL-E cpp/py/js **0.037/0.056/0.050 -> 0.478/0.242/0.453** (`m5-family-ladder`), BFCL native simple/multiple **0.015/0.020 -> 0.660/0.585** (`m7-tool-calling-native`), BFCL live_simple **0.016 -> 0.469** (`m8-bfcl-live`). So a 0.00 that persists after a correct-handler re-run is not automatically "harness"; cross-benchmark agreement is the discriminator. The Q2 row is quarantined (`.wrapup/m14_quarantine.jsonl`) and not ingested; `Q2_K` must be treated as off-curve/broken for this model.
+  - _|Δ|=0.6400 >= MDE 0.108 at n=1_
 
 ## underpowered (4)
 
@@ -133,7 +135,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (30)
+## qualitative (32)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -194,5 +196,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[METHOD, m12] The second granite multi-turn row also scored 0.00 and is the same harness artifact, not capability.** `gr3b-q3` (`granite-4.1-3b` `Q3_K_M`, category `multi_turn_base`) returned **0.0** under BFCL's `ibm-granite/granite-3.1-8b-instruct` handler, matching `gr3b-q2`: the q3 log section is a wall of `Failed to decode the model response. Proceed to next turn.` (the Granite-3 handler cannot parse the Granite-4.1 tool-call dialect). Quarantined to `.wrapup/m12_quarantine.jsonl` (now 2 rows) and **not ingested**; the DB holds **zero** granite multi-turn rows. The approved re-run (M14) is already chained after M13 with the `granite-4` native-FC handler (`ibm-granite/granite-4.0-350m` -> `Granite4FCHandler`).
   - _no numeric contrast in the claim_
 - — **[BLOCKER, m13] M13's 65536 ctx/slot is still insufficient for the longest `multi_turn_long_context` prompts.** The corrected re-run (Qwen3.5-2B `UD-Q3_K_XL`, native-FC `Qwen/Qwen3-1.7B-FC`, `-c 131072 -np 2`) no longer errors at 53166 tokens, but at 21:28 in-run **3/200** items still failed with `exceed_context_size_error` at **68154 / 84958 / 71326** prompt tokens > 65536/slot (n_ctx_slot=65536). So the category needs `>= ~85k` tokens/slot — a **single-slot `-c 131072`** run (the fallback the launcher comment anticipated, but did not implement) would clear it. This is not a zero and M13 is still generating (94/200 records at 12:22); the owed follow-up is a long-context re-run at >=131072/slot before the number is treated as clean.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, wrap-up m14] The granite `multi_turn_base` 0.00 was a handler-dialect artifact; the repaired run is nonzero.** With BFCL's `granite-4` handler (`ibm-granite/granite-4.0-350m` -> `Granite4FCHandler`) and `-c 131072 -np 2` (65536 ctx/slot), `granite-4.1-3b` `Q3_K_M` scores **0.175** on `multi_turn_base` (200 items, greedy) — ingested as `run_tag='m14-bfcl-multiturn'` (DB 2092 -> 2093 rows, `integrity ok | fk issues 0`). The panel is clean: 0 context-overflow lines, 1 `Failed to decode`, and the raw result file shows the model emitting real `<tool_call>` JSON blocks. This confirms the earlier diagnosis: the 0.00 from the `granite-3.1` handler was the Granite-3 parser failing on Granite-4.1's tool-call dialect, not capability.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] M13 and M14 multi-turn rows ingested; ctx metadata corrected; the idle M15 long-context re-run is now generating.** `python3 migrate_db.py` ingested `m13-bfcl-multiturn` (Qwen3.5-2B `UD-Q3_K_XL`, `multi_turn_long_context` 0.105) and `m14-bfcl-multiturn` (granite-4.1-3b `Q3_K_M` 0.175); DB 2091 -> 2093 rows, `integrity ok | fk issues 0`, zero out-of-range scores, zero null `_bench`/`_score`. `migrate_db.py` gained `ingest_m14` (mirroring `ingest_m13`/`ingest_m15`) and `_ingest_bfcl_mt` now takes the run's true `ctx_size` (m13/m14 = 131072, m15 = 196608) instead of the old hard-coded 98304. M14 ended 13:11 with no successor process and the GPU idle (776 MiB used / 23.3 GB free), so the committed `chain5.sh` -> `run_m15.sh` (Qwen3.5-2B `UD-Q3_K_XL`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304/slot, enough per-slot ctx to clear the 84958-token prompts that broke m13) was launched and is generating. `multipl_e_analysis.py` / `ladder_analysis.py` / `horizon_analysis.py` / `claims_ledger.py` / `build_wrapup.py` all exit 0 and their outputs are byte-stable (m14 is cross-family and does not enter the Qwen retention ladder).
   - _no numeric contrast in the claim_
 

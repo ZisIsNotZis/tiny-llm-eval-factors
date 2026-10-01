@@ -327,6 +327,8 @@ MMT_MODELS = {
     "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
     # other families (handler support varies)
     "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
+    # M14 re-run of granite under the granite-4 handler (Granite4FCHandler).
+    "gr4b-q2": "granite-4.1-3b-Q2_K.gguf", "gr4b-q3": "granite-4.1-3b-Q3_K_M.gguf",
     "e2b-q2": "gemma-4-E2B-it-UD-Q2_K_XL.gguf", "e2b-q3": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
     "mcp5-2b-q2": "MiniCPM5-2B-Q2_K.gguf", "mcp5-2b-q3": "MiniCPM5-2B-Q3_K_M.gguf",
     "qwen9b-q2": "Qwen3.5-9B-UD-Q2_K_XL.gguf", "qwen9b-q3": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
@@ -334,7 +336,7 @@ MMT_MODELS = {
 }
 
 
-def _ingest_bfcl_mt(con, path, run_tag, source, model_map=None):
+def _ingest_bfcl_mt(con, path, run_tag, source, model_map=None, ctx_size=98304):
     """Multi-turn BFCL rows (one per model x category)."""
     model_map = model_map or MMT_MODELS
     if not os.path.exists(path):
@@ -352,7 +354,7 @@ def _ingest_bfcl_mt(con, path, run_tag, source, model_map=None):
         if r["model"] not in model_map or r.get("accuracy") is None:
             continue
         row = base_row(model_map[r["model"]], f"bfcl-{r['category']}", 0.0, r["accuracy"], None)
-        row.update({"run_tag": run_tag, "rep": 1, "ctx_size": 98304, "parallel_slots": 2,
+        row.update({"run_tag": run_tag, "rep": 1, "ctx_size": ctx_size, "parallel_slots": 2,
                     "protocol": r.get("protocol", "bfcl-official-multiturn-temp0"),
                     "language": "python", "bench_family": "bfcl-multiturn",
                     "source_file": source})
@@ -377,13 +379,21 @@ def ingest_m12(con):
 
 
 def ingest_m13(con):
+    # run_m13.sh launched llama-server with -c 131072 -np 2.
     return _ingest_bfcl_mt(con, ".wrapup/m13_summary.jsonl", "m13-bfcl-multiturn",
-                           "m13_summary.jsonl")
+                           "m13_summary.jsonl", ctx_size=131072)
+
+
+def ingest_m14(con):
+    # run_m14.sh launched llama-server with -c 131072 -np 2.
+    return _ingest_bfcl_mt(con, ".wrapup/m14_summary.jsonl", "m14-bfcl-multiturn",
+                           "m14_summary.jsonl", ctx_size=131072)
 
 
 def ingest_m15(con):
+    # run_m15.sh launches llama-server with -c 196608 -np 2.
     return _ingest_bfcl_mt(con, ".wrapup/m15_summary.jsonl", "m15-bfcl-multiturn",
-                           "m15_summary.jsonl")
+                           "m15_summary.jsonl", ctx_size=196608)
 
 
 def ingest_m4(con):
@@ -452,9 +462,10 @@ def main():
     n15 = ingest_m12(con)
     n16 = ingest_m13(con)
     n17 = ingest_m15(con)
+    n18 = ingest_m14(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15} m13={n16} m15={n17}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15} m13={n16} m15={n17} m14={n18}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))
