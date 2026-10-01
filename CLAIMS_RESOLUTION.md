@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 24 | 28% |
+| resolved | 24 | 27% |
 | underpowered | 4 | 5% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 9% |
-| model_fit | 13 | 15% |
-| qualitative | 32 | 38% |
+| model_fit | 14 | 16% |
+| qualitative | 34 | 39% |
 
 ## resolved (24)
 
@@ -106,7 +106,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — On the same unseen `granite-4.1-3b-UD-Q3_K_XL` at long context (`ctx24576`), one-sided KV effects remain non-collapsing and positive on both primary datasets: Humaneval base `0.7317` -> K-only `0.7439` / V-only `0.7439`; MBPP base `0.5529` -> K-only `0.5714` / V-only `0.5661`, with modest wall-time increases (`~+6s` to `+8s`).
   - _depends on variable absent from DB schema_
 
-## model_fit (13)
+## model_fit (14)
 
 - — Residual `wall_time_sec` nulls are unrecoverable from current artifacts: 42 rows still lack timing, and none of those rows have a direct `.txt` sidecar in `evalplus_results`.
   - _model-fit / coefficient statement, not an effect claim_
@@ -134,8 +134,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _model-fit / coefficient statement, not an effect claim_
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
+- — **[VERIFIED, checkpoint] The M15 long-context multi-turn re-run is generating cleanly and clears M13's residual per-slot ctx overflow.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) had written **136/200** records by 13:42 with **zero** `exceed_context_size` / `Context size has been exceeded` lines, versus M13's 3 overflow failures at 68154/84958/71326 tokens under 65536/slot. No row is emitted before `panel end`, so no new multi-turn row is ingestible yet (expected ~14:05).
+  - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (32)
+## qualitative (34)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -200,5 +202,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, wrap-up m14] The granite `multi_turn_base` 0.00 was a handler-dialect artifact; the repaired run is nonzero.** With BFCL's `granite-4` handler (`ibm-granite/granite-4.0-350m` -> `Granite4FCHandler`) and `-c 131072 -np 2` (65536 ctx/slot), `granite-4.1-3b` `Q3_K_M` scores **0.175** on `multi_turn_base` (200 items, greedy) — ingested as `run_tag='m14-bfcl-multiturn'` (DB 2092 -> 2093 rows, `integrity ok | fk issues 0`). The panel is clean: 0 context-overflow lines, 1 `Failed to decode`, and the raw result file shows the model emitting real `<tool_call>` JSON blocks. This confirms the earlier diagnosis: the 0.00 from the `granite-3.1` handler was the Granite-3 parser failing on Granite-4.1's tool-call dialect, not capability.
   - _no numeric contrast in the claim_
 - — **[INFRA, checkpoint] M13 and M14 multi-turn rows ingested; ctx metadata corrected; the idle M15 long-context re-run is now generating.** `python3 migrate_db.py` ingested `m13-bfcl-multiturn` (Qwen3.5-2B `UD-Q3_K_XL`, `multi_turn_long_context` 0.105) and `m14-bfcl-multiturn` (granite-4.1-3b `Q3_K_M` 0.175); DB 2091 -> 2093 rows, `integrity ok | fk issues 0`, zero out-of-range scores, zero null `_bench`/`_score`. `migrate_db.py` gained `ingest_m14` (mirroring `ingest_m13`/`ingest_m15`) and `_ingest_bfcl_mt` now takes the run's true `ctx_size` (m13/m14 = 131072, m15 = 196608) instead of the old hard-coded 98304. M14 ended 13:11 with no successor process and the GPU idle (776 MiB used / 23.3 GB free), so the committed `chain5.sh` -> `run_m15.sh` (Qwen3.5-2B `UD-Q3_K_XL`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304/slot, enough per-slot ctx to clear the 84958-token prompts that broke m13) was launched and is generating. `multipl_e_analysis.py` / `ladder_analysis.py` / `horizon_analysis.py` / `claims_ledger.py` / `build_wrapup.py` all exit 0 and their outputs are byte-stable (m14 is cross-family and does not enter the Qwen retention ladder).
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] DB state is unchanged and healthy; all 7 multi-turn rows already ingested; regeneration byte-stable except a stale `WRAPUP.md` claim count.** `python3 migrate_db.py` is a no-op on the already-ingested multi-turn cells (m9=2, m11=2, m12=1, m13=1, m14=1): 2093 `experiments` rows before and after, `integrity ok | fk issues 0`, backup `experiments.sqlite.bak10` taken first. `exp.py check`, `multipl_e_analysis.py`, `ladder_analysis.py`, `horizon_analysis.py`, `claims_ledger.py`, `build_wrapup.py` all exit 0; no new MultiPL-E panels ran, so `MULTIPLE.md`/`LADDER_TOOLS.md`/`HORIZON.md` are byte-stable. The only diff is `WRAPUP.md`, committed stale: the rebuild corrects the claim table from 82 claims / 23 resolved to **85 claims / 24 resolved**, matching the current `claims_ledger.csv` (85 rows). Quant-step CIs remain item-level (`multipl_e_analysis.py ci_items`); no CI code changed.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] GPU lock is healthy; no orphan to reap.** `fuser -v /tmp/llama_gpu.lock` lists only the live M15 chain (`flock` 297813 -> `run_m9_panel.sh` 297814 -> `llama-server` 297818 -> `bfcl` 297860) with the `llama-server` child decoding on port 8080; no waiter is blocked, so the "kill only orphaned lock-holding children" rule did not fire. GPU 4.10 GB used / 20.01 GB free.
   - _no numeric contrast in the claim_
 
