@@ -924,7 +924,7 @@ def main():
         ("m9", ingest_m9), ("m11", ingest_m11), ("m12", ingest_m12),
         ("m13", ingest_m13), ("m14", ingest_m14), ("m15", ingest_m15),
         ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18),
-        ("m19", ingest_m19), ("m20", ingest_m20),
+        ("m19", ingest_m19), ("m20", ingest_m20), ("m21", ingest_m21),
     ]
     tally = {}
     for label, tag, fn in ONCE:
@@ -943,6 +943,19 @@ def main():
                          "GROUP BY 1 ORDER BY 2 DESC"):
         print("   ", r)
     con.close()
+
+
+BONSAI_MODELS = {
+    "bonsai-q2g64": "Ternary-Bonsai-27B-Q2_g64.gguf",
+}
+
+
+def ingest_m21(con):
+    # Refresh semantics: the panel appends one row per language, so a checkpoint
+    # taken mid-panel must replace rather than lock in the partial row set.
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m21-bonsai-ternary",))
+    return ingest_mpl(con, ".wrapup/m21_summary.jsonl", "m21-bonsai-ternary",
+                      "m21_summary.jsonl", model_map=BONSAI_MODELS)
 
 
 if __name__ == "__main__":
