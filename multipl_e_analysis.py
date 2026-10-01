@@ -25,6 +25,8 @@ LEVEL_RE = re.compile(r"(?:I)?Q([1-8])", re.I)
 
 
 def ci95(vals):
+    """Cross-language CI (kept for reference only -- n is the number of LANGUAGES,
+    which is far too small to be the uncertainty of an item-level effect)."""
     n = len(vals)
     if n < 2:
         return None
@@ -34,6 +36,69 @@ def ci95(vals):
     return {"n": n, "mean": round(m, 4), "ci_low": round(m - 1.96 * se, 4),
             "ci_high": round(m + 1.96 * se, 4)}
 
+
+def ci_items(pass_a, n_a, pass_b, n_b):
+    """Item-level 95% CI for the difference of two independent proportions.
+
+    THIS is the correct uncertainty for a quant step: every benchmark item is a
+    Bernoulli trial.  Using the cross-language CI instead (n = 2-3) makes the
+    intervals roughly an order of magnitude too narrow.
+    """
+    if not n_a or not n_b:
+        return None
+    pa, pb = pass_a / n_a, pass_b / n_b
+    se = math.sqrt(pa * (1 - pa) / n_a + pb * (1 - pb) / n_b)
+    d = pb - pa
+    return {"n_items": n_a + n_b, "mean": round(d, 4),
+            "se": round(se, 4),
+            "ci_low": round(d - 1.96 * se, 4), "ci_high": round(d + 1.96 * se, 4),
+            "significant": abs(d) > 1.96 * se}
+
+
+
+def _model_maps():
+    """tag -> model file, merged from the migrate_db maps."""
+    maps = {}
+    try:
+        import migrate_db as M
+        for name in dir(M):
+            if name.endswith("_MODELS") and isinstance(getattr(M, name), dict):
+                maps.update(getattr(M, name))
+    except Exception as e:
+        print("warn: could not import maps:", e)
+    return maps
+
+
+def load_items():
+    """{(base_model, quant, lang): (pass, n)} from the per-run summary files."""
+    import os
+    maps = _model_maps()
+    out = {}
+    for fn in ("m1_summary.jsonl", "m2_summary.jsonl", "m3_summary.jsonl",
+               "m5_summary.jsonl", "m6_summary.jsonl", "m10_summary.jsonl",
+               "m10_granite_summary.jsonl"):
+        path = os.path.join(".wrapup", fn)
+        if not os.path.exists(path):
+            continue
+        for line in open(path):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                r = json.loads(line)
+            except Exception:
+                continue
+            f = maps.get(r.get("model"))
+            if not f or r.get("n") in (None, 0):
+                continue
+            out[(base_of(f), r.get("quant") or _quant_of(f), r.get("lang"))] = (
+                r.get("pass", 0), r["n"])
+    return out
+
+
+def _quant_of(fname):
+    m = QUANT_RE.search(fname)
+    return m.group(1) if m else None
 
 def base_of(model):
     return QUANT_RE.sub("", model).rstrip("-.")
@@ -53,6 +118,8 @@ def load():
 
 
 def main():
+    global ITEMS
+    ITEMS = load_items()
     rows = load()
     if not rows:
         print("no MultiPL-E rows")
@@ -85,8 +152,19 @@ def main():
                 continue
             langs = set(cells[a]) & set(cells[b])
             d = [cells[b][l] - cells[a][l] for l in langs]
-            if d:
-                steps[fam][f"{a}->{b}"] = ci95(d)
+            if not d:
+                continue
+            pa = sum(ITEMS.get((fam, a, l), (0, 0))[0] for l in langs)
+            na = sum(ITEMS.get((fam, a, l), (0, 0))[1] for l in langs)
+            pb = sum(ITEMS.get((fam, b, l), (0, 0))[0] for l in langs)
+            nb = sum(ITEMS.get((fam, b, l), (0, 0))[1] for l in langs)
+            entry = ci95(d) or {}
+            it = ci_items(pa, na, pb, nb)
+            if it:
+                entry = dict(entry or {})
+                entry.update(it)
+                entry["n_langs"] = len(langs)
+            steps[fam][f"{a}->{b}"] = entry
     out["steps"] = {k: v for k, v in steps.items()}
 
     # cross-family Q2->Q3 (any step crossing level 2 -> level 3)

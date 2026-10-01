@@ -342,130 +342,198 @@
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 2,
     "mean": -0.0217,
-    "ci_low": -0.0278,
-    "ci_high": -0.0157
+    "ci_low": -0.0682,
+    "ci_high": 0.0248,
+    "n_items": 644,
+    "se": 0.0237,
+    "significant": false,
+    "n_langs": 2
    }
   },
   "MiniCPM5-2B": {
    "Q2_K->Q3_K_M": {
     "n": 2,
     "mean": 0.3137,
-    "ci_low": 0.3076,
-    "ci_high": 0.3198
+    "ci_low": 0.2532,
+    "ci_high": 0.3741,
+    "n_items": 644,
+    "se": 0.0309,
+    "significant": true,
+    "n_langs": 2
    }
   },
   "NVIDIA-Nemotron-3-Nano-4B": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 2,
     "mean": 0.0186,
-    "ci_low": 0.0065,
-    "ci_high": 0.0308
+    "ci_low": -0.0563,
+    "ci_high": 0.0936,
+    "n_items": 644,
+    "se": 0.0382,
+    "significant": false,
+    "n_langs": 2
    }
   },
   "Ornith-1.5-9B": {
    "Q4_K_M->Q5_K_M": {
     "n": 2,
     "mean": 0.0311,
-    "ci_low": -0.0055,
-    "ci_high": 0.0676
+    "ci_low": -0.046,
+    "ci_high": 0.1081,
+    "n_items": 644,
+    "se": 0.0393,
+    "significant": false,
+    "n_langs": 2
    }
   },
   "Qwen3.5-0.8B": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 4,
-    "mean": 0.0609,
-    "ci_low": 0.0361,
-    "ci_high": 0.0857
+    "mean": 0.0608,
+    "ci_low": 0.0321,
+    "ci_high": 0.0896,
+    "n_items": 1282,
+    "se": 0.0147,
+    "significant": true,
+    "n_langs": 4
    }
   },
   "Qwen3.5-2B": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 3,
     "mean": 0.1553,
-    "ci_low": 0.1066,
-    "ci_high": 0.204
+    "ci_low": 0.106,
+    "ci_high": 0.2045,
+    "n_items": 966,
+    "se": 0.0251,
+    "significant": true,
+    "n_langs": 3
    },
    "UD-Q3_K_XL->UD-Q4_K_XL": {
     "n": 3,
     "mean": 0.0083,
-    "ci_low": -0.0164,
-    "ci_high": 0.033
+    "ci_low": -0.0483,
+    "ci_high": 0.0649,
+    "n_items": 966,
+    "se": 0.0289,
+    "significant": false,
+    "n_langs": 3
    },
    "UD-Q4_K_XL->UD-Q5_K_XL": {
     "n": 3,
     "mean": -0.0062,
-    "ci_low": -0.0569,
-    "ci_high": 0.0445
+    "ci_low": -0.0629,
+    "ci_high": 0.0505,
+    "n_items": 966,
+    "se": 0.0289,
+    "significant": false,
+    "n_langs": 3
    }
   },
   "Qwen3.5-4B": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 6,
-    "mean": 0.1423,
-    "ci_low": 0.1104,
-    "ci_high": 0.1742
+    "mean": 0.1421,
+    "ci_low": 0.099,
+    "ci_high": 0.1853,
+    "n_items": 1914,
+    "se": 0.022,
+    "significant": true,
+    "n_langs": 6
    }
   },
   "Qwen3.5-9B": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 3,
     "mean": 0.1429,
-    "ci_low": 0.1037,
-    "ci_high": 0.182
+    "ci_low": 0.0804,
+    "ci_high": 0.2053,
+    "n_items": 966,
+    "se": 0.0318,
+    "significant": true,
+    "n_langs": 3
    }
   },
   "Qwen3.6-35B-A3B": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 2,
     "mean": 0.0373,
-    "ci_low": -0.0114,
-    "ci_high": 0.086
+    "ci_low": -0.032,
+    "ci_high": 0.1065,
+    "n_items": 644,
+    "se": 0.0353,
+    "significant": false,
+    "n_langs": 2
    }
   },
   "Qwen3.8-27B": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 2,
     "mean": 0.0186,
-    "ci_low": -0.0422,
-    "ci_high": 0.0795
+    "ci_low": -0.0472,
+    "ci_high": 0.0845,
+    "n_items": 644,
+    "se": 0.0336,
+    "significant": false,
+    "n_langs": 2
    }
   },
   "gemma-4-26B-A4B-it": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 2,
     "mean": -0.0093,
-    "ci_low": -0.0519,
-    "ci_high": 0.0333
+    "ci_low": -0.0391,
+    "ci_high": 0.0205,
+    "n_items": 644,
+    "se": 0.0152,
+    "significant": false,
+    "n_langs": 2
    }
   },
   "gemma-4-E2B-it": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 3,
     "mean": 0.2153,
-    "ci_low": 0.1621,
-    "ci_high": 0.2685
+    "ci_low": 0.1587,
+    "ci_high": 0.272,
+    "n_items": 966,
+    "se": 0.0289,
+    "significant": true,
+    "n_langs": 3
    }
   },
   "gemma-4-E4B-it": {
    "UD-Q2_K_XL->UD-Q3_K_XL": {
     "n": 3,
     "mean": 0.2215,
-    "ci_low": 0.1441,
-    "ci_high": 0.299
+    "ci_low": 0.16,
+    "ci_high": 0.283,
+    "n_items": 966,
+    "se": 0.0314,
+    "significant": true,
+    "n_langs": 3
    }
   },
   "granite-4.1-3b": {
    "Q2_K->Q3_K_M": {
     "n": 3,
     "mean": 0.3437,
-    "ci_low": 0.188,
-    "ci_high": 0.4993
+    "ci_low": 0.2962,
+    "ci_high": 0.3912,
+    "n_items": 966,
+    "se": 0.0242,
+    "significant": true,
+    "n_langs": 3
    },
    "Q3_K_M->Q4_K_M": {
     "n": 2,
     "mean": 0.0776,
-    "ci_low": 0.0472,
-    "ci_high": 0.1081
+    "ci_low": 0.0022,
+    "ci_high": 0.153,
+    "n_items": 644,
+    "se": 0.0385,
+    "significant": true,
+    "n_langs": 2
    }
   }
  },
@@ -473,80 +541,132 @@
   "LFM2.5-8B-A1B": {
    "n": 2,
    "mean": -0.0217,
-   "ci_low": -0.0278,
-   "ci_high": -0.0157
+   "ci_low": -0.0682,
+   "ci_high": 0.0248,
+   "n_items": 644,
+   "se": 0.0237,
+   "significant": false,
+   "n_langs": 2
   },
   "MiniCPM5-2B": {
    "n": 2,
    "mean": 0.3137,
-   "ci_low": 0.3076,
-   "ci_high": 0.3198
+   "ci_low": 0.2532,
+   "ci_high": 0.3741,
+   "n_items": 644,
+   "se": 0.0309,
+   "significant": true,
+   "n_langs": 2
   },
   "NVIDIA-Nemotron-3-Nano-4B": {
    "n": 2,
    "mean": 0.0186,
-   "ci_low": 0.0065,
-   "ci_high": 0.0308
+   "ci_low": -0.0563,
+   "ci_high": 0.0936,
+   "n_items": 644,
+   "se": 0.0382,
+   "significant": false,
+   "n_langs": 2
   },
   "Qwen3.5-0.8B": {
    "n": 4,
-   "mean": 0.0609,
-   "ci_low": 0.0361,
-   "ci_high": 0.0857
+   "mean": 0.0608,
+   "ci_low": 0.0321,
+   "ci_high": 0.0896,
+   "n_items": 1282,
+   "se": 0.0147,
+   "significant": true,
+   "n_langs": 4
   },
   "Qwen3.5-2B": {
    "n": 3,
    "mean": 0.1553,
-   "ci_low": 0.1066,
-   "ci_high": 0.204
+   "ci_low": 0.106,
+   "ci_high": 0.2045,
+   "n_items": 966,
+   "se": 0.0251,
+   "significant": true,
+   "n_langs": 3
   },
   "Qwen3.5-4B": {
    "n": 6,
-   "mean": 0.1423,
-   "ci_low": 0.1104,
-   "ci_high": 0.1742
+   "mean": 0.1421,
+   "ci_low": 0.099,
+   "ci_high": 0.1853,
+   "n_items": 1914,
+   "se": 0.022,
+   "significant": true,
+   "n_langs": 6
   },
   "Qwen3.5-9B": {
    "n": 3,
    "mean": 0.1429,
-   "ci_low": 0.1037,
-   "ci_high": 0.182
+   "ci_low": 0.0804,
+   "ci_high": 0.2053,
+   "n_items": 966,
+   "se": 0.0318,
+   "significant": true,
+   "n_langs": 3
   },
   "Qwen3.6-35B-A3B": {
    "n": 2,
    "mean": 0.0373,
-   "ci_low": -0.0114,
-   "ci_high": 0.086
+   "ci_low": -0.032,
+   "ci_high": 0.1065,
+   "n_items": 644,
+   "se": 0.0353,
+   "significant": false,
+   "n_langs": 2
   },
   "Qwen3.8-27B": {
    "n": 2,
    "mean": 0.0186,
-   "ci_low": -0.0422,
-   "ci_high": 0.0795
+   "ci_low": -0.0472,
+   "ci_high": 0.0845,
+   "n_items": 644,
+   "se": 0.0336,
+   "significant": false,
+   "n_langs": 2
   },
   "gemma-4-26B-A4B-it": {
    "n": 2,
    "mean": -0.0093,
-   "ci_low": -0.0519,
-   "ci_high": 0.0333
+   "ci_low": -0.0391,
+   "ci_high": 0.0205,
+   "n_items": 644,
+   "se": 0.0152,
+   "significant": false,
+   "n_langs": 2
   },
   "gemma-4-E2B-it": {
    "n": 3,
    "mean": 0.2153,
-   "ci_low": 0.1621,
-   "ci_high": 0.2685
+   "ci_low": 0.1587,
+   "ci_high": 0.272,
+   "n_items": 966,
+   "se": 0.0289,
+   "significant": true,
+   "n_langs": 3
   },
   "gemma-4-E4B-it": {
    "n": 3,
    "mean": 0.2215,
-   "ci_low": 0.1441,
-   "ci_high": 0.299
+   "ci_low": 0.16,
+   "ci_high": 0.283,
+   "n_items": 966,
+   "se": 0.0314,
+   "significant": true,
+   "n_langs": 3
   },
   "granite-4.1-3b": {
    "n": 3,
    "mean": 0.3437,
-   "ci_low": 0.188,
-   "ci_high": 0.4993
+   "ci_low": 0.2962,
+   "ci_high": 0.3912,
+   "n_items": 966,
+   "se": 0.0242,
+   "significant": true,
+   "n_langs": 3
   }
  },
  "Q2_Q3_family_summary": {

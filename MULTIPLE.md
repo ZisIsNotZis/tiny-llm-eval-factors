@@ -11,7 +11,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.161 | 0.062 | 0.1118 |
 | UD-Q3_K_XL | 0.143 | 0.037 | 0.0901 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **-0.0217** 95% CI [-0.0278, -0.0157] (n=2 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **-0.0217** 95% CI [-0.0682, +0.0248] (n=2 langs)
 
 ### MiniCPM5-2B
 
@@ -20,7 +20,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | Q2_K | 0.062 | 0.087 | 0.0745 |
 | Q3_K_M | 0.373 | 0.404 | 0.3882 |
 
-- `Q2_K->Q3_K_M`: **+0.3137** 95% CI [+0.3076, +0.3198] (n=2 langs)
+- `Q2_K->Q3_K_M`: **+0.3137** 95% CI [+0.2532, +0.3741] (n=2 langs)
 
 ### NVIDIA-Nemotron-3-Nano-4B
 
@@ -29,7 +29,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.578 | 0.646 | 0.6118 |
 | UD-Q3_K_XL | 0.602 | 0.658 | 0.6304 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0186** 95% CI [+0.0065, +0.0308] (n=2 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0186** 95% CI [-0.0563, +0.0936] (n=2 langs)
 
 ### Ornith-1.5-9B
 
@@ -38,7 +38,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | Q4_K_M | 0.609 | 0.422 | 0.5155 |
 | Q5_K_M | 0.621 | 0.472 | 0.5466 |
 
-- `Q4_K_M->Q5_K_M`: **+0.0311** 95% CI [-0.0055, +0.0676] (n=2 langs)
+- `Q4_K_M->Q5_K_M`: **+0.0311** 95% CI [-0.0460, +0.1081] (n=2 langs)
 
 ### Qwen3.5-0.8B
 
@@ -47,7 +47,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.043 | 0.019 | 0.05 | 0.068 | 0.0451 |
 | UD-Q3_K_XL | 0.068 | 0.095 | 0.13 | 0.13 | 0.106 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0609** 95% CI [+0.0361, +0.0857] (n=4 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0608** 95% CI [+0.0321, +0.0896] (n=4 langs)
 
 ### Qwen3.5-2B
 
@@ -60,9 +60,9 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q4_K_XL | 0.23 | 0.348 | 0.273 | 0.2836 |
 | UD-Q5_K_XL | 0.261 | 0.292 | 0.28 | 0.2774 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.1553** 95% CI [+0.1066, +0.2040] (n=3 langs)
-- `UD-Q3_K_XL->UD-Q4_K_XL`: **+0.0083** 95% CI [-0.0164, +0.0330] (n=3 langs)
-- `UD-Q4_K_XL->UD-Q5_K_XL`: **-0.0062** 95% CI [-0.0569, +0.0445] (n=3 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.1553** 95% CI [+0.1060, +0.2045] (n=3 langs)
+- `UD-Q3_K_XL->UD-Q4_K_XL`: **+0.0083** 95% CI [-0.0483, +0.0649] (n=3 langs)
+- `UD-Q4_K_XL->UD-Q5_K_XL`: **-0.0062** 95% CI [-0.0629, +0.0505] (n=3 langs)
 
 ### Qwen3.5-4B
 
@@ -71,7 +71,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.342 | 0.323 | 0.342 | 0.354 | 0.267 | 0.258 | 0.3142 |
 | UD-Q3_K_XL | 0.453 | 0.487 | 0.534 | 0.503 | 0.348 | 0.413 | 0.4565 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.1423** 95% CI [+0.1104, +0.1742] (n=6 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.1421** 95% CI [+0.0990, +0.1853] (n=6 langs)
 
 ### Qwen3.5-9B
 
@@ -80,7 +80,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.435 | 0.503 | 0.348 | 0.4286 |
 | UD-Q3_K_XL | 0.584 | 0.609 | 0.522 | 0.5714 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.1429** 95% CI [+0.1037, +0.1820] (n=3 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.1429** 95% CI [+0.0804, +0.2053] (n=3 langs)
 
 ### Qwen3.6-35B-A3B
 
@@ -89,7 +89,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.708 | 0.696 | 0.7019 |
 | UD-Q3_K_XL | 0.72 | 0.758 | 0.7391 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0373** 95% CI [-0.0114, +0.0860] (n=2 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0373** 95% CI [-0.0320, +0.1065] (n=2 langs)
 
 ### Qwen3.8-27B
 
@@ -98,7 +98,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.758 | 0.745 | 0.7516 |
 | UD-Q3_K_XL | 0.807 | 0.733 | 0.7702 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0186** 95% CI [-0.0422, +0.0795] (n=2 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.0186** 95% CI [-0.0472, +0.0845] (n=2 langs)
 
 ### gemma-4-26B-A4B-it
 
@@ -107,7 +107,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.056 | 0.031 | 0.0435 |
 | UD-Q3_K_XL | 0.025 | 0.043 | 0.0342 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **-0.0093** 95% CI [-0.0519, +0.0333] (n=2 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **-0.0093** 95% CI [-0.0391, +0.0205] (n=2 langs)
 
 ### gemma-4-E2B-it
 
@@ -116,7 +116,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.298 | 0.118 | 0.186 | 0.2008 |
 | UD-Q3_K_XL | 0.534 | 0.366 | 0.348 | 0.4161 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.2153** 95% CI [+0.1621, +0.2685] (n=3 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.2153** 95% CI [+0.1587, +0.2720] (n=3 langs)
 
 ### gemma-4-E4B-it
 
@@ -125,7 +125,7 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | UD-Q2_K_XL | 0.472 | 0.205 | 0.497 | 0.3913 |
 | UD-Q3_K_XL | 0.739 | 0.46 | 0.64 | 0.6128 |
 
-- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.2215** 95% CI [+0.1441, +0.2990] (n=3 langs)
+- `UD-Q2_K_XL->UD-Q3_K_XL`: **+0.2215** 95% CI [+0.1600, +0.2830] (n=3 langs)
 
 ### granite-4.1-3b
 
@@ -135,26 +135,26 @@ Rows: **92** across 14 model anchors (9 architecture families).
 | Q3_K_M | 0.478 | 0.453 | 0.242 | 0.3913 |
 | Q4_K_M | 0.571 | nan | 0.304 | 0.4379 |
 
-- `Q2_K->Q3_K_M`: **+0.3437** 95% CI [+0.1880, +0.4993] (n=3 langs)
-- `Q3_K_M->Q4_K_M`: **+0.0776** 95% CI [+0.0472, +0.1081] (n=2 langs)
+- `Q2_K->Q3_K_M`: **+0.3437** 95% CI [+0.2962, +0.3912] (n=3 langs)
+- `Q3_K_M->Q4_K_M`: **+0.0776** 95% CI [+0.0022, +0.1530] (n=2 langs)
 
 ## Cross-family Q2->Q3
 
 | family | mean Δ | 95% CI |
 |---|---|---|
-| LFM2.5-8B-A1B | -0.0217 | [-0.0278, -0.0157] |
-| MiniCPM5-2B | +0.3137 | [+0.3076, +0.3198] |
-| NVIDIA-Nemotron-3-Nano-4B | +0.0186 | [+0.0065, +0.0308] |
-| Qwen3.5-0.8B | +0.0609 | [+0.0361, +0.0857] |
-| Qwen3.5-2B | +0.1553 | [+0.1066, +0.2040] |
-| Qwen3.5-4B | +0.1423 | [+0.1104, +0.1742] |
-| Qwen3.5-9B | +0.1429 | [+0.1037, +0.1820] |
-| Qwen3.6-35B-A3B | +0.0373 | [-0.0114, +0.0860] |
-| Qwen3.8-27B | +0.0186 | [-0.0422, +0.0795] |
-| gemma-4-26B-A4B-it | -0.0093 | [-0.0519, +0.0333] |
-| gemma-4-E2B-it | +0.2153 | [+0.1621, +0.2685] |
-| gemma-4-E4B-it | +0.2215 | [+0.1441, +0.2990] |
-| granite-4.1-3b | +0.3437 | [+0.1880, +0.4993] |
+| LFM2.5-8B-A1B | -0.0217 | [-0.0682, +0.0248] |
+| MiniCPM5-2B | +0.3137 | [+0.2532, +0.3741] |
+| NVIDIA-Nemotron-3-Nano-4B | +0.0186 | [-0.0563, +0.0936] |
+| Qwen3.5-0.8B | +0.0608 | [+0.0321, +0.0896] |
+| Qwen3.5-2B | +0.1553 | [+0.1060, +0.2045] |
+| Qwen3.5-4B | +0.1421 | [+0.0990, +0.1853] |
+| Qwen3.5-9B | +0.1429 | [+0.0804, +0.2053] |
+| Qwen3.6-35B-A3B | +0.0373 | [-0.0320, +0.1065] |
+| Qwen3.8-27B | +0.0186 | [-0.0472, +0.0845] |
+| gemma-4-26B-A4B-it | -0.0093 | [-0.0391, +0.0205] |
+| gemma-4-E2B-it | +0.2153 | [+0.1587, +0.2720] |
+| gemma-4-E4B-it | +0.2215 | [+0.1600, +0.2830] |
+| granite-4.1-3b | +0.3437 | [+0.2962, +0.3912] |
 
 **13 model anchors, all sign-consistent (False), range -0.022 .. +0.344, mean +0.126.**
 
