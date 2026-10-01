@@ -4,6 +4,7 @@
   "code single-function": {
    "q2": 0.1201,
    "q3": 0.2754,
+   "abs_delta": 0.1553,
    "n2": 483,
    "n3": 483,
    "retention": {
@@ -15,6 +16,7 @@
   "tool single-turn": {
    "q2": 0.2992,
    "q3": 0.5016,
+   "abs_delta": 0.2024,
    "n2": 1240.0,
    "n3": 1240.0,
    "retention": {
@@ -26,6 +28,7 @@
   "tool single-turn (live)": {
    "q2": 0.1902,
    "q3": 0.4119,
+   "abs_delta": 0.2217,
    "n2": 1367.0,
    "n3": 1367.0,
    "retention": {
@@ -37,6 +40,7 @@
   "tool multi-turn": {
    "q2": 0.025,
    "q3": 0.185,
+   "abs_delta": 0.16,
    "n2": 200,
    "n3": 200,
    "retention": {
@@ -116,6 +120,30 @@
      "hi": 0.8946
     }
    }
+  },
+  "Qwen3.5-9B": {
+   "code single-function": {
+    "q2": 0.4286,
+    "q3": 0.5714,
+    "n2": 483,
+    "n3": 483,
+    "retention": {
+     "ratio": 0.75,
+     "lo": 0.6594,
+     "hi": 0.853
+    }
+   },
+   "tool multi-turn": {
+    "q2": 0.49,
+    "q3": 0.65,
+    "n2": 200,
+    "n3": 200,
+    "retention": {
+     "ratio": 0.7538,
+     "lo": 0.6333,
+     "hi": 0.8973
+    }
+   }
   }
  },
  "multiturn_vs_code": {
@@ -128,11 +156,11 @@
    "ratio": 1.0447,
    "lo": 0.8163,
    "hi": 1.3371
+  },
+  "Qwen3.5-9B": {
+   "ratio": 1.0051,
+   "lo": 0.8093,
+   "hi": 1.2482
   }
- },
- "gap_2B_over_4B": {
-  "ratio": 0.2965,
-  "lo": 0.1105,
-  "hi": 0.7958
  }
 }

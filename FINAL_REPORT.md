@@ -136,6 +136,17 @@ What varies is the **retention ratio** (0.135 … 0.754) — and it varies *only
 differs. Multi-turn at 2B starts low (Q3 = 0.185), so the same +0.16 looks like a 7× relative loss;
 multi-turn at 4B starts high (Q3 = 0.535) and looks like a 28 % loss.
 
+The **ratio of retentions** (`multi-turn / code`) makes the size-dependence explicit:
+
+| anchor | multi-turn ÷ code retention |
+|---|---|
+| Qwen3.5-2B | **0.310** [0.119, 0.806] |
+| Qwen3.5-4B | 1.045 [0.816, 1.337] |
+| Qwen3.5-9B | 1.005 [0.809, 1.248] |
+
+Only the 2B model shows a *disproportionate relative* multi-turn loss — and since its **absolute**
+gain is the same +0.160, that is a statement about its low Q3 baseline, not about horizon.
+
 > **Correction of an earlier claim in this report.** An earlier version stated that "quantisation
 > damage scales with task horizon" based on the retention column. That was a *ratio* artifact: in
 > absolute terms the multi-turn penalty is the same ~+0.15 as for code at every size, so there is no
