@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 24 | 26% |
+| resolved | 25 | 27% |
 | underpowered | 4 | 4% |
 | noise_level | 4 | 4% |
 | unauditable | 8 | 9% |
 | model_fit | 15 | 16% |
-| qualitative | 37 | 40% |
+| qualitative | 38 | 40% |
 
-## resolved (24)
+## resolved (25)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -64,6 +64,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1500 >= MDE 0.108 at n=1_
 - Δ=0.64 — **[VERIFIED, m14] The granite `Q2_K` multi-turn 0.00 survives the handler fix and is a genuine quant cliff, not a harness artifact.** Re-running `granite-4.1-3b` `Q2_K` under the same correct `Granite4FCHandler` still gives **0.0** (734 `Empty response`, 0 `Failed to decode`, 0 context-overflow): the Q2 weights return empty/degenerate assistant turns. This is corroborated on three independent harnesses already in the DB — `granite-4.1-3b-Q2_K` vs `-Q3_K_M`: MultiPL-E cpp/py/js **0.037/0.056/0.050 -> 0.478/0.242/0.453** (`m5-family-ladder`), BFCL native simple/multiple **0.015/0.020 -> 0.660/0.585** (`m7-tool-calling-native`), BFCL live_simple **0.016 -> 0.469** (`m8-bfcl-live`). So a 0.00 that persists after a correct-handler re-run is not automatically "harness"; cross-benchmark agreement is the discriminator. The Q2 row is quarantined (`.wrapup/m14_quarantine.jsonl`) and not ingested; `Q2_K` must be treated as off-curve/broken for this model.
   - _|Δ|=0.6400 >= MDE 0.108 at n=1_
+- Δ=0.16 — **[VERIFIED, wrap-up m17] The multi-turn quant penalty does NOT scale up with model size — the 9B Q2 anchor retains the least capability of the three.** `Qwen3.5-9B` `UD-Q2_K_XL` on BFCL `multi_turn_base` (native-FC handler `Qwen/Qwen3-8B-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) scores **0.49**, ingested as `run_tag='m17-bfcl-multiturn'` (DB 2094 -> 2095 rows, `integrity ok | fk issues 0`). The panel is clean: 0 `Context size has been exceeded`/`exceed_context_size` lines and 5 `Failed to decode`. For the Q2->Q3 multi-turn step so far: 2B **0.025 -> 0.185** (+0.160), 4B **0.385 -> 0.535** (+0.150), 9B Q2 **0.49** (q3 in flight).
+  - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 
 ## underpowered (4)
 
@@ -139,7 +141,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, wrap-up m15] The `multi_turn_long_context` cell now has a CLEAN row (no ctx overflow) and it is nonzero.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) finished with **200/200 valid records, 0 `exceed_context_size`/`Context size has been exceeded` lines**, scoring **0.095**, ingested as `run_tag='m15-bfcl-multiturn'` (DB 2093 -> 2094 rows, `integrity ok | fk issues 0`). This clears M13's residual overflow (68154/84958/71326 tokens vs 65536/slot); the clean score is slightly *below* the ctx-contaminated M12 (`0.135`) and M13 (`0.105`), confirming the earlier rows were not inflated by the overflow and that this category is near floor for the 2B class, not a harness zero.
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (37)
+## qualitative (38)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -214,5 +216,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[METHOD, m16 abandoned] A handler whose prompt format mismatches the model can be *pathologically* slow, not just wrong.** BFCL's `MiniCPM3-4B-FC` handler against `MiniCPM5-2B` gave a 9-hour ETA (166 s/item, 1/200 in 3 min): the model generates extremely long outputs under that format. Aborted as impractical; **not** a capability result.
   - _no numeric contrast in the claim_
 - — **[INFRA, checkpoint] M17 (9B multi-turn) is in flight and clean; `migrate_db.py`'s m17 wiring was broken and is fixed.** `chain6` -> `run_m17.sh` -> `gpu_locked.sh` -> `run_m9_panel.sh qwen9b-q2 ... multi_turn_base` is the single live holder chain of `/tmp/llama_gpu.lock` (`flock` 377965 -> `bash` 377966 -> `llama-server` 377970 -> `bfcl` 378125), so no waiter is stuck and no orphan needs reaping; `llama-server` is decoding at **85/200** generated with **0** `Context size has been exceeded` lines. `migrate_db.py` crashed with `NameError: name 'n19' is not defined` *after* `con.commit()` (`main()` tallied an m17 count but never called `ingest_m17`), which would have aborted the `&&`-chained regeneration; fixed by wiring `n19 = ingest_m17(con)`, dropping the stale `m16=` field from the summary print, and giving `ingest_m17` the run's true `ctx_size=131072` (was defaulting to 98304). Re-run exits 0: DB **2094 rows**, `integrity ok | fk issues 0`, m17 not yet ingestible (no `m17_summary.jsonl`).
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] GPU lock healthy, no orphan to reap; q3 panel generating; regeneration byte-stable.** `fuser -v /tmp/llama_gpu.lock` shows a single live holder chain `flock`(456884) -> `bash`(456885) -> `llama-server`(456889) -> `timeout`/`bfcl`(457160), port 8080 held by our `llama-server`, GPU ~8.4 GB used / 15.7 GB free, so no waiter is stuck and nothing needs killing. The M17 q3 panel (`qwen9b-q3`, Qwen3.5-9B `UD-Q3_K_XL`, same handler/ctx) has written **30/200** fresh records with **zero** context-overflow lines; `chain7.sh` waits on `M17 end` before launching M18 (`multi_turn_miss_func,multi_turn_miss_param`, 2B Q2/Q3). No new MultiPL-E rows ran, so `MULTIPLE.md`/`LADDER_TOOLS.md`/`HORIZON.md`/`WRAPUP.md`/`claims_ledger.csv` are byte-stable; only `experiments.sqlite` changed. Backup `experiments.sqlite.bak13` taken before the mutation. Quant-step CIs remain item-level (`multipl_e_analysis.py ci_items`); no CI code changed.
   - _no numeric contrast in the claim_
 
