@@ -320,6 +320,7 @@ MMT_MODELS = {
     # M12 long-context anchor: same weights as qwen2b-q3 but a distinct
     # multi_turn_long_context cell (tag comes from run_m12.sh).
     "qwen2b-lc": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "qwen2b-lc2": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
     # other families (handler support varies)
     "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
@@ -370,6 +371,11 @@ def ingest_m11(con):
 def ingest_m12(con):
     return _ingest_bfcl_mt(con, ".wrapup/m12_summary.jsonl", "m12-bfcl-multiturn",
                            "m12_summary.jsonl")
+
+
+def ingest_m13(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m13_summary.jsonl", "m13-bfcl-multiturn",
+                           "m13_summary.jsonl")
 
 
 def ingest_m4(con):
@@ -438,7 +444,7 @@ def main():
     n15 = ingest_m12(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15} m13={n16}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))
