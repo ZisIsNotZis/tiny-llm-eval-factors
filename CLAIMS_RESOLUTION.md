@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 27 | 34% |
-| underpowered | 5 | 6% |
+| resolved | 28 | 34% |
+| underpowered | 6 | 7% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 10% |
 | model_fit | 16 | 20% |
-| qualitative | 20 | 25% |
+| qualitative | 20 | 24% |
 
-## resolved (27)
+## resolved (28)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -70,8 +70,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1850 >= MDE 0.108 at n=1_
 - Δ=0.125 — **[VERIFIED, m19] The 4B long-context multi-turn cell is complete and does NOT sit at the 2B floor: Q2->Q3 `0.38 -> 0.505`.** `m19-4bq2` (Qwen3.5-4B `UD-Q2_K_XL`, native-FC handler `Qwen/Qwen3-4B-Instruct-2507-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy, 200 items) = **0.38** (0 ctx-overflow) and `m19-4bq3` (same config, `UD-Q3_K_XL`) = **0.505** (2/200 `exceed_context_size`), ingested as `run_tag='m19-bfcl-multiturn'` (DB 2102 -> 2104 rows, `integrity ok | fk issues 0`). Paired delta **+0.125**, above the ~±0.015 agentic-axis reproduce floor. This extends the size-dependence result to the long-context category: at Q2 the 2B long-context cell is pinned at **0.005** (`m19-q2`, `run_tag='m19-bfcl-multiturn'`) while the 4B cell reaches **0.38** — a 0.375 gap — so "Q2 pins the hard agentic categories to the floor" is once more a **small-model** property, not a category property.
   - _|Δ|=0.1250 >= MDE 0.108 at n=1_
+- Δ=0.16 — **[VERIFIED, m20] The large sparse-MoE anchor's Q2->Q3 multi-turn deficit is headroom-limited: `Qwen3.6-35B-A3B` `multi_turn_base` `0.60 -> 0.675` (+0.075), the smallest step in the panel.** `m20-q3` (native-FC handler `Qwen/Qwen3-30B-A3B-Instruct-2507-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) = **0.675**, ingested as `run_tag='m20-bfcl-multiturn'` (DB 2105 -> 2106 rows, `integrity ok | fk issues 0`). Paired with `m20-q2` (0.60) this is the fourth `multi_turn_base` Q2->Q3 step and the smallest: 2B +0.160, 4B +0.150, 9B +0.160, 35B-MoE +0.075. The panel is clean (`DONE m20-q3 multi_turn_base acc=67.50`; no `exceed_context_size`; all slot releases `truncated = 0`; result file pre-deleted per panel, so no stale reuse). Reading: the Q2->Q3 multi-turn deficit is headroom-limited — the MoE is already at 0.60 at Q2, so its task ceiling leaves only +0.075 of room, consistent with the headroom logic that makes the 4B single-turn cell only +0.077.
+  - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 
-## underpowered (5)
+## underpowered (6)
 
 - Δ=0.0488 — On unseen-architecture `NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL` under fixed controls (`ctx2048`, `q8_0/q8_0`, no-MTP), `top_k:40->20` decreases plus score on both datasets (Humaneval `-0.0061`, MBPP `-0.0317`) with small wall-time increases, and `reasoning off->on` decreases plus score on both datasets (Humaneval `-0.0488`, MBPP `-0.0265`) with large wall-time penalties (Humaneval `+288.7s`, MBPP `+473.3s`).
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
@@ -83,6 +85,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0930 < MDE 0.108 at n=1_
 - Δ=0.105 — **[VERIFIED, checkpoint m19] The paired 2B long-context cell now completes at 0.005 -> 0.110 (+0.105); the same configuration reproduces only to ~0.015 run-to-run.** `m19-q3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy, 200 items) finished at **0.110** (22/200), ingested as `run_tag='m19-bfcl-multiturn'` (DB 2101 -> 2102 rows, `integrity ok | fk issues 0`). Paired with `m19-q2` (0.005) from the same launcher this is the fourth 2B agentic category and the third pinned to the 0.005 floor at Q2. Harness check (not a 0.00 row, so not re-run): handler is native-FC, the panel pre-deletes the per-category result file, and only **1/200** items hit `exceed_context_size_error` (100749 tokens > 98304/slot); the valid-item estimate is 22/199 = 0.111. **Reproduce note:** the *identical* config ran earlier as `m15` (`qwen2b-lc3`) and scored **0.095** with 0 overflow, so the same cell differs by 0.015 (3/200 items) at greedy — this is the category's run-to-run spread, not overflow.
   - _|Δ|=0.1050 < MDE 0.108 at n=1_
+- Δ=0.037 — **[VERIFIED, checkpoint m20] The large sparse-MoE anchor is NOT pinned to the Q2 multi-turn floor the way the small dense models are: `Qwen3.6-35B-A3B` `UD-Q2_K_XL` scores 0.60 on BFCL `multi_turn_base` at Q2.** `m20-q2` (native-FC handler `Qwen/Qwen3-30B-A3B-Instruct-2507-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) = **0.60**, ingested as `run_tag='m20-bfcl-multiturn'` (DB 2104 -> 2105 rows, `integrity ok | fk issues 0`). The panel is clean: `DONE m20-q2 multi_turn_base acc=60.00`, no `Context size has been exceeded`/`exceed_context_size` lines, all slot releases `truncated = 0`; the per-category result file is pre-deleted per panel, so no stale-result reuse. Context for the floor claim: this Q2 score is well above the dense anchors' Q2 `multi_turn_base` — 2B 0.025 (`m9`), 4B 0.385 (`m11`), 9B 0.49 (`m17`, `run_tag='m17-bfcl-multiturn'`) — so "Q2 pins hard agentic categories to the floor" is a small/small-dense-model property, consistent with the independent MultiPL-E result (`m6-family-ladder`) that this MoE's Q2->Q3 step is only +0.037 because it already scores ~0.70 at Q2.
+  - _|Δ|=0.0370 < MDE 0.108 at n=1_
 
 ## noise_level (4)
 
