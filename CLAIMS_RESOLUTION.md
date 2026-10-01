@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 25 | 33% |
+| resolved | 26 | 34% |
 | underpowered | 4 | 5% |
 | noise_level | 4 | 5% |
-| unauditable | 8 | 11% |
-| model_fit | 15 | 20% |
+| unauditable | 8 | 10% |
+| model_fit | 15 | 19% |
 | qualitative | 20 | 26% |
 
-## resolved (25)
+## resolved (26)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -62,10 +62,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.6400 >= MDE 0.108 at n=1_
 - Δ=0.16 — **[VERIFIED, wrap-up m17] The multi-turn quant penalty does NOT scale up with model size — the 9B Q2 anchor retains the least capability of the three.** `Qwen3.5-9B` `UD-Q2_K_XL` on BFCL `multi_turn_base` (native-FC handler `Qwen/Qwen3-8B-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) scores **0.49**, ingested as `run_tag='m17-bfcl-multiturn'` (DB 2094 -> 2095 rows, `integrity ok | fk issues 0`). The panel is clean: 0 `Context size has been exceeded`/`exceed_context_size` lines and 5 `Failed to decode`. For the Q2->Q3 multi-turn step so far: 2B **0.025 -> 0.185** (+0.160), 4B **0.385 -> 0.535** (+0.150), 9B Q2 **0.49** (q3 in flight).
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
-- Δ=0.16 — **[CORRECTED, m17 + cross-size] The absolute `Q2->Q3` gain is ~+0.15 and is essentially CONSTANT across model size and task type — the earlier "horizon effect" was a retention-ratio artifact.** Direct measurement (Qwen3.5, item-level scores): code `2B +0.155 / 4B +0.142 / 9B +0.143`; multi-turn `2B +0.160 / 4B +0.150 / 9B +0.160`. Every cell is +0.142..+0.160. What varies is the *retention ratio* `Q2/Q3` (0.135 .. 0.754), which is driven purely by how high the Q3 baseline sits — multi-turn at 2B starts low (Q3 0.185), so the same +0.16 looks like a 7x relative loss, while multi-turn at 4B starts high (Q3 0.535) and looks like a 28% loss. **So: upgrading Q2->Q3 buys a roughly fixed ~+0.15 of score whatever you run; the "how much of my capability did I lose" framing depends entirely on the baseline and must not be read as a horizon effect.** Retention-ratio check: multi-turn/code = 0.310 [0.119,0.806] at 2B but 1.045 [0.816,1.337] at 4B and 1.005 [0.809,1.248] at 9B, i.e. the apparent horizon penalty exists only where the Q3 baseline is low. Caveat: 3 sizes x 2 axes; the constancy is striking but not yet a law.
+- Δ=0.16 — **[SUPERSEDED — see the m18/m19 floor finding below] An earlier claim that the absolute `Q2->Q3` gain is ~+0.15 and CONSTANT across model size and task type — the earlier "horizon effect" was a retention-ratio artifact.** Direct measurement (Qwen3.5, item-level scores): code `2B +0.155 / 4B +0.142 / 9B +0.143`; multi-turn `2B +0.160 / 4B +0.150 / 9B +0.160`. Every cell is +0.142..+0.160. What varies is the *retention ratio* `Q2/Q3` (0.135 .. 0.754), which is driven purely by how high the Q3 baseline sits — multi-turn at 2B starts low (Q3 0.185), so the same +0.16 looks like a 7x relative loss, while multi-turn at 4B starts high (Q3 0.535) and looks like a 28% loss. **So: upgrading Q2->Q3 buys a roughly fixed ~+0.15 of score whatever you run; the "how much of my capability did I lose" framing depends entirely on the baseline and must not be read as a horizon effect.** Retention-ratio check: multi-turn/code = 0.310 [0.119,0.806] at 2B but 1.045 [0.816,1.337] at 4B and 1.005 [0.809,1.248] at 9B, i.e. the apparent horizon penalty exists only where the Q3 baseline is low. Caveat: 3 sizes x 2 axes; the constancy is striking but not yet a law.
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 - Δ=0.16 — **[VERIFIED, m18/m19] At 2B, `Q2` pins the model at the *floor* across every agentic multi-turn category; `Q3` restores it to a task-dependent ceiling.** BFCL multi-turn, Qwen3.5-2B, native-FC, greedy (Q2 -> Q3): `multi_turn_base` 0.025 -> 0.185 (+0.160), `multi_turn_miss_param` 0.005 -> 0.105 (+0.100), `multi_turn_long_context` 0.005 -> 0.095 (+0.090), `multi_turn_miss_func` 0.005 -> 0.080 (+0.075). So the *gain* is not a constant: it is capped by each task's own Q3 ceiling, and the category ranking is unchanged by quant (base > miss_param > long_context > miss_func at both levels). The invariant is the **floor**: every hard agentic category sits at 0.005 at Q2. This refines the earlier "constant +0.15" statement, which holds only for axes with high ceilings (code, base multi-turn).
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
+- Δ=0.185 — **[CORRECTED, full matrix] The Q2 deficit is NOT a constant — it ranges ~0.08..0.20 and is headroom-limited.** Complete Qwen3.5 matrix (item-level): code `2B 0.155 / 4B 0.142 / 9B 0.143`; tool single-turn `2B 0.202 / 4B 0.077`; tool multi-turn `2B 0.160 / 4B 0.150 / 9B 0.160`. The 4B single-turn cell (0.077) kills any "constant gain" reading: that axis has the smallest deficit precisely because Q2 is already near its Q3 ceiling (0.615 vs 0.691). The only crisp invariant is the **floor**: at 2B every hard agentic category is pinned at ~0.005 at Q2 while Q3 reaches 0.08-0.185, and the category ranking is quant-invariant.
+  - _|Δ|=0.1850 >= MDE 0.108 at n=1_
 
 ## underpowered (4)
 

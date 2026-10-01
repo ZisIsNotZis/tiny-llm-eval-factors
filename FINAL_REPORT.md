@@ -115,59 +115,46 @@ exactly when the Q3 weights already capture nearly all of the model's usable cap
 Low-bit quantisation is therefore **not a smooth quality dial**; some checkpoints fall off a cliff.
 This is why we report per-checkpoint, not per-level.
 
-## Finding 5 — the absolute `Q2→Q3` gain is ~+0.15, and it is essentially constant
+## Finding 5 — how big is the Q2 penalty? Not a constant: ~0.08 to ~0.20, and a *floor* on hard agentic tasks
 
-Direct measurement across **model size × task type** (Qwen3.5, item-level scores):
+The complete matrix we have (Qwen3.5, **item-level** scores, native-FC for tools, greedy):
 
-| size | axis | Q2 | Q3 | **absolute Δ** | retention (Q2/Q3) |
-|---|---|---|---|---|---|
-| 2B | code (MultiPL-E) | 0.120 | 0.275 | **+0.155** | 0.436 |
-| 2B | tool multi-turn | 0.025 | 0.185 | **+0.160** | 0.135 |
-| 4B | code | 0.314 | 0.456 | **+0.142** | 0.688 |
-| 4B | tool multi-turn | 0.385 | 0.535 | **+0.150** | 0.720 |
-| 9B | code | 0.429 | 0.571 | **+0.143** | 0.750 |
-| 9B | tool multi-turn | 0.490 | 0.650 | **+0.160** | 0.754 |
+| anchor | axis | Q2 | Q3 | **Q2 deficit** |
+|---|---|---|---|---|
+| 2B | code (MultiPL-E) | 0.120 | 0.275 | **0.155** |
+| 2B | tool single-turn | 0.299 | 0.502 | **0.202** |
+| 2B | tool multi-turn | 0.025 | 0.185 | **0.160** |
+| 4B | code | 0.315 | 0.457 | **0.142** |
+| 4B | tool single-turn | 0.615 | 0.691 | **0.077** |
+| 4B | tool multi-turn | 0.385 | 0.535 | **0.150** |
+| 9B | code | 0.429 | 0.571 | **0.143** |
+| 9B | tool multi-turn | 0.490 | 0.650 | **0.160** |
 
-The six high-ceiling cells all give **+0.142 … +0.160**. But the harder agentic sub-categories at
-2B show the mechanism more clearly (BFCL multi-turn, `run_tag IN ('m9','m18','m19')`):
+**The deficit ranges from 0.08 to 0.20 — there is no constant.** The pattern is headroom:
+4B tool single-turn has the smallest deficit (0.077) precisely because Q2 is already near its own
+ceiling (0.615 vs 0.691); 2B tool single-turn has the largest (0.202) because Q2 is far below it
+(0.299 vs 0.502). Code sits at ~0.14–0.155 for all three sizes.
 
-| category (Qwen3.5-2B) | Q2 | Q3 | Δ |
+The sharpest structure is at the hard end. Within BFCL multi-turn at 2B:
+
+| category | Q2 | Q3 | deficit |
 |---|---|---|---|
-| `multi_turn_base` | 0.025 | 0.185 | +0.160 |
-| `multi_turn_miss_param` | 0.005 | 0.105 | +0.100 |
-| `multi_turn_long_context` | 0.005 | 0.095 | +0.090 |
-| `multi_turn_miss_func` | 0.005 | 0.080 | +0.075 |
+| `multi_turn_base` | 0.025 | 0.185 | 0.160 |
+| `multi_turn_miss_param` | 0.005 | 0.105 | 0.100 |
+| `multi_turn_long_context` | 0.005 | 0.095 | 0.090 |
+| `multi_turn_miss_func` | 0.005 | 0.080 | 0.075 |
 
-**The invariant is the floor, not the gain.** At Q2 every hard agentic category sits at ~0.005 — the
-model is pinned to the floor — and Q3 restores it to a **task-dependent ceiling** (0.08–0.185). So the
-gain is *capped by the task's own headroom*, and the task ranking is unchanged by quant
-(`base > miss_param > long_context > miss_func` at both levels). The ~+0.15 constancy holds only
-where the ceiling is high (code, base multi-turn).
+**At 2B, every hard agentic category is pinned to the floor (0.005) at Q2**, and Q3 lifts each to its
+own ceiling. The category ranking is unchanged by quant
+(`base > miss_param > long_context > miss_func` at both levels).
 
-What varies is the **retention ratio** (0.135 … 0.754) — and it varies *only* because the Q3 baseline
-differs. Multi-turn at 2B starts low (Q3 = 0.185), so the same +0.16 looks like a 7× relative loss;
-multi-turn at 4B starts high (Q3 = 0.535) and looks like a 28 % loss.
-
-The **ratio of retentions** (`multi-turn / code`) makes the size-dependence explicit:
-
-| anchor | multi-turn ÷ code retention |
-|---|---|
-| Qwen3.5-2B | **0.310** [0.119, 0.806] |
-| Qwen3.5-4B | 1.045 [0.816, 1.337] |
-| Qwen3.5-9B | 1.005 [0.809, 1.248] |
-
-Only the 2B model shows a *disproportionate relative* multi-turn loss — and since its **absolute**
-gain is the same +0.160, that is a statement about its low Q3 baseline, not about horizon.
-
-> **Correction of an earlier claim in this report.** An earlier version stated that "quantisation
-> damage scales with task horizon" based on the retention column. That was a *ratio* artifact: in
-> absolute terms the multi-turn penalty is the same ~+0.15 as for code at every size, so there is no
-> evidence of horizon-specific amplification. The practical statement that survives is narrower and
-> better supported: **a small model at Q2 can be near-unusable on multi-turn (2.5 %) even though the
-> upgrade gain is the same absolute size** — i.e. relative severity depends on where you start.
-
-Cross-family check where the harness works: `granite-4.1-3b` multi-turn Q3 = 0.175 with Q2 broken
-(see Finding 4); `Qwen3.5-2B` 0.025 → 0.185; `Qwen3.5-4B` 0.385 → 0.535.
+> **Correction history for this finding (kept deliberately).** Version 1 said "quantisation damage
+> scales with task horizon" — that was a *retention-ratio* artifact (ratios vary only because the Q3
+> baseline varies). Version 2 said "the absolute gain is a constant ~+0.15" — that was over-generalised
+> from six cells; the 4B single-turn cell (0.077) disproves it. The version above is the honest one:
+> **the deficit is headroom-limited and ranges ~0.08–0.20, with a genuine floor collapse at 2B on hard
+> agentic tasks.** We are reporting the correction trail because a reader should know how the claim was
+> narrowed.
 
 ## Finding 6 — protocol choice flips the sign of quant conclusions
 
