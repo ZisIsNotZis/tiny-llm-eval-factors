@@ -1,1 +1,2 @@
 {"model": "gr3b-q2", "category": "multi_turn_base", "handler": "ibm-granite/granite-3.1-8b-instruct", "accuracy": 0.0, "protocol": "bfcl-official-multiturn-temp0"}
+{"model": "gr3b-q3", "category": "multi_turn_base", "handler": "ibm-granite/granite-3.1-8b-instruct", "accuracy": 0.0, "protocol": "bfcl-official-multiturn-temp0"}

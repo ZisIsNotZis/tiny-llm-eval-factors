@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 22 | 30% |
+| resolved | 22 | 29% |
 | underpowered | 4 | 5% |
 | noise_level | 4 | 5% |
-| unauditable | 8 | 11% |
-| model_fit | 13 | 18% |
-| qualitative | 23 | 31% |
+| unauditable | 8 | 10% |
+| model_fit | 13 | 17% |
+| qualitative | 26 | 34% |
 
 ## resolved (22)
 
@@ -131,7 +131,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (23)
+## qualitative (26)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -178,5 +178,11 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[NOTE, checkpoint] The llama-server on port 8833 is not ours and was left alone.** It belongs to a different project (`/home/z/vibe/helpagent`, `Spark-X2.5-4B-Q4_K_M`, 3.6 GB, ~39 h old) and holds neither `/tmp/llama_gpu.lock` (held by the live `qwen4b-q3` panel, so the lock is not stuck) nor port 8080; GPU headroom was 14.7 GB free.
   - _no numeric contrast in the claim_
 - — **[INFRA, checkpoint] M12 long-context panel is generating with a healthy lock; the swarm is not stuck.** `run_m12.sh` (started 10:33 after `M11 end`) is on panel 1/3, `qwen2b-lc` (Qwen3.5-2B `UD-Q3_K_XL`, same weights as `qwen2b-q3`, 98304 ctx / 2 slots, native-FC `Qwen/Qwen3-1.7B-FC`, category `multi_turn_long_context`, 200 items): 131 records written by 11:03, active decoding, zero context-overflow lines. `fuser -v /tmp/llama_gpu.lock` shows the live panel as the only holder and its `llama-server` child is alive, so no orphan to reap; `m12_summary.jsonl` still does not exist (rows are only written at panel end), and DB state is unchanged at 2090 rows, `integrity: ok | fk issues: 0`.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, checkpoint] The M12 long-context multi-turn row is now ingested, nonzero, but CONTEXT-CONTAMINATED.** `Qwen3.5-2B` `UD-Q3_K_XL` on BFCL `multi_turn_long_context` (native-FC handler `Qwen/Qwen3-1.7B-FC`, 98304 ctx / 2 slots = 49152 per slot, greedy, 200 items) scores **0.135**, ingested as `run_tag='m12-bfcl-multiturn'` (DB 2090 -> 2091 rows, `integrity ok | fk issues 0`). However **10/200 items** failed with `exceed_context_size_error` (prompts up to 53166 tokens > 49152 per slot) and **25/200** with `'arguments'` parse errors, so this category needs **per-slot ctx > ~53k**; the launcher's 49152 is insufficient for `multi_turn_long_context`. The row is recorded with this caveat and should be re-run at higher per-slot ctx before use as a clean capability number; it does **not** feed `horizon_analysis.py` (which uses `multi_turn_base` only), so the horizon ladder is unchanged.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] The GPU lock is healthy; nothing to reap.** `run_m12.sh` panel 2/3 `gr3b-q2` (granite-4.1-3b `Q2_K`, `multi_turn_base`) holds `/tmp/llama_gpu.lock` with a live `llama-server` child (port 8080), 178/200 records written by 11:41 with **zero** context-overflow and **zero** parse-error lines; `fuser -v /tmp/llama_gpu.lock` lists only the live panel, so no waiter is stuck. The `llama-server` on port 8833 belongs to another project (`/home/z/vibe/helpagent`, `Spark-X2.5-4B-Q4_K_M`), holds neither the lock nor port 8080, and was left alone. No new MultiPL-E rows this checkpoint.
+  - _no numeric contrast in the claim_
+- — **[METHOD, m12/m14] BFCL's local handler must match the model's *tool-call dialect*, not just its family.** Running `granite-4.1-3b` under BFCL's `ibm-granite/granite-3.1-8b-instruct` handler returned **0.0** on `multi_turn_base`, but this is a harness artifact: the model emits its native `*TOOL_CALLS*{...}` dialect, the handler expects a different one, so calls decode as text; only 29/200 entries even completed (the rest died on prompts up to 53k tokens vs our 49k ctx/slot). Re-run uses the **granite-4** handler (`ibm-granite/granite-4.0-350m`, `Granite4FCHandler`) at 65536 ctx/slot (M14). Contaminated/invalid rows are quarantined (`m12_quarantine.jsonl`) rather than analysed.
   - _no numeric contrast in the claim_
 

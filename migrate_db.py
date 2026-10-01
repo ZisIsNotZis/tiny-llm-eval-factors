@@ -444,6 +444,7 @@ def main():
     n13 = ingest_m9(con)
     n14 = ingest_m11(con)
     n15 = ingest_m12(con)
+    n16 = ingest_m13(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
     print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15} m13={n16}  rows {before} -> {after}")
