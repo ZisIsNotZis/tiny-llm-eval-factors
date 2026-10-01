@@ -1,3 +1,4 @@
 {"model": "m18-q2", "category": "multi_turn_miss_func", "handler": "Qwen/Qwen3-1.7B-FC", "accuracy": 0.005, "protocol": "bfcl-official-multiturn-temp0"}
 {"model": "m18-q2", "category": "multi_turn_miss_param", "handler": "Qwen/Qwen3-1.7B-FC", "accuracy": 0.005, "protocol": "bfcl-official-multiturn-temp0"}
 {"model": "m18-q3", "category": "multi_turn_miss_func", "handler": "Qwen/Qwen3-1.7B-FC", "accuracy": 0.08, "protocol": "bfcl-official-multiturn-temp0"}
+{"model": "m18-q3", "category": "multi_turn_miss_param", "handler": "Qwen/Qwen3-1.7B-FC", "accuracy": 0.105, "protocol": "bfcl-official-multiturn-temp0"}
