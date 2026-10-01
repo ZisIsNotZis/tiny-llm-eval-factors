@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 20 | 28% |
-| underpowered | 4 | 6% |
-| noise_level | 4 | 6% |
+| resolved | 22 | 30% |
+| underpowered | 4 | 5% |
+| noise_level | 4 | 5% |
 | unauditable | 8 | 11% |
 | model_fit | 13 | 18% |
-| qualitative | 22 | 31% |
+| qualitative | 23 | 31% |
 
-## resolved (20)
+## resolved (22)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -56,6 +56,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.2160 >= MDE 0.108 at n=1_
 - Δ=0.727 — **[FINAL, m8] On harder (live) BFCL, aggregate scores again hide the real effect.** `granite-4.1-3b` overall `Q2 0.390 -> Q3 0.332` looks like a regression, but the *real* categories improve massively: `live_simple 0.016 -> 0.469`, `live_multiple 0.009 -> 0.357`, `live_parallel 0.000 -> 0.438`. The aggregate is inverted only by `live_irrelevance` (`0.976 -> 0.249`), i.e. Q2's high score there is the degenerate "never call anything" behaviour. `Qwen3.5-2B` improves overall `0.473 -> 0.581`.
   - _|Δ|=0.7270 >= MDE 0.108 at n=1_
+- Δ=0.15 — **[VERIFIED, wrap-up m11] The multi-turn quant penalty replicates at the next model size — nonzero, no harness artifacts.** `Qwen3.5-4B` on BFCL `multi_turn_base` (native-FC handler, 98304 ctx / 2 slots = 49152 per slot, greedy, 200 items): `UD-Q2_K_XL` **0.385** -> `UD-Q3_K_XL` **0.535** (both rows ingested as `run_tag='m11-bfcl-multiturn'`; no 'Context size has been exceeded' lines, and the per-panel stale-result guard fired so each row is a fresh generation). This closes the M11 panel: cross-size multi-turn is worth +0.150 at Q2->Q3 on the 4B anchor.
+  - _|Δ|=0.1500 >= MDE 0.108 at n=1_
+- Δ=0.293 — **[CORRECTED, horizon] "Multi-turn loses ~4x more than single-function code" is a property of the 2B anchor, NOT of the task horizon.** Adding the second size to the same item-level retention ladder (`Qwen3.5-4B`: code from `m1-summary`, single-turn tools from `m4b`, multi-turn from `m11`): at 4B retention is code **0.689** [0.613,0.774], single-turn tool **0.889** [0.839,0.942], multi-turn **0.720** [0.579,0.895] — all damaged, but the multi-turn/code ratio is **1.045** [0.816,1.337] (no extra horizon penalty) versus **0.310** [0.119,0.806] at 2B; the between-size gap ratio is **0.296** [0.111,0.796], i.e. significantly size-dependent. Also, every axis retains more at 4B than at 2B (code 0.436->0.689, single-turn 0.596->0.889). Reading: low-bit quantisation brittleness concentrates in *small* models generally; the "long horizon is what breaks first" ordering holds only for the 2B class, so it must not be stated as a general law. The Q2->Q3 step still hurts significantly at 4B on every axis (all CIs exclude 1.0), so the practical ">= Q3" advice is unaffected.
+  - _|Δ|=0.2930 >= MDE 0.108 at n=1_
 
 ## underpowered (4)
 
@@ -127,7 +131,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (22)
+## qualitative (23)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -172,5 +176,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[INFRA, checkpoint] Panel driver now kills its own server on exit and refuses to score a stale one.** `run_m9_panel.sh` gained `trap cleanup EXIT` (+INT/TERM) so a signalled or timed-out panel can no longer leave `llama-server` holding port 8080 and the inherited GPU flock (the bug that stalled the queue ~36 min earlier tonight), plus a pre-start check that kills a listener matching `llama-server .*-m /home/z/hf/` but **aborts** if the port is held by anything else — previously the health check would have answered from the previous panel's server and BFCL would have silently scored the *wrong* model under the new tag. Tested on a spare port: foreign `python3 -m http.server` -> abort, nothing killed; fake `llama-server` argv -> killed, panel proceeded to start its own.
   - _no numeric contrast in the claim_
 - — **[NOTE, checkpoint] The llama-server on port 8833 is not ours and was left alone.** It belongs to a different project (`/home/z/vibe/helpagent`, `Spark-X2.5-4B-Q4_K_M`, 3.6 GB, ~39 h old) and holds neither `/tmp/llama_gpu.lock` (held by the live `qwen4b-q3` panel, so the lock is not stuck) nor port 8080; GPU headroom was 14.7 GB free.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] M12 long-context panel is generating with a healthy lock; the swarm is not stuck.** `run_m12.sh` (started 10:33 after `M11 end`) is on panel 1/3, `qwen2b-lc` (Qwen3.5-2B `UD-Q3_K_XL`, same weights as `qwen2b-q3`, 98304 ctx / 2 slots, native-FC `Qwen/Qwen3-1.7B-FC`, category `multi_turn_long_context`, 200 items): 131 records written by 11:03, active decoding, zero context-overflow lines. `fuser -v /tmp/llama_gpu.lock` shows the live panel as the only holder and its `llama-server` child is alive, so no orphan to reap; `m12_summary.jsonl` still does not exist (rows are only written at panel end), and DB state is unchanged at 2090 rows, `integrity: ok | fk issues: 0`.
   - _no numeric contrast in the claim_
 

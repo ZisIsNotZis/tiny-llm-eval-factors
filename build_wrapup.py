@@ -296,7 +296,8 @@ def main():
         import sqlite3 as _sq
         _c = _sq.connect("file:experiments.sqlite?mode=ro", uri=True)
         rows = _c.execute("SELECT model,_score FROM experiments "
-                          "WHERE run_tag='m9-bfcl-multiturn' AND _score IS NOT NULL").fetchall()
+                          "WHERE run_tag IN ('m9-bfcl-multiturn','m11-bfcl-multiturn') "
+                          "AND _score IS NOT NULL").fetchall()
     except Exception:
         rows = []
     if rows:
@@ -307,16 +308,16 @@ def main():
             L.append(f"| {m} | {sc:.3f} |")
         d = {}
         for m, sc in rows:
-            d["Q3" if "-Q3_" in m or "Q3" in m else "Q2"] = sc
-        if "Q2" in d and "Q3" in d:
-            L.append("")
-            L.append(f"**Q2→Q3 = {d['Q3']-d['Q2']:+.3f}** on multi-turn. Compare the *same model* on the "
-                     "other axes: code (MultiPL-E) **+0.155**, single-turn BFCL native **+0.202**, "
-                     "live BFCL **+0.108**.\n")
-            L.append("**Conclusion: quantization damage scales with task horizon.** The longer the "
-                     "task and the more state it needs, the more a low-quant model loses — which is "
-                     "exactly the ability that short single-function benchmarks cannot see, and the "
-                     "reason the broader community still recommends Q4/Q5.\n")
+            anchor = "4B" if "4B" in m else "2B"
+            d.setdefault(anchor, {})["Q3" if "Q3" in m else "Q2"] = sc
+        for anchor, dd in sorted(d.items()):
+            if "Q2" in dd and "Q3" in dd:
+                L.append("")
+                L.append(f"**Qwen3.5-{anchor}: Q2→Q3 = {dd['Q3']-dd['Q2']:+.3f}** on multi-turn. "
+                         "Compare the *same model* on the other axes (7d).\n")
+        L.append("The Q2→Q3 gain is positive on this axis at **both** measured sizes, so the "
+                 "direction of the effect is robust; how much *extra* it costs relative to "
+                 "shorter tasks is size-dependent — see 7d.\n")
     else:
         L.append("_no m9 rows_\n")
 
@@ -332,9 +333,31 @@ def main():
             L.append(f"| {name} | {d['q2']:.3f} | {d['q3']:.3f} | "
                      f"**{r.get('ratio','—')}** | [{r.get('lo','—')}, {r.get('hi','—')}] |")
         L.append("")
-        L.append("All CIs exclude 1.0. Multi-turn agentic loses ~4x more of its capability than "
-                 "single-function code, and harder single-turn (live) loses more than easy "
-                 "single-turn — **quantisation damage scales with task horizon.**\n")
+        L.append("All CIs exclude 1.0 — at 2B every axis loses capability at Q2. Multi-turn agentic "
+                 "loses ~4x more than single-function code and harder single-turn (live) loses more "
+                 "than easy single-turn.\n")
+        if hz.get("anchors", {}).get("Qwen3.5-4B"):
+            L.append("**Size replication (`m1` + `m4b` + `m11`, item-level):**\n")
+            L.append("| anchor | axis | n | Q2 | Q3 | retention | 95% CI |")
+            L.append("|---|---|---|---|---|---|---|")
+            for anchor, axes in hz["anchors"].items():
+                for name, d in axes.items():
+                    r = d.get("retention") or {}
+                    L.append(f"| {anchor} | {name} | {int(d['n2'])} | {d['q2']:.3f} | {d['q3']:.3f} "
+                             f"| **{r.get('ratio','—')}** | [{r.get('lo','—')}, {r.get('hi','—')}] |")
+            gap = hz.get("multiturn_vs_code", {})
+            if gap:
+                L.append("")
+                L.append("multi-turn/code retention ratio: " + "; ".join(
+                    f"{a} {g['ratio']:.3f} [{g['lo']:.3f}, {g['hi']:.3f}]" for a, g in gap.items()))
+            dd = hz.get("gap_2B_over_4B")
+            if dd:
+                L.append("")
+                L.append(f"**CORRECTION: the horizon ordering is size-dependent, not a law.** "
+                         f"2B/4B gap ratio {dd['ratio']:.3f} [{dd['lo']:.3f}, {dd['hi']:.3f}]; at 4B "
+                         f"all axes retain 0.69-0.89 and the multi-turn/code gap vanishes. "
+                         f"Low-bit brittleness concentrates in small models; the Q2→Q3 step still "
+                         f"hurts significantly at 4B on every axis.\n")
     else:
         L.append("_horizon.json not found_\n")
 
