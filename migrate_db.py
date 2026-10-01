@@ -414,13 +414,15 @@ def ingest_m17(con):
 
 
 def ingest_m18(con):
+    # run_m18.sh launches llama-server with -c 131072 -np 2 (65536 ctx/slot).
     return _ingest_bfcl_mt(con, ".wrapup/m18_summary.jsonl", "m18-bfcl-multiturn",
-                           "m18_summary.jsonl")
+                           "m18_summary.jsonl", ctx_size=131072)
 
 
 def ingest_m19(con):
+    # run_m19.sh launches llama-server with -c 196608 -np 2 (98304 ctx/slot).
     return _ingest_bfcl_mt(con, ".wrapup/m19_summary.jsonl", "m19-bfcl-multiturn",
-                           "m19_summary.jsonl")
+                           "m19_summary.jsonl", ctx_size=196608)
 
 
 def ingest_m4(con):
