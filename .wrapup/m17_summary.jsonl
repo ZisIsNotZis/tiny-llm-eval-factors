@@ -1,0 +1,2 @@
+{"model": "qwen9b-q2", "category": "multi_turn_base", "handler": "Qwen/Qwen3-8B-FC", "accuracy": 0.49, "protocol": "bfcl-official-multiturn-temp0"}
+{"model": "qwen9b-q3", "category": "multi_turn_base", "handler": "Qwen/Qwen3-8B-FC", "accuracy": 0.65, "protocol": "bfcl-official-multiturn-temp0"}

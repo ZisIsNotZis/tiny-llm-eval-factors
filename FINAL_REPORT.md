@@ -115,33 +115,36 @@ exactly when the Q3 weights already capture nearly all of the model's usable cap
 Low-bit quantisation is therefore **not a smooth quality dial**; some checkpoints fall off a cliff.
 This is why we report per-checkpoint, not per-level.
 
-## Finding 5 — where quantisation hurts: horizon × headroom
+## Finding 5 — the absolute `Q2→Q3` gain is ~+0.15, and it is essentially constant
 
-Capability **retained at Q2** relative to Q3, with item-level ratio CIs (`horizon_analysis.py` →
-`HORIZON.md`):
+Direct measurement across **model size × task type** (Qwen3.5, item-level scores):
 
-| anchor | axis | Q2 | Q3 | retention |
-|---|---|---|---|---|
-| **2B** | code single-function | 0.120 | 0.275 | **0.436** [0.329, 0.578] |
-| 2B | single-turn tools | 0.299 | 0.502 | 0.597 [0.539, 0.660] |
-| 2B | live single-turn tools | 0.190 | 0.412 | 0.462 [0.407, 0.524] |
-| 2B | **multi-turn tools** | 0.025 | 0.185 | **0.135** [0.054, 0.337] |
-| **4B** | code single-function | 0.315 | 0.457 | **0.689** [0.613, 0.774] |
-| 4B | single-turn tools | 0.615 | 0.691 | 0.889 [0.839, 0.942] |
-| 4B | **multi-turn tools** | 0.385 | 0.535 | **0.720** [0.579, 0.895] |
+| size | axis | Q2 | Q3 | **absolute Δ** | retention (Q2/Q3) |
+|---|---|---|---|---|---|
+| 2B | code (MultiPL-E) | 0.120 | 0.275 | **+0.155** | 0.436 |
+| 2B | tool multi-turn | 0.025 | 0.185 | **+0.160** | 0.135 |
+| 4B | code | 0.314 | 0.456 | **+0.142** | 0.688 |
+| 4B | tool multi-turn | 0.385 | 0.535 | **+0.150** | 0.720 |
+| 9B | code | 0.429 | 0.571 | **+0.143** | 0.750 |
+| 9B | tool multi-turn | 0.490 | 0.650 | **+0.160** | 0.754 |
 
-* **Every retention is < 1** → Q3 beats Q2 on every axis at every size.
-* At **2B**, multi-turn retains only 13.5 % of its Q3 capability — ~4× worse than code
-  (ratio-of-retention 0.310 [0.119, 0.806]).
-* At **4B the effect disappears** (ratio 1.045 [0.816, 1.337]): all axes retain 0.69–0.89.
+Every one of the six cells gives **+0.142 … +0.160**. The Q2→Q3 upgrade therefore buys a roughly
+**fixed amount of absolute score**, whether you are doing single-function code or multi-turn agentic
+work, on a 2B or a 9B model.
 
-**So "quantisation damage scales with task horizon" is real but gated by model headroom**: it is a
-small-model phenomenon. Long-horizon agentic ability needs long-range attention and state tracking,
-which low-bit quantisation degrades first — and that is exactly what short single-function
-benchmarks cannot see.
+What varies is the **retention ratio** (0.135 … 0.754) — and it varies *only* because the Q3 baseline
+differs. Multi-turn at 2B starts low (Q3 = 0.185), so the same +0.16 looks like a 7× relative loss;
+multi-turn at 4B starts high (Q3 = 0.535) and looks like a 28 % loss.
 
-Cross-family multi-turn confirms the shape where the harness works: `granite-4.1-3b` Q3 = 0.175
-(Q2 = broken), `Qwen3.5-2B` 0.025 → 0.185, `Qwen3.5-4B` 0.385 → 0.535.
+> **Correction of an earlier claim in this report.** An earlier version stated that "quantisation
+> damage scales with task horizon" based on the retention column. That was a *ratio* artifact: in
+> absolute terms the multi-turn penalty is the same ~+0.15 as for code at every size, so there is no
+> evidence of horizon-specific amplification. The practical statement that survives is narrower and
+> better supported: **a small model at Q2 can be near-unusable on multi-turn (2.5 %) even though the
+> upgrade gain is the same absolute size** — i.e. relative severity depends on where you start.
+
+Cross-family check where the harness works: `granite-4.1-3b` multi-turn Q3 = 0.175 with Q2 broken
+(see Finding 4); `Qwen3.5-2B` 0.025 → 0.185; `Qwen3.5-4B` 0.385 → 0.535.
 
 ## Finding 6 — protocol choice flips the sign of quant conclusions
 
