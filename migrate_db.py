@@ -324,6 +324,8 @@ MMT_MODELS = {
     "qwen2b-lc": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen2b-lc2": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen2b-lc3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "m18-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "m18-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
     # other families (handler support varies)
     "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
@@ -407,6 +409,11 @@ def ingest_m17(con):
                            "m17_summary.jsonl", ctx_size=131072)
 
 
+def ingest_m18(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m18_summary.jsonl", "m18-bfcl-multiturn",
+                           "m18_summary.jsonl")
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -467,7 +474,7 @@ def main():
     REFRESH = [
         ("m9", ingest_m9), ("m11", ingest_m11), ("m12", ingest_m12),
         ("m13", ingest_m13), ("m14", ingest_m14), ("m15", ingest_m15),
-        ("m16", ingest_m16), ("m17", ingest_m17),
+        ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18),
     ]
     tally = {}
     for label, tag, fn in ONCE:
@@ -743,6 +750,8 @@ MMT_MODELS = {
     "qwen2b-lc": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen2b-lc2": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen2b-lc3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "m18-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "m18-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
     # other families (handler support varies)
     "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
@@ -887,7 +896,7 @@ def main():
     REFRESH = [
         ("m9", ingest_m9), ("m11", ingest_m11), ("m12", ingest_m12),
         ("m13", ingest_m13), ("m14", ingest_m14), ("m15", ingest_m15),
-        ("m16", ingest_m16), ("m17", ingest_m17),
+        ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18),
     ]
     tally = {}
     for label, tag, fn in ONCE:
