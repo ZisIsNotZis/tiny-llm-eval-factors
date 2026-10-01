@@ -314,29 +314,62 @@ M9_MODELS = {
 }
 
 
-def ingest_m9(con):
-    """Multi-turn BFCL via the official bfcl-eval harness (one row per model x category)."""
-    path = ".wrapup/m9_summary.jsonl"
+MMT_MODELS = {
+    # Qwen3.5 anchors (native <tool_call> FC handler works)
+    "qwen2b-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf", "qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    # M12 long-context anchor: same weights as qwen2b-q3 but a distinct
+    # multi_turn_long_context cell (tag comes from run_m12.sh).
+    "qwen2b-lc": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+    # other families (handler support varies)
+    "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
+    "e2b-q2": "gemma-4-E2B-it-UD-Q2_K_XL.gguf", "e2b-q3": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+    "mcp5-2b-q2": "MiniCPM5-2B-Q2_K.gguf", "mcp5-2b-q3": "MiniCPM5-2B-Q3_K_M.gguf",
+    "qwen9b-q2": "Qwen3.5-9B-UD-Q2_K_XL.gguf", "qwen9b-q3": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+    "lfm25-8b-q2": "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf", "lfm25-8b-q3": "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf",
+}
+
+
+def _ingest_bfcl_mt(con, path, run_tag, source, model_map=None):
+    """Multi-turn BFCL rows (one per model x category)."""
+    model_map = model_map or MMT_MODELS
     if not os.path.exists(path):
-        print("  (no m9 summary)")
+        print(f"  (no {source})")
         return 0
+    # Refresh semantics: these panels append rows for hours across checkpoints
+    # (m11/m12), so re-ingest replaces the run's rows instead of being one-shot.
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", (run_tag,))
     n = 0
     for line in open(path):
         line = line.strip()
         if not line:
             continue
         r = json.loads(line)
-        if r["model"] not in M9_MODELS or r.get("accuracy") is None:
+        if r["model"] not in model_map or r.get("accuracy") is None:
             continue
-        row = base_row(M9_MODELS[r["model"]], f"bfcl-{r['category']}", 0.0, r["accuracy"], None)
-        row.update({"run_tag": "m9-bfcl-multiturn", "rep": 1, "ctx_size": 98304,
-                    "parallel_slots": 2,
+        row = base_row(model_map[r["model"]], f"bfcl-{r['category']}", 0.0, r["accuracy"], None)
+        row.update({"run_tag": run_tag, "rep": 1, "ctx_size": 98304, "parallel_slots": 2,
                     "protocol": r.get("protocol", "bfcl-official-multiturn-temp0"),
                     "language": "python", "bench_family": "bfcl-multiturn",
-                    "source_file": "m9_summary.jsonl"})
+                    "source_file": source})
         insert(con, row)
         n += 1
     return n
+
+
+def ingest_m9(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m9_summary.jsonl", "m9-bfcl-multiturn",
+                           "m9_summary.jsonl")
+
+
+def ingest_m11(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m11_summary.jsonl", "m11-bfcl-multiturn",
+                           "m11_summary.jsonl")
+
+
+def ingest_m12(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m12_summary.jsonl", "m12-bfcl-multiturn",
+                           "m12_summary.jsonl")
 
 
 def ingest_m4(con):
@@ -398,10 +431,14 @@ def main():
     n10 = once("m8-bfcl-live", ingest_m8)
     n11 = once("m10-family-ladder", ingest_m10)
     n12 = once("m10-granite-q34", ingest_m10g)
-    n13 = once("m9-bfcl-multiturn", ingest_m9)
+    # Multi-turn BFCL panels append rows over many hours; ingest is idempotent
+    # (delete-by-run_tag then insert), so every checkpoint re-run picks up new rows.
+    n13 = ingest_m9(con)
+    n14 = ingest_m11(con)
+    n15 = ingest_m12(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
-    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13}  rows {before} -> {after}")
+    print(f"  inserted w1={n1} w2={n2} m1={n3} m2={n4} m3={n5} m4={n6} m4b={n6b} m5={n7} m6={n8} m7={n9} m8={n10} m10={n11} m10g={n12} m9={n13} m11={n14} m12={n15}  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]
     fk = con.execute("PRAGMA foreign_key_check").fetchall()
     print("  integrity:", ic, "| fk issues:", len(fk))

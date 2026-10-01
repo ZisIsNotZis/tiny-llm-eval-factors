@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 21 | 34% |
+| resolved | 20 | 31% |
 | underpowered | 4 | 6% |
 | noise_level | 4 | 6% |
-| unauditable | 8 | 13% |
-| model_fit | 13 | 21% |
-| qualitative | 12 | 19% |
+| unauditable | 8 | 12% |
+| model_fit | 13 | 20% |
+| qualitative | 15 | 23% |
 
-## resolved (21)
+## resolved (20)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -56,8 +56,6 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.2160 >= MDE 0.108 at n=1_
 - Δ=0.727 — **[FINAL, m8] On harder (live) BFCL, aggregate scores again hide the real effect.** `granite-4.1-3b` overall `Q2 0.390 -> Q3 0.332` looks like a regression, but the *real* categories improve massively: `live_simple 0.016 -> 0.469`, `live_multiple 0.009 -> 0.357`, `live_parallel 0.000 -> 0.438`. The aggregate is inverted only by `live_irrelevance` (`0.976 -> 0.249`), i.e. Q2's high score there is the degenerate "never call anything" behaviour. `Qwen3.5-2B` improves overall `0.473 -> 0.581`.
   - _|Δ|=0.7270 >= MDE 0.108 at n=1_
-- Δ=0.202 — **[FINAL, m9] Multi-turn agentic is by far the most quant-sensitive axis measured.** Official BFCL harness (`multi_turn_base`, 200 entries, temp 0, native `<tool_call>` FC handler) on `Qwen3.5-2B`: `Q2_K_XL 2.5%` vs `Q3_K_XL 18.5%` → **+16.0 points (7.4x)**. Compare the same model's `Q2->Q3` on the other axes: **code (MultiPL-E) +0.155**, **single-turn BFCL native +0.202**, **live BFCL +0.108**. So quantization damage **scales with task horizon**: the more turns / state the task requires, the more the low-quant model loses. This directly supports H3 (the above-Q3/Q4 advice and the "Q4+" folk wisdom are grounded in longer-horizon ability that short single-function benchmarks cannot see).
-  - _|Δ|=0.2020 >= MDE 0.108 at n=1_
 
 ## underpowered (4)
 
@@ -129,7 +127,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (12)
+## qualitative (15)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -153,6 +151,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _no numeric contrast in the claim_
 - — **[CORRECTED, wrap-up T4] `gemma-4-12B` is NOT reliably evaluable with the MultiPL-E harness; its scores are dominated by output-format compliance, which itself varies by quant.** Under raw `/completion` it leaks `<|channel>thought` and scores ~0 at every quant. Under a chat protocol with thinking disabled the results are *mutually inconsistent*: `q2-cpp 0.012` (158/161 SyntaxError because the model **re-declares the function signature** inside the body) vs `q3-cpp 0.807` (clean bodies), while `q2-py 0.466` (correctly indented bodies) vs `q3-py 0.031` (bodies emitted at column 0 → IndentationError). All four files have 161 non-empty completions and no thinking-channel leakage, so the effect is real model *formatting* behaviour, not a leak — but it is a formatting capability, not a code capability, and it flips between quant levels. **Excluded from all quant ladders.**
   - _no numeric contrast in the claim_
+- — **[FINAL, m9 + horizon] Quantisation damage scales with task horizon — measured as *capability retained at Q2 relative to Q3*.** Same anchor (Qwen3.5-2B), item-level totals: **multi-turn tool calling retains only 13.5%** of its Q3 score at Q2 (0.025 vs 0.185; ratio 95% CI [0.054, 0.337]); single-function code retains 43.6% (0.120 vs 0.275; [0.329, 0.578]); *live* single-turn tools 46.2% ([0.407, 0.524]); simple single-turn tools 59.6% ([0.539, 0.660]). All four CIs exclude 1.0, so Q2 is significantly damaging on every axis — but **the multi-turn agentic axis loses roughly 4x more of its capability than the single-function axes**, and harder single-turn (live) loses more than easy single-turn. Mechanistic reading: long-horizon tasks depend on long-range attention and state tracking, which low-bit quantisation degrades far more than the short local pattern-matching that single-function benchmarks reward — consistent with quantiser calibration corpora being dominated by short snippets. This is the ability short benchmarks cannot see, and the practical basis for the community's Q4/Q5 recommendations.
+  - _no numeric contrast in the claim_
 - — **[METHOD, m9] Grader format must match the model's tool-call dialect, or you measure nothing.** BFCL's default `Qwen/Qwen3-1.7B` handler uses *raw prompting*: our Qwen3.5 model replied in prose and it scored **0.0%**. Switching to the native-`<tool_call>` interface (`Qwen/Qwen3-1.7B-FC`) gave 2.5% / 18.5%. Two other harness bugs had to be fixed first: (a) llama-server with 4 slots gave only 16k ctx per slot vs BFCL's 40k requirement (114 context-overflow errors); (b) BFCL resumes from stale result files, so old 0% results were being re-scored. All three are silent zero-score generators.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] A multi-turn BFCL panel can silently re-score the previous quant's file — guard now in the driver.** `bfcl generate` defaults to `allow_overwrite=False`, so pre-existing entries are not regenerated, and the result path is keyed by the *handler*, not the run tag: the panels `qwen4b-q2` and `qwen4b-q3` share `Qwen/Qwen3-4B-Instruct-2507-FC` and therefore the same `result/<handler>/.../BFCL_v4_multi_turn_base_result.json`. Without cleanup the second panel would generate 0 items and `evaluate` would re-score the first quant's responses, recording a *false null* (`Q3 ≈ Q2`). `.wrapup/run_m9_panel.sh` now deletes that per-category result file before each panel, so every M11/M12 row is a fresh generation.
+  - _no numeric contrast in the claim_
+- — **[GAP, checkpoint] M12's Qwen panel is not ingestible as written.** `.wrapup/run_m12.sh` emits the model tag `qwen2b-lc`, which has no key in `MMT_MODELS` (`migrate_db.py`), so `_ingest_bfcl_mt` would skip that row silently; additionally M12 as launched by `chain2.sh` uses `CATS=multi_turn_base`, i.e. the same category already measured for a Qwen3.5-2B anchor in M9, so the row would duplicate the `m9-bfcl-multiturn` cell rather than add the advertised long-context cell.
   - _no numeric contrast in the claim_
 
