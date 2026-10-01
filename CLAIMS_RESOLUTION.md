@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 22 | 29% |
+| resolved | 23 | 28% |
 | underpowered | 4 | 5% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 10% |
-| model_fit | 13 | 17% |
-| qualitative | 26 | 34% |
+| model_fit | 13 | 16% |
+| qualitative | 30 | 37% |
 
-## resolved (22)
+## resolved (23)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -60,6 +60,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1500 >= MDE 0.108 at n=1_
 - Δ=0.293 — **[CORRECTED, horizon] "Multi-turn loses ~4x more than single-function code" is a property of the 2B anchor, NOT of the task horizon.** Adding the second size to the same item-level retention ladder (`Qwen3.5-4B`: code from `m1-summary`, single-turn tools from `m4b`, multi-turn from `m11`): at 4B retention is code **0.689** [0.613,0.774], single-turn tool **0.889** [0.839,0.942], multi-turn **0.720** [0.579,0.895] — all damaged, but the multi-turn/code ratio is **1.045** [0.816,1.337] (no extra horizon penalty) versus **0.310** [0.119,0.806] at 2B; the between-size gap ratio is **0.296** [0.111,0.796], i.e. significantly size-dependent. Also, every axis retains more at 4B than at 2B (code 0.436->0.689, single-turn 0.596->0.889). Reading: low-bit quantisation brittleness concentrates in *small* models generally; the "long horizon is what breaks first" ordering holds only for the 2B class, so it must not be stated as a general law. The Q2->Q3 step still hurts significantly at 4B on every axis (all CIs exclude 1.0), so the practical ">= Q3" advice is unaffected.
   - _|Δ|=0.2930 >= MDE 0.108 at n=1_
+- Δ=0.15 — **[VERIFIED, checkpoint] GPU lock is healthy, no orphan to reap, and no new MultiPL-E rows this checkpoint.** `run_m13.sh` (pid 163764) -> `flock` (163766) -> `run_m9_panel.sh` (163767) -> `llama-server` (163771) -> `bfcl` (163836) is a single live holder chain of `/tmp/llama_gpu.lock`; `fuser -v` lists only that chain, so no waiter is stuck and no orphaned child exists. GPU 3.58 GB used / 20.53 GB free. M11 (Qwen3.5-4B `multi_turn_base` 0.385 -> 0.535) and M12 (Qwen3.5-2B `multi_turn_long_context` 0.135, ctx-contaminated) remain the only multi-turn DB rows; no new MultiPL-E panels ran, so `multipl_e_analysis.py`/`ladder_analysis.py` outputs are unchanged. Regenerated `WRAPUP.md`, `CLAIMS_RESOLUTION.md`, `claims_ledger.csv` are byte-stable.
+  - _|Δ|=0.1500 >= MDE 0.108 at n=1_
 
 ## underpowered (4)
 
@@ -131,7 +133,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (26)
+## qualitative (30)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -184,5 +186,13 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[INFRA, checkpoint] The GPU lock is healthy; nothing to reap.** `run_m12.sh` panel 2/3 `gr3b-q2` (granite-4.1-3b `Q2_K`, `multi_turn_base`) holds `/tmp/llama_gpu.lock` with a live `llama-server` child (port 8080), 178/200 records written by 11:41 with **zero** context-overflow and **zero** parse-error lines; `fuser -v /tmp/llama_gpu.lock` lists only the live panel, so no waiter is stuck. The `llama-server` on port 8833 belongs to another project (`/home/z/vibe/helpagent`, `Spark-X2.5-4B-Q4_K_M`), holds neither the lock nor port 8080, and was left alone. No new MultiPL-E rows this checkpoint.
   - _no numeric contrast in the claim_
 - — **[METHOD, m12/m14] BFCL's local handler must match the model's *tool-call dialect*, not just its family.** Running `granite-4.1-3b` under BFCL's `ibm-granite/granite-3.1-8b-instruct` handler returned **0.0** on `multi_turn_base`, but this is a harness artifact: the model emits its native `*TOOL_CALLS*{...}` dialect, the handler expects a different one, so calls decode as text; only 29/200 entries even completed (the rest died on prompts up to 53k tokens vs our 49k ctx/slot). Re-run uses the **granite-4** handler (`ibm-granite/granite-4.0-350m`, `Granite4FCHandler`) at 65536 ctx/slot (M14). Contaminated/invalid rows are quarantined (`m12_quarantine.jsonl`) rather than analysed.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] `migrate_db.py` could not finish: `ingest_m13` was defined but never called, and `main()`'s summary print referenced an unassigned `n16`.** Running `python3 migrate_db.py` crashed with `NameError: name 'n16' is not defined` *after* `con.commit()`, so M13 rows would never ingest and the `&&`-chained regenerate step would abort at the first command. Fixed by wiring `n16 = ingest_m13(con)` into `main()`. Verified: re-run exits 0, `m13_summary.jsonl` absent -> `m13=0`, DB 2091 rows unchanged, `integrity ok | fk issues 0`.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] The M12 refresh semantics would have silently dropped the already-ingested long-context row.** `_ingest_bfcl_mt` does `DELETE ... WHERE run_tag=?` then re-inserts from the summary file, but `m12_summary.jsonl` had been emptied of its only valid row (`qwen2b-lc`, `multi_turn_long_context` 0.135) by the earlier quarantine commit — so any checkpoint `migrate_db.py` run would have *deleted* the DB row while M13 was not yet finished, leaving the long-context cell empty. Row reconstructed into `m12_summary.jsonl` from `.wrapup/m12.log` (`DONE qwen2b-lc multi_turn_long_context acc=13.50`, handler `Qwen/Qwen3-1.7B-FC`) so the refresh is idempotent; the DB row survives (`m12=1`, model `Qwen3.5-2B-UD-Q3_K_XL.gguf`).
+  - _no numeric contrast in the claim_
+- — **[METHOD, m12] The second granite multi-turn row also scored 0.00 and is the same harness artifact, not capability.** `gr3b-q3` (`granite-4.1-3b` `Q3_K_M`, category `multi_turn_base`) returned **0.0** under BFCL's `ibm-granite/granite-3.1-8b-instruct` handler, matching `gr3b-q2`: the q3 log section is a wall of `Failed to decode the model response. Proceed to next turn.` (the Granite-3 handler cannot parse the Granite-4.1 tool-call dialect). Quarantined to `.wrapup/m12_quarantine.jsonl` (now 2 rows) and **not ingested**; the DB holds **zero** granite multi-turn rows. The approved re-run (M14) is already chained after M13 with the `granite-4` native-FC handler (`ibm-granite/granite-4.0-350m` -> `Granite4FCHandler`).
+  - _no numeric contrast in the claim_
+- — **[BLOCKER, m13] M13's 65536 ctx/slot is still insufficient for the longest `multi_turn_long_context` prompts.** The corrected re-run (Qwen3.5-2B `UD-Q3_K_XL`, native-FC `Qwen/Qwen3-1.7B-FC`, `-c 131072 -np 2`) no longer errors at 53166 tokens, but at 21:28 in-run **3/200** items still failed with `exceed_context_size_error` at **68154 / 84958 / 71326** prompt tokens > 65536/slot (n_ctx_slot=65536). So the category needs `>= ~85k` tokens/slot — a **single-slot `-c 131072`** run (the fallback the launcher comment anticipated, but did not implement) would clear it. This is not a zero and M13 is still generating (94/200 records at 12:22); the owed follow-up is a long-context re-run at >=131072/slot before the number is treated as clean.
   - _no numeric contrast in the claim_
 
