@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 24 | 27% |
+| resolved | 24 | 26% |
 | underpowered | 4 | 4% |
 | noise_level | 4 | 4% |
 | unauditable | 8 | 9% |
-| model_fit | 15 | 17% |
-| qualitative | 35 | 39% |
+| model_fit | 15 | 16% |
+| qualitative | 37 | 40% |
 
 ## resolved (24)
 
@@ -139,7 +139,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, wrap-up m15] The `multi_turn_long_context` cell now has a CLEAN row (no ctx overflow) and it is nonzero.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) finished with **200/200 valid records, 0 `exceed_context_size`/`Context size has been exceeded` lines**, scoring **0.095**, ingested as `run_tag='m15-bfcl-multiturn'` (DB 2093 -> 2094 rows, `integrity ok | fk issues 0`). This clears M13's residual overflow (68154/84958/71326 tokens vs 65536/slot); the clean score is slightly *below* the ctx-contaminated M12 (`0.135`) and M13 (`0.105`), confirming the earlier rows were not inflated by the overflow and that this category is near floor for the 2B class, not a harness zero.
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (35)
+## qualitative (37)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -210,5 +210,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[INFRA, checkpoint] GPU lock is healthy; no orphan to reap.** `fuser -v /tmp/llama_gpu.lock` lists only the live M15 chain (`flock` 297813 -> `run_m9_panel.sh` 297814 -> `llama-server` 297818 -> `bfcl` 297860) with the `llama-server` child decoding on port 8080; no waiter is blocked, so the "kill only orphaned lock-holding children" rule did not fire. GPU 4.10 GB used / 20.01 GB free.
   - _no numeric contrast in the claim_
 - — **[INFRA, checkpoint] GPU is idle and the lock is clean; all multi-turn rows ingested; regeneration byte-stable.** No `flock`/`run_m1[12]`/`run_m9_panel`/`llama-server` processes are live, `fuser -v /tmp/llama_gpu.lock` lists no holder, no `:8080` listener, GPU 733 MiB used / 23.4 GB free, so no orphan to reap and no waiter is stuck. `python3 migrate_db.py` ingested the one new cell (`m15=1`; m9=2, m11=2, m12=1, m13=1, m14=1 refreshed idempotently), 2093 -> 2094 rows, `integrity ok | fk issues 0`, zero out-of-range scores, zero null `_bench`/`_score` (only the pre-existing 1 legacy null `bench_family`). No new MultiPL-E panels ran, so `MULTIPLE.md`/`LADDER_TOOLS.md`/`HORIZON.md`/`WRAPUP.md`/`claims_ledger.csv` are byte-stable. Quant-step CIs remain item-level (`multipl_e_analysis.py ci_items`); no CI code changed. Backup `experiments.sqlite.bak11` taken before mutation.
+  - _no numeric contrast in the claim_
+- — **[METHOD, m16 abandoned] A handler whose prompt format mismatches the model can be *pathologically* slow, not just wrong.** BFCL's `MiniCPM3-4B-FC` handler against `MiniCPM5-2B` gave a 9-hour ETA (166 s/item, 1/200 in 3 min): the model generates extremely long outputs under that format. Aborted as impractical; **not** a capability result.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] M17 (9B multi-turn) is in flight and clean; `migrate_db.py`'s m17 wiring was broken and is fixed.** `chain6` -> `run_m17.sh` -> `gpu_locked.sh` -> `run_m9_panel.sh qwen9b-q2 ... multi_turn_base` is the single live holder chain of `/tmp/llama_gpu.lock` (`flock` 377965 -> `bash` 377966 -> `llama-server` 377970 -> `bfcl` 378125), so no waiter is stuck and no orphan needs reaping; `llama-server` is decoding at **85/200** generated with **0** `Context size has been exceeded` lines. `migrate_db.py` crashed with `NameError: name 'n19' is not defined` *after* `con.commit()` (`main()` tallied an m17 count but never called `ingest_m17`), which would have aborted the `&&`-chained regeneration; fixed by wiring `n19 = ingest_m17(con)`, dropping the stale `m16=` field from the summary print, and giving `ingest_m17` the run's true `ctx_size=131072` (was defaulting to 98304). Re-run exits 0: DB **2094 rows**, `integrity ok | fk issues 0`, m17 not yet ingestible (no `m17_summary.jsonl`).
   - _no numeric contrast in the claim_
 
