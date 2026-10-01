@@ -11,8 +11,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 | underpowered | 5 | 6% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 10% |
-| model_fit | 15 | 19% |
-| qualitative | 20 | 26% |
+| model_fit | 16 | 20% |
+| qualitative | 20 | 25% |
 
 ## resolved (26)
 
@@ -112,7 +112,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — On the same unseen `granite-4.1-3b-UD-Q3_K_XL` at long context (`ctx24576`), one-sided KV effects remain non-collapsing and positive on both primary datasets: Humaneval base `0.7317` -> K-only `0.7439` / V-only `0.7439`; MBPP base `0.5529` -> K-only `0.5714` / V-only `0.5661`, with modest wall-time increases (`~+6s` to `+8s`).
   - _depends on variable absent from DB schema_
 
-## model_fit (15)
+## model_fit (16)
 
 - — Residual `wall_time_sec` nulls are unrecoverable from current artifacts: 42 rows still lack timing, and none of those rows have a direct `.txt` sidecar in `evalplus_results`.
   - _model-fit / coefficient statement, not an effect claim_
@@ -143,6 +143,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, checkpoint] The M15 long-context multi-turn re-run is generating cleanly and clears M13's residual per-slot ctx overflow.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) had written **136/200** records by 13:42 with **zero** `exceed_context_size` / `Context size has been exceeded` lines, versus M13's 3 overflow failures at 68154/84958/71326 tokens under 65536/slot. No row is emitted before `panel end`, so no new multi-turn row is ingestible yet (expected ~14:05).
   - _model-fit / coefficient statement, not an effect claim_
 - — **[VERIFIED, wrap-up m15] The `multi_turn_long_context` cell now has a CLEAN row (no ctx overflow) and it is nonzero.** `qwen2b-lc3` (Qwen3.5-2B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-1.7B-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy) finished with **200/200 valid records, 0 `exceed_context_size`/`Context size has been exceeded` lines**, scoring **0.095**, ingested as `run_tag='m15-bfcl-multiturn'` (DB 2093 -> 2094 rows, `integrity ok | fk issues 0`). This clears M13's residual overflow (68154/84958/71326 tokens vs 65536/slot); the clean score is slightly *below* the ctx-contaminated M12 (`0.135`) and M13 (`0.105`), confirming the earlier rows were not inflated by the overflow and that this category is near floor for the 2B class, not a harness zero.
+  - _model-fit / coefficient statement, not an effect claim_
+- — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
 ## qualitative (20)
