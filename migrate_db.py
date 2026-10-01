@@ -330,6 +330,8 @@ MMT_MODELS = {
     "m19-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "m19-4bq2": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
     "m19-4bq3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+    "m20-q2": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",
+    "m20-q3": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
     "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
     # other families (handler support varies)
     "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
@@ -425,6 +427,13 @@ def ingest_m19(con):
                            "m19_summary.jsonl", ctx_size=196608)
 
 
+def ingest_m20(con):
+    # run_m20.sh launches llama-server with -c 131072 -np 2 (65536 ctx/slot).
+    # Sparse-MoE anchor (Qwen3.6-35B-A3B) on multi_turn_base, Q2/Q3 pair.
+    return _ingest_bfcl_mt(con, ".wrapup/m20_summary.jsonl", "m20-bfcl-multiturn",
+                           "m20_summary.jsonl", ctx_size=131072)
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -485,7 +494,8 @@ def main():
     REFRESH = [
         ("m9", ingest_m9), ("m11", ingest_m11), ("m12", ingest_m12),
         ("m13", ingest_m13), ("m14", ingest_m14), ("m15", ingest_m15),
-        ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18), ("m19", ingest_m19),
+        ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18),
+        ("m19", ingest_m19), ("m20", ingest_m20),
     ]
     tally = {}
     for label, tag, fn in ONCE:
@@ -767,6 +777,8 @@ MMT_MODELS = {
     "m19-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "m19-4bq2": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
     "m19-4bq3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+    "m20-q2": "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",
+    "m20-q3": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
     "qwen4b-q2": "Qwen3.5-4B-UD-Q2_K_XL.gguf", "qwen4b-q3": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
     # other families (handler support varies)
     "gr3b-q2": "granite-4.1-3b-Q2_K.gguf", "gr3b-q3": "granite-4.1-3b-Q3_K_M.gguf",
@@ -911,7 +923,8 @@ def main():
     REFRESH = [
         ("m9", ingest_m9), ("m11", ingest_m11), ("m12", ingest_m12),
         ("m13", ingest_m13), ("m14", ingest_m14), ("m15", ingest_m15),
-        ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18), ("m19", ingest_m19),
+        ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18),
+        ("m19", ingest_m19), ("m20", ingest_m20),
     ]
     tally = {}
     for label, tag, fn in ONCE:
