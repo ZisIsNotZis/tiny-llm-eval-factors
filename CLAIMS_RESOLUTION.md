@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 20 | 31% |
+| resolved | 20 | 28% |
 | underpowered | 4 | 6% |
 | noise_level | 4 | 6% |
-| unauditable | 8 | 12% |
-| model_fit | 13 | 20% |
-| qualitative | 15 | 23% |
+| unauditable | 8 | 11% |
+| model_fit | 13 | 18% |
+| qualitative | 22 | 31% |
 
 ## resolved (20)
 
@@ -127,7 +127,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — The canonical score formula is available as an importable Python module: `from score_model import predict_score`. See `score_model.py` for full API and `projections.csv` for end-to-end effect projections (quant ladder, KV shift, reasoning toggle, size sweep).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (15)
+## qualitative (22)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -158,5 +158,19 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[INFRA, checkpoint] A multi-turn BFCL panel can silently re-score the previous quant's file — guard now in the driver.** `bfcl generate` defaults to `allow_overwrite=False`, so pre-existing entries are not regenerated, and the result path is keyed by the *handler*, not the run tag: the panels `qwen4b-q2` and `qwen4b-q3` share `Qwen/Qwen3-4B-Instruct-2507-FC` and therefore the same `result/<handler>/.../BFCL_v4_multi_turn_base_result.json`. Without cleanup the second panel would generate 0 items and `evaluate` would re-score the first quant's responses, recording a *false null* (`Q3 ≈ Q2`). `.wrapup/run_m9_panel.sh` now deletes that per-category result file before each panel, so every M11/M12 row is a fresh generation.
   - _no numeric contrast in the claim_
 - — **[GAP, checkpoint] M12's Qwen panel is not ingestible as written.** `.wrapup/run_m12.sh` emits the model tag `qwen2b-lc`, which has no key in `MMT_MODELS` (`migrate_db.py`), so `_ingest_bfcl_mt` would skip that row silently; additionally M12 as launched by `chain2.sh` uses `CATS=multi_turn_base`, i.e. the same category already measured for a Qwen3.5-2B anchor in M9, so the row would duplicate the `m9-bfcl-multiturn` cell rather than add the advertised long-context cell.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] A finished multi-turn panel can leave an orphaned `llama-server` holding the GPU flock, stalling the next panel indefinitely.** After the `qwen4b-q2` panel finished (09:05), its `run_m9_panel.sh` parent exited but the child `llama-server` (Qwen3.5-4B-UD-Q2) kept the inherited `/tmp/llama_gpu.lock` fd, so the `qwen4b-q3` `flock` waiter sat blocked ~36 min with no live server for q3. `fuser -v /tmp/llama_gpu.lock` identified the holder; killing only that orphan released the lock and q3 started immediately (n_ctx_slot=49152, native-FC handler).
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, checkpoint] M11 cross-size multi-turn BFCL panel 1 is nonzero.** `qwen4b-q2` (Qwen3.5-4B, native-FC handler, `multi_turn_base`, 98304 ctx / 2 slots = 49152 per slot, greedy) scores `0.385`; ingested as `run_tag='m11-bfcl-multiturn'`. No 'Context size has been exceeded' errors; stale-result guard fires per panel. `qwen4b-q3` is in flight.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] Multi-turn BFCL ingest is now idempotent (refresh), not one-shot.** `_ingest_bfcl_mt` deletes the run_tag's rows before inserting and `main()` calls m9/m11/m12 unconditionally, so checkpoint re-runs pick up panels that append rows for hours (m11 running now, m12 queued). Re-running `migrate_db.py` leaves the row count unchanged (2089), `integrity ok`, `fk issues 0`.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] M12 long-context gap is now wiring-only.** `run_m12.sh` already passes `multi_turn_long_context` per-panel (the earlier "duplicates M9" concern is stale), but its `qwen2b-lc` tag had no `MMT_MODELS` key and would have been skipped silently; it now maps to `Qwen3.5-2B-UD-Q3_K_XL.gguf`. `m12_summary.jsonl` does not exist yet — `chain2.sh` is waiting for `M11 end`.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, checkpoint] M11 panel 2 is generating; still no new multi-turn row beyond `qwen4b-q2`.** At 10:23 the `qwen4b-q3` panel (Qwen3.5-4B `UD-Q3_K_XL`, native-FC handler `Qwen/Qwen3-4B-Instruct-2507-FC`, 98304 ctx / 2 slots = 49152 per slot, greedy) had written **124/200** `multi_turn_base` records with llama-server actively decoding and zero `Context size has been exceeded` lines; the DB (2089 rows, `integrity_check ok`) still holds exactly one `run_tag='m11-bfcl-multiturn'` row (`qwen4b-q2`, 0.385), so the cross-size Q2->Q3 delta is still pending.
+  - _no numeric contrast in the claim_
+- — **[INFRA, checkpoint] Panel driver now kills its own server on exit and refuses to score a stale one.** `run_m9_panel.sh` gained `trap cleanup EXIT` (+INT/TERM) so a signalled or timed-out panel can no longer leave `llama-server` holding port 8080 and the inherited GPU flock (the bug that stalled the queue ~36 min earlier tonight), plus a pre-start check that kills a listener matching `llama-server .*-m /home/z/hf/` but **aborts** if the port is held by anything else — previously the health check would have answered from the previous panel's server and BFCL would have silently scored the *wrong* model under the new tag. Tested on a spare port: foreign `python3 -m http.server` -> abort, nothing killed; fake `llama-server` argv -> killed, panel proceeded to start its own.
+  - _no numeric contrast in the claim_
+- — **[NOTE, checkpoint] The llama-server on port 8833 is not ours and was left alone.** It belongs to a different project (`/home/z/vibe/helpagent`, `Spark-X2.5-4B-Q4_K_M`, 3.6 GB, ~39 h old) and holds neither `/tmp/llama_gpu.lock` (held by the live `qwen4b-q3` panel, so the lock is not stuck) nor port 8080; GPU headroom was 14.7 GB free.
   - _no numeric contrast in the claim_
 
