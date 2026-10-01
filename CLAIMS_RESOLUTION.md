@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 26 | 33% |
+| resolved | 27 | 34% |
 | underpowered | 5 | 6% |
 | noise_level | 4 | 5% |
 | unauditable | 8 | 10% |
 | model_fit | 16 | 20% |
 | qualitative | 20 | 25% |
 
-## resolved (26)
+## resolved (27)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -68,6 +68,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
 - Δ=0.185 — **[CORRECTED, full matrix] The Q2 deficit is NOT a constant — it ranges ~0.08..0.20 and is headroom-limited.** Complete Qwen3.5 matrix (item-level): code `2B 0.155 / 4B 0.142 / 9B 0.143`; tool single-turn `2B 0.202 / 4B 0.077`; tool multi-turn `2B 0.160 / 4B 0.150 / 9B 0.160`. The 4B single-turn cell (0.077) kills any "constant gain" reading: that axis has the smallest deficit precisely because Q2 is already near its Q3 ceiling (0.615 vs 0.691). The only crisp invariant is the **floor**: at 2B every hard agentic category is pinned at ~0.005 at Q2 while Q3 reaches 0.08-0.185, and the category ranking is quant-invariant.
   - _|Δ|=0.1850 >= MDE 0.108 at n=1_
+- Δ=0.125 — **[VERIFIED, m19] The 4B long-context multi-turn cell is complete and does NOT sit at the 2B floor: Q2->Q3 `0.38 -> 0.505`.** `m19-4bq2` (Qwen3.5-4B `UD-Q2_K_XL`, native-FC handler `Qwen/Qwen3-4B-Instruct-2507-FC`, `multi_turn_long_context`, `-c 196608 -np 2` = 98304 ctx/slot, greedy, 200 items) = **0.38** (0 ctx-overflow) and `m19-4bq3` (same config, `UD-Q3_K_XL`) = **0.505** (2/200 `exceed_context_size`), ingested as `run_tag='m19-bfcl-multiturn'` (DB 2102 -> 2104 rows, `integrity ok | fk issues 0`). Paired delta **+0.125**, above the ~±0.015 agentic-axis reproduce floor. This extends the size-dependence result to the long-context category: at Q2 the 2B long-context cell is pinned at **0.005** (`m19-q2`, `run_tag='m19-bfcl-multiturn'`) while the 4B cell reaches **0.38** — a 0.375 gap — so "Q2 pins the hard agentic categories to the floor" is once more a **small-model** property, not a category property.
+  - _|Δ|=0.1250 >= MDE 0.108 at n=1_
 
 ## underpowered (5)
 
