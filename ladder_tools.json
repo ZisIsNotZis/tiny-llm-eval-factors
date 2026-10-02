@@ -196,6 +196,13 @@
    "live_parallel_multiple": 0.2916666666666667,
    "live_irrelevance": 0.248868778280543,
    "live_relevance": 1.0
+  },
+  "Ternary-Bonsai-27B-Q2_g64.gguf | native": {
+   "simple_python": 0.675,
+   "multiple": 0.595,
+   "parallel": 0.775,
+   "parallel_multiple": 0.715,
+   "irrelevance": 0.7666666666666667
   }
  },
  "tools_categories": [
@@ -225,7 +232,8 @@
   "gemma-4-E4B-it-UD-Q2_K_XL.gguf | native": "native",
   "gemma-4-E4B-it-UD-Q3_K_XL.gguf | native": "native",
   "granite-4.1-3b-Q2_K.gguf | native": "native",
-  "granite-4.1-3b-Q3_K_M.gguf | native": "native"
+  "granite-4.1-3b-Q3_K_M.gguf | native": "native",
+  "Ternary-Bonsai-27B-Q2_g64.gguf | native": "native"
  },
  "tools_steps": {
   "Qwen3.5-2B-UD-Q3_K_XL.gguf vs Qwen3.5-2B-UD-Q2_K_XL.gguf (forced)": {
@@ -304,7 +312,8 @@
   "gemma-4-E4B-it-UD-Q2_K_XL.gguf | native": 0.6855,
   "gemma-4-E4B-it-UD-Q3_K_XL.gguf | native": 0.6952,
   "granite-4.1-3b-Q2_K.gguf | native": 0.2024,
-  "granite-4.1-3b-Q3_K_M.gguf | native": 0.5798
+  "granite-4.1-3b-Q3_K_M.gguf | native": 0.5798,
+  "Ternary-Bonsai-27B-Q2_g64.gguf | native": 0.7024
  },
  "tools_Q2_Q3": {
   "Qwen3.5-2B-UD-Q3_K_XL.gguf (forced)": 0.2557,

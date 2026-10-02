@@ -137,6 +137,7 @@ The `Q2→Q3` step is the study's one firmly established quantitative result: it
 | Qwen3.5-4B-UD-Q2_K_XL.gguf | native | 0.9083 | nan | nan | nan | nan | nan | nan | 0.5750 | 0.4950 | 0.4900 | 0.5800 |
 | Qwen3.5-4B-UD-Q3_K_XL.gguf | forced | 0.8042 | nan | nan | nan | nan | nan | nan | 0.7500 | 0.4250 | 0.2600 | 0.7475 |
 | Qwen3.5-4B-UD-Q3_K_XL.gguf | native | 0.7792 | nan | nan | nan | nan | nan | nan | 0.6250 | 0.7150 | 0.6900 | 0.6600 |
+| Ternary-Bonsai-27B-Q2_g64.gguf | native | 0.7667 | nan | nan | nan | nan | nan | nan | 0.5950 | 0.7750 | 0.7150 | 0.6750 |
 | gemma-4-E2B-it-UD-Q2_K_XL.gguf | native | 0.7458 | nan | nan | nan | nan | nan | nan | 0.5800 | 0.6050 | 0.6350 | 0.5725 |
 | gemma-4-E2B-it-UD-Q3_K_XL.gguf | native | 0.8167 | nan | nan | nan | nan | nan | nan | 0.5800 | 0.7050 | 0.6450 | 0.5975 |
 | gemma-4-E4B-it-UD-Q2_K_XL.gguf | native | 0.8500 | nan | nan | nan | nan | nan | nan | 0.6100 | 0.7050 | 0.6700 | 0.6225 |
