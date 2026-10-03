@@ -51,8 +51,11 @@ def load_ppl():
 
 def load_scores():
     con = sqlite3.connect(DB, uri=True)
+    # Frozen greedy ladder only: sampling rows (m27) carry a temp-tagged
+    # protocol and must not be averaged into a quant cell (SSOT: no protocol mix).
     q = """SELECT model, __quant, language, _score FROM experiments
-           WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL"""
+           WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL
+             AND protocol='multipl-e-raw-greedy-768'"""
     grid = defaultdict(list)
     for model, quant, lang, score in con.execute(q):
         grid[(base_of(model), quant)].append(score)

@@ -1,0 +1,9 @@
+{"note": "QUARANTINED 2026-10-02: the gemma-4-26B-A4B rows (g26b-q2/g26b-q3) are a HARNESS failure, not capability. py completions are valid Python emitted at column 0, so MultiPL-E's indented-body expectation rejects them -> score 0.0 at both quants; cpp is byte-identical 134/161 across q2 and q3 (a quant-insensitive duplicate). Do NOT ingest. The dense Qwen3.8-27B rows (q38-27b-q2/q3) in this file are also held back with it, so the whole m26 panel stays out of the DB.", "run_tag": "m26-quarantined", "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "g26b-q2", "lang": "cpp", "n": 161, "pass": 134, "score": 0.8322981366459627, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "g26b-q2", "lang": "py", "n": 161, "pass": 0, "score": 0.0, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "g26b-q3", "lang": "cpp", "n": 161, "pass": 134, "score": 0.8322981366459627, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "g26b-q3", "lang": "py", "n": 161, "pass": 0, "score": 0.0, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "q38-27b-q2", "lang": "cpp", "n": 161, "pass": 35, "score": 0.21739130434782608, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "q38-27b-q2", "lang": "py", "n": 161, "pass": 105, "score": 0.6521739130434783, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "q38-27b-q3", "lang": "cpp", "n": 161, "pass": 78, "score": 0.484472049689441, "protocol": "mpl-chat-nothink-greedy-768"}
+{"model": "q38-27b-q3", "lang": "py", "n": 161, "pass": 131, "score": 0.8136645962732919, "protocol": "mpl-chat-nothink-greedy-768"}

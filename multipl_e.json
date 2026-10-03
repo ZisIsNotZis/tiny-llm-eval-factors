@@ -1,5 +1,5 @@
 {
- "n_rows": 94,
+ "n_rows": 102,
  "families": {
   "LFM2.5-8B-A1B": {
    "levels": {
@@ -110,6 +110,7 @@
     "UD-IQ2_M": 0.1387,
     "UD-IQ2_XXS": 0.0062,
     "UD-Q2_K_XL": 0.1201,
+    "UD-IQ3_XXS": 0.1894,
     "UD-Q3_K_XL": 0.2754,
     "UD-Q4_K_XL": 0.2836,
     "UD-Q5_K_XL": 0.2774
@@ -142,12 +143,17 @@
      "cpp": 0.2608695652173913,
      "js": 0.2919254658385093,
      "py": 0.2795031055900621
+    },
+    "UD-IQ3_XXS": {
+     "cpp": 0.18012422360248448,
+     "py": 0.19875776397515527
     }
    },
    "order": [
     "UD-IQ2_M",
     "UD-IQ2_XXS",
     "UD-Q2_K_XL",
+    "UD-IQ3_XXS",
     "UD-Q3_K_XL",
     "UD-Q4_K_XL",
     "UD-Q5_K_XL"
@@ -156,6 +162,7 @@
   "Qwen3.5-4B": {
    "levels": {
     "UD-Q2_K_XL": 0.3142,
+    "UD-IQ3_XXS": 0.3944,
     "UD-Q3_K_XL": 0.4565
    },
    "per_language": {
@@ -174,10 +181,15 @@
      "rs": 0.4129032258064516,
      "py": 0.5031055900621118,
      "rb": 0.34782608695652173
+    },
+    "UD-IQ3_XXS": {
+     "cpp": 0.37888198757763975,
+     "py": 0.40993788819875776
     }
    },
    "order": [
     "UD-Q2_K_XL",
+    "UD-IQ3_XXS",
     "UD-Q3_K_XL"
    ]
   },
@@ -241,6 +253,20 @@
    "order": [
     "UD-Q2_K_XL",
     "UD-Q3_K_XL"
+   ]
+  },
+  "Qwen_Qwen3.6-35B-A3B": {
+   "levels": {
+    "Q3_K_M": 0.7484
+   },
+   "per_language": {
+    "Q3_K_M": {
+     "cpp": 0.7577639751552795,
+     "py": 0.7391304347826086
+    }
+   },
+   "order": [
+    "Q3_K_M"
    ]
   },
   "gemma-4-26B-A4B-it": {
@@ -675,5 +701,118 @@
   "max": 0.3437,
   "mean": 0.1261,
   "all_positive": false
+ },
+ "matched_size": {
+  "M23 4B IQ3_XXS vs Q2_K_XL (1.949 vs 1.941 GB, +0.4%)": {
+   "run_tag": "m23-scheme-iqk",
+   "langs": [
+    "cpp",
+    "py"
+   ],
+   "per_language": {
+    "cpp": {
+     "n_items": 322,
+     "mean": 0.0373,
+     "se": 0.0535,
+     "ci_low": -0.0675,
+     "ci_high": 0.1421,
+     "significant": false,
+     "a": 0.3789,
+     "b": 0.3416
+    },
+    "py": {
+     "n_items": 322,
+     "mean": 0.0559,
+     "se": 0.0541,
+     "ci_low": -0.0501,
+     "ci_high": 0.1619,
+     "significant": false,
+     "a": 0.4099,
+     "b": 0.354
+    }
+   },
+   "pooled": {
+    "n_items": 644,
+    "mean": 0.0466,
+    "se": 0.038,
+    "ci_low": -0.028,
+    "ci_high": 0.1211,
+    "significant": false
+   }
+  },
+  "M23 2B IQ3_XXS vs Q2_K_XL (0.932 vs 0.967 GB, -3.6%)": {
+   "run_tag": "m23-scheme-iqk",
+   "langs": [
+    "cpp",
+    "py"
+   ],
+   "per_language": {
+    "cpp": {
+     "n_items": 322,
+     "mean": 0.0683,
+     "se": 0.0392,
+     "ci_low": -0.0084,
+     "ci_high": 0.1451,
+     "significant": false,
+     "a": 0.1801,
+     "b": 0.1118
+    },
+    "py": {
+     "n_items": 322,
+     "mean": 0.0621,
+     "se": 0.0415,
+     "ci_low": -0.0192,
+     "ci_high": 0.1434,
+     "significant": false,
+     "a": 0.1988,
+     "b": 0.1366
+    }
+   },
+   "pooled": {
+    "n_items": 644,
+    "mean": 0.0652,
+    "se": 0.0285,
+    "ci_low": 0.0093,
+    "ci_high": 0.1212,
+    "significant": true
+   }
+  },
+  "M25 Qwen3.6-35B-A3B bartowski Q3_K_M vs unsloth UD-Q3_K_XL (17.118 vs 17.228 GB, -0.6%)": {
+   "run_tag": "m25-vendor",
+   "langs": [
+    "cpp",
+    "py"
+   ],
+   "per_language": {
+    "cpp": {
+     "n_items": 322,
+     "mean": 0.0373,
+     "se": 0.0489,
+     "ci_low": -0.0586,
+     "ci_high": 0.1331,
+     "significant": false,
+     "a": 0.7578,
+     "b": 0.7205
+    },
+    "py": {
+     "n_items": 322,
+     "mean": -0.0186,
+     "se": 0.0484,
+     "ci_low": -0.1134,
+     "ci_high": 0.0761,
+     "significant": false,
+     "a": 0.7391,
+     "b": 0.7578
+    }
+   },
+   "pooled": {
+    "n_items": 644,
+    "mean": 0.0093,
+    "se": 0.0344,
+    "ci_low": -0.0581,
+    "ci_high": 0.0767,
+    "significant": false
+   }
+  }
  }
 }

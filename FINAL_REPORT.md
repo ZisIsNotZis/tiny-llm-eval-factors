@@ -2,7 +2,7 @@
 
 *Final report. Companion operational/intermediate docs: `WRAPUP.md`, `MULTIPLE.md`,
 `LADDER_TOOLS.md`, `HORIZON.md`, `PPL_REPORT.md`, `REANALYSIS.md`, `CLAIMS_RESOLUTION.md`.
-All numbers come from `experiments.sqlite` (2,094 rows) and are reproduced by the scripts listed
+All numbers come from `experiments.sqlite` (2,149 rows) and are reproduced by the scripts listed
 in each section.*
 
 ---
@@ -225,6 +225,36 @@ Re-downloading the `Q2_0` variant produced a **byte-identical SHA256**, ruling o
 All three variants carry the same tensor-type histogram, yet `Q2_g64` loads and `Q2_0` reproducibly
 fails (`failed to read tensor data`, also at `-ngl 0`); `PQ2_0` uses ggml type 142, which is beyond
 our `GGML_TYPE_COUNT = 43`. So exactly one of the three ternary checkpoints is usable here.
+
+## Finding 9 — at *matched file size*, the quantisation **scheme** does not lose to the **level**, and the vendor label does not matter
+
+Two same-base, matched-bytes contrasts (raw-greedy MultiPL-E, **item-level** 95 % CIs,
+`multipl_e_analysis.py` §Size-matched → `MULTIPLE.md`):
+
+| model | A | B | size (A vs B) | cpp A vs B | py A vs B | pooled Δ (A−B) |
+|---|---|---|---|---|---|---|
+| Qwen3.5-4B | `UD-IQ3_XXS` | `UD-Q2_K_XL` | 1.949 vs 1.941 GB (**+0.4 %**) | **0.379 vs 0.342** | **0.410 vs 0.354** | **+0.0466** [−0.0280, +0.1211] |
+| Qwen3.5-2B | `UD-IQ3_XXS` | `UD-Q2_K_XL` | 0.932 vs 0.967 GB (**−3.6 %**) | **0.180 vs 0.112** | **0.199 vs 0.137** | **+0.0652** [+0.0093, +0.1212] ✔ |
+| Qwen3.6-35B-A3B | bartowski `Q3_K_M` | unsloth `UD-Q3_K_XL` | 17.118 vs 17.228 GB (**−0.6 %**) | 0.758 vs 0.720 | 0.739 vs 0.758 | +0.0093 [−0.0581, +0.0767] |
+
+**Reading:**
+
+* The **i-quant scheme never loses** to the K-quant level at the same bytes — all four cells are
+  positive, pooled **+0.047 (4B, ns)** and **+0.065 (2B, significant)**. This is a within-model
+  version of Finding 8's off-curve result: at equal size, scheme choice buys ~0.05 of score.
+* The **`UD-` vendor label is not a factor**: bartowski and unsloth files at the same nominal level and
+  within 0.6 % of size differ by **+0.009 pooled** with a ±0.07 CI — a clean **null**. Buyer-facing
+  lesson: match bytes/level, not the label.
+
+**Speed corollary (M28).** Draft/MTP length is task-dependent (Qwen3.5-2B `UD-Q4_K_XL`, 256-tok
+generations): code peaks at **+32 %** (n=3, 168.6→223.1 tok/s), prose **+19 %**, but a ~10k-token
+long prompt is **slower for every draft length** (**−15.6 %** at n=4) as acceptance collapses
+0.65→0.41. Drafting is not a free speedup; its value is bounded by task and prompt length.
+
+*Caveat:* M23 is one family (Qwen3.5) and cpp+py only; the 4B pooled CI still includes 0. M25 is one
+MoE anchor. The speed curve is one 2B model on one GPU.
+
+---
 
 ## Corrections and honest negatives
 

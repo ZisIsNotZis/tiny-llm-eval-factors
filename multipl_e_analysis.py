@@ -56,6 +56,73 @@ def ci_items(pass_a, n_a, pass_b, n_b):
 
 
 
+def _summary_items(fn):
+    """{(model, lang): (pass, n)} from a MultiPL-E summary file."""
+    import os
+    out = {}
+    path = os.path.join(".wrapup", fn)
+    if not os.path.exists(path):
+        return out
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            r = json.loads(line)
+        except Exception:
+            continue
+        if r.get("n"):
+            out[(r.get("model"), r.get("lang"))] = (r.get("pass", 0), r["n"])
+    return out
+
+
+# Comparisons the level ladder cannot express: two checkpoints at the SAME file
+# size but a different quantisation scheme (M23) or provider (M25).  Reported as
+# (first - second), item-level CI via ci_items.
+MATCHED_SIZE_SPECS = [
+    ("M23 4B IQ3_XXS vs Q2_K_XL (1.949 vs 1.941 GB, +0.4%)",
+     "m23_summary.jsonl", "iq3-4b", "m1_summary.jsonl", "qwen4b-q2", "m23-scheme-iqk"),
+    ("M23 2B IQ3_XXS vs Q2_K_XL (0.932 vs 0.967 GB, -3.6%)",
+     "m23_summary.jsonl", "iq3-2b", "m3_summary.jsonl", "q2", "m23-scheme-iqk"),
+    ("M25 Qwen3.6-35B-A3B bartowski Q3_K_M vs unsloth UD-Q3_K_XL (17.118 vs 17.228 GB, -0.6%)",
+     "m25_summary.jsonl", "q36-35b-bartq3", "m6_summary.jsonl", "q36-35b-q3", "m25-vendor"),
+]
+
+
+def matched_size_contrasts():
+    srcs = {fn: _summary_items(fn) for fn in
+            {"m1_summary.jsonl", "m3_summary.jsonl", "m6_summary.jsonl",
+             "m23_summary.jsonl", "m25_summary.jsonl"}}
+    out = {}
+    for label, fa, ta, fb, tb, run_tag in MATCHED_SIZE_SPECS:
+        langs = sorted({l for (t, l) in srcs[fa] if t == ta} &
+                       {l for (t, l) in srcs[fb] if t == tb})
+        if not langs:
+            continue
+        per = {}
+        for lang in langs:
+            pa, na = srcs[fa][(ta, lang)]
+            pb, nb = srcs[fb][(tb, lang)]
+            it = ci_items(pa, na, pb, nb)
+            if it:
+                per[lang] = dict(it, a=round(pa / na, 4), b=round(pb / nb, 4),
+                                 mean=round(-it["mean"], 4),
+                                 ci_low=round(-it["ci_high"], 4),
+                                 ci_high=round(-it["ci_low"], 4))
+        pa = sum(srcs[fa][(ta, l)][0] for l in langs)
+        na = sum(srcs[fa][(ta, l)][1] for l in langs)
+        pb = sum(srcs[fb][(tb, l)][0] for l in langs)
+        nb = sum(srcs[fb][(tb, l)][1] for l in langs)
+        pooled = ci_items(pa, na, pb, nb)
+        if pooled:
+            pooled = dict(pooled, mean=round(-pooled["mean"], 4),
+                          ci_low=round(-pooled["ci_high"], 4),
+                          ci_high=round(-pooled["ci_low"], 4))
+        out[label] = {"run_tag": run_tag, "langs": langs,
+                      "per_language": per, "pooled": pooled}
+    return out
+
+
 def _model_maps():
     """tag -> model file, merged from the migrate_db maps."""
     maps = {}
@@ -111,8 +178,13 @@ def level_of(quant):
 
 def load():
     con = sqlite3.connect(DB, uri=True)
+    # The frozen greedy ladder is a single protocol.  Sampling experiments (m27)
+    # carry `multipl-e-raw-t<temp>-768` and MUST NOT be averaged into a ladder
+    # cell (SSOT: never mix protocols in one comparison); the temp=0.0 anchor
+    # keeps the greedy string and therefore agrees with m3 where they overlap.
     q = """SELECT model, __quant, language, _score, run_tag FROM experiments
-           WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL"""
+           WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL
+             AND protocol='multipl-e-raw-greedy-768'"""
     return [dict(zip([d[0] for d in con.execute(q).description], r))
             for r in con.execute(q)]
 
@@ -147,7 +219,12 @@ def main():
         pooled = {q: round(sum(cells[q].values()) / len(cells[q]), 4) for q in quants}
         out["families"][fam] = {"levels": pooled, "per_language": cells,
                                 "order": quants}
-        for a, b in zip(quants, quants[1:]):
+        # A sub-3-bit scheme anchor (e.g. IQ3_XXS) is a file-size-matched
+        # ALTERNATIVE to a level, not a rung of the K-quant ladder: shown in the
+        # table, but kept out of the level->level step chain so Q2_K_XL still
+        # pairs with Q3_K_XL rather than with the alphabetically-earlier IQ3_XXS.
+        step_order = [q for q in quants if "XXS" not in q.upper()]
+        for a, b in zip(step_order, step_order[1:]):
             if level_of(b) <= level_of(a):
                 continue
             langs = set(cells[a]) & set(cells[b])
@@ -184,6 +261,9 @@ def main():
             "mean": round(sum(alllangs) / len(alllangs), 4),
             "all_positive": all(x > 0 for x in alllangs),
         }
+
+    # ---- matched-size scheme / vendor contrasts ----
+    out["matched_size"] = matched_size_contrasts()
 
     with open("multipl_e.json", "w") as f:
         json.dump(out, f, indent=1)
@@ -222,10 +302,32 @@ def main():
         L.append(f"**{s['n_families']} model anchors, all sign-consistent "
                  f"({s['all_positive']}), range {s['min']:+.3f} .. {s['max']:+.3f}, "
                  f"mean {s['mean']:+.3f}.**\n")
+    if out.get("matched_size"):
+        L.append("## Size-matched scheme / vendor contrasts\n")
+        L.append("_Δ = first − second; item-level 95% CI via `ci_items`. "
+                 "Both sides sit at the same file size, so the ladder cannot "
+                 "express this contrast._\n")
+        L.append("| contrast | lang | first | second | Δ | 95% CI | sig |")
+        L.append("|---|---|---|---|---|---|---|")
+        for label, d in out["matched_size"].items():
+            for l in d["langs"]:
+                e = d["per_language"].get(l)
+                if not e:
+                    continue
+                L.append(f"| {label} | {l} | {e['a']:.4f} | {e['b']:.4f} | "
+                         f"{e['mean']:+.4f} | [{e['ci_low']:+.4f}, {e['ci_high']:+.4f}] | "
+                         f"{'yes' if e['significant'] else 'no'} |")
+            p = d["pooled"]
+            if p:
+                L.append(f"| {label} | pooled | | | {p['mean']:+.4f} | "
+                         f"[{p['ci_low']:+.4f}, {p['ci_high']:+.4f}] | "
+                         f"{'yes' if p['significant'] else 'no'} |")
+        L.append("")
     with open("MULTIPLE.md", "w") as f:
         f.write("\n".join(L) + "\n")
 
     print(json.dumps(out.get("Q2_Q3_family_summary", {}), indent=1))
+    print("matched-size:", json.dumps(out.get("matched_size", {}), indent=1)[:1200])
     print("steps:", json.dumps({k: {kk: vv for kk, vv in v.items()} for k, v in out["steps"].items()},
                                indent=1)[:1200])
     print("wrote multipl_e.json + MULTIPLE.md")

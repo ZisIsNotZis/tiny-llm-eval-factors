@@ -1,0 +1,15 @@
+{"model": "qwen3.5-2b-q4", "mode": "code", "draft_n": 0, "tok_s": 168.57, "n_predict": 256, "reps": 3, "prompt_n": 126, "tok_s_reps": [161.75, 168.57, 172.486]}
+{"model": "qwen3.5-2b-q4", "mode": "prose", "draft_n": 0, "tok_s": 171.567, "n_predict": 256, "reps": 3, "prompt_n": 114, "tok_s_reps": [171.08, 171.567, 172.655]}
+{"model": "qwen3.5-2b-q4", "mode": "longctx", "draft_n": 0, "tok_s": 169.252, "n_predict": 256, "reps": 3, "prompt_n": 10386, "tok_s_reps": [165.75, 169.306, 169.252]}
+{"model": "qwen3.5-2b-q4", "mode": "code", "draft_n": 1, "tok_s": 177.194, "n_predict": 256, "reps": 3, "prompt_n": 126, "tok_s_reps": [185.921, 177.194, 176.183], "accept": 0.9536}
+{"model": "qwen3.5-2b-q4", "mode": "prose", "draft_n": 1, "tok_s": 173.58, "n_predict": 256, "reps": 3, "prompt_n": 114, "tok_s_reps": [173.538, 173.58, 174.082], "accept": 0.8843}
+{"model": "qwen3.5-2b-q4", "mode": "longctx", "draft_n": 1, "tok_s": 155.379, "n_predict": 256, "reps": 3, "prompt_n": 10386, "tok_s_reps": [155.379, 152.724, 155.629], "accept": 0.6494}
+{"model": "qwen3.5-2b-q4", "mode": "code", "draft_n": 2, "tok_s": 212.803, "n_predict": 256, "reps": 3, "prompt_n": 126, "tok_s_reps": [206.87, 215.48, 212.803], "accept": 0.9379}
+{"model": "qwen3.5-2b-q4", "mode": "prose", "draft_n": 2, "tok_s": 203.838, "n_predict": 256, "reps": 3, "prompt_n": 114, "tok_s_reps": [203.838, 207.995, 197.934], "accept": 0.8466}
+{"model": "qwen3.5-2b-q4", "mode": "longctx", "draft_n": 2, "tok_s": 160.004, "n_predict": 256, "reps": 3, "prompt_n": 10386, "tok_s_reps": [160.004, 158.46, 162.068], "accept": 0.5566}
+{"model": "qwen3.5-2b-q4", "mode": "code", "draft_n": 3, "tok_s": 223.11, "n_predict": 256, "reps": 3, "prompt_n": 126, "tok_s_reps": [223.11, 225.753, 219.146], "accept": 0.8188}
+{"model": "qwen3.5-2b-q4", "mode": "prose", "draft_n": 3, "tok_s": 198.122, "n_predict": 256, "reps": 3, "prompt_n": 114, "tok_s_reps": [209.439, 191.343, 198.122], "accept": 0.7292}
+{"model": "qwen3.5-2b-q4", "mode": "longctx", "draft_n": 3, "tok_s": 147.37, "n_predict": 256, "reps": 3, "prompt_n": 10386, "tok_s_reps": [150.025, 143.449, 147.37], "accept": 0.4138}
+{"model": "qwen3.5-2b-q4", "mode": "code", "draft_n": 4, "tok_s": 217.801, "n_predict": 256, "reps": 3, "prompt_n": 126, "tok_s_reps": [211.251, 222.968, 217.801], "accept": 0.7522}
+{"model": "qwen3.5-2b-q4", "mode": "prose", "draft_n": 4, "tok_s": 204.606, "n_predict": 256, "reps": 3, "prompt_n": 114, "tok_s_reps": [204.606, 202.723, 207.287], "accept": 0.6764}
+{"model": "qwen3.5-2b-q4", "mode": "longctx", "draft_n": 4, "tok_s": 142.844, "n_predict": 256, "reps": 3, "prompt_n": 10386, "tok_s_reps": [143.219, 142.844, 138.827], "accept": 0.3694}

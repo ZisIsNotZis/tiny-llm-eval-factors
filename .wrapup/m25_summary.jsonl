@@ -1,0 +1,2 @@
+{"model": "q36-35b-bartq3", "lang": "cpp", "n": 161, "pass": 122, "score": 0.7577639751552795, "protocol": "mpl-raw-greedy-768"}
+{"model": "q36-35b-bartq3", "lang": "py", "n": 161, "pass": 119, "score": 0.7391304347826086, "protocol": "mpl-raw-greedy-768"}

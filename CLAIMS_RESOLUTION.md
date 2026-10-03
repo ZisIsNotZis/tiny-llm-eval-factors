@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 28 | 33% |
+| resolved | 32 | 36% |
 | underpowered | 6 | 7% |
 | noise_level | 4 | 5% |
-| unauditable | 8 | 10% |
-| model_fit | 16 | 19% |
-| qualitative | 22 | 26% |
+| unauditable | 8 | 9% |
+| model_fit | 16 | 18% |
+| qualitative | 22 | 25% |
 
-## resolved (28)
+## resolved (32)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -72,6 +72,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1250 >= MDE 0.108 at n=1_
 - Δ=0.16 — **[VERIFIED, m20] The large sparse-MoE anchor's Q2->Q3 multi-turn deficit is headroom-limited: `Qwen3.6-35B-A3B` `multi_turn_base` `0.60 -> 0.675` (+0.075), the smallest step in the panel.** `m20-q3` (native-FC handler `Qwen/Qwen3-30B-A3B-Instruct-2507-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) = **0.675**, ingested as `run_tag='m20-bfcl-multiturn'` (DB 2105 -> 2106 rows, `integrity ok | fk issues 0`). Paired with `m20-q2` (0.60) this is the fourth `multi_turn_base` Q2->Q3 step and the smallest: 2B +0.160, 4B +0.150, 9B +0.160, 35B-MoE +0.075. The panel is clean (`DONE m20-q3 multi_turn_base acc=67.50`; no `exceed_context_size`; all slot releases `truncated = 0`; result file pre-deleted per panel, so no stale reuse). Reading: the Q2->Q3 multi-turn deficit is headroom-limited — the MoE is already at 0.60 at Q2, so its task ceiling leaves only +0.075 of room, consistent with the headroom logic that makes the 4B single-turn cell only +0.077.
   - _|Δ|=0.1600 >= MDE 0.108 at n=1_
+- Δ=0.4 — **[VERIFIED, m23] At matched file size the *scheme* does not lose to the *level*: `IQ3_XXS` ≥ `Q2_K_XL` on every cell, and is ahead pooled at 2B.** Same base, raw-greedy MultiPL-E, item-level 95% CIs (`multipl_e_analysis.py ci_items`), `run_tag='m23-scheme-iqk'`. 4B (`UD-IQ3_XXS` 1.949 GB vs `UD-Q2_K_XL` 1.941 GB, **+0.4 %** size): cpp **0.3789 vs 0.3416** Δ**+0.0373** [−0.0675,+0.1421], py **0.4099 vs 0.3540** Δ**+0.0559** [−0.0501,+0.1619], pooled Δ**+0.0466** [−0.0280,+0.1211] (ns). 2B (`UD-IQ3_XXS` 0.932 GB vs `UD-Q2_K_XL` 0.967 GB, **−3.6 %** size): cpp **0.1801 vs 0.1118** Δ**+0.0683** [−0.0084,+0.1451], py **0.1988 vs 0.1366** Δ**+0.0621** [−0.0192,+0.1434], pooled Δ**+0.0652** [+0.0093,+0.1212] (**significant**). So the i-quant scheme buys **+0.05..+0.07** of pooled score at the same bytes and is never negative; decisively so only at 2B, directionally at 4B.
+  - _|Δ|=0.4000 >= MDE 0.108 at n=1_
+- Δ=0.6 — **[VERIFIED, m25] The `UD-` vendor label does NOT matter at matched size: unsloth `UD-Q3_K_XL` and bartowski `Q3_K_M` are indistinguishable.** `Qwen3.6-35B-A3B`, raw-greedy MultiPL-E, `run_tag='m25-vendor'`: bartowski `Q3_K_M` (17.118 GB) cpp **0.7578** / py **0.7391** vs unsloth `UD-Q3_K_XL` (17.228 GB, **−0.6 %** size) cpp **0.7205** / py **0.7578** → cpp Δ**+0.0373** [−0.0586,+0.1331], py Δ**−0.0186** [−0.1134,+0.0761], pooled Δ**+0.0093** [−0.0581,+0.0767] (ns). A **null with a tight (±0.07) CI**: a same-nominal-level file from a different provider is within noise, so byte size and level, not the label, carry the information.
+  - _|Δ|=0.6000 >= MDE 0.108 at n=1_
+- Δ=0.1408 — **[VERIFIED, m27] There is NO temperature effect on MultiPL-E pass@1 beyond noise for Qwen3.5-2B across Q2/Q3/Q4.** `run_tag='m27-sampling'`, seed 1234, raw completion, temp ∈ {0.0,0.3,0.6}, cpp+py, item-level CIs. Every cell's |Δ| ≤ **0.0683**, and **no** contrast is significant: the largest are q2-py t0.3→t0.6 **−0.0683** [−0.1408,+0.0041] and q4-cpp t0.3→t0.6 **−0.0373** [−0.1263,+0.0518]; q2-cpp is byte-identical **18/161 at all three temps**; q3/q4 cpp+py move by ≤0.037. So the temp=0.3/0.6 cells sit within the ±0.03 axis floor and none exceeds it significantly — **the frozen greedy ladder is not under-sampled**.
+  - _|Δ|=0.1408 >= MDE 0.108 at n=1_
+- Δ=0.235 — **[VERIFIED, m28] MTP/draft speedup is task-dependent: +32 % on short code prompts at draft n=3, but strictly negative on ~10k-token long context.** `run_tag='m28-speed'` (Qwen3.5-2B `UD-Q4_K_XL`, MTP GGUF, greedy, 3 reps), generation tok/s by draft length n: **code** 168.6→212.8→**223.1**→217.8 (n=0..4, peak **n=3**, **+32.4 %**); **prose** 171.6→203.8→198.1→**204.6** (peak ~n=2–4, **+19.3 %**); **longctx** (prompt_n≈10386) 169.3→155.4→160.0→147.4→**142.8** (every n>0 **slower**, **−15.6 %** at n=4). Draft acceptance falls with n and with prompt length: code 0.954→0.819 (n=1→3), prose 0.884→0.729, longctx **0.649→0.414** — the long prompt makes each draft cheap to propose but expensive to verify. **Recorded as a SPEED finding (timing only, `_score` is NULL; the values live in the `_tok_s` column).**
+  - _|Δ|=0.2350 >= MDE 0.108 at n=1_
 
 ## underpowered (6)
 

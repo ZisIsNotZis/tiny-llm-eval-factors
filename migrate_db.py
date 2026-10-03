@@ -37,6 +37,9 @@ NEW_COLS = [
     ("max_tokens", "INTEGER"),
     ("source_file", "TEXT"),
     ("completed_at", "TEXT"),
+    # Timing probe only: `_score` has a CHECK in [0, 1], so the MTP speed panel
+    # (m28) stores generation tok/s here with `_score` NULL.
+    ("_tok_s", "REAL"),
 ]
 
 
@@ -77,7 +80,7 @@ def norm_model(name):
 ROW_COLS = ["model", "cache_type_k", "cache_type_k_draft", "cache_type_v",
             "cache_type_v_draft", "reasoning", "spec_type", "spec_draft_n_max",
             "temp", "top_p", "top_k", "min_p", "presence_penalty", "_bench",
-            "_score", "_bad_rate", "_wall_time", "_file_size",
+            "_score", "_bad_rate", "_wall_time", "_tok_s", "_file_size",
             "run_tag", "rep", "ctx_size", "parallel_slots", "seed", "protocol",
             "language", "bench_family", "max_tokens", "source_file", "completed_at"]
 
@@ -497,6 +500,116 @@ def _ingest_bfcl(con, path, run_tag, protocol, source, model_map=None):
     return n
 
 
+M23_MODELS = {
+    "iq3-4b": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+    "iq3-2b": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+}
+
+
+def ingest_m23(con):
+    """M23: IQ3_XXS scheme vs the K-quant level at ~matched file size (raw greedy)."""
+    return ingest_mpl(con, ".wrapup/m23_summary.jsonl", "m23-scheme-iqk",
+                      "m23_summary.jsonl", model_map=M23_MODELS)
+
+
+M25_MODELS = {
+    "q36-35b-bartq3": "Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf",
+}
+
+
+def ingest_m25(con):
+    """M25: same MoE base, bartowski Q3_K_M vs unsloth UD-Q3_K_XL (raw greedy)."""
+    return ingest_mpl(con, ".wrapup/m25_summary.jsonl", "m25-vendor",
+                      "m25_summary.jsonl", model_map=M25_MODELS)
+
+
+M27_MODELS = {
+    "q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "q4": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
+}
+
+
+def _mpl_protocol(proto):
+    """Normalise the panel's `mpl-raw-*` string to the DB's `multipl-e-*` convention."""
+    proto = proto or "mpl-raw-greedy-768"
+    return proto.replace("mpl-raw-", "multipl-e-raw-", 1)
+
+
+def ingest_m27(con):
+    """M27: sampling x quant -- Qwen3.5-2B at Q2/Q3/Q4 x temp {0, 0.3, 0.6}.
+
+    Temperature is the axis under test and is carried per row; the temp=0.0 Q2
+    cell reproduces the m3 frozen-greedy anchor, so the two agree where they
+    overlap.  Sampling rows keep a distinct protocol string (`multipl-e-raw-
+    t0.3-768`) so the greedy quant ladder is not averaged with them.
+    """
+    path = ".wrapup/m27_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m27 summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m27-sampling",))
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in M27_MODELS:
+            continue
+        row = base_row(M27_MODELS[r["model"]], f"humaneval-{r['lang']}",
+                       r["temp"], r["score"], None)
+        row.update({"run_tag": "m27-sampling", "rep": 1, "ctx_size": 4096,
+                    "parallel_slots": 1, "seed": 1234,
+                    "protocol": _mpl_protocol(r.get("protocol")),
+                    "language": r["lang"], "bench_family": "humaneval-multipl-e",
+                    "max_tokens": 768, "source_file": "m27_summary.jsonl"})
+        insert(con, row)
+        n += 1
+    return n
+
+
+M28_MODELS = {"qwen3.5-2b-q4": "Qwen3.5-2B-UD-Q4_K_XL.gguf"}
+
+
+def ingest_m28(con):
+    """M28: MTP/draft-length speed curve (timing only, no benchmark score).
+
+    `_score` has a DB CHECK in [0, 1] and tok/s does not fit, so speed rows keep
+    `_score` NULL and carry generation tok/s in the `_tok_s` timing column
+    (bench_family='speed').  The [0, 1] range invariant therefore applies to the
+    benchmark families, not to this probe.
+    """
+    path = ".wrapup/m28_speed.jsonl"
+    if not os.path.exists(path):
+        print("  (no m28 speed file)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m28-speed",))
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in M28_MODELS:
+            continue
+        draft_n = int(r["draft_n"])
+        row = base_row(M28_MODELS[r["model"]], f"speed-{r['mode']}", 0.0,
+                       None, None)
+        row.update({"run_tag": "m28-speed", "rep": 1, "ctx_size": 16384,
+                    "parallel_slots": 1, "seed": 1234,
+                    "spec_type": "draft-mtp" if draft_n else "none",
+                    "spec_draft_n_max": str(draft_n),
+                    "protocol": "m28-mtp-speed-greedy",
+                    "language": "python", "bench_family": "speed",
+                    "max_tokens": r.get("n_predict"),
+                    "_tok_s": r["tok_s"],
+                    "source_file": "m28_speed.jsonl"})
+        insert(con, row)
+        n += 1
+    return n
+
+
 def main():
     con = sqlite3.connect(DB)
     con.execute("PRAGMA foreign_keys=ON")
@@ -524,13 +637,14 @@ def main():
         ("m6", "m6-family-ladder", ingest_m6), ("m7", "m7-tool-calling-native", ingest_m7),
         ("m8", "m8-bfcl-live", ingest_m8), ("m10", "m10-family-ladder", ingest_m10),
         ("m10g", "m10-granite-q34", ingest_m10g),
+        ("m23", "m23-scheme-iqk", ingest_m23), ("m25", "m25-vendor", ingest_m25),
     ]
     REFRESH = [
         ("m9", ingest_m9), ("m11", ingest_m11), ("m12", ingest_m12),
         ("m13", ingest_m13), ("m14", ingest_m14), ("m15", ingest_m15),
         ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18),
         ("m19", ingest_m19), ("m20", ingest_m20), ("m21", ingest_m21),
-        ("m22", ingest_m22),
+        ("m22", ingest_m22), ("m27", ingest_m27), ("m28", ingest_m28),
     ]
     tally = {}
     for label, tag, fn in ONCE:
