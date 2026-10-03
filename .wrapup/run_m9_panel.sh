@@ -51,6 +51,20 @@ if ! curl -s --max-time 5 http://127.0.0.1:$PORT/health 2>/dev/null | grep -q ok
   echo "SERVER FAIL $file" >> "$LOG"; kill $srv 2>/dev/null; srv=""; exit 1
 fi
 
+# Optional (SMOKE=1): demand one REAL completion before spending GPU time on the
+# category loop. A healthy /health only proves the weights parsed; panels that
+# only bind the port can still answer nothing (the standing queue rule).
+if [ "${SMOKE:-0}" = "1" ]; then
+  SM=$(curl -s --max-time 300 http://127.0.0.1:$PORT/completion -H 'Content-Type: application/json' \
+    -d '{"prompt":"def add(a, b):\n    return a","n_predict":8,"temperature":0}')
+  if echo "$SM" | grep -q '"content"'; then
+    echo "[$(date +%H:%M:%S)] smoke ok $tag" >> "$LOG"
+  else
+    echo "SMOKE FAIL $tag $file -> aborting before the long panel" >> "$LOG"
+    kill $srv 2>/dev/null; srv=""; exit 1
+  fi
+fi
+
 IFS=',' read -ra CL <<< "$CATS"
 for cat in "${CL[@]}"; do
   # BFCL `generate` defaults to allow_overwrite=False: without this the second panel that

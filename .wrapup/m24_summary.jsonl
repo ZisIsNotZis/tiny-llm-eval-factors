@@ -1,0 +1,4 @@
+{"model": "bonsai17b-g64", "lang": "cpp", "n": 161, "pass": 47, "score": 0.2919254658385093, "protocol": "mpl-raw-greedy-768"}
+{"model": "bonsai17b-g64", "lang": "py", "n": 161, "pass": 67, "score": 0.4161490683229814, "protocol": "mpl-raw-greedy-768"}
+{"model": "bonsai8b-g64", "lang": "cpp", "n": 161, "pass": 89, "score": 0.5527950310559007, "protocol": "mpl-raw-greedy-768"}
+{"model": "bonsai8b-g64", "lang": "py", "n": 161, "pass": 99, "score": 0.6149068322981367, "protocol": "mpl-raw-greedy-768"}
