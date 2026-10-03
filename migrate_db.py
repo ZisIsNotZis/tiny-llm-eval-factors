@@ -666,6 +666,7 @@ def main():
         ("m16", ingest_m16), ("m17", ingest_m17), ("m18", ingest_m18),
         ("m19", ingest_m19), ("m20", ingest_m20), ("m21", ingest_m21),
         ("m22", ingest_m22), ("m27", ingest_m27), ("m28", ingest_m28),
+        ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
     ]
     tally = {}
     for label, tag, fn in ONCE:

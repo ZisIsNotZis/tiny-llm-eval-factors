@@ -1,0 +1,1 @@
+{"model": "q2", "lang": "cpp", "n": 161, "pass": 18, "score": 0.11180124223602485, "cell": "faon_f16", "fa": "on", "cache_k": "q8_0", "cache_v": "f16", "protocol": "mpl-raw-greedy-768;fa=on,kv=q8_0/f16", "design": "fa2x2minus1: cell FA-off+Vq8_0 impossible on llama.cpp build4399 (quantized V cache requires flash_attn)"}
