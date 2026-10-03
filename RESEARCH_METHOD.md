@@ -84,3 +84,19 @@ handler dialect we have not verified; anything requiring a new toolchain before 
 * Subagent hard limit is 30 minutes. Never assign a task that needs to stay alive longer.
 * Workers report: files written, `run_tag`s, key numbers with CIs, blockers. ≤15 lines.
 * After a batch: ingest → regenerate → append to `conclusions.md` → commit.
+
+### 6b. Anti-idle rule (learned the hard way: 9.5 h of GPU idle on 2026-10-02/03)
+
+A detached panel chain ends and **nothing refills the queue** — the GPU then sits idle until a
+human notices. The checkpoint schedule is *session-only*, so it does not fire while the session is
+inactive. Therefore:
+
+1. Every panel script must, **at its end**, test whether its successor's summary is complete and if
+   not, launch it — i.e. chains write their own successor (`chain9.sh` pattern), so a queue drains
+   only when there is genuinely nothing left in `BRAINSTORM.md`.
+2. Keep a persisted queue file `QUEUE.md` (ordered list of not-yet-run panels with their script
+   path and summary path). A chain's last step launches the next QUEUE.md entry and marks the
+   finished one done. State lives on disk, not in a session.
+3. Before ending a work batch, verify: `ps` shows a live lock holder OR the next QUEUE.md entry is
+   armed. If neither, arm one.
+4. Never rely on the session being awake for work to continue.
