@@ -9,10 +9,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 |---|---|---|
 | resolved | 32 | 36% |
 | underpowered | 6 | 7% |
-| noise_level | 4 | 5% |
+| noise_level | 4 | 4% |
 | unauditable | 8 | 9% |
 | model_fit | 16 | 18% |
-| qualitative | 22 | 25% |
+| qualitative | 23 | 26% |
 
 ## resolved (32)
 
@@ -161,7 +161,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (22)
+## qualitative (23)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -206,5 +206,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m21] A TERNARY (~2.25 bit/weight) 27B model performs at the level of a standard ~2.9 bit quant — i.e. it sits ABOVE the bits->score curve.** `Ternary-Bonsai-27B-Q2_g64` (7.59 GB, ggml type 42/`Q2_0`, 498 quantised tensors) scores MultiPL-E **cpp 0.696 / py 0.764** under the same raw-greedy protocol as every other anchor, versus `Qwen3.8-27B-UD-Q2_K_XL` (9.83 GB, ~2.9 bit) at **0.758 / 0.745** and `Qwen3.8-27B-UD-Q3_K_XL` (13.15 GB, ~3.9 bit) at **0.807 / 0.733**. So the ternary model is 23% smaller than the 2.9-bit file yet matches it on cpp and *beats* it on py, and is within ~0.11/0.03 of the 3.9-bit file. **Conclusion: the bits-per-weight -> score mapping is not a universal curve; the quantisation *scheme* (and/or co-designed training) can shift a model well off it.** Caveat: Bonsai-27B and Qwen3.8-27B are different checkpoints in the same `qwen35` family, so part of the difference may be training rather than scheme — but the practical implication holds: **ternary 2-bit is competitive with conventional 3-bit.**
   - _no numeric contrast in the claim_
 - — **[METHOD, B1a] The Bonsai ternary files are not corrupt; the loader is picky.** Re-downloading `Ternary-Bonsai-27B-Q2_0.gguf` gave a byte-identical size *and* SHA256 (`868c1171…1757`) to the on-disk copy, so the earlier `gguf_init_from_reader: failed to read tensor data` is not truncation. All three variants carry the same tensor-type histogram (498x type 42 + 353x type 0), yet **`Q2_g64` loads and `Q2_0` reproducibly fails** (also with `-ngl 0`), while `PQ2_0` uses ggml type **142** which is beyond our `GGML_TYPE_COUNT = 43`. So: one usable ternary checkpoint (`Q2_g64`), one unresolved loader case (`Q2_0`), one needs a newer llama.cpp (`PQ2_0`).
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m24] The ternary off-curve effect scales cleanly with model size.** `Ternary-Bonsai` group-64 `Q2_0` under the standard protocol: **1.7B cpp 0.292 / py 0.416; 8B cpp 0.553 / py 0.615; 27B cpp 0.696 / py 0.764** — a smooth size curve from a *ternary* (~2.25 bit) family. Note the 8B ternary reaches 0.553/0.615, i.e. above our dense Qwen3.5-4B Q3 (0.457/0.503) and near Qwen3.5-9B Q3 (0.571/—) at a fraction of the bytes.
   - _no numeric contrast in the claim_
 

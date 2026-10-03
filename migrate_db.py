@@ -470,6 +470,27 @@ def ingest_m22(con):
     return n
 
 
+M24_MODELS = {
+    "bonsai17b-g64": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+    "bonsai8b-g64": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+}
+
+
+def ingest_m24(con):
+    return ingest_mpl(con, ".wrapup/m24_summary.jsonl", "m24-bonsai-series",
+                      "m24_summary.jsonl", model_map=M24_MODELS)
+
+
+def ingest_m29(con):
+    return ingest_mpl(con, ".wrapup/m29_summary.jsonl", "m29-flash-attn",
+                      "m29_summary.jsonl")
+
+
+def ingest_m32(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m32_summary.jsonl", "m32-bonsai-ternary-mt",
+                           "m32_summary.jsonl")
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
