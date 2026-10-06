@@ -1,0 +1,1 @@
+{"samples": "mres/mt1-bonsai17b-g64-cpp.jsonl", "lang": "cpp", "n": 161, "pass": 47, "pass_at_1": 0.291925, "mean_frac": 0.403865, "micro_frac": 0.372566, "mean_tests_per_item": 7.019}

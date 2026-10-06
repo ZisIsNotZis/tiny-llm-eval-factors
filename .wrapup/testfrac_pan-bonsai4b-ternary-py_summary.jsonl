@@ -1,0 +1,1 @@
+{"samples": "mres/pan-bonsai4b-ternary-py.jsonl", "lang": "py", "n": 161, "pass": 109, "pass_at_1": 0.677019, "mean_frac": 0.78681, "micro_frac": 0.777876, "mean_tests_per_item": 7.019}

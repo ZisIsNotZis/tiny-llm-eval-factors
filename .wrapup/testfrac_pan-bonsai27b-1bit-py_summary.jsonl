@@ -1,0 +1,1 @@
+{"samples": "mres/pan-bonsai27b-1bit-py.jsonl", "lang": "py", "n": 161, "pass": 60, "pass_at_1": 0.372671, "mean_frac": 0.41276, "micro_frac": 0.344248, "mean_tests_per_item": 7.019}

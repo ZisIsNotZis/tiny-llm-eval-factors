@@ -574,6 +574,55 @@ def ingest_m31(con):
                            M31_MODELS, lambda r: {"top_k": str(r.get("top_k"))})
 
 
+M37_MODELS = {"qwen36-35a3b-udq3kxl": "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",
+              "qwen36-35a3b-q3km": "Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf"}
+M42_MODELS = {"qwen2b-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf", "qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf"}
+M45_MODELS = {"lfm25-8a1b-q2": "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf",
+              "lfm25-8a1b-q3": "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf"}
+
+
+def ingest_m37(con):
+    return ingest_mpl(con, ".wrapup/m37_summary.jsonl", "m37-vendor-matched-size",
+                      "m37_summary.jsonl", model_map=M37_MODELS)
+
+
+def ingest_m42(con):
+    return ingest_mpl(con, ".wrapup/m42_summary.jsonl", "m42-rust-ruby-power",
+                      "m42_summary.jsonl", model_map=M42_MODELS)
+
+
+def ingest_m45(con):
+    return ingest_mpl(con, ".wrapup/m45_summary.jsonl", "m45-lfm-moe",
+                      "m45_summary.jsonl", model_map=M45_MODELS)
+
+
+def ingest_m41(con):
+    """Partial-credit (mean fraction of tests passed) -- a CONTINUOUS metric, stored as
+    bench_family='testfrac' so it is never confused with binary pass@1."""
+    path = ".wrapup/m41_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m41 summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = 'm41-testfrac'")
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        mf = r.get("mean_frac")
+        if mf is None:
+            continue
+        row = base_row("Ternary-Bonsai-27B-Q2_g64.gguf" if r.get("arm") == "ternary"
+                       else "TODO.gguf", f"testfrac-{r.get('arm')}", 0.0, mf, None)
+        row.update({"run_tag": "m41-testfrac", "rep": 1, "ctx_size": 4096,
+                    "protocol": "mpl-raw-greedy-768 + per-test fraction",
+                    "language": r.get("lang", "cpp"), "bench_family": "testfrac",
+                    "source_file": "m41_summary.jsonl"})
+        insert(con, row); n += 1
+    return n
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -751,6 +800,7 @@ def main():
         ("m22", ingest_m22), ("m27", ingest_m27), ("m28", ingest_m28),
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
         ("m30", ingest_m30), ("m31", ingest_m31),
+        ("m37", ingest_m37), ("m41", ingest_m41), ("m42", ingest_m42), ("m45", ingest_m45),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),
     ]

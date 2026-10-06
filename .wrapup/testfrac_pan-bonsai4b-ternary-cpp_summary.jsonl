@@ -1,0 +1,1 @@
+{"samples": "mres/pan-bonsai4b-ternary-cpp.jsonl", "lang": "cpp", "n": 161, "pass": 79, "pass_at_1": 0.490683, "mean_frac": 0.637185, "micro_frac": 0.643363, "mean_tests_per_item": 7.019}

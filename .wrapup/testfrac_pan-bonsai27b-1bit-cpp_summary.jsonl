@@ -1,0 +1,1 @@
+{"samples": "mres/pan-bonsai27b-1bit-cpp.jsonl", "lang": "cpp", "n": 161, "pass": 88, "pass_at_1": 0.546584, "mean_frac": 0.629758, "micro_frac": 0.581416, "mean_tests_per_item": 7.019}

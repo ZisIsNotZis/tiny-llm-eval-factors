@@ -1,0 +1,1 @@
+{"samples": "mres/pan-glm47flash-tq1-py.jsonl", "lang": "py", "n": 161, "pass": 19, "pass_at_1": 0.118012, "mean_frac": 0.138309, "micro_frac": 0.106195, "mean_tests_per_item": 7.019}

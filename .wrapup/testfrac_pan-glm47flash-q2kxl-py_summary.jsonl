@@ -1,0 +1,1 @@
+{"samples": "mres/pan-glm47flash-q2kxl-py.jsonl", "lang": "py", "n": 161, "pass": 56, "pass_at_1": 0.347826, "mean_frac": 0.410682, "micro_frac": 0.380531, "mean_tests_per_item": 7.019}

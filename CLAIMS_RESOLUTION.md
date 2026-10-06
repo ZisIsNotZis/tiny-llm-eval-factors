@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 34 | 36% |
-| underpowered | 6 | 6% |
+| resolved | 34 | 34% |
+| underpowered | 8 | 8% |
 | noise_level | 5 | 5% |
 | unauditable | 8 | 8% |
-| model_fit | 16 | 17% |
-| qualitative | 26 | 27% |
+| model_fit | 16 | 16% |
+| qualitative | 28 | 28% |
 
 ## resolved (34)
 
@@ -85,7 +85,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - Δ=0.236 — **[VERIFIED, m38/m39] The Q2->Q3 code deficit replicates on two more languages, and a second vendor's ternary does NOT sit above the bits->score curve.** `m38-statpower-javajs` (Qwen3.5-2B `UD-Q2_K_XL`/`UD-Q3_K_XL`, java/js, 158-161 items/lang, greedy): q2 java **0.120** js **0.112** -> q3 java **0.215** js **0.317** (Q2->Q3 step **+0.095** java / **+0.205** js, both above the ~±0.03 axis floor). `m39-glm-ternary` (GLM-4.7-Flash, cpp/py, 161 items): `UD-TQ1_0` (ternary, 8.33 GB) cpp **0.236** / py **0.118** vs its own `UD-Q2_K_XL` reference (11.89 GB) cpp **0.472** / py **0.348** — i.e. **−0.236 / −0.230** at *fewer* bits, so unlike the Bonsai co-designed ternary (m21/m24/m35) this TQ1_0 family is clearly *below* its Q2 reference and the off-curve effect does not generalise to a scheme-only ternary conversion. Ingested as `run_tag='m38-statpower-javajs'` (4 rows) and `'m39-glm-ternary'` (4 rows), DB 2171 -> 2197, `integrity ok | fk issues 0`. **FLAG (m29 — harness non-measurement, NOT a null on FA/V-cache):** the m29 "FA on/off × V-cache" panel measured nothing on its FA axis — `faon_f16` and `faoff_f16` are byte-identical in all 4 model×language cells (q2 cpp 18/161, q2 py 21/161, q3 cpp 42/161, q3 py 44/161) — and its 24-line summary repeats its first 12 rows verbatim; the panel also has **0 rows in the DB** (`ingest_m29` passes no model map, so its keys `q2`/`q3` are filtered out against `MPL_MODELS`). Do not read m29 as an FA or V-cache null.
   - _|Δ|=0.2360 >= MDE 0.108 at n=1_
 
-## underpowered (6)
+## underpowered (8)
 
 - Δ=0.0488 — On unseen-architecture `NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL` under fixed controls (`ctx2048`, `q8_0/q8_0`, no-MTP), `top_k:40->20` decreases plus score on both datasets (Humaneval `-0.0061`, MBPP `-0.0317`) with small wall-time increases, and `reasoning off->on` decreases plus score on both datasets (Humaneval `-0.0488`, MBPP `-0.0265`) with large wall-time penalties (Humaneval `+288.7s`, MBPP `+473.3s`).
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
@@ -99,6 +99,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1050 < MDE 0.108 at n=1_
 - Δ=0.037 — **[VERIFIED, checkpoint m20] The large sparse-MoE anchor is NOT pinned to the Q2 multi-turn floor the way the small dense models are: `Qwen3.6-35B-A3B` `UD-Q2_K_XL` scores 0.60 on BFCL `multi_turn_base` at Q2.** `m20-q2` (native-FC handler `Qwen/Qwen3-30B-A3B-Instruct-2507-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) = **0.60**, ingested as `run_tag='m20-bfcl-multiturn'` (DB 2104 -> 2105 rows, `integrity ok | fk issues 0`). The panel is clean: `DONE m20-q2 multi_turn_base acc=60.00`, no `Context size has been exceeded`/`exceed_context_size` lines, all slot releases `truncated = 0`; the per-category result file is pre-deleted per panel, so no stale-result reuse. Context for the floor claim: this Q2 score is well above the dense anchors' Q2 `multi_turn_base` — 2B 0.025 (`m9`), 4B 0.385 (`m11`), 9B 0.49 (`m17`, `run_tag='m17-bfcl-multiturn'`) — so "Q2 pins hard agentic categories to the floor" is a small/small-dense-model property, consistent with the independent MultiPL-E result (`m6-family-ladder`) that this MoE's Q2->Q3 step is only +0.037 because it already scores ~0.70 at Q2.
   - _|Δ|=0.0370 < MDE 0.108 at n=1_
+- Δ=0.022 — **[VERIFIED, m45 replicated] The LFM2.5-8B-A1B `Q3 < Q2` anomaly replicates in direction but is still not significant.** `m45` (independent rerun) gives Q2 cpp 0.1615 / py 0.0621 vs Q3 cpp 0.1429 / py 0.0373 — the same ordering as `m10`. Pooled over both runs the deficit is ~-0.022 with an item-level SE of ~0.017 (n~644), i.e. still inside the noise, but the direction has now reproduced twice on an independent panel. Treat as **suggestive that Q3 is not better for this MoE**, not as an established reversal.
+  - _|Δ|=0.0220 < MDE 0.108 at n=1_
+- Δ=0.0994 — **[VERIFIED, m42] The `Q2->Q3` gain holds in two more languages, so it is now 4-language per anchor for Qwen3.5-2B.** `rust 0.0645 -> 0.1613`, `ruby 0.0062 -> 0.1056` — both positive and large, alongside the existing cpp/py. Adds 322 items to the 2B ladder (MDE improves).
+  - _|Δ|=0.0994 < MDE 0.108 at n=1_
 
 ## noise_level (5)
 
@@ -167,7 +171,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (26)
+## qualitative (28)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -220,5 +224,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m31] `top_k` is inert above ~20 at temp 0.3 — only the extreme K=1 (≈greedy) moves scores, and not in a consistent direction.** Qwen3.5-2B, temp 0.3, seed fixed, server restarted per cell: K in {20,40,64,200} is **byte-identical** in all six model x language cells; K=1 differs only in 3 of 6 cells and both ways (`q3 cpp 0.242` vs `0.174` for K>=20 — better; `q2 py 0.137` vs `0.162`, `q4 py 0.273` vs `0.317` — worse). Consistency check: `q3 cpp` at K=1 reproduces the m3 greedy value (0.2422) exactly. So the earlier "top_k is the dominant sampling knob" impression came from a *different* protocol/panel, not from this one.
   - _no numeric contrast in the claim_
 - — **[VERIFIED, m32/m22 replicated] The ternary off-curve advantage DOES hold on the hard agentic axis for Bonsai, and replicates.** `Ternary-Bonsai-27B-Q2_g64` scores BFCL `multi_turn_base` **0.695** (`run_tag='m22-bonsai-ternary'`) and **0.700** (`run_tag='m32-bonsai-ternary-mt'`) — two independent runs, difference 0.005, well inside the ~0.015 agentic replicate floor. At ~2.25 bits/weight it is the **top of the multi-turn table**, above `Qwen3.6-35B-A3B Q3 0.675`, `Qwen3.5-9B Q3 0.650`, `Qwen3.5-4B Q3 0.535`. So for Bonsai the off-curve effect is not a code-only curiosity: it holds on the hardest task class we measure. Combined with m39 (GLM-4.7-Flash ternary = half its own Q2 on code), the correct scope remains **model/recipe-specific** — but within that scope the effect is real, large, and reproducible.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m41] On a CONTINUOUS metric the ternary model's advantage is about passing more tests, not just differently.** Per-test pass fraction (not binary pass@1): ternary arm mean_frac **0.6035** vs conventional arm **0.4369**. Since the binary pass@1 gap is much larger in relative terms, this shows the ternary model converts a decent share of its extra capability into *partially correct* solutions too.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m37] The vendor/recipe label does not matter at matched file size, replicated.** Qwen3.6-35B-A3B `UD-Q3_K_XL` (17.23 GB) vs bartowski `Q3_K_M` (17.12 GB): cpp 0.7205 vs 0.7578, py 0.7578 vs 0.7391 — a mixed, null pattern (consistent with `m25`). Together these two independent matched-size tests say the Unsloth `UD` label carries no score signal beyond file size.
   - _no numeric contrast in the claim_
 

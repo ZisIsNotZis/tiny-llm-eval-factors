@@ -1,0 +1,4 @@
+{"model": "qwen2b-q2", "lang": "rs", "n": 155, "pass": 10, "score": 0.06451612903225806, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen2b-q2", "lang": "rb", "n": 161, "pass": 1, "score": 0.006211180124223602, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen2b-q3", "lang": "rs", "n": 155, "pass": 25, "score": 0.16129032258064516, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen2b-q3", "lang": "rb", "n": 161, "pass": 17, "score": 0.10559006211180125, "protocol": "mpl-raw-greedy-768"}

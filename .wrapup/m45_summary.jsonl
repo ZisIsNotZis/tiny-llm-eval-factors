@@ -1,0 +1,4 @@
+{"model": "lfm25-8a1b-q2", "lang": "cpp", "n": 161, "pass": 26, "score": 0.16149068322981366, "protocol": "mpl-raw-greedy-768"}
+{"model": "lfm25-8a1b-q2", "lang": "py", "n": 161, "pass": 10, "score": 0.062111801242236024, "protocol": "mpl-raw-greedy-768"}
+{"model": "lfm25-8a1b-q3", "lang": "cpp", "n": 161, "pass": 23, "score": 0.14285714285714285, "protocol": "mpl-raw-greedy-768"}
+{"model": "lfm25-8a1b-q3", "lang": "py", "n": 161, "pass": 6, "score": 0.037267080745341616, "protocol": "mpl-raw-greedy-768"}

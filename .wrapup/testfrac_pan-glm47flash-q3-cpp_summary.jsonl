@@ -1,0 +1,1 @@
+{"samples": "mres/pan-glm47flash-q3-cpp.jsonl", "lang": "cpp", "n": 161, "pass": 94, "pass_at_1": 0.583851, "mean_frac": 0.70818, "micro_frac": 0.679646, "mean_tests_per_item": 7.019}

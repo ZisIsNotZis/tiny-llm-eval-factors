@@ -1,0 +1,1 @@
+{"samples": "mres/m21-bonsai-q2g64-cpp.jsonl", "lang": "cpp", "n": 161, "pass": 112, "pass_at_1": 0.695652, "mean_frac": 0.800625, "micro_frac": 0.779646, "mean_tests_per_item": 7.019}

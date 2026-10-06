@@ -1,0 +1,1 @@
+{"samples": "mres/pan-qwen35-35a3b-iq1m-py.jsonl", "lang": "py", "n": 161, "pass": 91, "pass_at_1": 0.565217, "mean_frac": 0.739068, "micro_frac": 0.730973, "mean_tests_per_item": 7.019}
