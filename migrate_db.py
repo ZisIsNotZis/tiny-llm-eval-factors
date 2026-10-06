@@ -327,6 +327,7 @@ MMT_MODELS = {
     "qwen2b-lc": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen2b-lc2": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "qwen2b-lc3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    "bonsai-q2g64": "Ternary-Bonsai-27B-Q2_g64.gguf",
     "m18-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
     "m18-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
     "m19-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",

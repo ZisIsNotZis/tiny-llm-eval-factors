@@ -10,9 +10,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 | resolved | 34 | 36% |
 | underpowered | 6 | 6% |
 | noise_level | 5 | 5% |
-| unauditable | 8 | 9% |
+| unauditable | 8 | 8% |
 | model_fit | 16 | 17% |
-| qualitative | 25 | 27% |
+| qualitative | 26 | 27% |
 
 ## resolved (34)
 
@@ -167,7 +167,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (25)
+## qualitative (26)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -218,5 +218,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m33] Four more architecture families measured on the standard panel** (all Q3/Q4 class, greedy, cpp/py): `NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL` **0.603/0.658**, `Ornith-1.5-9B-Q4_K_M` 0.609/0.422, `GLM-4.7-Flash-UD-Q3_K_XL` 0.584/0.491, `MiniCPM5-2B-Q3_K_M` 0.373/0.404. Notable: `Nemotron-3-Nano-4B` at Q3 reaches 0.60/0.66, i.e. **better than dense `Qwen3.5-4B` Q3 (0.457/0.503)** — architecture/recipe can dominate a 1B size difference.
   - _no numeric contrast in the claim_
 - — **[VERIFIED, m31] `top_k` is inert above ~20 at temp 0.3 — only the extreme K=1 (≈greedy) moves scores, and not in a consistent direction.** Qwen3.5-2B, temp 0.3, seed fixed, server restarted per cell: K in {20,40,64,200} is **byte-identical** in all six model x language cells; K=1 differs only in 3 of 6 cells and both ways (`q3 cpp 0.242` vs `0.174` for K>=20 — better; `q2 py 0.137` vs `0.162`, `q4 py 0.273` vs `0.317` — worse). Consistency check: `q3 cpp` at K=1 reproduces the m3 greedy value (0.2422) exactly. So the earlier "top_k is the dominant sampling knob" impression came from a *different* protocol/panel, not from this one.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m32/m22 replicated] The ternary off-curve advantage DOES hold on the hard agentic axis for Bonsai, and replicates.** `Ternary-Bonsai-27B-Q2_g64` scores BFCL `multi_turn_base` **0.695** (`run_tag='m22-bonsai-ternary'`) and **0.700** (`run_tag='m32-bonsai-ternary-mt'`) — two independent runs, difference 0.005, well inside the ~0.015 agentic replicate floor. At ~2.25 bits/weight it is the **top of the multi-turn table**, above `Qwen3.6-35B-A3B Q3 0.675`, `Qwen3.5-9B Q3 0.650`, `Qwen3.5-4B Q3 0.535`. So for Bonsai the off-curve effect is not a code-only curiosity: it holds on the hardest task class we measure. Combined with m39 (GLM-4.7-Flash ternary = half its own Q2 on code), the correct scope remains **model/recipe-specific** — but within that scope the effect is real, large, and reproducible.
   - _no numeric contrast in the claim_
 
