@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 32 | 36% |
+| resolved | 33 | 36% |
 | underpowered | 6 | 7% |
 | noise_level | 4 | 4% |
 | unauditable | 8 | 9% |
 | model_fit | 16 | 18% |
-| qualitative | 23 | 26% |
+| qualitative | 24 | 26% |
 
-## resolved (32)
+## resolved (33)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -80,6 +80,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.1408 >= MDE 0.108 at n=1_
 - Δ=0.235 — **[VERIFIED, m28] MTP/draft speedup is task-dependent: +32 % on short code prompts at draft n=3, but strictly negative on ~10k-token long context.** `run_tag='m28-speed'` (Qwen3.5-2B `UD-Q4_K_XL`, MTP GGUF, greedy, 3 reps), generation tok/s by draft length n: **code** 168.6→212.8→**223.1**→217.8 (n=0..4, peak **n=3**, **+32.4 %**); **prose** 171.6→203.8→198.1→**204.6** (peak ~n=2–4, **+19.3 %**); **longctx** (prompt_n≈10386) 169.3→155.4→160.0→147.4→**142.8** (every n>0 **slower**, **−15.6 %** at n=4). Draft acceptance falls with n and with prompt length: code 0.954→0.819 (n=1→3), prose 0.884→0.729, longctx **0.649→0.414** — the long prompt makes each draft cheap to propose but expensive to verify. **Recorded as a SPEED finding (timing only, `_score` is NULL; the values live in the `_tok_s` column).**
   - _|Δ|=0.2350 >= MDE 0.108 at n=1_
+- Δ=0.55 — **[VERIFIED, m35] The sub-2-bit frontier is far more usable than the bits->score curve implies — and the *scheme* dominates at equal bits.** Standard panel, greedy: `Bonsai-27B-Q1_0` (**1 bit**/weight) cpp **0.547** / py 0.373; `Ternary-Bonsai-4B-Q2_0_g64` (ternary, ~2.25 bpw) cpp 0.491 / py **0.677**; `Qwen3.5-35B-A3B-IQ1_M` (~1.6 bpw MoE) cpp 0.491 / py 0.565. For reference `Ternary-Bonsai-27B-Q2_g64` is 0.696/0.764 and dense `Qwen3.5-2B-Q3` is 0.242/0.267. So a **1-bit 27B model still clears ~0.4-0.55**, and a ternary 4B reaches 0.68 on Python — i.e. bits/weight is a weak predictor once the scheme changes.
+  - _|Δ|=0.5500 >= MDE 0.108 at n=1_
 
 ## underpowered (6)
 
@@ -161,7 +163,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (23)
+## qualitative (24)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -208,5 +210,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[METHOD, B1a] The Bonsai ternary files are not corrupt; the loader is picky.** Re-downloading `Ternary-Bonsai-27B-Q2_0.gguf` gave a byte-identical size *and* SHA256 (`868c1171…1757`) to the on-disk copy, so the earlier `gguf_init_from_reader: failed to read tensor data` is not truncation. All three variants carry the same tensor-type histogram (498x type 42 + 353x type 0), yet **`Q2_g64` loads and `Q2_0` reproducibly fails** (also with `-ngl 0`), while `PQ2_0` uses ggml type **142** which is beyond our `GGML_TYPE_COUNT = 43`. So: one usable ternary checkpoint (`Q2_g64`), one unresolved loader case (`Q2_0`), one needs a newer llama.cpp (`PQ2_0`).
   - _no numeric contrast in the claim_
 - — **[VERIFIED, m24] The ternary off-curve effect scales cleanly with model size.** `Ternary-Bonsai` group-64 `Q2_0` under the standard protocol: **1.7B cpp 0.292 / py 0.416; 8B cpp 0.553 / py 0.615; 27B cpp 0.696 / py 0.764** — a smooth size curve from a *ternary* (~2.25 bit) family. Note the 8B ternary reaches 0.553/0.615, i.e. above our dense Qwen3.5-4B Q3 (0.457/0.503) and near Qwen3.5-9B Q3 (0.571/—) at a fraction of the bytes.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m33] Four more architecture families measured on the standard panel** (all Q3/Q4 class, greedy, cpp/py): `NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL` **0.603/0.658**, `Ornith-1.5-9B-Q4_K_M` 0.609/0.422, `GLM-4.7-Flash-UD-Q3_K_XL` 0.584/0.491, `MiniCPM5-2B-Q3_K_M` 0.373/0.404. Notable: `Nemotron-3-Nano-4B` at Q3 reaches 0.60/0.66, i.e. **better than dense `Qwen3.5-4B` Q3 (0.457/0.503)** — architecture/recipe can dominate a 1B size difference.
   - _no numeric contrast in the claim_
 

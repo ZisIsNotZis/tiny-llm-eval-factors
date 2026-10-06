@@ -1,6 +1,20 @@
 {
- "n_rows": 106,
+ "n_rows": 124,
  "families": {
+  "GLM-4.7-Flash": {
+   "levels": {
+    "UD-Q3_K_XL": 0.5373
+   },
+   "per_language": {
+    "UD-Q3_K_XL": {
+     "cpp": 0.5838509316770186,
+     "py": 0.4906832298136646
+    }
+   },
+   "order": [
+    "UD-Q3_K_XL"
+   ]
+  },
   "LFM2.5-8B-A1B": {
    "levels": {
     "UD-Q2_K_XL": 0.1118,
@@ -253,6 +267,20 @@
    "order": [
     "UD-Q2_K_XL",
     "UD-Q3_K_XL"
+   ]
+  },
+  "Qwen_Qwen3.5-35B-A3B": {
+   "levels": {
+    "IQ1_M": 0.528
+   },
+   "per_language": {
+    "IQ1_M": {
+     "cpp": 0.4906832298136646,
+     "py": 0.5652173913043478
+    }
+   },
+   "order": [
+    "IQ1_M"
    ]
   },
   "Qwen_Qwen3.6-35B-A3B": {

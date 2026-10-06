@@ -491,6 +491,29 @@ def ingest_m32(con):
                            "m32_summary.jsonl")
 
 
+M33_MODELS = {
+    "minicpm5-2b-q3": "MiniCPM5-2B-Q3_K_M.gguf",
+    "nemotron3-4b-q3": "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf",
+    "ornith9b-q4": "Ornith-1.5-9B-Q4_K_M.gguf",
+    "glm47flash-q3": "GLM-4.7-Flash-UD-Q3_K_XL.gguf",
+}
+M35_MODELS = {
+    "bonsai4b-ternary": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+    "bonsai27b-1bit": "Bonsai-27B-Q1_0.gguf",
+    "qwen35-35a3b-iq1m": "Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf",
+}
+
+
+def ingest_m33(con):
+    return ingest_mpl(con, ".wrapup/m33_summary.jsonl", "m33-family-breadth",
+                      "m33_summary.jsonl", model_map=M33_MODELS)
+
+
+def ingest_m35(con):
+    return ingest_mpl(con, ".wrapup/m35_summary.jsonl", "m35-sub2bit",
+                      "m35_summary.jsonl", model_map=M35_MODELS)
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -667,6 +690,7 @@ def main():
         ("m19", ingest_m19), ("m20", ingest_m20), ("m21", ingest_m21),
         ("m22", ingest_m22), ("m27", ingest_m27), ("m28", ingest_m28),
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
+        ("m33", ingest_m33), ("m35", ingest_m35),
     ]
     tally = {}
     for label, tag, fn in ONCE:

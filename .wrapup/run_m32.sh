@@ -30,12 +30,12 @@
 #   bash gpu_locked.sh bash run_m32.sh
 set -u
 W=/home/z/hf/research/.wrapup
-LOG=$W/m32.log
+LOG=${M32_LOG:-$W/m32.log}
 SUM=$W/m32_summary.jsonl
 HANDLER=Qwen/Qwen3-1.7B-FC
 MODEL=Ternary-Bonsai-27B-Q2_g64.gguf
 
-echo "=== M32 start $(date) ===" >> "$LOG"
+echo "=== M32 start $(date) ===" > "$LOG"
 rm -f "$SUM"
 
 # 1. capability preflight: does the ternary 27B emit a real tool call at all?
@@ -53,8 +53,11 @@ CTX=32768 NP=2 GEN_TO=14400 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
   bash "$W/run_m9_panel.sh" bonsai-q2g64 "$MODEL" "$HANDLER" multi_turn_base
 
 # 3. multi_turn_long_context — ~117k-token prompts need 131 072 tokens/slot.
+#    If the model cannot allocate -c 262144 (e.g. another process is holding GPU
+#    memory), fall back to -c 196608 (98 304/slot); the two >98k prompts then fail
+#    as error ROWS (which still count towards 200), so the official eval still runs.
 echo "[$(date +%H:%M:%S)] M32 category multi_turn_long_context ctx=262144 np=2" >> "$LOG"
-CTX=262144 NP=2 GEN_TO=36000 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
+CTX=262144 FALLBACK_CTX=196608 NP=2 GEN_TO=36000 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
   bash "$W/run_m9_panel.sh" bonsai-q2g64 "$MODEL" "$HANDLER" multi_turn_long_context
 
 echo "=== M32 end $(date) ===" >> "$LOG"

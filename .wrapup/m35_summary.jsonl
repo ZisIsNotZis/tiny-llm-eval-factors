@@ -1,0 +1,6 @@
+{"model": "bonsai4b-ternary", "lang": "cpp", "n": 161, "pass": 79, "score": 0.4906832298136646, "protocol": "mpl-raw-greedy-768"}
+{"model": "bonsai4b-ternary", "lang": "py", "n": 161, "pass": 109, "score": 0.6770186335403726, "protocol": "mpl-raw-greedy-768"}
+{"model": "bonsai27b-1bit", "lang": "cpp", "n": 161, "pass": 88, "score": 0.546583850931677, "protocol": "mpl-raw-greedy-768"}
+{"model": "bonsai27b-1bit", "lang": "py", "n": 161, "pass": 60, "score": 0.37267080745341613, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen35-35a3b-iq1m", "lang": "cpp", "n": 161, "pass": 79, "score": 0.4906832298136646, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen35-35a3b-iq1m", "lang": "py", "n": 161, "pass": 91, "score": 0.5652173913043478, "protocol": "mpl-raw-greedy-768"}

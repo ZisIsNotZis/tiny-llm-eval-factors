@@ -11,9 +11,9 @@ Legend: `done` | `running` | `armed` (launched, queued on the GPU lock) | `pendi
 | 1 | ✅DONE Ternary size series (Bonsai 1.7B/8B g64 Q2_0, MultiPL-E cpp+py) | `.wrapup/run_m24.sh` | `.wrapup/m24_summary.jsonl` | done | 4 rows (1.7B/8B × cpp/py) |
 | 2 | ✅DONE Compute-precision factorial (FA on/off × V-cache, 2B Q2/Q3, cpp+py) | `.wrapup/run_m29.sh` | `.wrapup/m29_summary.jsonl` | done | 24 rows |
 | 3 | MERGED into #11 (Tier 1A expert-wise precursor) | — | `.wrapup/m37_summary.jsonl` | done | a matched-size pair exists on disk (no ≤15 GB download needed) |
-| 4 | ✅DONE KV-quant × ctx grid (K vs V asymmetry) | `.wrapup/run_m30.sh` | `.wrapup/m30_summary.jsonl` | done | 12 rows |
-| 5 | ✅DONE Sampling × quant, top_k (2B Q2/Q3/Q4 × top_k 20/40/64) | `.wrapup/run_m31.sh` | `.wrapup/m31_summary.jsonl` | done | 18 rows |
-| 6 | ⚠️FAILED Ternary Bonsai multi-turn + long-context (accuracy null) | `.wrapup/run_m32.sh` | `.wrapup/m32_summary.jsonl` | failed | 2 rows both `accuracy:null`; long_context ctx-overflow (117648 tok > 98304/slot). See OPEN RISKS |
+| 4 | 🔧ARMED KV-quant × **input length** grid (K vs V asymmetry) — repaired | `.wrapup/run_m30.sh` | `.wrapup/m30_summary.jsonl` | armed | old 12 rows were a **null by construction** (short prompts, only the allocated `-c` moved); now each prompt is padded to just under the target ctx with other HumanEval prompts+solutions (`m30_build_pad.py`), 12 cells × 60 items, `prompt_tokens` recorded |
+| 5 | 🔧ARMED Sampling × quant, top_k widened — repaired | `.wrapup/run_m31.sh` | `.wrapup/m31_summary.jsonl` | armed | old K {20,40,64} was **inside the noise** at temp 0.3 (2–4/161 completions differ, pass@1 identical); now K {1,20,40,64,200} at temp 0.3 seed 1234, 2B Q2/Q3/Q4 × cpp+py |
+| 6 | 🔧ARMED Ternary Bonsai multi-turn + long-context — repaired | `.wrapup/run_m32.sh` | `.wrapup/m32_summary.jsonl` | armed | was FAILED: both `accuracy:null` because the 2 h `timeout` truncated `generate` (138/200, 49/200) and official `evaluate` aborts on the row-count mismatch. Now a tool-call preflight + per-slot ctx from observed lengths (`-c 32768` base, `-c 262144`[fallback 196608] long) + `GEN_TO` 4 h/10 h |
 | 7 | Architecture-family breadth (MiniCPM5, Nemotron-3, Ornith-1.5, GLM-4.7-Flash) | `.wrapup/run_m33.sh` | `.wrapup/m33_summary.jsonl` | armed | Tier 5A; 4 models × cpp+py = 8; GLM-4.7-Flash-UD-Q3_K_XL is the only download |
 | 8 | Third-party ternary/1-bit family (generalise off-curve beyond Bonsai) | `.wrapup/run_m34.sh` | `.wrapup/m34_summary.jsonl` | armed | "TernaryQuench" is NOT on ModelScope (searched 2026-10-06) → probes it, falls back to Ternary-Bonsai-2-27B PTQ1_0/PQ2_0; load-gated |
 | 9 | Sub-2-bit model sweep | `.wrapup/run_m35.sh` | `.wrapup/m35_summary.jsonl` | armed | Bonsai-4B-Q2_0_g64 (new size point), Bonsai-27B-Q1_0, Qwen3.5-35B-A3B-IQ1_M = 3 × cpp+py = 6 |
@@ -37,11 +37,13 @@ about — the GPU then sat idle ~59 h. The driver above replaces the chain tail.
 
 ## OPEN RISKS
 
-* **#6 (m32) is incomplete** — both rows are `accuracy:null`. The log shows `multi_turn_long_context`
-  prompts reaching 117 648 tokens against a 98 304-token per-slot window (`-c 196608 -np 2`), so
-  generation aborted and `evaluate` hit "Length of model result does not match length of test
-  entries". Re-running with a larger per-slot ctx is a *protocol change* to an existing panel and is
-  not part of this build; #6 is left `failed` and flagged for the integrator.
+* **#4/#5/#6 are being repaired and re-run** — armed 2026-10-06 10:30 as `.wrapup/chain_m32_m31_m30.sh`,
+  which queues on `/tmp/llama_gpu.lock` behind the running `QUEUE_DRIVER.sh`. The old m30/m31 summaries
+  are still on disk and still look complete to the driver's row-count idempotency check; the repaired
+  panels rewrite them in place (m31 now emits 30 rows, m30 12 rows with an added `prompt_tokens` field).
+* **#6 (m32) was incomplete** — both rows `accuracy:null`, from a **2 h-truncated** `generate` (138/200 and
+  49/200 result rows) plus 2 real ctx-overflows; official `evaluate` aborts on the row-count mismatch. Fixed
+  as above; see OPERATIONS.md for the full diagnosis.
 * **#8 name resolution** — "TernaryQuench-Qwen3.8-27B" was not found on ModelScope; #8 uses the
   nearest third-party ternary/1-bit family (Ternary-Bonsai-2-27B PTQ1_0/PQ2_0). If it fails the
   load gate (newer ggml tensor types, BACKLOG B1a) the step logs SKIP and the driver continues.

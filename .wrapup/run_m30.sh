@@ -28,7 +28,7 @@
 set -u
 W=/home/z/hf/research/.wrapup
 cd "$W"
-LOG=$W/m30.log
+LOG=${M30_LOG:-$W/m30.log}
 SUM=$W/m30_summary.jsonl
 MRES=$W/mres
 PAD=/tmp/m30_pad

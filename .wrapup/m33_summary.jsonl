@@ -1,0 +1,8 @@
+{"model": "minicpm5-2b-q3", "lang": "cpp", "n": 161, "pass": 60, "score": 0.37267080745341613, "protocol": "mpl-raw-greedy-768"}
+{"model": "minicpm5-2b-q3", "lang": "py", "n": 161, "pass": 65, "score": 0.40372670807453415, "protocol": "mpl-raw-greedy-768"}
+{"model": "nemotron3-4b-q3", "lang": "cpp", "n": 161, "pass": 97, "score": 0.6024844720496895, "protocol": "mpl-raw-greedy-768"}
+{"model": "nemotron3-4b-q3", "lang": "py", "n": 161, "pass": 106, "score": 0.6583850931677019, "protocol": "mpl-raw-greedy-768"}
+{"model": "ornith9b-q4", "lang": "cpp", "n": 161, "pass": 98, "score": 0.6086956521739131, "protocol": "mpl-raw-greedy-768"}
+{"model": "ornith9b-q4", "lang": "py", "n": 161, "pass": 68, "score": 0.422360248447205, "protocol": "mpl-raw-greedy-768"}
+{"model": "glm47flash-q3", "lang": "cpp", "n": 161, "pass": 94, "score": 0.5838509316770186, "protocol": "mpl-raw-greedy-768"}
+{"model": "glm47flash-q3", "lang": "py", "n": 161, "pass": 79, "score": 0.4906832298136646, "protocol": "mpl-raw-greedy-768"}

@@ -12,6 +12,10 @@ tag="$1"; file="$2"; handler="$3"; CATS="${4:-multi_turn_base}"
 CTX="${CTX:-98304}"
 NP="${NP:-2}"
 PORT="${PORT:-8080}"
+# If the requested per-slot ctx cannot be allocated (e.g. another process is
+# holding GPU memory), retry once at this smaller ctx instead of failing the
+# panel. Unset = no fallback.
+FALLBACK_CTX="${FALLBACK_CTX:-}"
 # Generation/eval wall-clock caps. The defaults suit the short-prompt categories; a
 # long-context category on a 27B needs hours (a 2h cap silently truncates the result
 # file, and official `evaluate` then aborts with a length mismatch -> accuracy null).
@@ -44,14 +48,27 @@ if port_locked; then
   fi
 fi
 
-echo "[$(date +%H:%M:%S)] server $file ctx=$CTX np=$NP port=$PORT" >> "$LOG"
-llama-server -m "/home/z/hf/$file" --port "$PORT" --host 127.0.0.1 -ngl 99 -c $CTX -np $NP --jinja \
-  --cache-type-k q8_0 --cache-type-v q8_0 >> "$LOG" 2>&1 &
-srv=$!
-for i in $(seq 1 150); do
-  curl -s --max-time 3 http://127.0.0.1:$PORT/health 2>/dev/null | grep -q '"status":"ok"' && break
-  sleep 2
-done
+start_server() {  # ctx
+  echo "[$(date +%H:%M:%S)] server $file ctx=$1 np=$NP port=$PORT" >> "$LOG"
+  llama-server -m "/home/z/hf/$file" --port "$PORT" --host 127.0.0.1 -ngl 99 -c "$1" -np $NP --jinja \
+    --cache-type-k q8_0 --cache-type-v q8_0 >> "$LOG" 2>&1 &
+  srv=$!
+  for i in $(seq 1 150); do
+    curl -s --max-time 3 http://127.0.0.1:$PORT/health 2>/dev/null | grep -q '"status":"ok"' && break
+    # a dead server (e.g. CUDA OOM) never becomes healthy: stop waiting early
+    kill -0 $srv 2>/dev/null || break
+    sleep 2
+  done
+  curl -s --max-time 5 http://127.0.0.1:$PORT/health 2>/dev/null | grep -q ok
+}
+
+start_server "$CTX"
+if [ -n "$FALLBACK_CTX" ] && [ "$FALLBACK_CTX" != "$CTX" ] \
+   && ! curl -s --max-time 5 http://127.0.0.1:$PORT/health 2>/dev/null | grep -q ok; then
+  echo "[$(date +%H:%M:%S)] server failed at ctx=$CTX; retrying at ctx=$FALLBACK_CTX" >> "$LOG"
+  kill $srv 2>/dev/null; wait $srv 2>/dev/null; srv=""; sleep 3
+  start_server "$FALLBACK_CTX" && CTX="$FALLBACK_CTX"
+fi
 if ! curl -s --max-time 5 http://127.0.0.1:$PORT/health 2>/dev/null | grep -q ok; then
   echo "SERVER FAIL $file" >> "$LOG"; kill $srv 2>/dev/null; srv=""; exit 1
 fi
