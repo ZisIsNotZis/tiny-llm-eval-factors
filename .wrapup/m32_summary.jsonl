@@ -1,2 +1,0 @@
-{"model": "bonsai-q2g64", "category": "multi_turn_base", "handler": "Qwen/Qwen3-1.7B-FC", "accuracy": null, "protocol": "bfcl-official-multiturn-temp0"}
-{"model": "bonsai-q2g64", "category": "multi_turn_long_context", "handler": "Qwen/Qwen3-1.7B-FC", "accuracy": null, "protocol": "bfcl-official-multiturn-temp0"}

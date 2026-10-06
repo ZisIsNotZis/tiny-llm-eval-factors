@@ -214,6 +214,23 @@ Python, and lands within 0.11/0.03 of the 3.9-bit file. So "more bits → more s
 *within* a quantisation scheme: a ternary scheme can sit well **above** the curve. Practical read:
 **a ternary 2-bit model can be a better trade than a conventional 2–3-bit one** of the same size.
 
+### The ternary advantage does NOT generalise (negative control, m39)
+
+A second model's ternary variant was tested against **its own** conventional quant, so base weights
+are held fixed:
+
+| GLM-4.7-Flash | cpp | py |
+|---|---|---|
+| `UD-Q2_K_XL` (conventional ~2.9 bpw) | **0.472** | **0.348** |
+| `UD-TQ1_0` (ternary, ~1.x bpw) | 0.236 | 0.118 |
+
+Here the ternary scheme is **half** its own conventional Q2 reference. So the Bonsai result is
+**model/recipe-specific, not a general property of ternary quantisation**. The honest form of
+Finding 8 is therefore: *the scheme can move a model well above the bits→score curve — Bonsai is
+such a case — but tripling bits is not a general guarantee, as GLM-4.7-Flash shows.* Two more
+sub-2-bit data points agree that 1-bit is *usable* (Bonsai-27B `Q1_0` 0.547/0.373;
+Qwen3.5-35B-A3B `IQ1_M` 0.491/0.565) without beating conventional quants of the same model.
+
 *Caveat:* Bonsai-27B and Qwen3.8-27B are different checkpoints in the same family, so part of the gap
 may be training rather than scheme. The within-model scheme comparison is incomplete because
 `Ternary-Bonsai-Q2_0` will not load in our llama.cpp (see below) and `PQ2_0` uses an unsupported

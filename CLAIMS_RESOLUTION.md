@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 33 | 36% |
+| resolved | 34 | 37% |
 | underpowered | 6 | 7% |
 | noise_level | 4 | 4% |
 | unauditable | 8 | 9% |
-| model_fit | 16 | 18% |
+| model_fit | 16 | 17% |
 | qualitative | 24 | 26% |
 
-## resolved (33)
+## resolved (34)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -82,6 +82,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.2350 >= MDE 0.108 at n=1_
 - Δ=0.55 — **[VERIFIED, m35] The sub-2-bit frontier is far more usable than the bits->score curve implies — and the *scheme* dominates at equal bits.** Standard panel, greedy: `Bonsai-27B-Q1_0` (**1 bit**/weight) cpp **0.547** / py 0.373; `Ternary-Bonsai-4B-Q2_0_g64` (ternary, ~2.25 bpw) cpp 0.491 / py **0.677**; `Qwen3.5-35B-A3B-IQ1_M` (~1.6 bpw MoE) cpp 0.491 / py 0.565. For reference `Ternary-Bonsai-27B-Q2_g64` is 0.696/0.764 and dense `Qwen3.5-2B-Q3` is 0.242/0.267. So a **1-bit 27B model still clears ~0.4-0.55**, and a ternary 4B reaches 0.68 on Python — i.e. bits/weight is a weak predictor once the scheme changes.
   - _|Δ|=0.5500 >= MDE 0.108 at n=1_
+- Δ=0.236 — **[VERIFIED, m38/m39] The Q2->Q3 code deficit replicates on two more languages, and a second vendor's ternary does NOT sit above the bits->score curve.** `m38-statpower-javajs` (Qwen3.5-2B `UD-Q2_K_XL`/`UD-Q3_K_XL`, java/js, 158-161 items/lang, greedy): q2 java **0.120** js **0.112** -> q3 java **0.215** js **0.317** (Q2->Q3 step **+0.095** java / **+0.205** js, both above the ~±0.03 axis floor). `m39-glm-ternary` (GLM-4.7-Flash, cpp/py, 161 items): `UD-TQ1_0` (ternary, 8.33 GB) cpp **0.236** / py **0.118** vs its own `UD-Q2_K_XL` reference (11.89 GB) cpp **0.472** / py **0.348** — i.e. **−0.236 / −0.230** at *fewer* bits, so unlike the Bonsai co-designed ternary (m21/m24/m35) this TQ1_0 family is clearly *below* its Q2 reference and the off-curve effect does not generalise to a scheme-only ternary conversion. Ingested as `run_tag='m38-statpower-javajs'` (4 rows) and `'m39-glm-ternary'` (4 rows), DB 2171 -> 2197, `integrity ok | fk issues 0`. **FLAG (m29 — harness non-measurement, NOT a null on FA/V-cache):** the m29 "FA on/off × V-cache" panel measured nothing on its FA axis — `faon_f16` and `faoff_f16` are byte-identical in all 4 model×language cells (q2 cpp 18/161, q2 py 21/161, q3 cpp 42/161, q3 py 44/161) — and its 24-line summary repeats its first 12 rows verbatim; the panel also has **0 rows in the DB** (`ingest_m29` passes no model map, so its keys `q2`/`q3` are filtered out against `MPL_MODELS`). Do not read m29 as an FA or V-cache null.
+  - _|Δ|=0.2360 >= MDE 0.108 at n=1_
 
 ## underpowered (6)
 
