@@ -534,6 +534,45 @@ def ingest_m39(con):
                       "m39_summary.jsonl", model_map=M39_MODELS)
 
 
+M30_MODELS = {"qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf"}
+M31_MODELS = {"q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf", "q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+              "q4": "Qwen3.5-2B-UD-Q4_K_XL.gguf"}
+
+
+def _ingest_mpl_ctx(con, path, run_tag, source, model_map, extra_cols):
+    if not os.path.exists(path):
+        print(f"  (no {source})")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", (run_tag,))
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        m = model_map.get(r.get("model"))
+        if not m or r.get("score") is None:
+            continue
+        bench = f"humaneval-{r.get('lang', 'cpp')}"
+        row = base_row(m, bench, float(r.get("temp", 0.3) or 0.3), r["score"], None)
+        row.update({"run_tag": run_tag, "rep": 1, "protocol": r.get("protocol", "mpl-raw"),
+                    "language": r.get("lang", "cpp"), "bench_family": "humaneval-multipl-e",
+                    "source_file": source})
+        row.update(extra_cols(r))
+        insert(con, row); n += 1
+    return n
+
+
+def ingest_m30(con):
+    return _ingest_mpl_ctx(con, ".wrapup/m30_summary.jsonl", "m30-kv-ctx", "m30_summary.jsonl",
+                           M30_MODELS, lambda r: {"ctx_size": r.get("ctx")})
+
+
+def ingest_m31(con):
+    return _ingest_mpl_ctx(con, ".wrapup/m31_summary.jsonl", "m31-topk", "m31_summary.jsonl",
+                           M31_MODELS, lambda r: {"top_k": str(r.get("top_k"))})
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -710,6 +749,7 @@ def main():
         ("m19", ingest_m19), ("m20", ingest_m20), ("m21", ingest_m21),
         ("m22", ingest_m22), ("m27", ingest_m27), ("m28", ingest_m28),
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
+        ("m30", ingest_m30), ("m31", ingest_m31),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),
     ]

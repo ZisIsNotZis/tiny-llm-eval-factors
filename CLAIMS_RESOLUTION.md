@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 34 | 37% |
-| underpowered | 6 | 7% |
-| noise_level | 4 | 4% |
+| resolved | 34 | 36% |
+| underpowered | 6 | 6% |
+| noise_level | 5 | 5% |
 | unauditable | 8 | 9% |
 | model_fit | 16 | 17% |
-| qualitative | 24 | 26% |
+| qualitative | 25 | 27% |
 
 ## resolved (34)
 
@@ -100,7 +100,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - Δ=0.037 — **[VERIFIED, checkpoint m20] The large sparse-MoE anchor is NOT pinned to the Q2 multi-turn floor the way the small dense models are: `Qwen3.6-35B-A3B` `UD-Q2_K_XL` scores 0.60 on BFCL `multi_turn_base` at Q2.** `m20-q2` (native-FC handler `Qwen/Qwen3-30B-A3B-Instruct-2507-FC`, `-c 131072 -np 2` = 65536 ctx/slot, greedy, 200 items) = **0.60**, ingested as `run_tag='m20-bfcl-multiturn'` (DB 2104 -> 2105 rows, `integrity ok | fk issues 0`). The panel is clean: `DONE m20-q2 multi_turn_base acc=60.00`, no `Context size has been exceeded`/`exceed_context_size` lines, all slot releases `truncated = 0`; the per-category result file is pre-deleted per panel, so no stale-result reuse. Context for the floor claim: this Q2 score is well above the dense anchors' Q2 `multi_turn_base` — 2B 0.025 (`m9`), 4B 0.385 (`m11`), 9B 0.49 (`m17`, `run_tag='m17-bfcl-multiturn'`) — so "Q2 pins hard agentic categories to the floor" is a small/small-dense-model property, consistent with the independent MultiPL-E result (`m6-family-ladder`) that this MoE's Q2->Q3 step is only +0.037 because it already scores ~0.70 at Q2.
   - _|Δ|=0.0370 < MDE 0.108 at n=1_
 
-## noise_level (4)
+## noise_level (5)
 
 - Δ=0.0122 — On unseen-architecture `granite-4.1-3b-UD-Q3_K_XL` one-sided KV split at fixed controls (`ctx2048`, baseline sampling, reasoning off), both K-only (`q8_0/f16`) and V-only (`f16/q8_0`) improve Humaneval equally (`+0.0122`) and are neutral on MBPP (`+0.0000`), while wall-time shifts are near-neutral (within ~`±4.4s`).
   - _|Δ|=0.0122 < repeat floor 0.022_
@@ -110,6 +110,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0185 < repeat floor 0.022_
 - Δ=0.01 — **[EXCLUDED observation] `gemma-4-12B-it` is unusable under the raw-completion protocol.** It emits its `<|channel>thought` thinking channel mid-completion, producing syntactically broken code at *both* Q2 and Q3 (~0.00-0.01), so its scores measure protocol incompatibility, not quantization. Excluded from all ladders.
   - _|Δ|=0.0100 < repeat floor 0.022_
+- Δ=0.0167 — **[VERIFIED, m30] KV-cache quantisation has no measurable effect at long input lengths — but the model itself collapses there.** With genuinely long inputs (padded to 996 / 15 328 / 48 096 prompt tokens) and all four KV settings (`f16/f16`, `q8_0/f16`, `f16/q8_0`, `q8_0/q8_0`): at 996 tokens all four score identically (0.0667); at 15 328 tokens all four are 0.000-0.0167; at 48 096 tokens all four are 0.0000. So (a) **KV type is inert across a 48x context range**, and (b) the long-context collapse is **not** a KV-quant effect. Caveat: the filler context is unrelated code, so the collapse may be an artifact of the filler rather than a genuine long-context limit — either way KV quant is not the cause.
+  - _|Δ|=0.0167 < repeat floor 0.022_
 
 ## unauditable (8)
 
@@ -165,7 +167,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (24)
+## qualitative (25)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -214,5 +216,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m24] The ternary off-curve effect scales cleanly with model size.** `Ternary-Bonsai` group-64 `Q2_0` under the standard protocol: **1.7B cpp 0.292 / py 0.416; 8B cpp 0.553 / py 0.615; 27B cpp 0.696 / py 0.764** — a smooth size curve from a *ternary* (~2.25 bit) family. Note the 8B ternary reaches 0.553/0.615, i.e. above our dense Qwen3.5-4B Q3 (0.457/0.503) and near Qwen3.5-9B Q3 (0.571/—) at a fraction of the bytes.
   - _no numeric contrast in the claim_
 - — **[VERIFIED, m33] Four more architecture families measured on the standard panel** (all Q3/Q4 class, greedy, cpp/py): `NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL` **0.603/0.658**, `Ornith-1.5-9B-Q4_K_M` 0.609/0.422, `GLM-4.7-Flash-UD-Q3_K_XL` 0.584/0.491, `MiniCPM5-2B-Q3_K_M` 0.373/0.404. Notable: `Nemotron-3-Nano-4B` at Q3 reaches 0.60/0.66, i.e. **better than dense `Qwen3.5-4B` Q3 (0.457/0.503)** — architecture/recipe can dominate a 1B size difference.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m31] `top_k` is inert above ~20 at temp 0.3 — only the extreme K=1 (≈greedy) moves scores, and not in a consistent direction.** Qwen3.5-2B, temp 0.3, seed fixed, server restarted per cell: K in {20,40,64,200} is **byte-identical** in all six model x language cells; K=1 differs only in 3 of 6 cells and both ways (`q3 cpp 0.242` vs `0.174` for K>=20 — better; `q2 py 0.137` vs `0.162`, `q4 py 0.273` vs `0.317` — worse). Consistency check: `q3 cpp` at K=1 reproduces the m3 greedy value (0.2422) exactly. So the earlier "top_k is the dominant sampling knob" impression came from a *different* protocol/panel, not from this one.
   - _no numeric contrast in the claim_
 
