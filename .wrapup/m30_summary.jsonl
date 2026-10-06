@@ -1,0 +1,12 @@
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 40, "score": 0.2484472049689441, "ctx": 8192, "kv": "f16/f16", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=8192,kv=f16/f16,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 42, "score": 0.2608695652173913, "ctx": 8192, "kv": "q8_0/f16", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=8192,kv=q8_0/f16,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 41, "score": 0.2546583850931677, "ctx": 8192, "kv": "f16/q8_0", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=8192,kv=f16/q8_0,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 39, "score": 0.2422360248447205, "ctx": 8192, "kv": "q8_0/q8_0", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=8192,kv=q8_0/q8_0,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 40, "score": 0.2484472049689441, "ctx": 24576, "kv": "f16/f16", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=24576,kv=f16/f16,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 42, "score": 0.2608695652173913, "ctx": 24576, "kv": "q8_0/f16", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=24576,kv=q8_0/f16,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 41, "score": 0.2546583850931677, "ctx": 24576, "kv": "f16/q8_0", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=24576,kv=f16/q8_0,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 39, "score": 0.2422360248447205, "ctx": 24576, "kv": "q8_0/q8_0", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=24576,kv=q8_0/q8_0,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 40, "score": 0.2484472049689441, "ctx": 49152, "kv": "f16/f16", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=49152,kv=f16/f16,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 42, "score": 0.2608695652173913, "ctx": 49152, "kv": "q8_0/f16", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=49152,kv=q8_0/f16,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 41, "score": 0.2546583850931677, "ctx": 49152, "kv": "f16/q8_0", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=49152,kv=f16/q8_0,fa=on"}
+{"model": "qwen2b-q3", "lang": "cpp", "n": 161, "pass": 39, "score": 0.2422360248447205, "ctx": 49152, "kv": "q8_0/q8_0", "fa": "on", "protocol": "mpl-raw-greedy-768;ctx=49152,kv=q8_0/q8_0,fa=on"}

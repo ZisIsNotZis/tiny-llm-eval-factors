@@ -12,6 +12,11 @@ tag="$1"; file="$2"; handler="$3"; CATS="${4:-multi_turn_base}"
 CTX="${CTX:-98304}"
 NP="${NP:-2}"
 PORT="${PORT:-8080}"
+# Generation/eval wall-clock caps. The defaults suit the short-prompt categories; a
+# long-context category on a 27B needs hours (a 2h cap silently truncates the result
+# file, and official `evaluate` then aborts with a length mismatch -> accuracy null).
+GEN_TO="${GEN_TO:-7200}"
+EVAL_TO="${EVAL_TO:-3600}"
 
 srv=""
 cleanup() { if [ -n "$srv" ]; then kill "$srv" 2>/dev/null; srv=""; fi; }
@@ -74,11 +79,21 @@ for cat in "${CL[@]}"; do
   find "$RRES/$(echo "$handler" | tr '/' '_')" -name "BFCL_v4_${cat}_result.json" -delete 2>/dev/null
   echo "[$(date +%H:%M:%S)] gen $tag $cat" >> "$LOG"
   REMOTE_OPENAI_BASE_URL=http://127.0.0.1:$PORT/v1 REMOTE_OPENAI_TOKENIZER_PATH=$TOK \
-    timeout 7200 $BFCL generate --model "$handler" --test-category "$cat" \
+    timeout "$GEN_TO" $BFCL generate --model "$handler" --test-category "$cat" \
     --skip-server-setup --temperature 0 >> "$LOG" 2>&1
+  # A truncated `generate` (timeout / crash) leaves fewer result rows than test entries;
+  # official `evaluate` then raises mid-run and the accuracy never prints. Surface the
+  # row count up front so the failure is visible instead of looking like a null model.
+  RES=/home/z/hf/research/.wrapup/bfclenv/lib/python3.11/site-packages/result
+  nres=$(find "$RES/$(echo "$handler" | tr '/' '_')" -name "BFCL_v4_${cat}_result.json" \
+         -exec wc -l {} + 2>/dev/null | awk 'NR==1{print $1}')
+  echo "[$(date +%H:%M:%S)] generated $cat rows=${nres:-0} (expect 200)" >> "$LOG"
+  if [ "${nres:-0}" != "200" ]; then
+    echo "[$(date +%H:%M:%S)] WARN $tag $cat: truncated generation (rows=${nres:-0}/200)" >> "$LOG"
+  fi
   echo "[$(date +%H:%M:%S)] eval $tag $cat" >> "$LOG"
   acc=$(REMOTE_OPENAI_BASE_URL=http://127.0.0.1:$PORT/v1 REMOTE_OPENAI_TOKENIZER_PATH=$TOK \
-    timeout 3600 $BFCL evaluate --model "$handler" --test-category "$cat" 2>&1 | tee -a "$LOG" \
+    timeout "$EVAL_TO" $BFCL evaluate --model "$handler" --test-category "$cat" 2>&1 | tee -a "$LOG" \
     | grep -oE "Accuracy: [0-9.]+%" | tail -1 | grep -oE "[0-9.]+")
   python3 -c "
 import json

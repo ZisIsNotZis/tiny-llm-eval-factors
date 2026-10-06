@@ -1,42 +1,62 @@
 #!/bin/bash
 # M32 (QUEUE #6) — ternary on the HARD axis: official BFCL multi-turn.
 #
-# Highest-value connection between our two strongest findings:
-#   * off-curve ternary weights (Bonsai 27B Q2_g64: m21 cpp .6957 / py .7640;
-#     m22 single-turn .7024 and multi_turn_base .6950), and
-#   * the Q2 floor on the agentic axis (m9: qwen2b-q2 multi_turn_base 0.025 vs
-#     qwen2b-q3 0.185 — native-FC dialect, temp 0).
-# m22 already covered single-turn + multi_turn_base; this panel adds
-# multi_turn_long_context, where the prompts reach ~100k tokens and the 2-bit
-# ternary weights are stressed hardest. Re-running multi_turn_base is the
-# axis's noise floor (identical config to m22's 0.695).
+# WHY THE PREVIOUS RUN RETURNED null (the bug this fixes):
+#   The 2026-10-03 run passed both categories to a single run_m9_panel.sh with
+#   -c 196608 -np 2 (98 304 tokens/slot) and the panel's 2 h `timeout 7200` cap.
+#   * multi_turn_base generation was killed at 138/200 rows; long_context at 49/200
+#     (plus 2 real ctx-overflow 400s: a 117 648-token prompt > 98 304/slot).
+#   * official `bfcl evaluate` refuses a partial result file ("Length of model
+#     result (138) does not match length of test entries (200)") and prints no
+#     accuracy -> the recorded value was null. It was never a capability 0.
+#   The 9-11 `KeyError: 'arguments'` rows are a known qwen_fc._format_prompt quirk
+#   on a malformed model turn; they are still written as result rows and count
+#   towards the 200, so they are NOT the cause (m22 scored 0.695 with the same 10).
 #
-# Dialect matches m9/m22 exactly (SSOT 3.3): official bfcl-eval, native-FC
-# handler Qwen/Qwen3-1.7B-FC, temperature 0, K/V cache q8_0. Per-slot context
-# follows SSOT 3.4: -c 196608 -np 2 = 98 304 tokens per slot, sized for the
-# ~100k-token long-context prompts (the model's own window is 262 144).
+# FIX: size the per-slot context from the observed prompt lengths (SSOT 3.4) and
+# give `generate` enough wall-clock to finish all 200 rows.
+#   * multi_turn_base  : prompts reach ~6.3k tokens -> -c 32768 -np 2 = 16 384/slot.
+#   * multi_turn_long_context: observed 117 648-token prompt -> -c 262144 -np 2
+#     = 131 072/slot (the model's own window is 262 144).
+#   * GEN_TO raised per category (4 h / 10 h); run_m9_panel now logs the result-row
+#     count so a truncated generation is visible instead of silently null.
 #
-# The stale official result file is deleted before generation (a stale
-# BFCL_v4_*_result.json silently re-scores the previous model's responses);
-# run_m9_panel.sh does this per category, the explicit delete below documents it.
-# run_m9_panel.sh is called with SMOKE=1, so the 27B model must produce one real
-# completion before the ~2h category loop starts.
+# Dialect matches m9/m22 exactly (SSOT 3.3): official bfcl-eval, native-FC handler
+# Qwen/Qwen3-1.7B-FC (qwen_fc manual <tool_call> format over /v1/completions),
+# temperature 0. m32_preflight.sh first proves the model really emits tool calls,
+# both natively (tools=) and in the exact qwen_fc manual format.
 #
 # Must run under the GPU flock (the chain does this):
 #   bash gpu_locked.sh bash run_m32.sh
 set -u
 W=/home/z/hf/research/.wrapup
-LOG=$W/m30_32.log
+LOG=$W/m32.log
 SUM=$W/m32_summary.jsonl
 HANDLER=Qwen/Qwen3-1.7B-FC
-CATS=multi_turn_base,multi_turn_long_context
-RRES=$W/bfclenv/lib/python3.11/site-packages/result
+MODEL=Ternary-Bonsai-27B-Q2_g64.gguf
 
 echo "=== M32 start $(date) ===" >> "$LOG"
 rm -f "$SUM"
-find "$RRES/$(echo "$HANDLER" | tr '/' '_')" -name 'BFCL_v4_multi_turn_*_result.json' -delete 2>/dev/null
 
-CTX=196608 NP=2 SMOKE=1 LOG="$LOG" SUM="$SUM" \
-  bash "$W/run_m9_panel.sh" bonsai-q2g64 Ternary-Bonsai-27B-Q2_g64.gguf "$HANDLER" "$CATS"
-rc=$?
-echo "=== M32 end rc=$rc $(date) ===" >> "$LOG"
+# 1. capability preflight: does the ternary 27B emit a real tool call at all?
+echo "[$(date +%H:%M:%S)] M32 preflight (native tools= + qwen_fc manual format)" >> "$LOG"
+bash "$W/m32_preflight.sh" >> "$LOG" 2>&1
+if ! grep -q NATIVE_TOOL_CALL_OK "$LOG" || ! grep -q MANUAL_TOOL_CALL_OK "$LOG"; then
+  echo "[$(date +%H:%M:%S)] M32 ABORT: preflight did not produce a real tool call" >> "$LOG"
+  echo "=== M32 end rc=1 $(date) ===" >> "$LOG"
+  exit 1
+fi
+
+# 2. multi_turn_base — short prompts, small ctx so the run is fast.
+echo "[$(date +%H:%M:%S)] M32 category multi_turn_base ctx=32768 np=2" >> "$LOG"
+CTX=32768 NP=2 GEN_TO=14400 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
+  bash "$W/run_m9_panel.sh" bonsai-q2g64 "$MODEL" "$HANDLER" multi_turn_base
+
+# 3. multi_turn_long_context — ~117k-token prompts need 131 072 tokens/slot.
+echo "[$(date +%H:%M:%S)] M32 category multi_turn_long_context ctx=262144 np=2" >> "$LOG"
+CTX=262144 NP=2 GEN_TO=36000 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
+  bash "$W/run_m9_panel.sh" bonsai-q2g64 "$MODEL" "$HANDLER" multi_turn_long_context
+
+echo "=== M32 end $(date) ===" >> "$LOG"
+echo "--- m32_summary.jsonl ---" >> "$LOG"
+cat "$SUM" >> "$LOG" 2>/dev/null

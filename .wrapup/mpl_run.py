@@ -85,10 +85,22 @@ def strip_thought(text):
     return text
 
 
-def gen(args):
-    problems = [json.loads(l) for l in open(f"{PROMPTS}/humaneval-{args.lang}.jsonl")]
+def load_prompts(args):
+    """Prompt source: a per-panel override (same schema) or the frozen dataset.
+
+    ``--prompt-file`` exists so a panel can feed pre-padded prompts (e.g. the
+    m30 KV-at-length grid) without touching the frozen MultiPL-E files; the
+    canonical ``tests`` are still read from the dataset, so ``eval`` is unchanged.
+    """
+    src = args.prompt_file or f"{PROMPTS}/humaneval-{args.lang}.jsonl"
+    problems = [json.loads(l) for l in open(src)]
     if args.limit:
         problems = problems[:args.limit]
+    return problems
+
+
+def gen(args):
+    problems = load_prompts(args)
     out_path = args.samples
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     base = args.base_url.rstrip("/")
@@ -233,6 +245,8 @@ def main():
     g.add_argument("--max_tokens", type=int, default=768)
     g.add_argument("--greedy", action="store_true")
     g.add_argument("--limit", type=int, default=0)
+    g.add_argument("--prompt-file", default="",
+                   help="override the MultiPL-E prompt jsonl (same schema: name/prompt/stop_tokens)")
     g.add_argument("--mode", choices=["raw", "chat"], default="raw")
     g.add_argument("--extra-stop", default="",
                    help="comma-separated extra stop strings appended to the dataset stops")
@@ -262,6 +276,7 @@ def main():
         r.add_argument("--chat-kwargs", default="")
         r.add_argument("--strip-thought", action="store_true")
         r.add_argument("--prompt-suffix", default="")
+        r.add_argument("--prompt-file", default="")
         r.set_defaults(fn=lambda a: (gen(a), run_eval(a)))
     args = ap.parse_args()
     args.fn(args)

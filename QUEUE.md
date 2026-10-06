@@ -1,32 +1,54 @@
 # QUEUE.md — persisted panel queue (SSOT; see RESEARCH_METHOD.md §6b)
 
-State lives here, not in a session. A chain's last step must launch the next entry and mark the
-finished one `done`. If nothing is running and no entry is `running`/`armed`, arm the top `pending`.
+State lives here, not in a session. The QUEUE driver (`QUEUE_DRIVER.sh`) runs the list
+below, marks each entry done/FAIL/SKIP, and never stops on a failure. If nothing is
+running and no entry is `running`/`armed`, arm the driver (see "Armed driver").
 
 Legend: `done` | `running` | `armed` (launched, queued on the GPU lock) | `pending` | `blocked`
 
 | # | panel | script | summary | state | note |
 |---|---|---|---|---|---|
-| 1 | ✅DONE Ternary SIZE SERIES (Bonsai 1.7B/8B group-64 Q2_0, MultiPL-E cpp+py) | `.wrapup/run_m24.sh` (worker-built) | `.wrapup/m24_summary.jsonl` | running | turns our one ternary point into a curve; 27B row already in DB (`m21-bonsai-ternary`) |
-| 2 | RUNNING Compute-precision factorial (FA on/off × V-cache f16/q8_0, 2B Q2/Q3, cpp+py) | worker-built | `.wrapup/m29_summary.jsonl` | armed | 3 cells (the FA-off+V-q8_0 cell is impossible in build 4399) |
-| 3 | Expert-wise precursor (same MoE base, two vendor recipes at ~equal size) | — | `.wrapup/m25b_summary.jsonl` | pending | only if an existing pair exists ≤15 GB download |
-| 4 | ARMED KV-quant × ctx grid (K vs V asymmetry at 8k/24k/48k, one model) | `.wrapup/run_m30.sh` | `.wrapup/m30_summary.jsonl` | armed | 2B Q3 × ctx{8192,24576,49152} × KV{f16/f16,q8_0/f16,f16/q8_0,q8_0/q8_0}, cpp 161; `-fa on` fixed (quantised V needs FA); chain step 2/3 |
-| 5 | ARMED Sampling × quant, widen to top_k (2B Q2/Q3/Q4 × top_k 20/40/64 at temp 0.3) | `.wrapup/run_m31.sh` | `.wrapup/m31_summary.jsonl` | armed | top_k server-side, seed 1234, cpp+py; top_k=40 column anchors m27's temp-0.3 cells; chain step 3/3 |
-| 6 | ARMED Ternary Bonsai on multi-turn + long-context (does off-curve survive the hard axis?) | `.wrapup/run_m32.sh` | `.wrapup/m32_summary.jsonl` | armed | 27B Q2_g64, native-FC handler, `-c 196608 -np 2` (98 304/slot), `multi_turn_base,multi_turn_long_context`; base re-run = noise floor vs m22's 0.695; chain step 1/3 |
-| 7 | More architecture families on MultiPL-E (MiniCPM5, Nemotron-3, Ornith, GLM-4.7) | — | `.wrapup/m33_summary.jsonl` | pending | breadth; run when nothing higher is armed (Tier 5A) |
-| 8 | TernaryQuench-Qwen3.8-27B (third-party ternary/1-bit, new family) | — | `.wrapup/m34_summary.jsonl` | pending | download ~9.3 GB; tests whether ternary-off-curve generalises beyond Bonsai |
-| 9 | ModelScope sweep for other sub-2-bit/IQ1 releases | — | `.wrapup/m35_summary.jsonl` | pending | any new ternary/IQ1 family found gets the standard panel |
+| 1 | ✅DONE Ternary size series (Bonsai 1.7B/8B g64 Q2_0, MultiPL-E cpp+py) | `.wrapup/run_m24.sh` | `.wrapup/m24_summary.jsonl` | done | 4 rows (1.7B/8B × cpp/py) |
+| 2 | ✅DONE Compute-precision factorial (FA on/off × V-cache, 2B Q2/Q3, cpp+py) | `.wrapup/run_m29.sh` | `.wrapup/m29_summary.jsonl` | done | 24 rows |
+| 3 | MERGED into #11 (Tier 1A expert-wise precursor) | — | `.wrapup/m37_summary.jsonl` | done | a matched-size pair exists on disk (no ≤15 GB download needed) |
+| 4 | ✅DONE KV-quant × ctx grid (K vs V asymmetry) | `.wrapup/run_m30.sh` | `.wrapup/m30_summary.jsonl` | done | 12 rows |
+| 5 | ✅DONE Sampling × quant, top_k (2B Q2/Q3/Q4 × top_k 20/40/64) | `.wrapup/run_m31.sh` | `.wrapup/m31_summary.jsonl` | done | 18 rows |
+| 6 | ⚠️FAILED Ternary Bonsai multi-turn + long-context (accuracy null) | `.wrapup/run_m32.sh` | `.wrapup/m32_summary.jsonl` | failed | 2 rows both `accuracy:null`; long_context ctx-overflow (117648 tok > 98304/slot). See OPEN RISKS |
+| 7 | Architecture-family breadth (MiniCPM5, Nemotron-3, Ornith-1.5, GLM-4.7-Flash) | `.wrapup/run_m33.sh` | `.wrapup/m33_summary.jsonl` | armed | Tier 5A; 4 models × cpp+py = 8; GLM-4.7-Flash-UD-Q3_K_XL is the only download |
+| 8 | Third-party ternary/1-bit family (generalise off-curve beyond Bonsai) | `.wrapup/run_m34.sh` | `.wrapup/m34_summary.jsonl` | armed | "TernaryQuench" is NOT on ModelScope (searched 2026-10-06) → probes it, falls back to Ternary-Bonsai-2-27B PTQ1_0/PQ2_0; load-gated |
+| 9 | Sub-2-bit model sweep | `.wrapup/run_m35.sh` | `.wrapup/m35_summary.jsonl` | armed | Bonsai-4B-Q2_0_g64 (new size point), Bonsai-27B-Q1_0, Qwen3.5-35B-A3B-IQ1_M = 3 × cpp+py = 6 |
+| 10 | Ternary Bonsai on other multi-turn types (miss_func / miss_param) | `.wrapup/run_m36.sh` | `.wrapup/m36_summary.jsonl` | armed | BFCL, handler `Qwen/Qwen3-1.7B-FC`, temp 0, `-c 196608 -np 2`; 2 categories |
+| 11 | Tier 1A expert-wise precursor: MoE scheme at matched size | `.wrapup/run_m37.sh` | `.wrapup/m37_summary.jsonl` | armed | Qwen3.6-35B-A3B `UD-Q3_K_XL` 17.23 GB vs `Q3_K_M` 17.12 GB, both on disk = 4 rows |
+| 12 | Tier 5B statistical power: MultiPL-E java+js for 2 anchors | `.wrapup/run_m38.sh` | `.wrapup/m38_summary.jsonl` | armed | Qwen3.5-2B Q2/Q3 × {java,js} = 4; doubles items on the Q2→Q3 code step |
+| 13 | Second ternary family: GLM-4.7-Flash-UD-TQ1_0 | `.wrapup/run_m39.sh` | `.wrapup/m39_summary.jsonl` | armed | + in-family UD-Q2_K_XL reference; load-gated (TQ1_0 = ggml type 35) |
 
-## Armed chain
+## Armed driver
 
-`.wrapup/run_m32_30_31_chain.sh` (launched detached 2026-10-03 09:02, logs `.wrapup/m30_32.log`) waits for the
-`m29_launch.sh` panel to exit, then runs **#6 → #4 → #5**, each inside its own `bash gpu_locked.sh ...`. Its tail
-launches `run_m33.sh` if that script exists, else logs a STOP banner — **#7..#9 still have no script**, so the GPU
-idles after #5 until one is built (next build candidate: #7).
+`.wrapup/QUEUE_DRIVER.sh` (armed 2026-10-06; log `.wrapup/QUEUE_DRIVER.log`). It waits for
+any running panel to drain, then runs **#7 → #8 → #9 → #10 → #11 → #12 → #13**, each inside its
+own `bash gpu_locked.sh …`. Per-step states are logged `START` / `DONE` / `FAIL` / `SKIP`, and a
+failed step never stops the driver. It is **idempotent**: a step whose summary already has its
+expected rows (and, for BFCL, zero `accuracy:null`) is skipped, so re-running after a crash resumes
+in place. Expected 17–20 h total (dominated by the 27B/35B ternary + MoE panels).
+
+The previous chain `.wrapup/run_m32_30_31_chain.sh` is complete; it ended 2026-10-03 23:21 with a
+STOP banner because #7–#9 had no scripts. That STOP is exactly the anti-idle failure SSOT 6b warns
+about — the GPU then sat idle ~59 h. The driver above replaces the chain tail.
+
+## OPEN RISKS
+
+* **#6 (m32) is incomplete** — both rows are `accuracy:null`. The log shows `multi_turn_long_context`
+  prompts reaching 117 648 tokens against a 98 304-token per-slot window (`-c 196608 -np 2`), so
+  generation aborted and `evaluate` hit "Length of model result does not match length of test
+  entries". Re-running with a larger per-slot ctx is a *protocol change* to an existing panel and is
+  not part of this build; #6 is left `failed` and flagged for the integrator.
+* **#8 name resolution** — "TernaryQuench-Qwen3.8-27B" was not found on ModelScope; #8 uses the
+  nearest third-party ternary/1-bit family (Ternary-Bonsai-2-27B PTQ1_0/PQ2_0). If it fails the
+  load gate (newer ggml tensor types, BACKLOG B1a) the step logs SKIP and the driver continues.
 
 ## Standing rules
 
 * One GPU job at a time (`flock /tmp/llama_gpu.lock` via `.wrapup/gpu_locked.sh`).
-* Verify the model loads (one real completion) before committing a long panel.
+* Verify the model loads (one real completion) before committing a long panel (`panel_mpl.sh`).
 * A panel writes only its own summary; the integrator owns `migrate_db.py` and git.
 * 0.00 ⇒ suspect the harness (per-slot ctx, handler dialect, stale result file) before capability.

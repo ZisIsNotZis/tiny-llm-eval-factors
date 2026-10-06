@@ -83,6 +83,11 @@ handler dialect we have not verified; anything requiring a new toolchain before 
   poll once briefly, write a status line, and end its turn. Nobody waits on a 1-hour panel.
 * Subagent hard limit is 30 minutes. Never assign a task that needs to stay alive longer.
 * Workers report: files written, `run_tag`s, key numbers with CIs, blockers. ≤15 lines.
+* **A worker must never block on the GPU lock.** If another panel holds it, the worker's
+  `gpu_locked.sh` call will hang and then die on its tool timeout (observed twice). Instead the
+  worker writes its script, arms it behind the current holder (poll for the holder's end marker,
+  then run), launches detached, and returns. Escalate to the orchestrator if two panels must
+  interleave.
 * After a batch: ingest → regenerate → append to `conclusions.md` → commit.
 
 ### 6b. Anti-idle rule (learned the hard way: 9.5 h of GPU idle on 2026-10-02/03)
