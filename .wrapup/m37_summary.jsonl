@@ -1,0 +1,4 @@
+{"model": "qwen36-35a3b-udq3kxl", "lang": "cpp", "n": 161, "pass": 116, "score": 0.7204968944099379, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen36-35a3b-udq3kxl", "lang": "py", "n": 161, "pass": 122, "score": 0.7577639751552795, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen36-35a3b-q3km", "lang": "cpp", "n": 161, "pass": 122, "score": 0.7577639751552795, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen36-35a3b-q3km", "lang": "py", "n": 161, "pass": 119, "score": 0.7391304347826086, "protocol": "mpl-raw-greedy-768"}

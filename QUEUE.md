@@ -17,7 +17,7 @@ Legend: `done` | `running` | `armed` (launched, queued on the GPU lock) | `pendi
 | 7 | Architecture-family breadth (MiniCPM5, Nemotron-3, Ornith-1.5, GLM-4.7-Flash) | `.wrapup/run_m33.sh` | `.wrapup/m33_summary.jsonl` | armed | Tier 5A; 4 models × cpp+py = 8; GLM-4.7-Flash-UD-Q3_K_XL is the only download |
 | 8 | Third-party ternary/1-bit family (generalise off-curve beyond Bonsai) | `.wrapup/run_m34.sh` | `.wrapup/m34_summary.jsonl` | armed | "TernaryQuench" is NOT on ModelScope (searched 2026-10-06) → probes it, falls back to Ternary-Bonsai-2-27B PTQ1_0/PQ2_0; load-gated |
 | 9 | Sub-2-bit model sweep | `.wrapup/run_m35.sh` | `.wrapup/m35_summary.jsonl` | armed | Bonsai-4B-Q2_0_g64 (new size point), Bonsai-27B-Q1_0, Qwen3.5-35B-A3B-IQ1_M = 3 × cpp+py = 6 |
-| 10 | Ternary Bonsai on other multi-turn types (miss_func / miss_param) | `.wrapup/run_m36.sh` | `.wrapup/m36_summary.jsonl` | armed | BFCL, handler `Qwen/Qwen3-1.7B-FC`, temp 0, `-c 196608 -np 2`; 2 categories |
+| 10 | 🆕ARMED Ternary Bonsai on other multi-turn types (miss_func / miss_param) — **repaired** | `.wrapup/run_m36.sh` | `.wrapup/m36_summary.jsonl` | armed | First run FAILed with 2 nulls: `bfcl evaluate` aborted on a row-count mismatch. Root cause was **truncated generation** (74/200 and 127/200 rows in `.wrapup/m36.log` — miss_func/miss_param are the slowest categories; the 2 h `GEN_TO` was too short), not the model. Fix: tool-call preflight first (`m32_preflight.sh`), ctx `-c 131072 -np 2` (65536/slot, as m22; the old `-c 196608` OOM'd once) w/ `FALLBACK_CTX=98304`, `GEN_TO=18000`, and `PARTIAL_EVAL=1` so a subset still yields a real `accuracy` + `n`. Re-armed behind the queue (`.wrapup/arm_m36_after_queue.sh`, log `.wrapup/m36_arm.log`) and as NEXT_DRIVER step N0 |
 | 11 | Tier 1A expert-wise precursor: MoE scheme at matched size | `.wrapup/run_m37.sh` | `.wrapup/m37_summary.jsonl` | armed | Qwen3.6-35B-A3B `UD-Q3_K_XL` 17.23 GB vs `Q3_K_M` 17.12 GB, both on disk = 4 rows |
 | 12 | Tier 5B statistical power: MultiPL-E java+js for 2 anchors | `.wrapup/run_m38.sh` | `.wrapup/m38_summary.jsonl` | armed | Qwen3.5-2B Q2/Q3 × {java,js} = 4; doubles items on the Q2→Q3 code step |
 | 13 | ✅DONE Second ternary family: GLM-4.7-Flash-UD-TQ1_0 | `.wrapup/run_m39.sh` | `.wrapup/m39_summary.jsonl` | done | 4 rows; + in-family UD-Q2_K_XL reference; load-gated (TQ1_0 = ggml type 35) |
@@ -27,6 +27,24 @@ Legend: `done` | `running` | `armed` (launched, queued on the GPU lock) | `pendi
 | 17 | 🆕ARMED Tier-2C provenance recovery: rebuild `m26_summary.jsonl` from the existing 2026-10-02 evals | `.wrapup/run_m43.sh` | `.wrapup/m26_summary.jsonl` | armed | **CPU-only, 0 GPU**; 8 rows (gemma-4-26B-A4B MoE vs Qwen3.8-27B dense, Q2/Q3, chat protocol); no re-run |
 | 18 | 🆕ARMED Compute-precision probe: is `-fa on/off` a real manipulation? (fixes m29) | `.wrapup/run_m44.sh` | `.wrapup/m44_summary.jsonl` | armed | 6 rows; diffs greedy text between cells BEFORE any score is trusted; `faon_q8` is the positive control |
 | 19 | 🆕ARMED Tier 5A/2B: LFM2.5-8B-A1B (Liquid MoE) Q2/Q3 — new family | `.wrapup/run_m45.sh` | `.wrapup/m45_summary.jsonl` | armed | 4 rows; 8B total / 1B active, both files on disk |
+
+## Successor queue (runs when QUEUE_DRIVER.sh hands over to NEXT_DRIVER.sh)
+
+The current driver ends after #19; `NEXT_DRIVER.sh` is the successor it `exec`s (already probed at
+its tail). It holds the inherited GPU lock, runs each step under `locked()` (no nested `flock`
+deadlock), is idempotent, never stops on failure, and logs START/DONE/FAIL/SKIP to
+`.wrapup/NEXT_DRIVER.log`. Entries below are **new axes not covered by #1..#19**.
+
+| # | panel | script | summary | state | note |
+|---|---|---|---|---|---|
+| 20 (N0) | 🔧ARMED m36 repair — Bonsai miss_func/miss_param (see #10) | `.wrapup/run_m36.sh` | `.wrapup/m36_summary.jsonl` | armed | preflight + `--partial-eval` + larger `GEN_TO`; also armed as a standalone watchdog (`.wrapup/arm_m36_after_queue.sh`) |
+| 21 (N1) | 🆕ARMED **m50** imatrix-vs-K at **matched file size** (does IQ buy score per byte?) | `.wrapup/run_m50.sh` | `.wrapup/m50_summary.jsonl` | armed | BRAINSTORM 1B; Qwen3.5-4B IQ3_XXS 1859 MB vs Q2_K_XL 1851 MB (0.4%), Qwen3.5-2B IQ3_XXS 889 MB vs Q2_K_XL 922 MB (3.5%); 4 models × cpp+py = 8 rows |
+| 22 (N2) | 🆕ARMED **m51** gemma-4-12B java+js — third-family multilingual-code anchor | `.wrapup/run_m51.sh` | `.wrapup/m51_summary.jsonl` | armed | Tier 5B/5C power on a new architecture family; gemma-4-12b Q2/Q3 × {java,js} = 4 rows |
+| 23 (N3) | 🆕ARMED **m52** decode speed vs prompt type + MTP spec-draft length curve | `.wrapup/run_m52.sh` | `.wrapup/m52_summary.jsonl` | armed | BRAINSTORM 4B; records tokens/s (prefill+decode) for code vs prose on gemma-4-12B-Q3 + Qwen3.5-9B-Q3, then `--spec-draft-n-max {2,4,6}` with `mtp-gemma-4-12B-it.gguf` if it loads; ≤10 rows |
+| 24 (N4) | 🆕ARMED **m53** ModelScope ternary/1-bit search + load-gated probe | `.wrapup/run_m53.sh` | `.wrapup/m53_summary.jsonl` | armed | BRAINSTORM 1C; best-effort search logged to `m53_search.log`, then resolve+probe up to 2 curated new families (SKIP if unavailable) |
+
+Expected new work: N0 ≈ 3–8 h (27B, 2 slow categories, download-free), N1 ≈ 0.5 h (4B/2B),
+N2 ≈ 0.5 h, N3 ≈ 0.3 h, N4 ≈ 0–1 h (download-gated). Total ≈ 5–10 GPU-h.
 
 ## Armed driver
 

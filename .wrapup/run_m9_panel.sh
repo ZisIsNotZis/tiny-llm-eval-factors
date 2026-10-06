@@ -21,6 +21,12 @@ FALLBACK_CTX="${FALLBACK_CTX:-}"
 # file, and official `evaluate` then aborts with a length mismatch -> accuracy null).
 GEN_TO="${GEN_TO:-7200}"
 EVAL_TO="${EVAL_TO:-3600}"
+# PARTIAL_EVAL=1 adds `--partial-eval` to `bfcl evaluate`: if generation was truncated
+# (timeout / a slow 27B), evaluate scores the subset of ids present in the result file
+# instead of aborting on the row-count mismatch and writing a null accuracy. The row
+# count is recorded in the summary as `n`/`partial` so a subset score is never passed
+# off as a full-category number. Default off = unchanged behaviour for other panels.
+PARTIAL_EVAL="${PARTIAL_EVAL:-}"
 
 srv=""
 cleanup() { if [ -n "$srv" ]; then kill "$srv" 2>/dev/null; srv=""; fi; }
@@ -110,13 +116,16 @@ for cat in "${CL[@]}"; do
   fi
   echo "[$(date +%H:%M:%S)] eval $tag $cat" >> "$LOG"
   acc=$(REMOTE_OPENAI_BASE_URL=http://127.0.0.1:$PORT/v1 REMOTE_OPENAI_TOKENIZER_PATH=$TOK \
-    timeout "$EVAL_TO" $BFCL evaluate --model "$handler" --test-category "$cat" 2>&1 | tee -a "$LOG" \
+    timeout "$EVAL_TO" $BFCL evaluate --model "$handler" --test-category "$cat" \
+    ${PARTIAL_EVAL:+--partial-eval} 2>&1 | tee -a "$LOG" \
     | grep -oE "Accuracy: [0-9.]+%" | tail -1 | grep -oE "[0-9.]+")
+  proto='bfcl-official-multiturn-temp0'; [ -n "$PARTIAL_EVAL" ] && proto="$proto-partial"
   python3 -c "
 import json
 print(json.dumps({'model':'$tag','category':'$cat','handler':'$handler',
                   'accuracy':(float('$acc')/100.0 if '$acc' else None),
-                  'protocol':'bfcl-official-multiturn-temp0'}))" >> "$SUM"
+                  'n':int('${nres:-0}'),
+                  'protocol':'$proto'}))" >> "$SUM"
   echo "[$(date +%H:%M:%S)] DONE $tag $cat acc=$acc" >> "$LOG"
 done
 kill $srv 2>/dev/null; srv=""; sleep 3
