@@ -1,0 +1,4 @@
+{"model": "glm47flash-tq1", "lang": "cpp", "n": 161, "pass": 38, "score": 0.2360248447204969, "protocol": "mpl-raw-greedy-768"}
+{"model": "glm47flash-tq1", "lang": "py", "n": 161, "pass": 19, "score": 0.11801242236024845, "protocol": "mpl-raw-greedy-768"}
+{"model": "glm47flash-q2kxl", "lang": "cpp", "n": 161, "pass": 76, "score": 0.4720496894409938, "protocol": "mpl-raw-greedy-768"}
+{"model": "glm47flash-q2kxl", "lang": "py", "n": 161, "pass": 56, "score": 0.34782608695652173, "protocol": "mpl-raw-greedy-768"}

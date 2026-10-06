@@ -1,0 +1,4 @@
+{"model": "qwen2b-q2", "lang": "java", "n": 158, "pass": 19, "score": 0.12025316455696203, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen2b-q2", "lang": "js", "n": 161, "pass": 18, "score": 0.11180124223602485, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen2b-q3", "lang": "java", "n": 158, "pass": 34, "score": 0.21518987341772153, "protocol": "mpl-raw-greedy-768"}
+{"model": "qwen2b-q3", "lang": "js", "n": 161, "pass": 51, "score": 0.3167701863354037, "protocol": "mpl-raw-greedy-768"}

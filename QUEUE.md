@@ -37,10 +37,16 @@ about — the GPU then sat idle ~59 h. The driver above replaces the chain tail.
 
 ## OPEN RISKS
 
-* **#4/#5/#6 are being repaired and re-run** — armed 2026-10-06 10:30 as `.wrapup/chain_m32_m31_m30.sh`,
-  which queues on `/tmp/llama_gpu.lock` behind the running `QUEUE_DRIVER.sh`. The old m30/m31 summaries
-  are still on disk and still look complete to the driver's row-count idempotency check; the repaired
-  panels rewrite them in place (m31 now emits 30 rows, m30 12 rows with an added `prompt_tokens` field).
+* **#4/#5/#6 are being repaired and re-run** — runner is `.wrapup/run_fixes_after_driver.sh`
+  (it waits for `QUEUE_DRIVER.sh` to exit, then takes `/tmp/llama_gpu.lock` per panel). The driver
+  drained at 14:40, but the runner then stalled 14:40–16:16 on its "another panel still live" gate:
+  the old clause `pgrep -f "[l]lama-server .*-m /home/z/hf/"` matched **another project's**
+  long-lived `llama-server` (helpagent, serving a model from the shared `/home/z/hf/` model dir),
+  so the hf queue was idle behind a false positive. Replaced with a non-blocking `flock -n`
+  probe on `/tmp/llama_gpu.lock` (the real ground truth, since every panel runs under `gpu_locked.sh`)
+  and relaunched 2026-10-06 16:16. The old m30/m31 summaries are still on disk and still look
+  complete to the driver's row-count idempotency check; the repaired panels rewrite them in place
+  (m31 now emits 30 rows, m30 12 rows with an added `prompt_tokens` field).
 * **#6 (m32) was incomplete** — both rows `accuracy:null`, from a **2 h-truncated** `generate` (138/200 and
   49/200 result rows) plus 2 real ctx-overflows; official `evaluate` aborts on the row-count mismatch. Fixed
   as above; see OPERATIONS.md for the full diagnosis.

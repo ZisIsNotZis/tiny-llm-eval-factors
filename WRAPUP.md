@@ -79,14 +79,15 @@ Each point is a greedy run, which W1 shows is exactly deterministic, so these me
 
 ## 6. MultiPL-E resolution panel (the item-count fix)
 
-Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (124 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
+Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (150 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
 
 _(per-family ladders are in `MULTIPLE.md`; the headline is below)_
 
-**Cross-family `Q2→Q3` (the core effect): 13 model anchors, all sign-consistent, range -0.022 .. +0.344, mean +0.126.**
+**Cross-family `Q2→Q3` (the core effect): 14 model anchors, all sign-consistent, range -0.022 .. +0.344, mean +0.126.**
 
 | model anchor | Q2→Q3 | 95% CI |
 |---|---|---|
+| GLM-4.7-Flash | **+0.1273** | [+0.0969, +0.1578] |
 | LFM2.5-8B-A1B | **-0.0217** | [-0.0682, +0.0248] |
 | MiniCPM5-2B | **+0.3137** | [+0.2532, +0.3741] |
 | NVIDIA-Nemotron-3-Nano-4B | **+0.0186** | [-0.0563, +0.0936] |

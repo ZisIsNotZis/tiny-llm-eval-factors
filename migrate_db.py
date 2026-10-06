@@ -514,6 +514,26 @@ def ingest_m35(con):
                       "m35_summary.jsonl", model_map=M35_MODELS)
 
 
+M38_MODELS = {
+    "qwen2b-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+}
+M39_MODELS = {
+    "glm47flash-tq1": "GLM-4.7-Flash-UD-TQ1_0.gguf",
+    "glm47flash-q2kxl": "GLM-4.7-Flash-UD-Q2_K_XL.gguf",
+}
+
+
+def ingest_m38(con):
+    return ingest_mpl(con, ".wrapup/m38_summary.jsonl", "m38-statpower-javajs",
+                      "m38_summary.jsonl", model_map=M38_MODELS)
+
+
+def ingest_m39(con):
+    return ingest_mpl(con, ".wrapup/m39_summary.jsonl", "m39-glm-ternary",
+                      "m39_summary.jsonl", model_map=M39_MODELS)
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -691,6 +711,7 @@ def main():
         ("m22", ingest_m22), ("m27", ingest_m27), ("m28", ingest_m28),
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
         ("m33", ingest_m33), ("m35", ingest_m35),
+        ("m38", ingest_m38), ("m39", ingest_m39),
     ]
     tally = {}
     for label, tag, fn in ONCE:

@@ -40,9 +40,15 @@ fi
 
 # 2) Make sure no other panel is mid-flight before taking the lock (a successor
 #    driver would have been exec'd in place of QUEUE_DRIVER.sh).
+#    Ground truth for "a panel holds the GPU" is /tmp/llama_gpu.lock: every panel
+#    runs under gpu_locked.sh. Do NOT probe for llama-server processes by model
+#    path — other projects (e.g. /home/z/vibe/helpagent) serve models from
+#    /home/z/hf/ with a long-lived llama-server, which made the old
+#    `pgrep -f "[l]lama-server .*-m /home/z/hf/"` clause a permanent false
+#    positive (observed stalled 15:55-16:14 after the driver finished).
 while pgrep -f "[r]un_m[0-9].*\.sh" >/dev/null 2>&1 \
    || pgrep -f "[c]hain_.*\.sh" >/dev/null 2>&1 \
-   || pgrep -f "[l]lama-server .*-m /home/z/hf/" >/dev/null 2>&1; do
+   || ! flock -n /tmp/llama_gpu.lock true >/dev/null 2>&1; do
   echo "[fixes] another panel still live, waiting $(date)" >> "$LOG"
   sleep 60
 done
