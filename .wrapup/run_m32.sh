@@ -13,18 +13,33 @@
 #   on a malformed model turn; they are still written as result rows and count
 #   towards the 200, so they are NOT the cause (m22 scored 0.695 with the same 10).
 #
-# FIX: size the per-slot context from the observed prompt lengths (SSOT 3.4) and
-# give `generate` enough wall-clock to finish all 200 rows.
-#   * multi_turn_base  : prompts reach ~6.3k tokens -> -c 32768 -np 2 = 16 384/slot.
-#   * multi_turn_long_context: observed 117 648-token prompt -> -c 262144 -np 2
-#     = 131 072/slot (the model's own window is 262 144).
-#   * GEN_TO raised per category (4 h / 10 h); run_m9_panel now logs the result-row
-#     count so a truncated generation is visible instead of silently null.
+# WHY THE 2026-10-06 RE-RUN ALSO ABORTED (m32b, `SERVER FAIL`):
+#   .wrapup/m32_preflight.sh started its capability server at `-c 262144 -np 2`
+#   (131 072 tokens/slot) to cover the long-context category. On this 24 GB GPU,
+#   shared with a foreign llama-server (`/home/z/vibe/helpagent`, :8834, ~3.9 GB,
+#   NOT ours) over the 7.58 GB 27B-Q2 weights, the server could not allocate its
+#   compute buffers and died with `cudaMalloc failed: out of memory` before any
+#   tool call was sent. The preflight therefore saw no server and the panel
+#   aborted. It was a server-start/VRAM problem, NOT a capability zero:
+#   an earlier worker had already seen a successful Bonsai tool-call preflight.
+#
+# FIX (this version):
+#   * m32_preflight.sh now starts its server light and steps the context DOWN
+#     (32768 -> 16384 -> 8192 at NP=1), prints the llama-server log tail on
+#     failure, and only runs the two tool-call checks after `/health` is ok.
+#   * This launcher retries the whole preflight once at an even smaller ladder
+#     (16384 -> 8192 -> 4096) before giving up, and on a second failure writes
+#     .wrapup/m32_BLOCKED.md (with the server log tail) instead of a null row.
+#   * multi_turn_base runs at the reduced footprint requested for this GPU
+#     (-c 65536 -np 1, fallback 32768 if 65536 cannot allocate).
+#   * multi_turn_long_context is NOT run: its prompts reach ~117 648 tokens,
+#     needing >~16 GB of q8_0 KV on top of the 7.6 GB model, i.e. more than this
+#     GPU has free while the foreign server holds ~3.9 GB. It is recorded as
+#     BLOCKED-on-VRAM (a note), never as a null accuracy row.
 #
 # Dialect matches m9/m22 exactly (SSOT 3.3): official bfcl-eval, native-FC handler
 # Qwen/Qwen3-1.7B-FC (qwen_fc manual <tool_call> format over /v1/completions),
-# temperature 0. m32_preflight.sh first proves the model really emits tool calls,
-# both natively (tools=) and in the exact qwen_fc manual format.
+# temperature 0.
 #
 # Must run under the GPU flock (the chain does this):
 #   bash gpu_locked.sh bash run_m32.sh
@@ -39,26 +54,45 @@ echo "=== M32 start $(date) ===" > "$LOG"
 rm -f "$SUM"
 
 # 1. capability preflight: does the ternary 27B emit a real tool call at all?
-echo "[$(date +%H:%M:%S)] M32 preflight (native tools= + qwen_fc manual format)" >> "$LOG"
-bash "$W/m32_preflight.sh" >> "$LOG" 2>&1
+#    The preflight owns its own server lifecycle (light ctx + log tail on fail);
+#    two attempts are made because a transient co-tenant can steal the VRAM.
+preflight_once() {  # ctx_list
+  M32_PREFLIGHT_PORT=8132 CTX_LIST="$1" bash "$W/m32_preflight.sh" >> "$LOG" 2>&1
+}
+echo "[$(date +%H:%M:%S)] M32 preflight attempt 1 (native tools= + qwen_fc manual format)" >> "$LOG"
+preflight_once "32768 16384 8192"
 if ! grep -q NATIVE_TOOL_CALL_OK "$LOG" || ! grep -q MANUAL_TOOL_CALL_OK "$LOG"; then
-  echo "[$(date +%H:%M:%S)] M32 ABORT: preflight did not produce a real tool call" >> "$LOG"
+  echo "[$(date +%H:%M:%S)] M32 preflight attempt 1 failed; retrying at reduced footprint" >> "$LOG"
+  preflight_once "16384 8192 4096"
+fi
+if ! grep -q NATIVE_TOOL_CALL_OK "$LOG" || ! grep -q MANUAL_TOOL_CALL_OK "$LOG"; then
+  {
+    echo "# m32 — BLOCKED-on-VRAM $(date)"
+    echo
+    echo "Two tool-call preflight attempts failed: the Ternary-Bonsai-27B-Q2 server"
+    echo "could not come up (7.58 GB weights + KV/compute buffers on a 24 GB GPU"
+    echo "shared with the foreign helpagent llama-server :8834, ~3.9 GB, which is"
+    echo "NOT ours and was left alone). No tool call was ever sent, so this is a"
+    echo "server-start/VRAM block, NOT a capability 0. No accuracy row was written."
+    echo
+    echo "## llama-server log tail (m32_preflight.log)"
+    echo '```'
+    tail -n 40 "$W/m32_preflight.log" 2>/dev/null || echo "(no preflight log)"
+    echo '```'
+  } > "$W/m32_BLOCKED.md"
+  echo "[$(date +%H:%M:%S)] M32 ABORT: preflight did not produce a real tool call (BLOCKED-on-VRAM; see m32_BLOCKED.md)" >> "$LOG"
   echo "=== M32 end rc=1 $(date) ===" >> "$LOG"
   exit 1
 fi
 
-# 2. multi_turn_base — short prompts, small ctx so the run is fast.
-echo "[$(date +%H:%M:%S)] M32 category multi_turn_base ctx=32768 np=2" >> "$LOG"
-CTX=32768 NP=2 GEN_TO=14400 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
+# 2. multi_turn_base — short prompts (~6.3k tokens), reduced-footprint server so
+#    the run fits alongside the foreign server (SSOT 3.4, per-slot ctx).
+echo "[$(date +%H:%M:%S)] M32 category multi_turn_base ctx=65536 np=1" >> "$LOG"
+CTX=65536 FALLBACK_CTX=32768 NP=1 GEN_TO=14400 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
   bash "$W/run_m9_panel.sh" bonsai-q2g64 "$MODEL" "$HANDLER" multi_turn_base
 
-# 3. multi_turn_long_context — ~117k-token prompts need 131 072 tokens/slot.
-#    If the model cannot allocate -c 262144 (e.g. another process is holding GPU
-#    memory), fall back to -c 196608 (98 304/slot); the two >98k prompts then fail
-#    as error ROWS (which still count towards 200), so the official eval still runs.
-echo "[$(date +%H:%M:%S)] M32 category multi_turn_long_context ctx=262144 np=2" >> "$LOG"
-CTX=262144 FALLBACK_CTX=196608 NP=2 GEN_TO=36000 EVAL_TO=3600 LOG="$LOG" SUM="$SUM" \
-  bash "$W/run_m9_panel.sh" bonsai-q2g64 "$MODEL" "$HANDLER" multi_turn_long_context
+# 3. multi_turn_long_context: recorded as BLOCKED-on-VRAM, not run (see header).
+echo "[$(date +%H:%M:%S)] M32 long_context BLOCKED-on-VRAM (~117k-token prompts need >16 GB KV on top of 7.6 GB weights) - skipped" >> "$LOG"
 
 echo "=== M32 end $(date) ===" >> "$LOG"
 echo "--- m32_summary.jsonl ---" >> "$LOG"

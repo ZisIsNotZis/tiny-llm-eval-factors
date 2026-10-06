@@ -13,23 +13,39 @@ Legend: `done` | `running` | `armed` (launched, queued on the GPU lock) | `pendi
 | 3 | MERGED into #11 (Tier 1A expert-wise precursor) | — | `.wrapup/m37_summary.jsonl` | done | a matched-size pair exists on disk (no ≤15 GB download needed) |
 | 4 | 🔧ARMED KV-quant × **input length** grid (K vs V asymmetry) — repaired | `.wrapup/run_m30.sh` | `.wrapup/m30_summary.jsonl` | armed | old 12 rows were a **null by construction** (short prompts, only the allocated `-c` moved); now each prompt is padded to just under the target ctx with other HumanEval prompts+solutions (`m30_build_pad.py`), 12 cells × 60 items, `prompt_tokens` recorded |
 | 5 | 🔧ARMED Sampling × quant, top_k widened — repaired | `.wrapup/run_m31.sh` | `.wrapup/m31_summary.jsonl` | armed | old K {20,40,64} was **inside the noise** at temp 0.3 (2–4/161 completions differ, pass@1 identical); now K {1,20,40,64,200} at temp 0.3 seed 1234, 2B Q2/Q3/Q4 × cpp+py |
-| 6 | 🔧ARMED Ternary Bonsai multi-turn + long-context — repaired | `.wrapup/run_m32.sh` | `.wrapup/m32_summary.jsonl` | armed | was FAILED: both `accuracy:null` because the 2 h `timeout` truncated `generate` (138/200, 49/200) and official `evaluate` aborts on the row-count mismatch. Now a tool-call preflight + per-slot ctx from observed lengths (`-c 32768` base, `-c 262144`[fallback 196608] long) + `GEN_TO` 4 h/10 h |
+| 6 | 🔧ARMED Ternary Bonsai multi-turn (base) — repaired | `.wrapup/run_m32.sh` | `.wrapup/m32_summary.jsonl` | armed | FAILED twice: (1) both `accuracy:null` from a 2 h-truncated `generate` (138/200, 49/200) + official `evaluate` aborting on the row-count mismatch; (2) `SERVER FAIL` because `m32_preflight.sh` started its server at `-c 262144` and OOM'd (`cudaMalloc failed: out of memory`) while the foreign helpagent server (:8834) was co-resident, so no tool call was ever sent. Fixed: preflight now steps ctx down (32768→16384→8192, NP=1) with the server log tail printed on failure; after two attempts it writes `.wrapup/m32_BLOCKED.md` instead of a null row. `run_m32.sh` runs only `multi_turn_base` at `-c 65536 -np 1` (fallback 32768); `multi_turn_long_context` (~117k-token prompts, >16 GB KV) recorded BLOCKED-on-VRAM. Re-armed behind m31/m30b via `.wrapup/arm_m32_after_fixes.sh` |
 | 7 | Architecture-family breadth (MiniCPM5, Nemotron-3, Ornith-1.5, GLM-4.7-Flash) | `.wrapup/run_m33.sh` | `.wrapup/m33_summary.jsonl` | armed | Tier 5A; 4 models × cpp+py = 8; GLM-4.7-Flash-UD-Q3_K_XL is the only download |
 | 8 | Third-party ternary/1-bit family (generalise off-curve beyond Bonsai) | `.wrapup/run_m34.sh` | `.wrapup/m34_summary.jsonl` | armed | "TernaryQuench" is NOT on ModelScope (searched 2026-10-06) → probes it, falls back to Ternary-Bonsai-2-27B PTQ1_0/PQ2_0; load-gated |
 | 9 | Sub-2-bit model sweep | `.wrapup/run_m35.sh` | `.wrapup/m35_summary.jsonl` | armed | Bonsai-4B-Q2_0_g64 (new size point), Bonsai-27B-Q1_0, Qwen3.5-35B-A3B-IQ1_M = 3 × cpp+py = 6 |
 | 10 | Ternary Bonsai on other multi-turn types (miss_func / miss_param) | `.wrapup/run_m36.sh` | `.wrapup/m36_summary.jsonl` | armed | BFCL, handler `Qwen/Qwen3-1.7B-FC`, temp 0, `-c 196608 -np 2`; 2 categories |
 | 11 | Tier 1A expert-wise precursor: MoE scheme at matched size | `.wrapup/run_m37.sh` | `.wrapup/m37_summary.jsonl` | armed | Qwen3.6-35B-A3B `UD-Q3_K_XL` 17.23 GB vs `Q3_K_M` 17.12 GB, both on disk = 4 rows |
 | 12 | Tier 5B statistical power: MultiPL-E java+js for 2 anchors | `.wrapup/run_m38.sh` | `.wrapup/m38_summary.jsonl` | armed | Qwen3.5-2B Q2/Q3 × {java,js} = 4; doubles items on the Q2→Q3 code step |
-| 13 | Second ternary family: GLM-4.7-Flash-UD-TQ1_0 | `.wrapup/run_m39.sh` | `.wrapup/m39_summary.jsonl` | armed | + in-family UD-Q2_K_XL reference; load-gated (TQ1_0 = ggml type 35) |
+| 13 | ✅DONE Second ternary family: GLM-4.7-Flash-UD-TQ1_0 | `.wrapup/run_m39.sh` | `.wrapup/m39_summary.jsonl` | done | 4 rows; + in-family UD-Q2_K_XL reference; load-gated (TQ1_0 = ggml type 35) |
+| 14 | 🆕ARMED Ternary generalisation: third-party **quantisers** (dealignai CRACK gen-1/gen-2) | `.wrapup/run_m40.sh` | `.wrapup/m40_summary.jsonl` | armed | Tier 1C/a; 2 rows per candidate that loads (ModelScope search 2026-10-06 found no other cross-architecture ternary); load-gated (gen-2 Prism/CRACK layout = ggml type 142, build 4399 rejects it, m34.log) |
+| 15 | 🆕ARMED Partial-credit (T2 testfrac) for ternary vs conventional — fails *fewer* or *different* tests? | `.wrapup/run_m41.sh` | `.wrapup/m41_summary.jsonl` | armed | **CPU-only, 0 GPU**; per-file, cached; ≥10 rows over the ternary arms (m21/mt1 Bonsai, m35 1-bit/IQ1_M, m39 TQ1_0) + their conventional refs |
+| 16 | 🆕ARMED Tier 5B power, step 2: MultiPL-E **rust+ruby** for Qwen3.5-2B Q2/Q3 | `.wrapup/run_m42.sh` | `.wrapup/m42_summary.jsonl` | armed | 4 rows; Q2→Q3 item count 644→966; rustc+ruby present, prompts present |
+| 17 | 🆕ARMED Tier-2C provenance recovery: rebuild `m26_summary.jsonl` from the existing 2026-10-02 evals | `.wrapup/run_m43.sh` | `.wrapup/m26_summary.jsonl` | armed | **CPU-only, 0 GPU**; 8 rows (gemma-4-26B-A4B MoE vs Qwen3.8-27B dense, Q2/Q3, chat protocol); no re-run |
+| 18 | 🆕ARMED Compute-precision probe: is `-fa on/off` a real manipulation? (fixes m29) | `.wrapup/run_m44.sh` | `.wrapup/m44_summary.jsonl` | armed | 6 rows; diffs greedy text between cells BEFORE any score is trusted; `faon_q8` is the positive control |
+| 19 | 🆕ARMED Tier 5A/2B: LFM2.5-8B-A1B (Liquid MoE) Q2/Q3 — new family | `.wrapup/run_m45.sh` | `.wrapup/m45_summary.jsonl` | armed | 4 rows; 8B total / 1B active, both files on disk |
 
 ## Armed driver
 
-`.wrapup/QUEUE_DRIVER.sh` (armed 2026-10-06; log `.wrapup/QUEUE_DRIVER.log`). It waits for
-any running panel to drain, then runs **#7 → #8 → #9 → #10 → #11 → #12 → #13**, each inside its
-own `bash gpu_locked.sh …`. Per-step states are logged `START` / `DONE` / `FAIL` / `SKIP`, and a
-failed step never stops the driver. It is **idempotent**: a step whose summary already has its
-expected rows (and, for BFCL, zero `accuracy:null`) is skipped, so re-running after a crash resumes
-in place. Expected 17–20 h total (dominated by the 27B/35B ternary + MoE panels).
+`.wrapup/QUEUE_DRIVER.sh` (re-armed 2026-10-06 19:20; log `.wrapup/QUEUE_DRIVER.log`). It waits
+for any running panel **and `run_fixes_after_driver.sh`** to drain, then runs **#7 → … → #19**, each
+GPU step inside its own `bash gpu_locked.sh …`; #15 and #17 are CPU-only and run *without* the lock
+(they start no server, so holding the lock would only stall the GPU steps). Per-step states are
+logged `START` / `DONE` / `FAIL` / `SKIP`, and a failed step never stops the driver. It is
+**idempotent**: a step whose summary already has its expected rows (and, for BFCL, zero
+`accuracy:null`) is skipped, so re-running after a crash resumes in place.
+
+The re-arm of 2026-10-06 fixes the false-positive idle gate: `wait_for_gpu_idle` no longer probes
+`llama-server` by model path (another project serves models from `/home/z/hf/`), it probes
+`flock -n /tmp/llama_gpu.lock` (the real ground truth) plus the running panel names. #8/#10/#11 had
+logged `FAIL (0 rows)` on the 14:40 drain, so the re-armed driver retries them before the new
+entries — that is the idempotent-resume behaviour, not a duplicate run.
+
+Expected new work: #14 ~0.5–1 h (download-gated), #16 ~0.5 h, #18 ~0.5 h, #19 ~1 h, #15 ~0.5 h CPU,
+#17 <1 min CPU. Total ≈ 3–4 GPU-h, ≈ 0.5 CPU-h.
 
 The previous chain `.wrapup/run_m32_30_31_chain.sh` is complete; it ended 2026-10-03 23:21 with a
 STOP banner because #7–#9 had no scripts. That STOP is exactly the anti-idle failure SSOT 6b warns
@@ -48,11 +64,28 @@ about — the GPU then sat idle ~59 h. The driver above replaces the chain tail.
   complete to the driver's row-count idempotency check; the repaired panels rewrite them in place
   (m31 now emits 30 rows, m30 12 rows with an added `prompt_tokens` field).
 * **#6 (m32) was incomplete** — both rows `accuracy:null`, from a **2 h-truncated** `generate` (138/200 and
-  49/200 result rows) plus 2 real ctx-overflows; official `evaluate` aborts on the row-count mismatch. Fixed
-  as above; see OPERATIONS.md for the full diagnosis.
+  49/200 result rows) plus 2 real ctx-overflows; official `evaluate` aborts on the row-count mismatch. The
+  2026-10-06 retry then hit `SERVER FAIL`: the preflight server (`-c 262144`) OOM'd against the foreign
+  helpagent server, so no tool call was sent. Fixed: light preflight (ctx stepped down + log tail) and
+  `multi_turn_base`-only at `-c 65536 -np 1`; long_context is BLOCKED-on-VRAM. Re-armed via
+  `.wrapup/arm_m32_after_fixes.sh` (waits for m31/m30b, then takes the lock). See OPERATIONS.md for the full diagnosis.
 * **#8 name resolution** — "TernaryQuench-Qwen3.8-27B" was not found on ModelScope; #8 uses the
   nearest third-party ternary/1-bit family (Ternary-Bonsai-2-27B PTQ1_0/PQ2_0). If it fails the
   load gate (newer ggml tensor types, BACKLOG B1a) the step logs SKIP and the driver continues.
+
+* **Tier 2C was measured but never ingested.** `run_m26.sh` (gemma-4-26B-A4B MoE vs
+  Qwen3.8-27B dense, Q2/Q3, `mpl-chat-nothink-greedy-768`) completed 2026-10-02; its raw
+  completions and `_eval.json` files are in `.wrapup/mres/m26-*`, but `m26_summary.jsonl` is
+  empty and no `m26` rows are in the DB. #17 rebuilds the summary (CPU); the integrator still has
+  to ingest it. Until then the 2C claim is unquotable.
+* **Ternary families are scarce on ModelScope.** A 2026-10-06 search for `ternary`/`TQ1_0`/`TQ2_0`
+  found only Bonsai-derived builds (prism-ml + re-uploads) and the unsloth GLM build already in #13;
+  the one cross-architecture TQ1_0 (`nohurry/Qwen3.5-397B-A17B`, 95 GB) is out of host budget.
+  #14 therefore varies the *quantiser* vendor on a fixed Bonsai base, which is the strongest
+  available test of whether the off-curve residual is scheme-level or vendor-level.
+* **m29 (compute precision) is suspect** — its fa on/off cells were flagged as a possible
+  non-measurement. #18 probes the manipulation directly (byte-diff of greedy text) before any score
+  is trusted; `faon_q8` (V-cache quant) is the positive control. Read #18 before quoting m29.
 
 ## Standing rules
 
