@@ -70,8 +70,8 @@ run_step mpl  "N4 m53 ModelScope ternary/1-bit search + probe" \
 # ternary Bonsai multi-turn_base, repaired with preflight + --partial-eval).
 run_step mpl  "N5 m44 compute-precision probe (repair: probe ctx 4096->16384)" \
               "$W/run_m44.sh" "$W/m44_summary.jsonl" 6
-run_step bfcl "N6 m32 ternary Bonsai multi-turn base (repair, 1/2 rows)" \
-              "$W/run_m32.sh" "$W/m32_summary.jsonl" 2
+# N6 (m32 multi-turn_base) was moved to NEXT_DRIVER2.sh as step E7 (last): it has
+# failed three times at 1/2 rows, so it must not sit in front of the new entries.
 
 if [ -f "$W/NEXT_DRIVER2.sh" ]; then
   echo "[next] handing over to NEXT_DRIVER2.sh $(date)" >> "$LOG"

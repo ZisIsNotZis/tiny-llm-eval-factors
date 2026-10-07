@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 34 | 32% |
-| underpowered | 10 | 10% |
+| resolved | 35 | 33% |
+| underpowered | 9 | 8% |
 | noise_level | 5 | 5% |
 | unauditable | 8 | 8% |
 | model_fit | 16 | 15% |
-| qualitative | 32 | 30% |
+| qualitative | 33 | 31% |
 
-## resolved (34)
+## resolved (35)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -84,8 +84,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.5500 >= MDE 0.108 at n=1_
 - Δ=0.236 — **[VERIFIED, m38/m39] The Q2->Q3 code deficit replicates on two more languages, and a second vendor's ternary does NOT sit above the bits->score curve.** `m38-statpower-javajs` (Qwen3.5-2B `UD-Q2_K_XL`/`UD-Q3_K_XL`, java/js, 158-161 items/lang, greedy): q2 java **0.120** js **0.112** -> q3 java **0.215** js **0.317** (Q2->Q3 step **+0.095** java / **+0.205** js, both above the ~±0.03 axis floor). `m39-glm-ternary` (GLM-4.7-Flash, cpp/py, 161 items): `UD-TQ1_0` (ternary, 8.33 GB) cpp **0.236** / py **0.118** vs its own `UD-Q2_K_XL` reference (11.89 GB) cpp **0.472** / py **0.348** — i.e. **−0.236 / −0.230** at *fewer* bits, so unlike the Bonsai co-designed ternary (m21/m24/m35) this TQ1_0 family is clearly *below* its Q2 reference and the off-curve effect does not generalise to a scheme-only ternary conversion. Ingested as `run_tag='m38-statpower-javajs'` (4 rows) and `'m39-glm-ternary'` (4 rows), DB 2171 -> 2197, `integrity ok | fk issues 0`. **FLAG (m29 — harness non-measurement, NOT a null on FA/V-cache):** the m29 "FA on/off × V-cache" panel measured nothing on its FA axis — `faon_f16` and `faoff_f16` are byte-identical in all 4 model×language cells (q2 cpp 18/161, q2 py 21/161, q3 cpp 42/161, q3 py 44/161) — and its 24-line summary repeats its first 12 rows verbatim; the panel also has **0 rows in the DB** (`ingest_m29` passes no model map, so its keys `q2`/`q3` are filtered out against `MPL_MODELS`). Do not read m29 as an FA or V-cache null.
   - _|Δ|=0.2360 >= MDE 0.108 at n=1_
+- Δ=0.168 — **[METHOD, m26/m44 — kept science] Two precision axes are non-measurements or inert, not nulls.** The `gemma-4-26B-A4B` chat cells are a harness floor (`py` 0.00 at both Q2 and Q3; `cpp` byte-identical 134/161 across Q2/Q3), so they are a non-measurement, not a MoE null — the `Qwen3.8-27B` dense rows in the same panel are sane (0.217/0.652 -> 0.484/0.814). The `-fa` (flash-attn) probe: on->off is a **real** manipulation for `Qwen3.5-2B` **Q2** (1/3 greedy prompts change, matching the V-cache-q8 positive control at 1/3) but a **no-op for Q3** (0/3) — so m29's `-fa` main effect is an unmeasured axis at Q3 and must not be quoted there.
+  - _|Δ|=0.1680 >= MDE 0.108 at n=1_
 
-## underpowered (10)
+## underpowered (9)
 
 - Δ=0.0488 — On unseen-architecture `NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL` under fixed controls (`ctx2048`, `q8_0/q8_0`, no-MTP), `top_k:40->20` decreases plus score on both datasets (Humaneval `-0.0061`, MBPP `-0.0317`) with small wall-time increases, and `reasoning off->on` decreases plus score on both datasets (Humaneval `-0.0488`, MBPP `-0.0265`) with large wall-time penalties (Humaneval `+288.7s`, MBPP `+473.3s`).
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
@@ -105,8 +107,6 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0994 < MDE 0.108 at n=1_
 - Δ=0.056 — **[VERIFIED, m50 replicated] At MATCHED FILE SIZE, the imatrix scheme beats the K-quant scheme: `IQ3_XXS` > `Q2_K_XL` by +0.056 (95% CI [+0.008, +0.104]).** Two anchors x two languages, all four cells in the same direction: 2B `0.180/0.199` vs `0.112/0.137`; 4B `0.379/0.410` vs `0.342/0.354`. Because the files are size-matched (4B: 1858.7 vs 1850.9 MB = 0.42%; 2B: 888.7 vs 921.8 MB = 3.6%), this isolates the **scheme** from the bit budget — the first clean evidence in this study that *how* you quantise matters as much as *how much*. Note it also means the conventional "bit level" label (Q2 vs Q3) is not a like-for-like comparison across schemes.
   - _|Δ|=0.0560 < MDE 0.108 at n=1_
-- Δ=0.0994 — **[HARNESS, m54] gemma-4-12B under the raw protocol is also at the floor on rust/ruby — the same output-format artefact as m51, NOT a Q2->Q3 null.** `gemma12b-q2` rs **0.0065** (1/155 pass) / rb **0.0000** (0/161); `gemma12b-q3` rs **0.0000** (0/155) / rb **0.0000** (0/161) — ingested as `run_tag='m54-gemma-rust-ruby'` (4 rows). The cells are *not* byte-identical across the quant axis (Q2 rs passes 1 item, Q3 rs passes 0), so the variable did move, but at <=1/161 the panel is at the measurement floor and carries no Q2->Q3 information. Positive control for the same languages and harness: `Qwen3.5-2B` (m42) scores rs 0.0645->0.1613 and rb 0.0062->0.1056, so the floor is a gemma-4 formatting artefact, consistent with the m51 flag; gemma-4 stays excluded from cross-language claims until a guarded chat protocol is validated.
-  - _|Δ|=0.0994 < MDE 0.108 at n=1_
 
 ## noise_level (5)
 
@@ -175,7 +175,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (32)
+## qualitative (33)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -235,10 +235,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _no numeric contrast in the claim_
 - — **[VERIFIED, m36] The ternary off-curve advantage extends to the error-handling agentic categories.** `Ternary-Bonsai-27B-Q2_g64` (2.25 bpw) scores `multi_turn_miss_func` **0.515** (n=200, partial-eval) — versus `Qwen3.5-2B Q3` (4 bpw) at **0.080** and no dense anchor above 0.42. Combined with its `multi_turn_base` 0.695/0.700, the ternary model is at or above the top of every multi-turn axis we have measured, at roughly half the bytes of the conventional quants it beats.
   - _no numeric contrast in the claim_
-- — **[INTEGRATED + FLAG, N1–N3] N1–N3 panels ingested (m50/m51/m52); the m52 MTP draft sweep measured nothing.** `m50-imatrix-vs-k` (8 rows), `m51-gemma-java-js` (4 rows) and `m52-speed` (10 rows) are now in the DB. Sanity flag per RESEARCH_METHOD 5b: in `m52`, decode tok/s on `gemma-4-12b-it-UD-Q3_K_XL` is flat across `draft_n ∈ {0,2,4,6}` (90.38 / 90.47 / 90.45 / 90.02 tok/s) — the spec-draft-length variable moved nothing, so MTP speculative decoding was **not engaged**; report this as a harness finding to investigate, NOT as a null on draft length. GPU re-armed with `m54` (gemma-4-12B rust+ruby) at 13:2x after NEXT_DRIVER drained N0–N4 at 12:33 and left the queue idle.
+- — **[NEW AXIS, m55 — suggestive, NOT significant] Expert-wise / mixed-precision allocation: starving the MoE experts and enriching the rest is nominally better *and* 25% smaller, but the difference is not yet resolvable.** Three recipes built with `llama-quantize --tensor-type 'ffn_(gate|up|down)_exps'` on `LFM2.5-8B-A1B` (66 expert tensors over 22 MoE layers), all load-gated, standard MultiPL-E panel (cpp+py, greedy):
   - _no numeric contrast in the claim_
-- — **[HARNESS, m51] gemma-4-12B under the raw protocol is not measurable on java/js (0.0/0.025 and 0.0/0.0).** Same failure mode as the earlier gemma python case: the model does not emit the language-conformant body the MultiPL-E harness needs, so the score is a formatting artifact. Do not read these as capability. gemma-4 remains excluded from cross-language claims until a guarded chat protocol is validated for it.
+- — uniform `Q3_K_M` — 4.108 GB — cpp 0.130 / py 0.031 (pooled 0.081)
   - _no numeric contrast in the claim_
-- — **[OPS, queue] The GPU was idle 21:09→22:14 (65 min) after `QUEUE_DRIVER.sh`+`NEXT_DRIVER.sh` drained; re-armed and re-ingested.** `.wrapup/NEXT_DRIVER.log` printed its terminal banner `N0..N6 drained. GPU now IDLE; add entries or re-arm.` at 2026-10-07 21:09:52 and nothing was waiting; the only live `llama-server` on the host (:8834, Spark-X2.5-4B) belongs to another project and is **not** a lock holder — `/tmp/llama_gpu.lock` was free (`flock -n` probe), which is why the driver's own `wait_for_gpu_idle` is the correct gate and a `pgrep llama-server` gate is not. `migrate_db.py` after re-arm refreshed the DB 2610→2664 rows from the drained panels (m36/m50/m51/m52/m54/m32 etc.), all 6 analyses + `build_wrapup.py` exit 0; DB backup `experiments.sqlite.bak25`. Outstanding: `m40`/`m53` summaries are 0 bytes (third-party-quantiser + ModelScope probes found no loadable candidate ⇒ SKIP, not a null), and `m32` remains 1/2 rows (`multi_turn_long_context` still BLOCKED-on-VRAM).
+- — **experts `Q2_K`, rest `Q5_K_M` — 3.089 GB — cpp 0.137 / py 0.068 (pooled 0.103)**
+  - _no numeric contrast in the claim_
+- — experts `Q4_K`, rest `Q2_K` — 4.745 GB — cpp 0.087 / py 0.050 (pooled 0.068)
   - _no numeric contrast in the claim_
 

@@ -1,0 +1,4 @@
+{"model": "nem4b-q2", "lang": "java", "n": 158, "pass": 59, "score": 0.37341772151898733, "protocol": "mpl-raw-greedy-768"}
+{"model": "nem4b-q2", "lang": "js", "n": 161, "pass": 13, "score": 0.08074534161490683, "protocol": "mpl-raw-greedy-768"}
+{"model": "nem4b-q3", "lang": "java", "n": 158, "pass": 64, "score": 0.4050632911392405, "protocol": "mpl-raw-greedy-768"}
+{"model": "nem4b-q3", "lang": "js", "n": 161, "pass": 24, "score": 0.14906832298136646, "protocol": "mpl-raw-greedy-768"}

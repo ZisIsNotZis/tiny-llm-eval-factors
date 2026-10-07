@@ -1,0 +1,3 @@
+{"tag": "lfm25-8a1b-m55-q3base", "file": "LFM2.5-8B-A1B-m55-Q3_K_M.gguf", "recipe": "uniform-Q3_K_M", "base": "Q3_K_M", "expert_type": "-", "size_bytes": 4108397920, "load": "PASS"}
+{"tag": "lfm25-8a1b-m55-exq2", "file": "LFM2.5-8B-A1B-m55-exq2.gguf", "recipe": "experts-cheap-rest-dear", "base": "Q5_K_M", "expert_type": "Q2_K", "size_bytes": 3088821600, "load": "PASS"}
+{"tag": "lfm25-8a1b-m55-exq4", "file": "LFM2.5-8B-A1B-m55-exq4.gguf", "recipe": "experts-dear-rest-cheap", "base": "Q2_K", "expert_type": "Q4_K", "size_bytes": 4744686944, "load": "PASS"}

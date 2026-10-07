@@ -1,0 +1,4 @@
+{"model": "orn9b-q4", "lang": "rs", "n": 155, "pass": 81, "score": 0.5225806451612903, "protocol": "mpl-raw-greedy-768"}
+{"model": "orn9b-q4", "lang": "rb", "n": 161, "pass": 73, "score": 0.453416149068323, "protocol": "mpl-raw-greedy-768"}
+{"model": "orn9b-q5", "lang": "rs", "n": 155, "pass": 85, "score": 0.5483870967741935, "protocol": "mpl-raw-greedy-768"}
+{"model": "orn9b-q5", "lang": "rb", "n": 161, "pass": 75, "score": 0.4658385093167702, "protocol": "mpl-raw-greedy-768"}

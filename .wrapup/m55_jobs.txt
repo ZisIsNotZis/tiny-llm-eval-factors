@@ -1,0 +1,3 @@
+lfm25-8a1b-m55-q3base	LFM2.5-8B-A1B-m55-Q3_K_M.gguf	uniform-Q3_K_M
+lfm25-8a1b-m55-exq2	LFM2.5-8B-A1B-m55-exq2.gguf	experts-cheap-rest-dear
+lfm25-8a1b-m55-exq4	LFM2.5-8B-A1B-m55-exq4.gguf	experts-dear-rest-cheap

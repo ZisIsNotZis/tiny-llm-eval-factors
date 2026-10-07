@@ -1,0 +1,4 @@
+{"model": "llama32-3b-q2", "lang": "cpp", "n": 161, "pass": 37, "score": 0.22981366459627328, "protocol": "mpl-raw-greedy-768-new-family"}
+{"model": "llama32-3b-q2", "lang": "py", "n": 161, "pass": 48, "score": 0.2981366459627329, "protocol": "mpl-raw-greedy-768-new-family"}
+{"model": "llama32-3b-q3", "lang": "cpp", "n": 161, "pass": 56, "score": 0.34782608695652173, "protocol": "mpl-raw-greedy-768-new-family"}
+{"model": "llama32-3b-q3", "lang": "py", "n": 161, "pass": 80, "score": 0.4968944099378882, "protocol": "mpl-raw-greedy-768-new-family"}

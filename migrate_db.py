@@ -775,6 +775,16 @@ def ingest_m36(con):
                            "m36_summary.jsonl")
 
 
+M55_MODELS = {"lfm25-8a1b-m55-q3base": "LFM2.5-8B-A1B-m55-Q3_K_M.gguf",
+              "lfm25-8a1b-m55-exq2": "LFM2.5-8B-A1B-m55-exq2.gguf",
+              "lfm25-8a1b-m55-exq4": "LFM2.5-8B-A1B-m55-exq4.gguf"}
+
+
+def ingest_m55(con):
+    return ingest_mpl(con, ".wrapup/m55_summary.jsonl", "m55-expertwise",
+                      "m55_summary.jsonl", model_map=M55_MODELS)
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -953,6 +963,7 @@ def main():
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
         ("m30", ingest_m30), ("m31", ingest_m31),
         ("m37", ingest_m37), ("m41", ingest_m41), ("m42", ingest_m42), ("m45", ingest_m45),
+        ("m55", ingest_m55),
         ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
         ("m54", ingest_m54), ("m26", ingest_m26), ("m44", ingest_m44),
         ("m36", ingest_m36),

@@ -1,0 +1,4 @@
+{"model": "phi4mini-q2", "lang": "cpp", "n": 161, "pass": 3, "score": 0.018633540372670808, "protocol": "mpl-raw-greedy-768-new-family"}
+{"model": "phi4mini-q2", "lang": "py", "n": 161, "pass": 4, "score": 0.024844720496894408, "protocol": "mpl-raw-greedy-768-new-family"}
+{"model": "phi4mini-q3", "lang": "cpp", "n": 161, "pass": 56, "score": 0.34782608695652173, "protocol": "mpl-raw-greedy-768-new-family"}
+{"model": "phi4mini-q3", "lang": "py", "n": 161, "pass": 75, "score": 0.4658385093167702, "protocol": "mpl-raw-greedy-768-new-family"}

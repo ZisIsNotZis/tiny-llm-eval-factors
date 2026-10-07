@@ -1,0 +1,14 @@
+{"tag": "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf", "file": "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf", "load": "PASS"}
+{"tag": "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf", "file": "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf", "load": "PASS"}
+{"tag": "NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf", "file": "NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf", "load": "PASS"}
+{"tag": "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf", "file": "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf", "load": "PASS"}
+{"tag": "Ornith-1.5-9B-Q4_K_M.gguf", "file": "Ornith-1.5-9B-Q4_K_M.gguf", "load": "PASS"}
+{"tag": "Ornith-1.5-9B-Q5_K_M.gguf", "file": "Ornith-1.5-9B-Q5_K_M.gguf", "load": "PASS"}
+{"tag": "Llama-3.2-3B-Instruct-Q2_K.gguf", "file": "Llama-3.2-3B-Instruct-Q2_K.gguf", "load": "PASS"}
+{"tag": "Llama-3.2-3B-Instruct-Q3_K_M.gguf", "file": "Llama-3.2-3B-Instruct-Q3_K_M.gguf", "load": "PASS"}
+{"tag": "Phi-4-mini-instruct-Q2_K.gguf", "file": "Phi-4-mini-instruct-Q2_K.gguf", "load": "PASS"}
+{"tag": "Phi-4-mini-instruct-Q3_K_M.gguf", "file": "Phi-4-mini-instruct-Q3_K_M.gguf", "load": "PASS"}
+{"tag": "lfm25-8a1b-bf16", "file": "LFM2.5-8B-A1B-BF16.gguf", "load": "PASS"}
+{"tag": "lfm25-8a1b-m55-q3base", "file": "LFM2.5-8B-A1B-m55-Q3_K_M.gguf", "load": "PASS"}
+{"tag": "lfm25-8a1b-m55-exq2", "file": "LFM2.5-8B-A1B-m55-exq2.gguf", "load": "PASS"}
+{"tag": "lfm25-8a1b-m55-exq4", "file": "LFM2.5-8B-A1B-m55-exq4.gguf", "load": "PASS"}

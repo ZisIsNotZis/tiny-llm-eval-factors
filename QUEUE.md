@@ -47,6 +47,47 @@ deadlock), is idempotent, never stops on failure, and logs START/DONE/FAIL/SKIP 
 Expected new work: N0 ≈ 3–8 h (27B, 2 slow categories, download-free), N1 ≈ 0.5 h (4B/2B),
 N2 ≈ 0.5 h, N3 ≈ 0.3 h, N4 ≈ 0–1 h (download-gated). Total ≈ 5–10 GPU-h.
 
+## Successor queue #2 — the refill (runs when NEXT_DRIVER.sh hands over to NEXT_DRIVER2.sh)
+
+`NEXT_DRIVER.sh` now ends by handing over to `.wrapup/NEXT_DRIVER2.sh` (same `locked()` pattern,
+idempotent, never stops on failure; log `.wrapup/NEXT_DRIVER2.log`). It exists because the previous
+tail was non-viable: **m34 / m40 / m53 all fail the load gate with 0 rows** (unsupported ggml types
+142/143; no ModelScope release), so the chain drained in ~20 min and the GPU idled. Every entry below
+was chosen to be **certain to produce rows**; models are either already proven to serve or are
+load-gated on the CPU BEFORE arming.
+
+| # | panel | script | summary | state | note |
+|---|---|---|---|---|---|
+| E1 | 🆕ARMED **m56** Tier 5B power: LFM2.5-8B-A1B Q2/Q3 × {java,js} | `.wrapup/run_m56.sh` | `.wrapup/m56_summary.jsonl` | armed | same tags `lfm25-8a1b-q2/q3` + same protocol as m45 → doubles items on this MoE anchor; both files on disk, load-gated PASS |
+| E2 | 🆕ARMED **m57** Tier 5B power: Nemotron-3-Nano-4B Q2/Q3 × {java,js} | `.wrapup/run_m57.sh` | `.wrapup/m57_summary.jsonl` | armed | same tags `nem4b-q2/q3` as m10 → doubles items on a non-Qwen family; files on disk, PASS |
+| E3 | 🆕ARMED **m60** Tier 5B power: Ornith-1.5-9B Q4/Q5 × {rust,ruby} | `.wrapup/run_m60.sh` | `.wrapup/m60_summary.jsonl` | armed | same tags `orn9b-q4/q5` as m10; the rust+ruby pair lands on a different anchor than E1/E2's java+js |
+| E4 | 🆕ARMED **m58** Tier 5A new family: Llama-3.2-3B Q2_K/Q3_K_M × cpp,py | `.wrapup/run_m58.sh` | `.wrapup/m58_summary.jsonl` | armed | first Llama-architecture anchor in the study; 3.0 GB fetch from `unsloth/Llama-3.2-3B-Instruct-GGUF`, CPU-load-gate required before the panel |
+| E5 | 🆕ARMED **m59** Tier 5A new family: Phi-4-mini Q2_K/Q3_K_M × cpp,py | `.wrapup/run_m59.sh` | `.wrapup/m59_summary.jsonl` | armed | second new family (Phi); 3.8 GB fetch, same CPU gate |
+| E6 | 🆕ARMED **m55** Tier 1A expert-wise / mixed-precision quantisation | `.wrapup/run_m55.sh` | `.wrapup/m55_summary.jsonl` | armed | the big untested axis: 3 recipes at matched total size (uniform-Q3_K_M baseline, experts Q2_K + rest ~Q4_K, experts Q4_K + rest ~Q2_K) built by `m55_prebuild.sh` from LFM2.5-8B-A1B **BF16 (16.9 GB, on ModelScope)** via `llama-quantize --tensor-type 'ffn_(gate\|up\|down)_exps'` (66 expert tensors over 22 MoE layers, verified); ≤6 rows |
+| E7 | 🔧ARMED **m32** ternary Bonsai multi-turn_base (demoted repair) | `.wrapup/run_m32.sh` | `.wrapup/m32_summary.jsonl` | armed | moved here from NEXT_DRIVER N6 so it cannot block E1–E6; has failed 3× at 1/2 rows |
+
+**Prebuild (CPU + network, no GPU lock):** `.wrapup/m55_prebuild.sh` (launched detached 2026-10-08
+01:24, log `.wrapup/m55_prebuild.log`). It (A) CPU-load-gates the on-disk anchors of E1/E2/E3, (B)
+downloads + gates the E4/E5 families, (C) downloads the 16.9 GB LFM2.5-8B-A1B BF16, (D) runs
+`llama-quantize --dry-run` over a small candidate set to pick the two expert-wise recipes whose size
+brackets uniform Q3_K_M, quantises and gates them, writing `.wrapup/m55_recipes.json`. Results are
+recorded in `.wrapup/loadgate.jsonl`; `run_m55/58/59.sh` refuse to arm a model whose gate is not PASS.
+
+**Watchdog:** `.wrapup/arm_next2.sh` (detached) polls `flock -n /tmp/llama_gpu.lock` and re-runs
+`NEXT_DRIVER2.sh` with `RUN_M32=0` if the live chain dies before draining E1–E6.
+
+Expected new work: E1 ≈ 0.3 h, E2 ≈ 0.2 h, E3 ≈ 0.3 h, E4 ≈ 0.2 h, E5 ≈ 0.2 h, E6 ≈ 0.7 h GPU
+(plus ≈ 0.5 h CPU quantise + ≈ 25 GB downloads, done in parallel off-lock). Total ≈ 2 GPU-h, ≈ 22
+new rows. **SKIPped:** a second *downloadable* ternary/1-bit family (ModelScope still has none beyond
+Bonsai re-uploads + the unsloth GLM TQ1_0 already run in m39; PTQ1_0/PQ2_0/CRACK are ggml types
+142/143), and any MoE F16 source >60 GB (gemma-4-26B/Qwen3.6-35B F16 would be 50–70 GB — only the
+16.9 GB LFM2.5-8B-A1B BF16 was fetched).
+
+**Integrator note:** the new summaries reuse the standard schema `{model,lang,n,pass,score,protocol}`;
+they need one `ingest_mNN` + `REFRESH` line each in `migrate_db.py` with a `model_map` entry per tag
+(`lfm25-8a1b-q2/q3`, `nem4b-q2/q3`, `orn9b-q4/q5`, `llama32-3b-q2/q3`, `phi4mini-q2/q3`,
+`lfm25-8a1b-m55-*`). Protocol `mpl-raw-greedy-768` on E1–E3 joins the m45/m10 rows in the DB.
+
 ## Armed driver
 
 `.wrapup/QUEUE_DRIVER.sh` (re-armed 2026-10-06 19:20; log `.wrapup/QUEUE_DRIVER.log`). It waits
@@ -71,6 +112,12 @@ STOP banner because #7–#9 had no scripts. That STOP is exactly the anti-idle f
 about — the GPU then sat idle ~59 h. The driver above replaces the chain tail.
 
 ## OPEN RISKS
+
+* **Non-viable entries exhausted (2026-10-08): m34 / m40 / m53.** All three fail the load gate
+  with 0 rows: the ternary/1-bit GGUFs on disk (`Ternary-Bonsai-2-27B-PTQ1_0` = ggml type 143,
+  `Bonsai-2-27B-PQ2_0-CRACK` = type 142) are rejected by build 4399, and ModelScope has no other
+  cross-architecture ternary release. They remain in the driver (idempotent, they just FAIL and move
+  on), but the row-producing work now lives in the Successor queue #2 below (E1–E7).
 
 * **#4/#5/#6 are being repaired and re-run** — runner is `.wrapup/run_fixes_after_driver.sh`
   (it waits for `QUEUE_DRIVER.sh` to exit, then takes `/tmp/llama_gpu.lock` per panel). The driver
