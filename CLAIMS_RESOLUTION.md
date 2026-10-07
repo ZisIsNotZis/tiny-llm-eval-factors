@@ -7,14 +7,14 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 35 | 33% |
+| resolved | 38 | 35% |
 | underpowered | 9 | 8% |
 | noise_level | 5 | 5% |
-| unauditable | 8 | 8% |
+| unauditable | 8 | 7% |
 | model_fit | 16 | 15% |
-| qualitative | 33 | 31% |
+| qualitative | 34 | 31% |
 
-## resolved (35)
+## resolved (38)
 
 - Δ=0.62 — **[FALSIFIED as stated — see WRAP-UP CORRECTIONS] Reasoning validity decomposition.** The earlier claim that most raw score loss from reasoning is a validity-collapse effect (`bad_rate_on≈0.80`) does not survive strict matching: 188/189 rows with `bad_rate>=0.5` are chaotic-sampling rows, and clean-decoding `auto`-vs-`off` bad_rate differs by only 0.02–0.04. What DOES survive: the matched score effect of disabling native thinking is large — `Δscore(off−auto) = +0.62` on HumanEval (n=134, CI [+0.56,+0.68]) and `+0.52` on MBPP (n=134, CI [+0.49,+0.56]) — but the magnitude is dominated by Qwen3.6, so it is family-conditioned.
   - _|Δ|=0.6200 >= MDE 0.108 at n=1_
@@ -86,6 +86,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.2360 >= MDE 0.108 at n=1_
 - Δ=0.168 — **[METHOD, m26/m44 — kept science] Two precision axes are non-measurements or inert, not nulls.** The `gemma-4-26B-A4B` chat cells are a harness floor (`py` 0.00 at both Q2 and Q3; `cpp` byte-identical 134/161 across Q2/Q3), so they are a non-measurement, not a MoE null — the `Qwen3.8-27B` dense rows in the same panel are sane (0.217/0.652 -> 0.484/0.814). The `-fa` (flash-attn) probe: on->off is a **real** manipulation for `Qwen3.5-2B` **Q2** (1/3 greedy prompts change, matching the V-cache-q8 positive control at 1/3) but a **no-op for Q3** (0/3) — so m29's `-fa` main effect is an unmeasured axis at Q3 and must not be quoted there.
   - _|Δ|=0.1680 >= MDE 0.108 at n=1_
+- Δ=0.3851 — **Phi-4-mini (3.8B, Microsoft) cpp+py: Q2 7/322 = 0.0217 -> Q3 131/322 = 0.4068, Δ=+0.3851, CI [+0.3291,+0.4411], significant.** Q2 is a near-total collapse (cpp 0.019 / py 0.025) and Q3 recovers to a normal 3-4B level — the F3 floor phenomenon at a *larger* size than the 2B case, i.e. the floor is set by the model's tolerance, not by parameter count alone.
+  - _|Δ|=0.3851 >= MDE 0.108 at n=1_
+- Δ=0.1584 — **Llama-3.2-3B cpp+py: Q2 85/322 = 0.2640 -> Q3 136/322 = 0.4224, Δ=+0.1584, CI [+0.0861,+0.2307], significant.**
+  - _|Δ|=0.1584 >= MDE 0.108 at n=1_
+- Δ=0.1173 — LFM2.5-8B-A1B java+js: +0.0125 [−0.0284,+0.0535] null; Nemotron-3-Nano-4B java+js: +0.0502 [−0.0170,+0.1173] null; Ornith-1.5-9B rust+ruby Q4->Q5: small positive.
+  - _|Δ|=0.1173 >= MDE 0.108 at n=1_
 
 ## underpowered (9)
 
@@ -175,7 +181,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (33)
+## qualitative (34)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -242,5 +248,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **experts `Q2_K`, rest `Q5_K_M` — 3.089 GB — cpp 0.137 / py 0.068 (pooled 0.103)**
   - _no numeric contrast in the claim_
 - — experts `Q4_K`, rest `Q2_K` — 4.745 GB — cpp 0.087 / py 0.050 (pooled 0.068)
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m58/m59 + m56/m57/m60] The Q2->Q3 effect replicates on two MORE architecture families, and Phi-4-mini is the largest effect measured in this study.** New anchors, standard MultiPL-E panel (greedy), item-level pooled CIs:
   - _no numeric contrast in the claim_
 

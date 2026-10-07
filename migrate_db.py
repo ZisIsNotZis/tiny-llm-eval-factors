@@ -775,6 +775,33 @@ def ingest_m36(con):
                            "m36_summary.jsonl")
 
 
+M56_MODELS = {"lfm25-8a1b-q2": "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf", "lfm25-8a1b-q3": "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf"}
+M57_MODELS = {"nem4b-q2": "NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf", "nem4b-q3": "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf"}
+M58_MODELS = {"llama32-3b-q2": "Llama-3.2-3B-Instruct-Q2_K.gguf", "llama32-3b-q3": "Llama-3.2-3B-Instruct-Q3_K_M.gguf"}
+M59_MODELS = {"phi4mini-q2": "Phi-4-mini-instruct-Q2_K.gguf", "phi4mini-q3": "Phi-4-mini-instruct-Q3_K_M.gguf"}
+M60_MODELS = {"orn9b-q4": "Ornith-1.5-9B-Q4_K_M.gguf", "orn9b-q5": "Ornith-1.5-9B-Q5_K_M.gguf"}
+
+
+def ingest_m56(con):
+    return ingest_mpl(con, ".wrapup/m56_summary.jsonl", "m56-lfm-power", "m56_summary.jsonl", model_map=M56_MODELS)
+
+
+def ingest_m57(con):
+    return ingest_mpl(con, ".wrapup/m57_summary.jsonl", "m57-nem-power", "m57_summary.jsonl", model_map=M57_MODELS)
+
+
+def ingest_m58(con):
+    return ingest_mpl(con, ".wrapup/m58_summary.jsonl", "m58-llama32-family", "m58_summary.jsonl", model_map=M58_MODELS)
+
+
+def ingest_m59(con):
+    return ingest_mpl(con, ".wrapup/m59_summary.jsonl", "m59-phi4mini-family", "m59_summary.jsonl", model_map=M59_MODELS)
+
+
+def ingest_m60(con):
+    return ingest_mpl(con, ".wrapup/m60_summary.jsonl", "m60-ornith-power", "m60_summary.jsonl", model_map=M60_MODELS)
+
+
 M55_MODELS = {"lfm25-8a1b-m55-q3base": "LFM2.5-8B-A1B-m55-Q3_K_M.gguf",
               "lfm25-8a1b-m55-exq2": "LFM2.5-8B-A1B-m55-exq2.gguf",
               "lfm25-8a1b-m55-exq4": "LFM2.5-8B-A1B-m55-exq4.gguf"}
@@ -963,7 +990,8 @@ def main():
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
         ("m30", ingest_m30), ("m31", ingest_m31),
         ("m37", ingest_m37), ("m41", ingest_m41), ("m42", ingest_m42), ("m45", ingest_m45),
-        ("m55", ingest_m55),
+        ("m55", ingest_m55), ("m56", ingest_m56), ("m57", ingest_m57),
+        ("m58", ingest_m58), ("m59", ingest_m59), ("m60", ingest_m60),
         ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
         ("m54", ingest_m54), ("m26", ingest_m26), ("m44", ingest_m44),
         ("m36", ingest_m36),
