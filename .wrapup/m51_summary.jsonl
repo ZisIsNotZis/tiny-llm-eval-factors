@@ -1,0 +1,4 @@
+{"model": "gemma12b-q2", "lang": "java", "n": 158, "pass": 0, "score": 0.0, "protocol": "mpl-raw-greedy-768-third-family-code"}
+{"model": "gemma12b-q2", "lang": "js", "n": 161, "pass": 0, "score": 0.0, "protocol": "mpl-raw-greedy-768-third-family-code"}
+{"model": "gemma12b-q3", "lang": "java", "n": 158, "pass": 4, "score": 0.02531645569620253, "protocol": "mpl-raw-greedy-768-third-family-code"}
+{"model": "gemma12b-q3", "lang": "js", "n": 161, "pass": 0, "score": 0.0, "protocol": "mpl-raw-greedy-768-third-family-code"}

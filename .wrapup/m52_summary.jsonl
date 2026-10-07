@@ -1,0 +1,10 @@
+{"model": "gemma12b-q3", "prompt_type": "code", "draft_n": 0, "prompt_tps": 2966.36, "decode_tps": 90.38, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "gemma12b-q3", "prompt_type": "prose", "draft_n": 0, "prompt_tps": 2961.39, "decode_tps": 90.77, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "qwen9b-q3", "prompt_type": "code", "draft_n": 0, "prompt_tps": 2040.07, "decode_tps": 129.75, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "qwen9b-q3", "prompt_type": "prose", "draft_n": 0, "prompt_tps": 3514.73, "decode_tps": 132.69, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "gemma12b-q3-draft", "prompt_type": "code", "draft_n": 2, "prompt_tps": 3440.68, "decode_tps": 90.47, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "gemma12b-q3-draft", "prompt_type": "prose", "draft_n": 2, "prompt_tps": 3041.67, "decode_tps": 90.86, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "gemma12b-q3-draft", "prompt_type": "code", "draft_n": 4, "prompt_tps": 3455.54, "decode_tps": 90.45, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "gemma12b-q3-draft", "prompt_type": "prose", "draft_n": 4, "prompt_tps": 3008.75, "decode_tps": 90.29, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "gemma12b-q3-draft", "prompt_type": "code", "draft_n": 6, "prompt_tps": 3528.8, "decode_tps": 90.02, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}
+{"model": "gemma12b-q3-draft", "prompt_type": "prose", "draft_n": 6, "prompt_tps": 3030.66, "decode_tps": 90.46, "n_decoded": 256, "protocol": "speed-greedy-256-tps"}

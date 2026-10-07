@@ -42,6 +42,7 @@ deadlock), is idempotent, never stops on failure, and logs START/DONE/FAIL/SKIP 
 | 22 (N2) | 🆕ARMED **m51** gemma-4-12B java+js — third-family multilingual-code anchor | `.wrapup/run_m51.sh` | `.wrapup/m51_summary.jsonl` | armed | Tier 5B/5C power on a new architecture family; gemma-4-12b Q2/Q3 × {java,js} = 4 rows |
 | 23 (N3) | 🆕ARMED **m52** decode speed vs prompt type + MTP spec-draft length curve | `.wrapup/run_m52.sh` | `.wrapup/m52_summary.jsonl` | armed | BRAINSTORM 4B; records tokens/s (prefill+decode) for code vs prose on gemma-4-12B-Q3 + Qwen3.5-9B-Q3, then `--spec-draft-n-max {2,4,6}` with `mtp-gemma-4-12B-it.gguf` if it loads; ≤10 rows |
 | 24 (N4) | 🆕ARMED **m53** ModelScope ternary/1-bit search + load-gated probe | `.wrapup/run_m53.sh` | `.wrapup/m53_summary.jsonl` | armed | BRAINSTORM 1C; best-effort search logged to `m53_search.log`, then resolve+probe up to 2 curated new families (SKIP if unavailable) |
+| 25 (N5) | 🆕ARMED **m54** gemma-4-12B rust+ruby — third-family code-anchor power | `.wrapup/run_m54.sh` | `.wrapup/m54_summary.jsonl` | armed | Tier 5B/5C; extends m51 (java+js) to the rust+ruby pair already used for the Qwen3.5-2B power step (m42); no download (both gemma files on disk); 2 anchors × rust+ruby = 4 rows. Armed directly under `gpu_locked.sh` 2026-10-07 13:2x, right after NEXT_DRIVER drained N0–N4 and left the GPU idle at 12:33. |
 
 Expected new work: N0 ≈ 3–8 h (27B, 2 slow categories, download-free), N1 ≈ 0.5 h (4B/2B),
 N2 ≈ 0.5 h, N3 ≈ 0.3 h, N4 ≈ 0–1 h (download-gated). Total ≈ 5–10 GPU-h.

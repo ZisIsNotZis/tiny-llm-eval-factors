@@ -596,6 +596,74 @@ def ingest_m45(con):
                       "m45_summary.jsonl", model_map=M45_MODELS)
 
 
+M50_MODELS = {
+    "qwen4b-iq3xxs": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+    "qwen4b-q2kxl": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+    "qwen2b-iq3xxs": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+    "qwen2b-q2kxl": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+}
+
+
+def ingest_m50(con):
+    """M50 (N1): IQ (imatrix) vs K-quant at MATCHED file size -- does IQ buy score per byte?"""
+    return ingest_mpl(con, ".wrapup/m50_summary.jsonl", "m50-imatrix-vs-k",
+                      "m50_summary.jsonl", model_map=M50_MODELS)
+
+
+M51_MODELS = {
+    "gemma12b-q2": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+    "gemma12b-q3": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+}
+
+
+def ingest_m51(con):
+    """M51 (N2): third-family (gemma-4-12B) java+js code anchor -- Tier 5B power."""
+    return ingest_mpl(con, ".wrapup/m51_summary.jsonl", "m51-gemma-java-js",
+                      "m51_summary.jsonl", model_map=M51_MODELS)
+
+
+M52_MODELS = {
+    "gemma12b-q3": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+    "gemma12b-q3-draft": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+    "qwen9b-q3": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+}
+
+
+def ingest_m52(con):
+    """M52 (N3): decode/prefill tok/s for code vs prose, with an MTP draft-length sweep.
+
+    Timing only (no benchmark score): `_score` is NULL and decode tok/s lives in
+    `_tok_s` (bench_family='speed'), the same convention as ingest_m28.
+    """
+    path = ".wrapup/m52_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m52 summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m52-speed",))
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in M52_MODELS:
+            continue
+        draft_n = int(r.get("draft_n") or 0)
+        row = base_row(M52_MODELS[r["model"]], f"speed-{r['prompt_type']}", 0.0, None, None)
+        row.update({"run_tag": "m52-speed", "rep": 1, "ctx_size": 4096,
+                    "parallel_slots": 1, "seed": 1234,
+                    "spec_type": "draft-mtp" if draft_n else "none",
+                    "spec_draft_n_max": str(draft_n),
+                    "protocol": r.get("protocol", "speed-greedy-256-tps"),
+                    "language": "python", "bench_family": "speed",
+                    "max_tokens": r.get("n_decoded"),
+                    "_tok_s": r.get("decode_tps"),
+                    "source_file": "m52_summary.jsonl"})
+        insert(con, row)
+        n += 1
+    return n
+
+
 def ingest_m41(con):
     """Partial-credit (mean fraction of tests passed) -- a CONTINUOUS metric, stored as
     bench_family='testfrac' so it is never confused with binary pass@1."""
@@ -806,6 +874,7 @@ def main():
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
         ("m30", ingest_m30), ("m31", ingest_m31),
         ("m37", ingest_m37), ("m41", ingest_m41), ("m42", ingest_m42), ("m45", ingest_m45),
+        ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
         ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),

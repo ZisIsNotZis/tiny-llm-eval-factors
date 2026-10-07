@@ -79,11 +79,11 @@ Each point is a greedy run, which W1 shows is exactly deterministic, so these me
 
 ## 6. MultiPL-E resolution panel (the item-count fix)
 
-Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (176 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
+Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (380 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
 
 _(per-family ladders are in `MULTIPLE.md`; the headline is below)_
 
-**Cross-family `Q2→Q3` (the core effect): 14 model anchors, all sign-consistent, range -0.022 .. +0.344, mean +0.126.**
+**Cross-family `Q2→Q3` (the core effect): 15 model anchors, all sign-consistent, range -0.022 .. +0.344, mean +0.119.**
 
 | model anchor | Q2→Q3 | 95% CI |
 |---|---|---|
@@ -97,6 +97,7 @@ _(per-family ladders are in `MULTIPLE.md`; the headline is below)_
 | Qwen3.5-9B | **+0.1429** | [+0.0804, +0.2053] |
 | Qwen3.6-35B-A3B | **+0.0373** | [-0.0320, +0.1065] |
 | Qwen3.8-27B | **+0.0186** | [-0.0472, +0.0845] |
+| gemma-4-12b-it | **+0.0127** | [-0.0122, +0.0375] |
 | gemma-4-26B-A4B-it | **-0.0093** | [-0.0391, +0.0205] |
 | gemma-4-E2B-it | **+0.2153** | [+0.1587, +0.2720] |
 | gemma-4-E4B-it | **+0.2215** | [+0.1600, +0.2830] |

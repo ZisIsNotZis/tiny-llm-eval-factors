@@ -1,0 +1,8 @@
+{"model": "qwen4b-iq3xxs", "lang": "cpp", "n": 161, "pass": 61, "score": 0.37888198757763975, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
+{"model": "qwen4b-iq3xxs", "lang": "py", "n": 161, "pass": 66, "score": 0.40993788819875776, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
+{"model": "qwen4b-q2kxl", "lang": "cpp", "n": 161, "pass": 55, "score": 0.3416149068322981, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
+{"model": "qwen4b-q2kxl", "lang": "py", "n": 161, "pass": 57, "score": 0.35403726708074534, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
+{"model": "qwen2b-iq3xxs", "lang": "cpp", "n": 161, "pass": 29, "score": 0.18012422360248448, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
+{"model": "qwen2b-iq3xxs", "lang": "py", "n": 161, "pass": 32, "score": 0.19875776397515527, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
+{"model": "qwen2b-q2kxl", "lang": "cpp", "n": 161, "pass": 18, "score": 0.11180124223602485, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
+{"model": "qwen2b-q2kxl", "lang": "py", "n": 161, "pass": 22, "score": 0.13664596273291926, "protocol": "mpl-raw-greedy-768-iq-vs-k-size-matched"}
