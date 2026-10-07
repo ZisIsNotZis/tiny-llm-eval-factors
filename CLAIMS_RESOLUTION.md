@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 34 | 34% |
-| underpowered | 8 | 8% |
+| resolved | 34 | 33% |
+| underpowered | 9 | 9% |
 | noise_level | 5 | 5% |
 | unauditable | 8 | 8% |
 | model_fit | 16 | 16% |
-| qualitative | 29 | 29% |
+| qualitative | 31 | 30% |
 
 ## resolved (34)
 
@@ -85,7 +85,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - Δ=0.236 — **[VERIFIED, m38/m39] The Q2->Q3 code deficit replicates on two more languages, and a second vendor's ternary does NOT sit above the bits->score curve.** `m38-statpower-javajs` (Qwen3.5-2B `UD-Q2_K_XL`/`UD-Q3_K_XL`, java/js, 158-161 items/lang, greedy): q2 java **0.120** js **0.112** -> q3 java **0.215** js **0.317** (Q2->Q3 step **+0.095** java / **+0.205** js, both above the ~±0.03 axis floor). `m39-glm-ternary` (GLM-4.7-Flash, cpp/py, 161 items): `UD-TQ1_0` (ternary, 8.33 GB) cpp **0.236** / py **0.118** vs its own `UD-Q2_K_XL` reference (11.89 GB) cpp **0.472** / py **0.348** — i.e. **−0.236 / −0.230** at *fewer* bits, so unlike the Bonsai co-designed ternary (m21/m24/m35) this TQ1_0 family is clearly *below* its Q2 reference and the off-curve effect does not generalise to a scheme-only ternary conversion. Ingested as `run_tag='m38-statpower-javajs'` (4 rows) and `'m39-glm-ternary'` (4 rows), DB 2171 -> 2197, `integrity ok | fk issues 0`. **FLAG (m29 — harness non-measurement, NOT a null on FA/V-cache):** the m29 "FA on/off × V-cache" panel measured nothing on its FA axis — `faon_f16` and `faoff_f16` are byte-identical in all 4 model×language cells (q2 cpp 18/161, q2 py 21/161, q3 cpp 42/161, q3 py 44/161) — and its 24-line summary repeats its first 12 rows verbatim; the panel also has **0 rows in the DB** (`ingest_m29` passes no model map, so its keys `q2`/`q3` are filtered out against `MPL_MODELS`). Do not read m29 as an FA or V-cache null.
   - _|Δ|=0.2360 >= MDE 0.108 at n=1_
 
-## underpowered (8)
+## underpowered (9)
 
 - Δ=0.0488 — On unseen-architecture `NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL` under fixed controls (`ctx2048`, `q8_0/q8_0`, no-MTP), `top_k:40->20` decreases plus score on both datasets (Humaneval `-0.0061`, MBPP `-0.0317`) with small wall-time increases, and `reasoning off->on` decreases plus score on both datasets (Humaneval `-0.0488`, MBPP `-0.0265`) with large wall-time penalties (Humaneval `+288.7s`, MBPP `+473.3s`).
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
@@ -103,6 +103,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0220 < MDE 0.108 at n=1_
 - Δ=0.0994 — **[VERIFIED, m42] The `Q2->Q3` gain holds in two more languages, so it is now 4-language per anchor for Qwen3.5-2B.** `rust 0.0645 -> 0.1613`, `ruby 0.0062 -> 0.1056` — both positive and large, alongside the existing cpp/py. Adds 322 items to the 2B ladder (MDE improves).
   - _|Δ|=0.0994 < MDE 0.108 at n=1_
+- Δ=0.056 — **[VERIFIED, m50 replicated] At MATCHED FILE SIZE, the imatrix scheme beats the K-quant scheme: `IQ3_XXS` > `Q2_K_XL` by +0.056 (95% CI [+0.008, +0.104]).** Two anchors x two languages, all four cells in the same direction: 2B `0.180/0.199` vs `0.112/0.137`; 4B `0.379/0.410` vs `0.342/0.354`. Because the files are size-matched (4B: 1858.7 vs 1850.9 MB = 0.42%; 2B: 888.7 vs 921.8 MB = 3.6%), this isolates the **scheme** from the bit budget — the first clean evidence in this study that *how* you quantise matters as much as *how much*. Note it also means the conventional "bit level" label (Q2 vs Q3) is not a like-for-like comparison across schemes.
+  - _|Δ|=0.0560 < MDE 0.108 at n=1_
 
 ## noise_level (5)
 
@@ -171,7 +173,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (29)
+## qualitative (31)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -230,5 +232,9 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m37] The vendor/recipe label does not matter at matched file size, replicated.** Qwen3.6-35B-A3B `UD-Q3_K_XL` (17.23 GB) vs bartowski `Q3_K_M` (17.12 GB): cpp 0.7205 vs 0.7578, py 0.7578 vs 0.7391 — a mixed, null pattern (consistent with `m25`). Together these two independent matched-size tests say the Unsloth `UD` label carries no score signal beyond file size.
   - _no numeric contrast in the claim_
 - — **[VERIFIED, m36] The ternary off-curve advantage extends to the error-handling agentic categories.** `Ternary-Bonsai-27B-Q2_g64` (2.25 bpw) scores `multi_turn_miss_func` **0.515** (n=200, partial-eval) — versus `Qwen3.5-2B Q3` (4 bpw) at **0.080** and no dense anchor above 0.42. Combined with its `multi_turn_base` 0.695/0.700, the ternary model is at or above the top of every multi-turn axis we have measured, at roughly half the bytes of the conventional quants it beats.
+  - _no numeric contrast in the claim_
+- — **[INTEGRATED + FLAG, N1–N3] N1–N3 panels ingested (m50/m51/m52); the m52 MTP draft sweep measured nothing.** `m50-imatrix-vs-k` (8 rows), `m51-gemma-java-js` (4 rows) and `m52-speed` (10 rows) are now in the DB. Sanity flag per RESEARCH_METHOD 5b: in `m52`, decode tok/s on `gemma-4-12b-it-UD-Q3_K_XL` is flat across `draft_n ∈ {0,2,4,6}` (90.38 / 90.47 / 90.45 / 90.02 tok/s) — the spec-draft-length variable moved nothing, so MTP speculative decoding was **not engaged**; report this as a harness finding to investigate, NOT as a null on draft length. GPU re-armed with `m54` (gemma-4-12B rust+ruby) at 13:2x after NEXT_DRIVER drained N0–N4 at 12:33 and left the queue idle.
+  - _no numeric contrast in the claim_
+- — **[HARNESS, m51] gemma-4-12B under the raw protocol is not measurable on java/js (0.0/0.025 and 0.0/0.0).** Same failure mode as the earlier gemma python case: the model does not emit the language-conformant body the MultiPL-E harness needs, so the score is a formatting artifact. Do not read these as capability. gemma-4 remains excluded from cross-language claims until a guarded chat protocol is validated for it.
   - _no numeric contrast in the claim_
 
