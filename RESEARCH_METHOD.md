@@ -105,3 +105,9 @@ inactive. Therefore:
 3. Before ending a work batch, verify: `ps` shows a live lock holder OR the next QUEUE.md entry is
    armed. If neither, arm one.
 4. Never rely on the session being awake for work to continue.
+5. **Never use text-based liveness gates** (`pgrep -f "<script name>"`). They match ANY
+   stray shell whose command line merely *mentions* the name — an `ls`-style inspection
+   command is enough — and they also match other projects' processes (a foreign
+   `llama-server -m /home/z/hf/...` produced a 1.6 h false "busy"). This stalled the
+   queue three times. Liveness is determined **only** by `flock -n /tmp/llama_gpu.lock`
+   (every panel runs under `gpu_locked.sh`) or by an explicit completion banner in a log.

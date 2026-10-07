@@ -26,9 +26,10 @@ echo "=== QUEUE_DRIVER armed $(date) pid=$$ ==="
 # a permanent false positive and left this queue idle 14:40-16:16 (QUEUE.md OPEN
 # RISKS). The repaired fixes runner (run_fixes_after_driver.sh) must finish first.
 wait_for_gpu_idle() {
-  while pgrep -f "[r]un_m[0-9].*\.sh" >/dev/null 2>&1 \
-     || pgrep -f "[r]un_fixes_after_driver.sh" >/dev/null 2>&1 \
-     || ! flock -n /tmp/llama_gpu.lock true >/dev/null 2>&1; do
+  # Only the flock probe is authoritative: every panel runs under gpu_locked.sh.
+  # Text-based pgrep gates are banned here -- they match ANY stray shell whose
+  # command line merely mentions run_mNN.sh, which stalled this queue twice.
+  while ! flock -n /tmp/llama_gpu.lock true >/dev/null 2>&1; do
     echo "[driver] waiting for a running panel to drain $(date)"; sleep 60
   done
   echo "[driver] GPU idle, starting queue $(date)"

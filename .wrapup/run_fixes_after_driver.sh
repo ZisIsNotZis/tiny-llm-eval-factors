@@ -25,7 +25,11 @@ echo "=== fixes_after_driver armed $(date) pid=$$ ===" >> "$LOG"
 #    banner is reported when present (the driver prints "QUEUE_DRIVER complete",
 #    not "end", so match either).
 waited=0
-while pgrep -f "[Q]UEUE_DRIVER.sh" >/dev/null 2>&1; do
+# Log-banner gate: process-name matching false-positives on any stray shell that
+# merely mentions the script name (this stalled the queue twice). The driver chain
+# signals completion with an explicit banner.
+DONE_RE="QUEUE_DRIVER complete|NEXT_DRIVER complete|drained\. GPU now IDLE"
+while ! { grep -qE "$DONE_RE" "$W/QUEUE_DRIVER.log" 2>/dev/null || grep -qE "$DONE_RE" "$W/NEXT_DRIVER.log" 2>/dev/null; }; do
   [ $((waited % 1800)) -eq 0 ] && echo "[fixes] waiting for QUEUE_DRIVER.sh $(date)" >> "$LOG"
   sleep 60; waited=$((waited + 60))
   if [ "$waited" -ge 129600 ]; then   # 36 h bound
@@ -46,9 +50,7 @@ fi
 #    /home/z/hf/ with a long-lived llama-server, which made the old
 #    `pgrep -f "[l]lama-server .*-m /home/z/hf/"` clause a permanent false
 #    positive (observed stalled 15:55-16:14 after the driver finished).
-while pgrep -f "[r]un_m[0-9].*\.sh" >/dev/null 2>&1 \
-   || pgrep -f "[c]hain_.*\.sh" >/dev/null 2>&1 \
-   || ! flock -n /tmp/llama_gpu.lock true >/dev/null 2>&1; do
+while ! flock -n /tmp/llama_gpu.lock true >/dev/null 2>&1; do
   echo "[fixes] another panel still live, waiting $(date)" >> "$LOG"
   sleep 60
 done
