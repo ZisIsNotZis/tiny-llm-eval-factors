@@ -1,8 +1,8 @@
 # Quantisation vs benchmark scores for local LLMs — definitive synthesis
 
 *Reader-facing final report of the study. Every number names its `run_tag`; all values come from
-`experiments.sqlite` (2,786 rows) and are reproduced by the generated reports `MULTIPLE.md`,
-`LADDER_TOOLS.md`, `HORIZON.md`, `PPL_REPORT.md`, `REANALYSIS.md`, `MOE_STRUCTURE.md` (scripts:
+`experiments.sqlite` (2,786 rows) and are reproduced by the generated reports `.wrapup/out/MULTIPLE.md`,
+`.wrapup/out/LADDER_TOOLS.md`, `.wrapup/out/HORIZON.md`, `.wrapup/out/PPL_REPORT.md`, `.wrapup/out/REANALYSIS.md`, `.wrapup/out/MOE_STRUCTURE.md` (scripts:
 `multipl_e_analysis.py`, `ladder_analysis.py`, `horizon_analysis.py`, `ppl_analysis.py`,
 `reanalysis.py`, `claims_ledger.py`). Operational/harness detail lives in `OPERATIONS.md`.*
 
@@ -54,7 +54,7 @@ handler dialect artifact).
 ### F1 — `Q2→Q3` is positive in **15 of 17** architecture families (10 significantly), and **never significantly negative**
 
 MultiPL-E, raw completion, greedy, 2–4 languages each, **item-level** 95% CIs
-(`multipl_e_analysis.py` → `MULTIPLE.md`):
+(`multipl_e_analysis.py` → `.wrapup/out/MULTIPLE.md`):
 
 *Expanded tally (after m58/m59, `run_tag` in {`m58-llama32-family`,`m59-phi4mini-family`}): the two
 largest effects in the whole study are **Phi-4-mini 3.8B Δ=+0.385 [I: +0.329, +0.441]** (Q2 nearly
@@ -90,7 +90,7 @@ range −0.022..+0.344 unchanged. gemma-4-12b is excluded (harness floor, §5).
 
 ### F2 — the quant curve is a **step, then a plateau**
 
-`Qwen3.5-2B`, MultiPL-E pooled (`ladder_analysis.py` → `LADDER_TOOLS.md`, `run_tag='m3-quant-ladder'`):
+`Qwen3.5-2B`, MultiPL-E pooled (`ladder_analysis.py` → `.wrapup/out/LADDER_TOOLS.md`, `run_tag='m3-quant-ladder'`):
 
 | quant | pooled score | note |
 |---|---|---|
@@ -104,7 +104,7 @@ range −0.022..+0.344 unchanged. gemma-4-12b is excluded (harness floor, §5).
 Steps: `IQ2_M→Q2` **−0.019**, `Q2→Q3` **+0.155 [+0.107, +0.204]**, `Q3→Q4` **+0.008 [−0.016, +0.033]**,
 `Q4→Q5` **−0.006 [−0.057, +0.045]**. The aggregate matched-context re-analysis agrees: the
 `Q2→Q3` step dominates (+0.061 [+0.042, +0.081], n=87 clean-decoding contexts; `reanalysis.py` →
-`REANALYSIS.md`). **Operational rule: ≥ Q3; above Q3 you buy nothing measurable on these tasks.**
+`.wrapup/out/REANALYSIS.md`). **Operational rule: ≥ Q3; above Q3 you buy nothing measurable on these tasks.**
 (Caveat in F3: for some families Q4 still helps.)
 
 ### F3 — the `Q2` floor: at 2B every hard agentic category pins to ~0.005; the deficit is headroom-limited, not a law
@@ -194,7 +194,7 @@ lever that matters is the **weight-quant scheme** (F4).
 
 ### F7 — PPL is a weak proxy for capability (agrees 5/7, fails in both directions)
 
-`code_multi` PPL vs pass@1 across `Q2→Q3` (`ppl_analysis.py` → `PPL_REPORT.md`;
+`code_multi` PPL vs pass@1 across `Q2→Q3` (`ppl_analysis.py` → `.wrapup/out/PPL_REPORT.md`;
 `run_tags m5/m10/m45`):
 
 - **LFM2.5-8B-A1B**: PPL **improves** 2.938→2.852 (−2.9%) while score **drops** 0.112→0.090.
@@ -237,17 +237,17 @@ lever that matters is the **weight-quant scheme** (F4).
 
 | claim | status | reason it was wrong | source |
 |---|---|---|---|
-| Reasoning "collapses output validity" (`bad_rate≈0.80`) | **RETRACTED** | 188/189 high-bad-rate rows came from a chaotic random-sampling sweep lumped into the reasoning factor; under clean decoding the validity gap is 0.02–0.04 | `reanalysis.py` → `REANALYSIS.md` |
+| Reasoning "collapses output validity" (`bad_rate≈0.80`) | **RETRACTED** | 188/189 high-bad-rate rows came from a chaotic random-sampling sweep lumped into the reasoning factor; under clean decoding the validity gap is 0.02–0.04 | `reanalysis.py` → `.wrapup/out/REANALYSIS.md` |
 | LFM2.5-8B-A1B `Q3<Q2` **significant** | **CORRECTED to null** | used a cross-language CI (n=2 languages), ~10× too narrow; item-level is −0.022 [−0.068, +0.025] | `m10-family-ladder` (+ m45) |
 | gemma-4-12B "destroyed by quantisation" | **RETRACTED** | a **format** artifact — it re-declares the signature and drops indentation, differently per quant; not a capability effect | `m6b`, `m51`, `m54` |
 | "the `Q2→Q3` gain is a **constant +0.15**" | **CORRECTED** | over-generalised from six cells; the 4B tool single-turn deficit (+0.077) disproves constancy | `m4b` |
-| "quant damage scales with **task horizon**" | **RETRACTED** | a retention-ratio artifact — the ratio varies only because the Q3 baseline varies | `horizon_analysis.py` → `HORIZON.md` |
+| "quant damage scales with **task horizon**" | **RETRACTED** | a retention-ratio artifact — the ratio varies only because the Q3 baseline varies | `horizon_analysis.py` → `.wrapup/out/HORIZON.md` |
 | m29 `-fa` / V-cache "null" | **CORRECTED: non-measurement** | `faon_f16` and `faoff_f16` byte-identical in all cells and the panel has 0 DB rows (ingest key mismatch) | `m29` → probe `m44` |
 | old m31 "`top_k` inert" wording | **CORRECTED** | the old K∈{20,40,64} sat *inside* the sampling noise, not "measuring nothing by construction"; repaired panel spans K∈{1..200} | `m31-topk` |
 | old m30 "KV inert" null | **CORRECTED** | short prompts meant only the *allocated* `-c` moved; repaired panel pads to ~2k/16k/48k real tokens | `m30-kv-ctx` |
 | m26 / m51 / m54 gemma Q2→Q3 numbers | **FLAGGED: harness floors** | gemma under the raw protocol does not emit the language-conformant body (py 0.00, cpp byte-identical across Q2/Q3); a non-measurement, not a null | `m26`, `m51`, `m54` |
 | m32 `multi_turn_base` = 0.700 | **CORRECTED** | repaired full re-run scores **0.675**; with m22 0.695, Bonsai's two runs span 0.675–0.700 (≈ the ±0.015 agentic floor) | `m32-bonsai-ternary-mt` |
-| "the pooled structural score model is a usable predictor" | **RETRACTED** | a plain ridge beats it once a whole architecture is held out (family RMSE 0.294 vs 0.282) | `WRAPUP.md` |
+| "the pooled structural score model is a usable predictor" | **RETRACTED** | a plain ridge beats it once a whole architecture is held out (family RMSE 0.294 vs 0.282) | `.wrapup/out/WRAPUP.md` |
 | any conclusion phrased with `ctx=`/`parallel=`/`seed=` | **UNAUDITABLE** | those columns did not exist before this work added them | schema gap |
 
 ---
@@ -258,7 +258,7 @@ lever that matters is the **weight-quant scheme** (F4).
 family-specific even where signs are consistent; MoE evidence is 2–3 families (+2 quarantined); the
 ternary within-model scheme contrast is incomplete (`Ternary-Bonsai-Q2_0` fails to load in llama.cpp
 4399; `PQ2_0` uses unsupported ggml type 142 — see `BACKLOG.md` §B1a). Activation quantisation
-(W8A8/W4A16) is out of scope: llama.cpp exposes no activation-quant path (`BRAINSTORM.md` §3C).
+(W8A8/W4A16) is out of scope: llama.cpp exposes no activation-quant path (`BACKLOG.md` §3C).
 
 **Open (queued / backlog).**
 

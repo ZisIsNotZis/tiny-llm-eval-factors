@@ -37,7 +37,7 @@ negative / confounded results are reported as such.
 > **Read every number below against `resolution.md`.** The honest headline of the wrap-up is
 > that most of this study's claims sit *below its own noise floor*: with HumanEval+MBPP (542
 > items) a single-config capability effect below ~0.084 cannot be resolved, and only **4 of 36**
-> documented conclusions clear that bar. See `WRAPUP.md` and `CLAIMS_RESOLUTION.md`.
+> documented conclusions clear that bar. See `.wrapup/out/WRAPUP.md` and `.wrapup/out/CLAIMS_RESOLUTION.md`.
 
 Score model, compared with a linear ridge baseline under the **same** held-out
 regime (`python3 cv_generalization.py` + `python3 ridge_baseline.py`):
@@ -96,7 +96,7 @@ regenerable, so they are git-ignored; the curated DB is committed.
 
 - **Frozen / archived as of the wrap-up.** Not expected to resume on this host.
 - **Evidence base is no longer end-to-end reproducible:** only 22/181 model files (12%) and
-  63/1881 raw eval results (3%) survive. See `ARCHIVE_MANIFEST.md`.
+  63/1881 raw eval results (3%) survive. See `.wrapup/out/ARCHIVE_MANIFEST.md`.
 - **The dominant limitation was item count, not benchmark difficulty** — and it has now been
   fixed. HumanEval+MBPP give 542 items → single-config MDE ≈ 0.084. A MultiPL-E panel
   (raw completion, greedy) was added across languages (~960 fresh items per side at 4B, ~483
@@ -105,7 +105,7 @@ regenerable, so they are git-ignored; the curated DB is committed.
   **`+0.143` at 9B** (95% CI [+0.104, +0.182], 3 languages) — positive in every language and
   stable across scale. It also exposed a real confound: under HumanEval *chat* decoding the 9B
   step looked negative, i.e. **quant effects depend on the generation protocol**. See
-  `MULTIPLE.md` / `WRAPUP.md` §6. BigCodeBench / SWE / Terminal-Bench were evaluated and
+  `.wrapup/out/MULTIPLE.md` / `.wrapup/out/WRAPUP.md` §6. BigCodeBench / SWE / Terminal-Bench were evaluated and
   rejected as data sources: they floor the 0.2B–9B panel near 0 and are compute-hostile.
 - **The quant curve is a single step, and it replicates across families.** On `Qwen3.5-2B`
   (MultiPL-E, 3 languages) the effect is flat from `IQ2_M` to `Q2`, jumps once at `Q2→Q3`
@@ -115,7 +115,7 @@ regenerable, so they are git-ignored; the curated DB is committed.
   0.8B/2B/4B/9B, Qwen3.6-35B-A3B, gemma-4 E2B/E4B, granite-4.1-3b), but its **size tracks how
   badly Q2 damages the model**, not a constant: `granite-4.1-3b +0.344` and `gemma-4-E2B +0.215`
   (Q2 nearly destroys them) vs `Qwen3.6-35B-A3B +0.037` (already ~0.70 at Q2). See
-  `LADDER_TOOLS.md` / `MULTIPLE.md`.
+  `.wrapup/out/LADDER_TOOLS.md` / `.wrapup/out/MULTIPLE.md`.
 - **Tool calling is now measured (BFCL, 1,240 items) across families, and is quant-sensitive in a
   family-dependent way.** Native OpenAI tool calling (`tools=`), overall `Q2→Q3`: `granite-4.1-3b
   +0.377`, `Qwen3.5-2B +0.202`, `Qwen3.5-4B +0.077`, `gemma-4-E2B +0.040`, `gemma-4-E4B +0.010`.
@@ -123,7 +123,7 @@ regenerable, so they are git-ignored; the curated DB is committed.
   degenerate case: `granite` at `Q2` scores 0.99 on `irrelevance` only because it *never calls
   anything*. An earlier *forced-JSON* protocol had suggested a 4B "profile flip"; that did not
   survive the native protocol, i.e. **protocol choice changes the sign of quant conclusions**.
-  See `LADDER_TOOLS.md` / `WRAPUP.md` §7b.
+  See `.wrapup/out/LADDER_TOOLS.md` / `.wrapup/out/WRAPUP.md` §7b.
 - **The DB now has a proper schema for this work** (`migrate_db.py`): `run_tag, rep, ctx_size,
   parallel_slots, seed, protocol, language, bench_family, max_tokens, source_file,
   completed_at` were added, and the unique index that **forbade replicates** was dropped.
@@ -137,12 +137,12 @@ regenerable, so they are git-ignored; the curated DB is committed.
 | file | purpose |
 |---|---|
 | `resolution.py` → `resolution.json` / `resolution.md` | measured noise floors + MDE table |
-| `claims_ledger.py` → `claims_ledger.csv` / `CLAIMS_RESOLUTION.md` | every claim tagged by resolvability |
-| `archive_manifest.py` → `archive_manifest.json` / `ARCHIVE_MANIFEST.md` | what evidence still exists |
-| `build_wrapup.py` → `WRAPUP.md` | the honest closing report |
-| `reanalysis.py` → `reanalysis.json` / `REANALYSIS.md` | strict re-check of headline claims |
+| `claims_ledger.py` → `claims_ledger.csv` / `.wrapup/out/CLAIMS_RESOLUTION.md` | every claim tagged by resolvability |
+| `archive_manifest.py` → `archive_manifest.json` / `.wrapup/out/ARCHIVE_MANIFEST.md` | what evidence still exists |
+| `build_wrapup.py` → `.wrapup/out/WRAPUP.md` | the honest closing report |
+| `reanalysis.py` → `reanalysis.json` / `.wrapup/out/REANALYSIS.md` | strict re-check of headline claims |
 | `migrate_db.py` | schema upgrade (replicates enabled) + ingestion of new runs |
-| `multipl_e_analysis.py` → `multipl_e.json` / `MULTIPLE.md` | cross-language resolution panel |
+| `multipl_e_analysis.py` → `multipl_e.json` / `.wrapup/out/MULTIPLE.md` | cross-language resolution panel |
 | `.wrapup/run_w1.sh`, `run_w2.sh`, `run_m1.sh`, `run_m2.sh` | repeat / scale / MultiPL-E experiments |
 | `.wrapup/mpl_run.py` | MultiPL-E generation + execution harness |
 
@@ -175,7 +175,7 @@ The "≥ Q3 is enough" claim **did not survive broader testing**, and that is th
   `live_irrelevance 0.976` is the degenerate "never call anything" behaviour, masking
   `live_simple 0.016 → 0.469` at Q3.
 
-See `WRAPUP.md`, `MULTIPLE.md`, `PPL_REPORT.md`, `LADDER_TOOLS.md`, `CLAIMS_RESOLUTION.md`.
+See `.wrapup/out/WRAPUP.md`, `.wrapup/out/MULTIPLE.md`, `.wrapup/out/PPL_REPORT.md`, `.wrapup/out/LADDER_TOOLS.md`, `.wrapup/out/CLAIMS_RESOLUTION.md`.
 
 ### Multi-turn (the strongest quant effect)
 
@@ -193,4 +193,4 @@ single-function items but collapse on multi-turn stateful tasks — which is exa
 short benchmarks cannot see, and why Q4/Q5 advice remains grounded in practice.
 
 Note: BFCL's default prompt-style handler scored **0.0%** here (our model answers in prose);
-the native `<tool_call>` FC handler is required. See `conclusions.md`, `WRAPUP.md` §7c.
+the native `<tool_call>` FC handler is required. See `conclusions.md`, `.wrapup/out/WRAPUP.md` §7c.
