@@ -79,7 +79,7 @@ Each point is a greedy run, which W1 shows is exactly deterministic, so these me
 
 ## 6. MultiPL-E resolution panel (the item-count fix)
 
-Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (484 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
+Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (538 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
 
 _(per-family ladders are in `MULTIPLE.md`; the headline is below)_
 
