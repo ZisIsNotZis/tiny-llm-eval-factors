@@ -25,7 +25,7 @@ PANELS=(
 for spec in "${PANELS[@]}"; do
   file="${spec%%:*}"; tag="${spec##*:}"
   if [ ! -e "/home/z/hf/$file" ]; then echo "[M54] SKIP $tag: $file missing" >> "$LOG"; continue; fi
-  bash "$W/panel_mpl.sh" "$tag" "$file" "$SUM" "rust ruby" \
+  bash "$W/panel_mpl.sh" "$tag" "$file" "$SUM" "rs rb" \
     "mpl-raw-greedy-768-third-family-code" \
     || echo "[M54] FAIL $tag" >> "$LOG"
 done
