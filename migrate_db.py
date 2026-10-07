@@ -673,6 +673,76 @@ def ingest_m52(con):
     return n
 
 
+def ingest_m26(con):
+    """M26 / M43 (QUEUE #17): Tier-2C dense vs MoE at matched TOTAL size.
+
+    The 2026-10-02 panel (run_m26.sh) completed on disk but never wrote a summary;
+    run_m43.sh rebuilt m26_summary.jsonl from the per-cell evals (CPU-only, no
+    re-run). Chat protocol, greedy, ctx 4096 -- protocol is read per row so the
+    chat-vs-raw distinction is preserved.
+    """
+    path = ".wrapup/m26_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m26 summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m26-tier2c-dense-moe",))
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in M10_MODELS:
+            continue
+        lang = r["lang"]
+        row = base_row(M10_MODELS[r["model"]], f"humaneval-{lang}", 0.0, r["score"], None)
+        row.update({"run_tag": "m26-tier2c-dense-moe", "rep": 1, "ctx_size": 4096,
+                    "parallel_slots": 1,
+                    "protocol": r.get("protocol", "mpl-chat-nothink-greedy-768"),
+                    "language": lang, "bench_family": "humaneval-multipl-e",
+                    "max_tokens": 768, "source_file": "m26_summary.jsonl"})
+        insert(con, row); n += 1
+    return n
+
+
+M44_MODELS = {
+    "qwen2b-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+}
+
+
+def ingest_m44(con):
+    """M44 (QUEUE #18) -- compute-precision PROBE: does `-fa` on/off (and the V-cache
+    positive control) provably change greedy text? Stored as bench_family='fa-probe'
+    so it is never read as a benchmark score. `_score` = fraction of probe prompts
+    whose greedy text changed vs the reference cell (0.0 => that manipulation is a
+    no-op for that cell -- m29's `-fa` axis is unmeasured where this is 0).
+    """
+    path = ".wrapup/m44_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m44 summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m44-fa-probe",))
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in M44_MODELS:
+            continue
+        prompts = max(int(r.get("prompts") or 1), 1)
+        frac = (r.get("prompts_changed_vs_reference") or 0) / prompts
+        row = base_row(M44_MODELS[r["model"]], f"fa-probe-{r['cell']}", 0.0, frac, None)
+        row.update({"run_tag": "m44-fa-probe", "rep": 1, "ctx_size": 16384,
+                    "parallel_slots": 1,
+                    "protocol": r.get("protocol", "m44-probe-greedy-256"),
+                    "language": "python", "bench_family": "fa-probe",
+                    "max_tokens": 256, "source_file": "m44_summary.jsonl"})
+        insert(con, row); n += 1
+    return n
+
+
 def ingest_m41(con):
     """Partial-credit (mean fraction of tests passed) -- a CONTINUOUS metric, stored as
     bench_family='testfrac' so it is never confused with binary pass@1."""
@@ -884,7 +954,7 @@ def main():
         ("m30", ingest_m30), ("m31", ingest_m31),
         ("m37", ingest_m37), ("m41", ingest_m41), ("m42", ingest_m42), ("m45", ingest_m45),
         ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
-        ("m54", ingest_m54),
+        ("m54", ingest_m54), ("m26", ingest_m26), ("m44", ingest_m44),
         ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),

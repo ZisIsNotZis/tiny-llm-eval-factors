@@ -7,12 +7,12 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 
 | status | n | share |
 |---|---|---|
-| resolved | 34 | 33% |
+| resolved | 34 | 32% |
 | underpowered | 10 | 10% |
 | noise_level | 5 | 5% |
 | unauditable | 8 | 8% |
 | model_fit | 16 | 15% |
-| qualitative | 31 | 30% |
+| qualitative | 32 | 30% |
 
 ## resolved (34)
 
@@ -175,7 +175,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (31)
+## qualitative (32)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -238,5 +238,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[INTEGRATED + FLAG, N1–N3] N1–N3 panels ingested (m50/m51/m52); the m52 MTP draft sweep measured nothing.** `m50-imatrix-vs-k` (8 rows), `m51-gemma-java-js` (4 rows) and `m52-speed` (10 rows) are now in the DB. Sanity flag per RESEARCH_METHOD 5b: in `m52`, decode tok/s on `gemma-4-12b-it-UD-Q3_K_XL` is flat across `draft_n ∈ {0,2,4,6}` (90.38 / 90.47 / 90.45 / 90.02 tok/s) — the spec-draft-length variable moved nothing, so MTP speculative decoding was **not engaged**; report this as a harness finding to investigate, NOT as a null on draft length. GPU re-armed with `m54` (gemma-4-12B rust+ruby) at 13:2x after NEXT_DRIVER drained N0–N4 at 12:33 and left the queue idle.
   - _no numeric contrast in the claim_
 - — **[HARNESS, m51] gemma-4-12B under the raw protocol is not measurable on java/js (0.0/0.025 and 0.0/0.0).** Same failure mode as the earlier gemma python case: the model does not emit the language-conformant body the MultiPL-E harness needs, so the score is a formatting artifact. Do not read these as capability. gemma-4 remains excluded from cross-language claims until a guarded chat protocol is validated for it.
+  - _no numeric contrast in the claim_
+- — **[OPS, queue] The GPU was idle 21:09→22:14 (65 min) after `QUEUE_DRIVER.sh`+`NEXT_DRIVER.sh` drained; re-armed and re-ingested.** `.wrapup/NEXT_DRIVER.log` printed its terminal banner `N0..N6 drained. GPU now IDLE; add entries or re-arm.` at 2026-10-07 21:09:52 and nothing was waiting; the only live `llama-server` on the host (:8834, Spark-X2.5-4B) belongs to another project and is **not** a lock holder — `/tmp/llama_gpu.lock` was free (`flock -n` probe), which is why the driver's own `wait_for_gpu_idle` is the correct gate and a `pgrep llama-server` gate is not. `migrate_db.py` after re-arm refreshed the DB 2610→2664 rows from the drained panels (m36/m50/m51/m52/m54/m32 etc.), all 6 analyses + `build_wrapup.py` exit 0; DB backup `experiments.sqlite.bak25`. Outstanding: `m40`/`m53` summaries are 0 bytes (third-party-quantiser + ModelScope probes found no loadable candidate ⇒ SKIP, not a null), and `m32` remains 1/2 rows (`multi_turn_long_context` still BLOCKED-on-VRAM).
   - _no numeric contrast in the claim_
 
