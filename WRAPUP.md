@@ -79,18 +79,20 @@ Each point is a greedy run, which W1 shows is exactly deterministic, so these me
 
 ## 6. MultiPL-E resolution panel (the item-count fix)
 
-Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (592 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
+Ran the weight-quant step across languages **and model families** to attack the item-count bottleneck directly (786 runs; `multipl_e.json`/`MULTIPLE.md`). Raw completion, greedy; each language is ~161 fresh items.
 
 _(per-family ladders are in `MULTIPLE.md`; the headline is below)_
 
-**Cross-family `Q2→Q3` (the core effect): 15 model anchors, all sign-consistent, range -0.022 .. +0.344, mean +0.118.**
+**Cross-family `Q2→Q3` (the core effect): 17 model anchors, all sign-consistent, range -0.022 .. +0.385, mean +0.136.**
 
 | model anchor | Q2→Q3 | 95% CI |
 |---|---|---|
 | GLM-4.7-Flash | **+0.1273** | [+0.0969, +0.1578] |
 | LFM2.5-8B-A1B | **-0.0217** | [-0.0682, +0.0248] |
+| Llama-3.2-3B-Instruct | **+0.1584** | [+0.0793, +0.2375] |
 | MiniCPM5-2B | **+0.3137** | [+0.2532, +0.3741] |
 | NVIDIA-Nemotron-3-Nano-4B | **+0.0186** | [-0.0563, +0.0936] |
+| Phi-4-mini-instruct | **+0.3851** | [+0.2755, +0.4947] |
 | Qwen3.5-0.8B | **+0.0608** | [+0.0321, +0.0896] |
 | Qwen3.5-2B | **+0.1553** | [+0.1060, +0.2045] |
 | Qwen3.5-4B | **+0.1421** | [+0.0990, +0.1853] |

@@ -51,10 +51,17 @@ handler dialect artifact).
 
 ## 3. Findings
 
-### F1 — `Q2→Q3` is reliably positive for 8 of 13 code anchors, null for 5, never significantly negative
+### F1 — `Q2→Q3` is positive in **15 of 17** architecture families (10 significantly), and **never significantly negative**
 
 MultiPL-E, raw completion, greedy, 2–4 languages each, **item-level** 95% CIs
 (`multipl_e_analysis.py` → `MULTIPLE.md`):
+
+*Expanded tally (after m58/m59, `run_tag` in {`m58-llama32-family`,`m59-phi4mini-family`}): the two
+largest effects in the whole study are **Phi-4-mini 3.8B Δ=+0.385 [I: +0.329, +0.441]** (Q2 nearly
+collapses to 0.022) and **granite-4.1-3b Δ=+0.344**, followed by MiniCPM5-2B +0.314. The only
+negative deltas anywhere are LFM2.5-8B-A1B −0.005 and gemma-4-26B-A4B −0.009 (the latter a known
+harness floor).*
+
 
 | anchor | Q2→Q3 | 95% CI | sig | run_tag |
 |---|---|---|---|---|
