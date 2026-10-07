@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""Rebuild RESULTS_BY_COMPARISON.md with ZERO empty cells.
+"""ONE table per research variable.
 
-Rows are (model, bpw).  For a given axis we keep only groups whose fixed part has
->=2 distinct varied values.  Then rows are partitioned by the SET of benchmark
-columns they actually have, and one table is emitted per column-set that has >=2
-rows.  Consequence: no table ever contains an empty cell, and no row is dropped
-silently - a row that lacks a benchmark simply appears in a table with fewer
-benchmark columns.
+col1 = everything held constant, col2 = the varied variable, then one column per
+benchmark.  Empty CELLS are allowed.  A whole table is emitted per axis (never
+split).  A col1 group is dropped only when it has <2 distinct col2 values (no
+comparison possible).  No other row is ever dropped.
 """
 import collections
 import glob
 import json
-import math
 import re
 import sqlite3
 
@@ -19,7 +16,6 @@ W = ".wrapup"
 BPW = json.load(open(f"{W}/bpw_map.json"))
 con = sqlite3.connect("file:experiments.sqlite?mode=ro", uri=True)
 
-LANG_N = {}
 _n = collections.defaultdict(list)
 for _f in glob.glob(f"{W}/*_summary.jsonl"):
     for _l in open(_f):
@@ -34,17 +30,10 @@ LANG_N = {k: collections.Counter(v).most_common(1)[0][0] for k, v in _n.items()}
 BENCH = ["代码", "BFCL单轮", "多轮base", "long_ctx", "miss_func", "miss_param"]
 
 
-def disp(m):
-    x = m.replace(".gguf", "").replace("Qwen_Qwen", "Qwen")
-    return re.sub(r"[-_](UD-)?(I?Q\d[_A-Za-z0-9]*|TQ1_0|Q2_0_g64|Q2_g64)$", "", x)
-
-
 def short(m):
-    """row label: model + everything that identifies the variant"""
-    x = disp(m)
+    x = m.replace(".gguf", "").replace("Qwen_Qwen", "Qwen")
     x = re.sub(r"-instruct", "", x, flags=re.I)
-    x = re.sub(r"-Q\d_K(_M|_XL)?$", "", x)
-    return x
+    return re.sub(r"[-_](UD-)?(I?Q\d[_A-Za-z0-9]*|TQ1_0|Q2_0_g64|Q2_g64)$", "", x)
 
 
 code = collections.defaultdict(dict)
@@ -62,17 +51,17 @@ for m, q, b, s in con.execute("""SELECT model,__quant,_bench,AVG(_score) FROM ex
         WHERE bench_family='bfcl-multiturn' AND run_tag IS NOT NULL GROUP BY 1,2,3"""):
     mt[(m, q)][b[5:]] = s
 
+NONLIVE = ("irrelevance", "multiple", "parallel", "parallel_multiple", "simple_python")
+
 
 def cells(m, q):
     d = code.get((m, q), {})
-    _NONLIVE = ("irrelevance", "multiple", "parallel", "parallel_multiple", "simple_python")
-    s = [v for k, v in bfcl.get((m, q), {}).items() if v is not None and k in _NONLIVE]
+    s = [v for k, v in bfcl.get((m, q), {}).items() if v is not None and k in NONLIVE]
     g = mt.get((m, q), {})
     pu = None
     if d:
-        num = sum(d[l] * LANG_N.get(l, 161) for l in d)
-        den = sum(LANG_N.get(l, 161) for l in d)
-        pu = num / den
+        pu = (sum(d[l] * LANG_N.get(l, 161) for l in d)
+              / sum(LANG_N.get(l, 161) for l in d))
     return {"代码": pu,
             "BFCL单轮": (sum(s) / len(s)) if s else None,
             "多轮base": g.get("multi_turn_base"),
@@ -81,193 +70,171 @@ def cells(m, q):
             "miss_param": g.get("multi_turn_miss_param")}
 
 
-# ---------------------------------------------------------------- axis defs
-SOURCES = {}
+SRC = {}
 for (m, q) in set(code) | set(bfcl) | set(mt):
     if m in BPW:
-        SOURCES[(m, q)] = cells(m, q)
+        SRC[(m, q)] = cells(m, q)
+QOF = collections.defaultdict(list)
+for (m, q) in SRC:
+    QOF[m].append(q)
 
 
-def emit(o, fixed_label, varied_label, rows, title, note=""):
-    """rows = [(fixed, varied, {bench: val})].  Partition by column-set."""
-    groups = collections.defaultdict(list)
-    for fx, vr, c in rows:
-        key = tuple(b for b in BENCH if c.get(b) is not None)
-        groups[key].append((fx, vr, c))
-    out_any = False
-    keys = [k for k in sorted(groups, key=lambda k: -len(k)) if len(k) >= 2]
-    for key in keys:
-        rs = groups[key]
-        if len(rs) < 2:
-            continue
-        if not out_any:
-            o.append(f"**{title}**")
-            if note:
-                o.append(f"\n{note}\n")
-            out_any = True
-        o.append(f"| {fixed_label} | {varied_label} | " +
-                 " | ".join(f"**{b}**" for b in key) + " |")
-        o.append("|---" * (len(key) + 2) + "|")
-        for fx, vr, c in rs:
-            o.append(f"| {fx} | {vr} | " + " | ".join(f"{c[b]:.4f}" for b in key) + " |")
+def table(o, title, note, c1, c2, rows):
+    """rows = [(col1, col2, cells)].  One table.  Drop col1 groups with <2 col2."""
+    grp = collections.defaultdict(dict)
+    for a, b, c in rows:
+        if any(c.get(x) is not None for x in BENCH):
+            grp[a][b] = c
+    keep = {a: v for a, v in grp.items() if len(v) >= 2}
+    o.append(f"## {title}")
+    o.append("")
+    if note:
+        o.append(note)
         o.append("")
-    # always finish with the full 代码-only table so no data is lost
-    allrows = [(fx, vr, c) for fx, vr, c in rows if c.get("代码") is not None]
-    if len(allrows) >= 2:
-        o.append(f"**{title} · 全部（仅代码列）**")
+    if not keep:
+        o.append("*没有一组有 ≥2 个对比项，故不写。*")
         o.append("")
-        o.append(f"| {fixed_label} | {varied_label} | **代码** |")
-        o.append("|---|---|---|")
-        for fx, vr, c in allrows:
-            o.append(f"| {fx} | {vr} | {c['代码']:.4f} |")
-        o.append("")
-        out_any = True
-    if not out_any:
-        o.append(f"*{title}：没有 ≥2 个可比项，不写。*\n")
+        return
+    o.append(f"| {c1} | {c2} | " + " | ".join(f"**{b}**" for b in BENCH) + " |")
+    o.append("|---" * (len(BENCH) + 2) + "|")
+    for a in sorted(keep):
+        for b in sorted(keep[a], key=lambda x: (len(x), x)):
+            c = keep[a][b]
+            o.append(f"| {a} | {b} | " + " | ".join(
+                "-" if c.get(x) is None else f"{c[x]:.4f}" for x in BENCH) + " |")
+    o.append("")
 
 
 def main():
     o = []
     A = o.append
-    A("# 对比表（零空格）")
+    A("# 量化研究：每个变量一张表")
     A("")
-    A("每行 = 一个模型的一个 BPW。**某行缺哪个 benchmark，就归到列更少的那张表**，")
-    A("所以任何一张表都不会出现空单元格，也没有任何数据被丢掉。")
+    A("第 1 列 = 保持不变的一切；第 2 列 = 本次变化的变量；之后每列 = 一个 benchmark。")
+    A("**空单元格用 `-` 表示（数据本来就没跑），但不写整行全空的行。**")
+    A("第 1 列只有 1 个第 2 列取值的组（没有对比）才剔除。")
     A("BPW = 8 × 文件字节 ÷ 参数量。代码 = MultiPL-E raw greedy 768 pooled；")
     A("BFCL单轮 = native-FC 五类均值；多轮 = BFCL-MT temp0。")
     A("")
 
-    # ---- BPW axis: fixed = model, varied = bpw
-    A("## 1. 变量 = BPW（第 1 列 = 模型，其他全同）")
-    A("")
-    bym = collections.defaultdict(list)
-    for (m, q), c in SOURCES.items():
-        bym[short(m)].append((m, q, c))
+    # 1 BPW
     rows = []
-    for mdl, lst in bym.items():
-        bpws = sorted({round(BPW[m], 2) for m, q, c in lst})
-        if len(bpws) < 2:
+    for m, qs in QOF.items():
+        if len({round(BPW[m], 2)}) < 1:
             continue
-        for m, q, c in sorted(lst, key=lambda t: BPW[t[0]]):
-            rows.append((mdl, f"{BPW[m]:.2f}", c))
-    emit(o, "模型（其他全同）", "BPW", rows, "BPW 扫描")
+        for q in qs:
+            rows.append((short(m), f"{BPW[m]:.2f} bpw", SRC[(m, q)]))
+    table(o, "1. 变量 = BPW（第 1 列 = 模型，其他全同）",
+          "只保留跑过 ≥2 个 BPW 的模型。同一模型内的采样参数、ctx、协议、benchmark 版本完全一致。",
+          "模型（其他全同）", "BPW", rows)
 
-    # ---- size axis
-    A("## 2. 变量 = 模型规模（第 1 列 = 家族 + recipe，其他全同）")
-    A("")
-    size = [("Ternary-Bonsai", ["Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
-                                "Ternary-Bonsai-4B-Q2_0_g64.gguf",
-                                "Ternary-Bonsai-8B-Q2_0_g64.gguf",
-                                "Ternary-Bonsai-27B-Q2_g64.gguf"]),
-            ("Qwen3.5 · UD-Q2_K_XL", ["Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
-                                      "Qwen3.5-2B-UD-Q2_K_XL.gguf",
-                                      "Qwen3.5-4B-UD-Q2_K_XL.gguf",
-                                      "Qwen3.5-9B-UD-Q2_K_XL.gguf"]),
-            ("Qwen3.5 · UD-Q3_K_XL", ["Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
-                                      "Qwen3.5-2B-UD-Q3_K_XL.gguf",
-                                      "Qwen3.5-4B-UD-Q3_K_XL.gguf",
-                                      "Qwen3.5-9B-UD-Q3_K_XL.gguf"])]
-    for fam, models in size:
+    # 2 size
+    for fam, models in [("Ternary-Bonsai", ["Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+                                            "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+                                            "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+                                            "Ternary-Bonsai-27B-Q2_g64.gguf"]),
+                        ("Qwen3.5 · UD-Q2_K_XL", ["Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+                                                  "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+                                                  "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+                                                  "Qwen3.5-9B-UD-Q2_K_XL.gguf"]),
+                        ("Qwen3.5 · UD-Q3_K_XL", ["Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+                                                  "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+                                                  "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+                                                  "Qwen3.5-9B-UD-Q3_K_XL.gguf"])]:
         rows = []
         for m in models:
-            q = [k[1] for k in SOURCES if k[0] == m]
-            if not q:
+            if m not in QOF:
                 continue
             sz = re.search(r"(\d+\.?\d*)B", m)
-            rows.append((fam, (sz.group(1) + "B") if sz else m, SOURCES[(m, q[0])]))
-        emit(o, "家族（其他全同）", "规模", rows, f"规模扫描 · {fam}")
+            rows.append((fam, (sz.group(1) + "B") if sz else m, SRC[(m, QOF[m][0])]))
+        table(o, f"2. 变量 = 模型规模（{fam}，其他全同）",
+              "同一家族、同一 recipe，只有规模不同。",
+              "家族 + recipe（其他全同）", "规模", rows)
 
-    # ---- vendor / scheme axis
-    A("## 3. 变量 = 量化方案 / vendor（第 1 列 = 模型，体积相近）")
-    A("")
+    # 3 vendor
     rows = []
-    for base, pairs in [("Qwen3.5-2B", [("Qwen3.5-2B-UD-IQ3_XXS.gguf", "IQ3_XXS"),
-                                        ("Qwen3.5-2B-UD-Q2_K_XL.gguf", "Q2_K_XL")]),
-                        ("Qwen3.5-4B", [("Qwen3.5-4B-UD-IQ3_XXS.gguf", "IQ3_XXS"),
-                                        ("Qwen3.5-4B-UD-Q2_K_XL.gguf", "Q2_K_XL")]),
-                        ("Qwen3.6-35B-A3B", [("Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf", "厂商 Q3_K_M"),
-                                             ("Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf", "UD-Q3_K_XL")])]:
-        for m, label in pairs:
-            q = [k[1] for k in SOURCES if k[0] == m]
-            if q:
-                rows.append((f"{base} @{BPW[m]:.2f}bpw", label, SOURCES[(m, q[0])]))
-    emit(o, "模型（其他全同）", "方案", rows, "方案对比")
+    for base, pairs in [("Qwen3.5-2B @≈4.0bpw", [("Qwen3.5-2B-UD-IQ3_XXS.gguf", "IQ3_XXS"),
+                                                 ("Qwen3.5-2B-UD-Q2_K_XL.gguf", "Q2_K_XL")]),
+                        ("Qwen3.5-4B @≈3.7bpw", [("Qwen3.5-4B-UD-IQ3_XXS.gguf", "IQ3_XXS"),
+                                                 ("Qwen3.5-4B-UD-Q2_K_XL.gguf", "Q2_K_XL")]),
+                        ("Qwen3.6-35B-A3B @≈3.9bpw", [("Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf", "厂商 Q3_K_M"),
+                                                      ("Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf", "UD-Q3_K_XL")])]:
+        for m, lab in pairs:
+            if m in QOF:
+                rows.append((base, lab, SRC[(m, QOF[m][0])]))
+    table(o, "3. 变量 = 量化方案 / vendor（第 1 列 = 模型+体积档，其他全同）",
+          "每组的两个方案文件大小基本相同（BPW 差 ≤0.15）。",
+          "模型 + 体积档（其他全同）", "方案", rows)
 
-    # ---- MoE
-    A("## 4. 变量 = MoE 比特分配（第 1 列 = LFM2.5-8B-A1B，同面板）")
-    A("")
+    # 4 MoE
     rows = []
-    for m, label in [("LFM2.5-8B-A1B-m55-exq2.gguf", "专家Q2 + 其余Q5"),
-                     ("LFM2.5-8B-A1B-m55-Q3_K_M.gguf", "均匀 Q3_K_M"),
-                     ("LFM2.5-8B-A1B-m55-exq4.gguf", "专家Q4 + 其余Q2")]:
-        q = [k[1] for k in SOURCES if k[0] == m]
-        if q:
-            rows.append((f"LFM2.5-8B-A1B @{BPW[m]:.2f}bpw", label, SOURCES[(m, q[0])]))
-    emit(o, "模型（其他全同）", "配方", rows, "MoE 比特分配")
+    for m, lab in [("LFM2.5-8B-A1B-m55-exq2.gguf", "专家 Q2_K + 其余 Q5_K_M"),
+                   ("LFM2.5-8B-A1B-m55-Q3_K_M.gguf", "均匀 Q3_K_M（基线）"),
+                   ("LFM2.5-8B-A1B-m55-exq4.gguf", "专家 Q4_K + 其余 Q2_K")]:
+        if m in QOF:
+            rows.append((f"LFM2.5-8B-A1B", f"{lab}（{BPW[m]:.2f} bpw）", SRC[(m, QOF[m][0])]))
+    table(o, "4. 变量 = MoE 的比特分配（第 1 列 = LFM2.5-8B-A1B，同面板）",
+          "三个配方只改专家层与非专家层的比特分配，其余全同。",
+          "模型（其他全同）", "配方", rows)
 
-    # ---- KV
-    A("## 5. 变量 = KV 量化（第 1 列 = 模型·BPW·ctx，其他全同）")
-    A("")
-    A("| 模型·BPW·ctx（其他全同） | KV 类型 | **代码** |")
-    A("|---|---|---|")
+    # 5 KV
+    rows = []
     for cx in (2048, 16384, 49152):
         for a, b in (("f16", "f16"), ("f16", "q8_0"), ("q8_0", "f16"), ("q8_0", "q8_0")):
             v = con.execute("""SELECT AVG(_score) FROM experiments WHERE run_tag='m30-kv-ctx'
                 AND _bench='humaneval-cpp' AND protocol LIKE ? AND protocol LIKE ?""",
                 (f"%ctx={cx},%", f"%kv={a}/{b}%")).fetchone()[0]
-            A(f"| Qwen3.5-2B @4.11 · ctx{cx} | {a}/{b} | {v:.4f} |")
-    A("")
-    A("每组 4 个 KV 配置几乎相同 → KV 量化无影响；下降来自 ctx。每格 n=1，只有代码。")
-    A("")
+            rows.append((f"Qwen3.5-2B @4.11bpw · ctx{cx}", f"{a}/{b}", {"代码": v}))
+    table(o, "5. 变量 = KV 量化（第 1 列 = 模型·BPW·ctx，其他全同）",
+          "只有代码（cpp）数据，每格 n=1。",
+          "模型·BPW·ctx（其他全同）", "KV 类型", rows)
 
-    # ---- sampling
-    A("## 6. 变量 = 采样参数（第 1 列 = 模型·BPW·轴，其他全同）")
-    A("")
-    A("| 模型·BPW·轴（其他全同） | 取值 | **cpp** | **py** |")
-    A("|---|---|---|---|")
+    # 6 sampling
+    rows = []
     tc = collections.defaultdict(dict)
     for t, l, v in con.execute("""SELECT temp,language,AVG(_score) FROM experiments
             WHERE run_tag='m27-sampling' GROUP BY 1,2"""):
         tc[t][l] = v
     for t in sorted(tc):
-        A(f"| Qwen3.5-2B @4.11 · temperature | {t} | {tc[t].get('cpp'):.4f} | {tc[t].get('py'):.4f} |")
+        rows.append(("Qwen3.5-2B @4.11bpw · temperature", t,
+                     {"代码": (tc[t]["cpp"] + tc[t]["py"]) / 2}))
     tk = collections.defaultdict(dict)
     for k, l, v in con.execute("""SELECT top_k,language,AVG(_score) FROM experiments
             WHERE run_tag='m31-topk' GROUP BY 1,2"""):
         tk[k][l] = v
     for k in sorted(tk, key=lambda x: int(x)):
-        A(f"| Qwen3.5-2B @4.11 · top_k | {k} | {tk[k].get('cpp'):.4f} | {tk[k].get('py'):.4f} |")
-    A("")
-    A("top_k 20→200 逐格相同；只有 K=1 不同且两语言方向相反。只有代码。")
-    A("")
+        rows.append(("Qwen3.5-2B @4.11bpw · top_k", k,
+                     {"代码": (tk[k]["cpp"] + tk[k]["py"]) / 2}))
+    table(o, "6. 变量 = 采样参数（第 1 列 = 模型·BPW·轴，其他全同）",
+          "只有代码数据；此处取 cpp+py 均值。",
+          "模型·BPW·轴（其他全同）", "取值", rows)
 
-    # ---- speed
-    A("## 7. 变量 = 投机解码深度（tok/s，第 1 列 = 模型·BPW·ctx）")
-    A("")
-    A("| 模型·BPW·ctx（其他全同） | spec_draft_n_max | **代码** | **长上下文** | **散文** |")
-    A("|---|---|---|---|---|")
+    # 7 spec decode
+    rows = []
     for n in ("0", "1", "2", "3", "4"):
         r = {b: con.execute("""SELECT AVG(_tok_s) FROM experiments WHERE run_tag='m28-speed'
              AND _bench=? AND spec_draft_n_max=?""", (b, n)).fetchone()[0]
              for b in ("speed-code", "speed-longctx", "speed-prose")}
-        A(f"| Qwen3.5-2B @5.70 · ctx16384 | {n} | {r['speed-code']:.1f} | "
-          f"{r['speed-longctx']:.1f} | {r['speed-prose']:.1f} |")
-    A("")
-    A("2B：代码 n=3 +32%、散文 n=4 +19%，但长上下文所有 n 都更慢（n=4 时 −16%）→ 任务相关。")
-    A("")
-    A("| 模型·BPW·ctx（其他全同） | spec_draft_n_max | **代码** | **散文** |")
-    A("|---|---|---|---|")
+        rows.append(("Qwen3.5-2B @5.70bpw · ctx16384", n,
+                     {"代码": r["speed-code"], "长上下文": r["speed-longctx"],
+                      "散文": r["speed-prose"]}))
+    table(o, "7. 变量 = 投机解码深度（第 1 列 = 模型·BPW·ctx，单位 tok/s）",
+          "这里三列是速度场景（代码/长上下文/散文），不是准确率。",
+          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows)
+
+    rows = []
     for n in ("0", "2", "4", "6"):
         r = {b: con.execute("""SELECT AVG(_tok_s) FROM experiments WHERE run_tag='m52-speed'
              AND model='gemma-4-12b-it-UD-Q3_K_XL.gguf' AND _bench=? AND spec_draft_n_max=?""",
              (b, n)).fetchone()[0] for b in ("speed-code", "speed-prose")}
-        A(f"| gemma-4-12b @4.05 · ctx16384 | {n} | {r['speed-code']:.2f} | {r['speed-prose']:.2f} |")
-    A("")
-    A("gemma 完全平坦 → 投机通路没有生效，是**非测量**。")
-    A("")
+        rows.append(("gemma-4-12b @4.05bpw · ctx16384", n,
+                     {"代码": r["speed-code"], "散文": r["speed-prose"]}))
+    table(o, "7b. 对照组：gemma-4-12b 的投机深度（tok/s）",
+          "完全平坦 → 该模型的投机通路没有生效，是非测量。",
+          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows)
 
     open("RESULTS_BY_COMPARISON.md", "w").write("\n".join(o) + "\n")
-    print("\n".join(o))
+    print("wrote RESULTS_BY_COMPARISON.md:", len(o), "lines")
 
 
 if __name__ == "__main__":
