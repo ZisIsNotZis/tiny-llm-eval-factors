@@ -79,11 +79,13 @@ for (m, q) in SRC:
     QOF[m].append(q)
 
 
-def table(o, title, note, c1, c2, rows):
-    """rows = [(col1, col2, cells)].  One table.  Drop col1 groups with <2 col2."""
+def table(o, title, note, c1, c2, rows, cols=None):
+    """rows = [(col1, col2, cells)].  One table.  Drop col1 groups with <2 col2.
+    cols = the table's own column set (never filtered down)."""
+    cols = cols or BENCH
     grp = collections.defaultdict(dict)
     for a, b, c in rows:
-        if any(c.get(x) is not None for x in BENCH):
+        if any(c.get(x) is not None for x in cols):
             grp[a][b] = c
     keep = {a: v for a, v in grp.items() if len(v) >= 2}
     o.append(f"## {title}")
@@ -95,13 +97,13 @@ def table(o, title, note, c1, c2, rows):
         o.append("*没有一组有 ≥2 个对比项，故不写。*")
         o.append("")
         return
-    o.append(f"| {c1} | {c2} | " + " | ".join(f"**{b}**" for b in BENCH) + " |")
-    o.append("|---" * (len(BENCH) + 2) + "|")
+    o.append(f"| {c1} | {c2} | " + " | ".join(f"**{b}**" for b in cols) + " |")
+    o.append("|---" * (len(cols) + 2) + "|")
     for a in sorted(keep):
-        for b in sorted(keep[a], key=lambda x: (len(x), x)):
+        for b in sorted(keep[a], key=lambda x: [float(t) for t in re.findall(r"[0-9.]+", x)] or [0.0]):
             c = keep[a][b]
             o.append(f"| {a} | {b} | " + " | ".join(
-                "-" if c.get(x) is None else f"{c[x]:.4f}" for x in BENCH) + " |")
+                "-" if c.get(x) is None else f"{c[x]:.4f}" for x in cols) + " |")
     o.append("")
 
 
@@ -197,17 +199,17 @@ def main():
         tc[t][l] = v
     for t in sorted(tc):
         rows.append(("Qwen3.5-2B @4.11bpw · temperature", t,
-                     {"代码": (tc[t]["cpp"] + tc[t]["py"]) / 2}))
+                     {"cpp": tc[t]["cpp"], "py": tc[t]["py"]}))
     tk = collections.defaultdict(dict)
     for k, l, v in con.execute("""SELECT top_k,language,AVG(_score) FROM experiments
             WHERE run_tag='m31-topk' GROUP BY 1,2"""):
         tk[k][l] = v
     for k in sorted(tk, key=lambda x: int(x)):
         rows.append(("Qwen3.5-2B @4.11bpw · top_k", k,
-                     {"代码": (tk[k]["cpp"] + tk[k]["py"]) / 2}))
+                     {"cpp": tk[k]["cpp"], "py": tk[k]["py"]}))
     table(o, "6. 变量 = 采样参数（第 1 列 = 模型·BPW·轴，其他全同）",
-          "只有代码数据；此处取 cpp+py 均值。",
-          "模型·BPW·轴（其他全同）", "取值", rows)
+          "只有代码数据（cpp / py 两个语言列）。",
+          "模型·BPW·轴（其他全同）", "取值", rows, cols=["cpp", "py"])
 
     # 7 spec decode
     rows = []
@@ -219,8 +221,9 @@ def main():
                      {"代码": r["speed-code"], "长上下文": r["speed-longctx"],
                       "散文": r["speed-prose"]}))
     table(o, "7. 变量 = 投机解码深度（第 1 列 = 模型·BPW·ctx，单位 tok/s）",
-          "这里三列是速度场景（代码/长上下文/散文），不是准确率。",
-          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows)
+          "单位 tok/s；三列是测速场景，不是准确率。",
+          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows,
+          cols=["代码", "长上下文", "散文"])
 
     rows = []
     for n in ("0", "2", "4", "6"):
@@ -231,7 +234,8 @@ def main():
                      {"代码": r["speed-code"], "散文": r["speed-prose"]}))
     table(o, "7b. 对照组：gemma-4-12b 的投机深度（tok/s）",
           "完全平坦 → 该模型的投机通路没有生效，是非测量。",
-          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows)
+          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows,
+          cols=["代码", "散文"])
 
     open("RESULTS_BY_COMPARISON.md", "w").write("\n".join(o) + "\n")
     print("wrote RESULTS_BY_COMPARISON.md:", len(o), "lines")
