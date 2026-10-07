@@ -171,7 +171,7 @@ inactive. Therefore:
 
 1. Every panel script must, **at its end**, test whether its successor's summary is complete and if
    not, launch it — i.e. chains write their own successor (`chain9.sh` pattern), so a queue drains
-   only when there is genuinely nothing left in `BRAINSTORM.md`.
+   only when there is genuinely nothing left in `BACKLOG.md`.
 2. Keep a persisted queue file `QUEUE.md` (ordered list of not-yet-run panels with their script
    path and summary path). A chain's last step launches the next QUEUE.md entry and marks the
    finished one done. State lives on disk, not in a session.
