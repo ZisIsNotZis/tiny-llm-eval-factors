@@ -19,3 +19,12 @@ __pycache__/
 # DB backups
 experiments.sqlite.bak*
 .pi/
+
+# raw per-panel artifacts (regenerable; keep scripts + *_summary.jsonl only)
+.wrapup/mres/
+.wrapup/*.log
+.wrapup/jars/
+.wrapup/evalpy/
+.wrapup/msenv/
+.wrapup/bfclenv/
+.wrapup/mplenv/
