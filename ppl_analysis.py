@@ -118,7 +118,7 @@ def main():
             "verdict": verdict(levels),
         }
 
-    with open("ppl_join.json", "w") as f:
+    with open(".wrapup/out/ppl_join.json", "w") as f:
         json.dump(out, f, indent=1)
 
     L = ["# PPL vs pass@1: why does \">= Q3\" look sufficient?\n",
@@ -139,7 +139,7 @@ def main():
             L.append(f"- PPL still improves above that point: "
                      f"**{v['ppl_improves_above_saturation']}**")
         L.append("")
-    with open("PPL_JOIN.md", "w") as f:
+    with open(".wrapup/out/PPL_JOIN.md", "w") as f:
         f.write("\n".join(L) + "\n")
     print(json.dumps(out, indent=1)[:3000])
     print("wrote ppl_join.json + PPL_JOIN.md")

@@ -19,7 +19,7 @@ import math
 import re
 
 CLAIMS = "conclusions.md"
-RES = json.load(open("resolution.json"))
+RES = json.load(open(".wrapup/out/resolution.json"))
 REPEAT = RES["thresholds"]["repeat_floor"]          # 0.008
 MDE_HE = RES["thresholds"]["single_pair_humaneval"] # 0.108
 MDE_MBPP = RES["thresholds"]["single_pair_mbpp"]    # 0.071
@@ -107,7 +107,7 @@ def main():
             "reason": reason,
             "claim": claim,
         })
-    with open("claims_ledger.csv", "w", newline="") as f:
+    with open(".wrapup/out/claims_ledger.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
@@ -147,7 +147,7 @@ def main():
             md.append(f"- {d}— {r['claim']}")
             md.append(f"  - _{r['reason']}_")
         md.append("")
-    with open("CLAIMS_RESOLUTION.md", "w") as f:
+    with open(".wrapup/out/CLAIMS_RESOLUTION.md", "w") as f:
         f.write("\n".join(md) + "\n")
     print("\nwrote claims_ledger.csv + CLAIMS_RESOLUTION.md")
 

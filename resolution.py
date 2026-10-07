@@ -194,7 +194,7 @@ def main():
         "note": "conclusions referencing ctx= / parallel= cannot be audited from the DB",
     }
 
-    with open("resolution.json", "w") as f:
+    with open(".wrapup/out/resolution.json", "w") as f:
         json.dump(out, f, indent=1)
 
     # ---- markdown ----
@@ -266,7 +266,7 @@ def main():
     md.append("- Exact-score ties across different models are **not** duplication evidence: the")
     md.append("  coarse k/164 grid makes them expected (observed tie-clusters are *below* the null).")
 
-    with open("resolution.md", "w") as f:
+    with open(".wrapup/out/resolution.md", "w") as f:
         f.write("\n".join(md) + "\n")
 
     print(json.dumps(out, indent=1))

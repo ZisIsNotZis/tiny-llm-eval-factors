@@ -230,7 +230,7 @@ def main():
         print(f"gap({m_a}) / gap({m_b}) = {d['ratio']:.3f} [{d['lo']:.3f}, {d['hi']:.3f}]"
               + ("  (size-dependent)" if d["hi"] < 1.0 or d["lo"] > 1.0 else "  (not size-dependent)"))
 
-    with open("horizon.json", "w") as f:
+    with open(".wrapup/out/horizon.json", "w") as f:
         json.dump(out, f, indent=1)
 
     L = ["# Task-horizon analysis — where does quantisation hurt most?\n",
@@ -255,7 +255,7 @@ def main():
              "~+0.15 of score regardless of size or task type; what differs is where you start, so a "
              "small model at Q2 can be near-unusable on multi-turn (2.5%) despite the same absolute "
              "gain.**\n")
-    with open("HORIZON.md", "w") as f:
+    with open(".wrapup/out/HORIZON.md", "w") as f:
         f.write("\n".join(L) + "\n")
     print("\nwrote horizon.json + HORIZON.md")
 

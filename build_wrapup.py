@@ -92,7 +92,7 @@ def multipl_e_panel():
 def main():
     res = load_json("resolution.json", {})
     man = load_json("archive_manifest.json", {})
-    ledger = list(csv.DictReader(open("claims_ledger.csv"))) if os.path.exists("claims_ledger.csv") else []
+    ledger = list(csv.DictReader(open(".wrapup/out/claims_ledger.csv"))) if os.path.exists("claims_ledger.csv") else []
     counts = Counter(r["status"] for r in ledger) if ledger else Counter()
     w1 = w1_stats()
 
@@ -407,7 +407,7 @@ def main():
     L.append("- **Terminal-Bench / SWE-bench as a data source** — too slow / Docker-heavy; only "
              "ever usable as a handful of qualitative anchors.\n")
 
-    with open("WRAPUP.md", "w") as f:
+    with open(".wrapup/out/WRAPUP.md", "w") as f:
         f.write("\n".join(L) + "\n")
     print("wrote WRAPUP.md")
     print(f"claims: {dict(counts)}")

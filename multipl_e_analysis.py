@@ -265,7 +265,7 @@ def main():
     # ---- matched-size scheme / vendor contrasts ----
     out["matched_size"] = matched_size_contrasts()
 
-    with open("multipl_e.json", "w") as f:
+    with open(".wrapup/out/multipl_e.json", "w") as f:
         json.dump(out, f, indent=1)
 
     # ---- markdown ----
@@ -323,7 +323,7 @@ def main():
                          f"[{p['ci_low']:+.4f}, {p['ci_high']:+.4f}] | "
                          f"{'yes' if p['significant'] else 'no'} |")
         L.append("")
-    with open("MULTIPLE.md", "w") as f:
+    with open(".wrapup/out/MULTIPLE.md", "w") as f:
         f.write("\n".join(L) + "\n")
 
     print(json.dumps(out.get("Q2_Q3_family_summary", {}), indent=1))

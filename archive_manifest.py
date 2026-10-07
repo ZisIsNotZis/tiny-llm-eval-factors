@@ -69,7 +69,7 @@ def main():
         "present_models": present,
         "missing_models": missing,
     }
-    with open("archive_manifest.json", "w") as f:
+    with open(".wrapup/out/archive_manifest.json", "w") as f:
         json.dump(out, f, indent=1)
 
     md = ["# Archive manifest\n",
@@ -90,7 +90,7 @@ def main():
     md.append(f"\n## Missing model files ({len(missing)})\n")
     for m in missing:
         md.append(f"- {m}")
-    with open("ARCHIVE_MANIFEST.md", "w") as f:
+    with open(".wrapup/out/ARCHIVE_MANIFEST.md", "w") as f:
         f.write("\n".join(md) + "\n")
 
     print(json.dumps({k: v for k, v in out.items()

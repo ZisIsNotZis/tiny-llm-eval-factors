@@ -106,7 +106,7 @@ def main():
                     q23t[f"{ob} ({mode_of[key]})"] = round(overall[other] - overall[key], 4)
     out["tools_Q2_Q3"] = q23t
 
-    with open("ladder_tools.json", "w") as f:
+    with open(".wrapup/out/ladder_tools.json", "w") as f:
         json.dump(out, f, indent=1)
 
     # ---------- markdown ----------
@@ -165,7 +165,7 @@ def main():
     else:
         L.append("_no M4 rows yet_\n")
 
-    with open("LADDER_TOOLS.md", "w") as f:
+    with open(".wrapup/out/LADDER_TOOLS.md", "w") as f:
         f.write("\n".join(L) + "\n")
     print(json.dumps({k: v for k, v in out.items()}, indent=1)[:2000])
     print("wrote ladder_tools.json + LADDER_TOOLS.md")

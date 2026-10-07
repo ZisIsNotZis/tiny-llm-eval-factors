@@ -127,7 +127,7 @@ def main():
                 ladders[f"{a}->{b}"].append(v[b]["_score"] - v[a]["_score"])
     out["matched_weight_quant"] = {k: ci95(v) for k, v in ladders.items() if len(v) >= 2}
 
-    with open("reanalysis.json", "w") as f:
+    with open(".wrapup/out/reanalysis.json", "w") as f:
         json.dump(out, f, indent=1)
 
     L = ["# Re-analysis of headline claims\n",
@@ -173,7 +173,7 @@ def main():
     L += ["",
           "This is the study's most reproducible effect family: the local weight-quant step "
           "is real, positive, and its aggregate clears the resolution floor.\n"]
-    with open("REANALYSIS.md", "w") as f:
+    with open(".wrapup/out/REANALYSIS.md", "w") as f:
         f.write("\n".join(L) + "\n")
 
     print(json.dumps(out, indent=1))
