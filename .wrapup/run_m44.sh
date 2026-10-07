@@ -31,6 +31,7 @@ LOG=$W/m44.log
 SUM=$W/m44_summary.jsonl
 MRES=$W/mres
 PORT=8099; BASE=http://127.0.0.1:$PORT; PY=python3
+PROBE_CTX=${PROBE_CTX:-16384}   # > long-prompt length (~7.7k tokens), see probe()
 mkdir -p "$MRES"
 echo "=== M44 start $(date) ===" >> "$LOG"
 : > "$SUM"
@@ -42,9 +43,14 @@ CELLS=("faon_f16:on:q8_0:f16" "faoff_f16:off:q8_0:f16" "faon_q8:on:q8_0:q8_0")
 probe() {  # <model> <out.json>  -> 0/1
   local model="$1" out="$2" srv
   if curl -s --max-time 3 "$BASE/health" >/dev/null 2>&1; then
-    pkill -f "llama-server .*-m /home/z/hf/" 2>/dev/null; sleep 3
+    # Only ever kill THIS panel's own server (port 8099); a bare "/home/z/hf/"
+    # pattern also matches the co-resident foreign llama-server on :8834.
+    pkill -f "llama-server .*-m /home/z/hf/.*--port $PORT" 2>/dev/null; sleep 3
   fi
-  llama-server -m "/home/z/hf/$model" --port $PORT --host 127.0.0.1 -ngl 99 -c 4096 \
+  # PROBE_CTX must exceed the ~7.7k-token "long" prompt below; -c 4096 made every
+  # probe die with HTTP 400 "request exceeds the available context size", which
+  # wrote 0 rows and looked like a failed manipulation instead of a harness bug.
+  llama-server -m "/home/z/hf/$model" --port $PORT --host 127.0.0.1 -ngl 99 -c ${PROBE_CTX:-16384} \
     -fa "$FA" --cache-type-k "$CK" --cache-type-v "$CV" \
     --top-p 0.95 --top-k 40 --min-p 0.05 --seed 1234 >> "$LOG" 2>&1 &
   srv=$!

@@ -64,9 +64,17 @@ run_step mpl  "N3 m52 speed/draft prose vs code" \
               "$W/run_m52.sh" "$W/m52_summary.jsonl" 4
 run_step mpl  "N4 m53 ModelScope ternary/1-bit search + probe" \
               "$W/run_m53.sh" "$W/m53_summary.jsonl" 2
+# N5/N6 added 2026-10-07: N0-N4 had drained (GPU idle 16:35->19:14) and these two
+# are the only script-ready panels whose summaries are still short: m44 (0/6 rows,
+# harness bug fixed in run_m44.sh: probe ctx 4096 -> 16384) and m32 (1/2 rows,
+# ternary Bonsai multi-turn_base, repaired with preflight + --partial-eval).
+run_step mpl  "N5 m44 compute-precision probe (repair: probe ctx 4096->16384)" \
+              "$W/run_m44.sh" "$W/m44_summary.jsonl" 6
+run_step bfcl "N6 m32 ternary Bonsai multi-turn base (repair, 1/2 rows)" \
+              "$W/run_m32.sh" "$W/m32_summary.jsonl" 2
 
 if [ -f "$W/NEXT_DRIVER2.sh" ]; then
   echo "[next] handing over to NEXT_DRIVER2.sh $(date)" >> "$LOG"
   locked bash "$W/NEXT_DRIVER2.sh"
 fi
-echo "=== NEXT_DRIVER complete $(date): N0..N4 drained. GPU now IDLE; add entries or re-arm. ===" >> "$LOG"
+echo "=== NEXT_DRIVER complete $(date): N0..N6 drained. GPU now IDLE; add entries or re-arm. ===" >> "$LOG"
