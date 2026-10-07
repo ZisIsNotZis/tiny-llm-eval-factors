@@ -12,7 +12,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 | noise_level | 5 | 5% |
 | unauditable | 8 | 8% |
 | model_fit | 16 | 16% |
-| qualitative | 28 | 28% |
+| qualitative | 29 | 29% |
 
 ## resolved (34)
 
@@ -171,7 +171,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m15 vs m19] The multi-turn BFCL axis has a measurable run-to-run floor of ~±0.015 under greedy, unlike greedy code which is exactly reproducible.** The same configuration (`Qwen3.5-2B` `UD-Q3_K_XL`, `multi_turn_long_context`, native-FC, greedy, 98304 ctx/slot) scored `0.095` (`run_tag='m15-bfcl-multiturn'`, 0/200 overflow) and `0.110` (`run_tag='m19-bfcl-multiturn'`, 1/200 overflow), i.e. ~3 items of drift. Consequence for this study: **multi-turn differences below ~0.03 should be treated as noise**, which matters because many of the per-category deltas we report are larger than that (base +0.160, miss_param +0.100, long_context +0.105) while others are not (miss_func +0.075 exceeds it only modestly). Greedy code (W1) was bit-identical across repeats; the agentic harness adds residual nondeterminism (parallel slots, batching, occasional decode retries).
   - _model-fit / coefficient statement, not an effect claim_
 
-## qualitative (28)
+## qualitative (29)
 
 - — Reasoning analysis must use validity decomposition (`P(pass)=P(valid_output)×P(pass|valid_output)`), not raw pass-rate alone.
   - _no numeric contrast in the claim_
@@ -228,5 +228,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - — **[VERIFIED, m41] On a CONTINUOUS metric the ternary model's advantage is about passing more tests, not just differently.** Per-test pass fraction (not binary pass@1): ternary arm mean_frac **0.6035** vs conventional arm **0.4369**. Since the binary pass@1 gap is much larger in relative terms, this shows the ternary model converts a decent share of its extra capability into *partially correct* solutions too.
   - _no numeric contrast in the claim_
 - — **[VERIFIED, m37] The vendor/recipe label does not matter at matched file size, replicated.** Qwen3.6-35B-A3B `UD-Q3_K_XL` (17.23 GB) vs bartowski `Q3_K_M` (17.12 GB): cpp 0.7205 vs 0.7578, py 0.7578 vs 0.7391 — a mixed, null pattern (consistent with `m25`). Together these two independent matched-size tests say the Unsloth `UD` label carries no score signal beyond file size.
+  - _no numeric contrast in the claim_
+- — **[VERIFIED, m36] The ternary off-curve advantage extends to the error-handling agentic categories.** `Ternary-Bonsai-27B-Q2_g64` (2.25 bpw) scores `multi_turn_miss_func` **0.515** (n=200, partial-eval) — versus `Qwen3.5-2B Q3` (4 bpw) at **0.080** and no dense anchor above 0.42. Combined with its `multi_turn_base` 0.695/0.700, the ternary model is at or above the top of every multi-turn axis we have measured, at roughly half the bytes of the conventional quants it beats.
   - _no numeric contrast in the claim_
 

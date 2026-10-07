@@ -623,6 +623,11 @@ def ingest_m41(con):
     return n
 
 
+def ingest_m36(con):
+    return _ingest_bfcl_mt(con, ".wrapup/m36_summary.jsonl", "m36-bonsai-ternary-mt2",
+                           "m36_summary.jsonl")
+
+
 def ingest_m4(con):
     return _ingest_bfcl(con, ".wrapup/m4_summary.jsonl", "m4-tool-calling",
                         "bfcl-prompt-nothink-greedy", "m4_summary.jsonl")
@@ -801,6 +806,7 @@ def main():
         ("m24", ingest_m24), ("m29", ingest_m29), ("m32", ingest_m32),
         ("m30", ingest_m30), ("m31", ingest_m31),
         ("m37", ingest_m37), ("m41", ingest_m41), ("m42", ingest_m42), ("m45", ingest_m45),
+        ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),
     ]
