@@ -622,6 +622,15 @@ def ingest_m51(con):
                       "m51_summary.jsonl", model_map=M51_MODELS)
 
 
+M54_MODELS = M51_MODELS  # same gemma-4-12B Q2_K_XL / Q3_K_XL files as m51, other languages
+
+
+def ingest_m54(con):
+    """M54 (N5): gemma-4-12B rust+ruby code anchor -- extends m51 (java+js)."""
+    return ingest_mpl(con, ".wrapup/m54_summary.jsonl", "m54-gemma-rust-ruby",
+                      "m54_summary.jsonl", model_map=M54_MODELS)
+
+
 M52_MODELS = {
     "gemma12b-q3": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
     "gemma12b-q3-draft": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
@@ -875,6 +884,7 @@ def main():
         ("m30", ingest_m30), ("m31", ingest_m31),
         ("m37", ingest_m37), ("m41", ingest_m41), ("m42", ingest_m42), ("m45", ingest_m45),
         ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
+        ("m54", ingest_m54),
         ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),

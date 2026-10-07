@@ -8,10 +8,10 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 | status | n | share |
 |---|---|---|
 | resolved | 34 | 33% |
-| underpowered | 9 | 9% |
+| underpowered | 10 | 10% |
 | noise_level | 5 | 5% |
 | unauditable | 8 | 8% |
-| model_fit | 16 | 16% |
+| model_fit | 16 | 15% |
 | qualitative | 31 | 30% |
 
 ## resolved (34)
@@ -85,7 +85,7 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
 - Δ=0.236 — **[VERIFIED, m38/m39] The Q2->Q3 code deficit replicates on two more languages, and a second vendor's ternary does NOT sit above the bits->score curve.** `m38-statpower-javajs` (Qwen3.5-2B `UD-Q2_K_XL`/`UD-Q3_K_XL`, java/js, 158-161 items/lang, greedy): q2 java **0.120** js **0.112** -> q3 java **0.215** js **0.317** (Q2->Q3 step **+0.095** java / **+0.205** js, both above the ~±0.03 axis floor). `m39-glm-ternary` (GLM-4.7-Flash, cpp/py, 161 items): `UD-TQ1_0` (ternary, 8.33 GB) cpp **0.236** / py **0.118** vs its own `UD-Q2_K_XL` reference (11.89 GB) cpp **0.472** / py **0.348** — i.e. **−0.236 / −0.230** at *fewer* bits, so unlike the Bonsai co-designed ternary (m21/m24/m35) this TQ1_0 family is clearly *below* its Q2 reference and the off-curve effect does not generalise to a scheme-only ternary conversion. Ingested as `run_tag='m38-statpower-javajs'` (4 rows) and `'m39-glm-ternary'` (4 rows), DB 2171 -> 2197, `integrity ok | fk issues 0`. **FLAG (m29 — harness non-measurement, NOT a null on FA/V-cache):** the m29 "FA on/off × V-cache" panel measured nothing on its FA axis — `faon_f16` and `faoff_f16` are byte-identical in all 4 model×language cells (q2 cpp 18/161, q2 py 21/161, q3 cpp 42/161, q3 py 44/161) — and its 24-line summary repeats its first 12 rows verbatim; the panel also has **0 rows in the DB** (`ingest_m29` passes no model map, so its keys `q2`/`q3` are filtered out against `MPL_MODELS`). Do not read m29 as an FA or V-cache null.
   - _|Δ|=0.2360 >= MDE 0.108 at n=1_
 
-## underpowered (9)
+## underpowered (10)
 
 - Δ=0.0488 — On unseen-architecture `NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL` under fixed controls (`ctx2048`, `q8_0/q8_0`, no-MTP), `top_k:40->20` decreases plus score on both datasets (Humaneval `-0.0061`, MBPP `-0.0317`) with small wall-time increases, and `reasoning off->on` decreases plus score on both datasets (Humaneval `-0.0488`, MBPP `-0.0265`) with large wall-time penalties (Humaneval `+288.7s`, MBPP `+473.3s`).
   - _|Δ|=0.0488 < MDE 0.108 at n=1_
@@ -105,6 +105,8 @@ Thresholds: repeat floor **0.022**, single-pair MDE on HumanEval **0.108**, on M
   - _|Δ|=0.0994 < MDE 0.108 at n=1_
 - Δ=0.056 — **[VERIFIED, m50 replicated] At MATCHED FILE SIZE, the imatrix scheme beats the K-quant scheme: `IQ3_XXS` > `Q2_K_XL` by +0.056 (95% CI [+0.008, +0.104]).** Two anchors x two languages, all four cells in the same direction: 2B `0.180/0.199` vs `0.112/0.137`; 4B `0.379/0.410` vs `0.342/0.354`. Because the files are size-matched (4B: 1858.7 vs 1850.9 MB = 0.42%; 2B: 888.7 vs 921.8 MB = 3.6%), this isolates the **scheme** from the bit budget — the first clean evidence in this study that *how* you quantise matters as much as *how much*. Note it also means the conventional "bit level" label (Q2 vs Q3) is not a like-for-like comparison across schemes.
   - _|Δ|=0.0560 < MDE 0.108 at n=1_
+- Δ=0.0994 — **[HARNESS, m54] gemma-4-12B under the raw protocol is also at the floor on rust/ruby — the same output-format artefact as m51, NOT a Q2->Q3 null.** `gemma12b-q2` rs **0.0065** (1/155 pass) / rb **0.0000** (0/161); `gemma12b-q3` rs **0.0000** (0/155) / rb **0.0000** (0/161) — ingested as `run_tag='m54-gemma-rust-ruby'` (4 rows). The cells are *not* byte-identical across the quant axis (Q2 rs passes 1 item, Q3 rs passes 0), so the variable did move, but at <=1/161 the panel is at the measurement floor and carries no Q2->Q3 information. Positive control for the same languages and harness: `Qwen3.5-2B` (m42) scores rs 0.0645->0.1613 and rb 0.0062->0.1056, so the floor is a gemma-4 formatting artefact, consistent with the m51 flag; gemma-4 stays excluded from cross-language claims until a guarded chat protocol is validated.
+  - _|Δ|=0.0994 < MDE 0.108 at n=1_
 
 ## noise_level (5)
 
