@@ -1,244 +1,661 @@
 #!/usr/bin/env python3
-"""ONE table per research variable.
+"""Generate RESULTS_BY_COMPARISON.md from experiments.sqlite.
 
-col1 = everything held constant, col2 = the varied variable, then one column per
-benchmark.  Empty CELLS are allowed.  A whole table is emitted per axis (never
-split).  A col1 group is dropped only when it has <2 distinct col2 values (no
-comparison possible).  No other row is ever dropped.
+ONE TABLE PER RESEARCH VARIABLE.  The operator fixed this shape over six
+iterations -- treat the following as the contract, not a suggestion:
+
+ 1. One table per research variable.  A variable is never split across two
+    tables and two variables are never merged into one.
+ 2. Inside a table: column 1 = everything held constant (the group key),
+    column 2 = the VARIED variable, the remaining columns = one per BENCHMARK.
+ 3. Columns are never filtered.  Every table prints the full benchmark column
+    set for its axis, even when a column is entirely empty.  Do not drop a
+    benchmark column because it has no data.
+ 4. Rows are filtered only as follows: drop a row that has no benchmark value
+    at all; drop a whole column-1 group that has fewer than 2 distinct values
+    of the varied variable (nothing to compare).  Nothing else is dropped.
+ 5. Empty cells are rendered `-`.  A missing number is never written as 0.0
+    and no measured number is ever discarded.
+ 6. The quantisation x-axis is EFFECTIVE BPW = 8 * file_bytes / n_params, read
+    from .wrapup/bpw_map.json (key = gguf basename).  Nominal labels ("Q2",
+    "Q3") are NEVER used as an axis: they span 2.76-5.04 bpw and are
+    meaningless.  Where the varied variable is bpw it is shown to 2 decimals.
+ 7. One coverage row sits at the top of each table and reports the number of
+    rows shown and the number of benchmark columns that carry data, so a thin
+    table is obvious at a glance.
+ 8. Every score cell carries its n_items, e.g. `0.3720 (164)`, so the reader
+    can recompute an item-level SE.  No score is ever printed without its n.
+    (In the speculative-decoding tok/s block the parenthesised number is the
+    number of measurements behind the mean, not an item count.)
+
+BPW source: .wrapup/bpw_map.json, written by .wrapup/gguf_params.py as
+effective_bpw = 8 * os.path.getsize(gguf) / parameter_count.
+
+The DB is opened read-only (`mode=ro`).  Regeneration is idempotent: the same
+database produces the same file.
 """
 import collections
 import glob
 import json
+import os
 import re
 import sqlite3
 
-W = ".wrapup"
-BPW = json.load(open(f"{W}/bpw_map.json"))
-con = sqlite3.connect("file:experiments.sqlite?mode=ro", uri=True)
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+DB = os.path.join(ROOT, "experiments.sqlite")
+OUT = os.path.join(ROOT, "RESULTS_BY_COMPARISON.md")
+BPW_MAP_PATH = os.path.join(HERE, "bpw_map.json")
+CAMPAIGN_TXT = os.path.join(HERE, "CAMPAIGN.txt")
 
-_n = collections.defaultdict(list)
-for _f in glob.glob(f"{W}/*_summary.jsonl"):
-    for _l in open(_f):
+BPW = json.load(open(BPW_MAP_PATH))
+
+# ---- benchmark column set -------------------------------------------------
+# (key, label); this list is the report's column order and is never filtered.
+BENCH = [
+    ("humaneval",      "HumanEval"),
+    ("humaneval_plus", "HumanEval+"),
+    ("mbpp",           "MBPP"),
+    ("mbpp_plus",      "MBPP+"),
+    ("multipl_e",      "MultiPL-E"),
+    ("mmlu",           "MMLU"),
+    ("arc_challenge",  "ARC-c"),
+    ("truthfulqa_mc2", "TruthfulQA"),
+    ("gsm8k",          "GSM8K"),
+    ("ifeval",         "IFEval"),
+]
+BENCH_KEYS = [k for k, _ in BENCH]
+BENCH_LABELS = [l for _, l in BENCH]
+
+# speculative-decoding tok/s scenarios (columns of block 1 of table G)
+SCEN = [("speed-code", "code"), ("speed-longctx", "long-ctx"), ("speed-prose", "prose")]
+
+# effective-bpw band that counts as "matched" for the scheme/vendor table (C).
+# Single-linkage, so 0.45 puts the whole Qwen3.5-2B IQ2_XXS(3.27) / IQ2_M(3.66) /
+# IQ3_XXS(3.96) / Q2_K_XL(4.11) ladder in one matched cluster (each step is <= 0.39).
+# 0.20 was too tight and left the named IQ trio out of the comparison entirely.
+MATCH_BPW = 0.45
+
+# MoE bit-allocation recipes (table D); order is the report's row order.
+M55_RECIPES = [
+    ("LFM2.5-8B-A1B-m55-Q3_K_M.gguf", "uniform Q3_K_M (baseline)"),
+    ("LFM2.5-8B-A1B-m55-exq2.gguf",   "experts IQ2/Q2, rest Q5_K_M (exq2)"),
+    ("LFM2.5-8B-A1B-m55-exq4.gguf",   "experts Q4_K, rest Q2_K (exq4)"),
+]
+
+con = sqlite3.connect("file:%s?mode=ro" % DB, uri=True)
+
+# ---- per-language MultiPL-E item counts -----------------------------------
+# MultiPL-E rows carry no n_items; the raw *_summary.jsonl files do.  Same
+# derivation as the retired mktables.py (most common n per language).
+_lang_n = collections.defaultdict(list)
+for _f in glob.glob(os.path.join(HERE, "*_summary.jsonl")):
+    for _line in open(_f):
         try:
-            _r = json.loads(_l)
+            _r = json.loads(_line)
         except Exception:
             continue
         if _r.get("lang") and _r.get("n"):
-            _n[_r["lang"]].append(_r["n"])
-LANG_N = {k: collections.Counter(v).most_common(1)[0][0] for k, v in _n.items()}
-
-BENCH = ["代码", "BFCL单轮", "多轮base", "long_ctx", "miss_func", "miss_param"]
-
-
-def short(m):
-    x = m.replace(".gguf", "").replace("Qwen_Qwen", "Qwen")
-    x = re.sub(r"-instruct", "", x, flags=re.I)
-    return re.sub(r"[-_](UD-)?(I?Q\d[_A-Za-z0-9]*|TQ1_0|Q2_0_g64|Q2_g64)$", "", x)
+            _lang_n[_r["lang"]].append(_r["n"])
+LANG_N = {k: collections.Counter(v).most_common(1)[0][0] for k, v in _lang_n.items()}
+LANG_N.setdefault("cpp", 161)
+LANG_N.setdefault("py", 161)
 
 
-code = collections.defaultdict(dict)
-for m, q, l, s in con.execute("""SELECT model,__quant,language,AVG(_score) FROM experiments
-        WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768'
-          AND run_tag IS NOT NULL GROUP BY 1,2,3"""):
-    code[(m, q)][l] = s
-bfcl = collections.defaultdict(dict)
-for m, q, b, s in con.execute("""SELECT model,__quant,_bench,AVG(_score) FROM experiments
-        WHERE bench_family='bfcl' AND protocol='bfcl-native-tools-nothink-greedy'
-          AND run_tag IS NOT NULL GROUP BY 1,2,3"""):
-    bfcl[(m, q)][b[5:]] = s
-mt = collections.defaultdict(dict)
-for m, q, b, s in con.execute("""SELECT model,__quant,_bench,AVG(_score) FROM experiments
-        WHERE bench_family='bfcl-multiturn' AND run_tag IS NOT NULL GROUP BY 1,2,3"""):
-    mt[(m, q)][b[5:]] = s
-
-NONLIVE = ("irrelevance", "multiple", "parallel", "parallel_multiple", "simple_python")
-
-
-def cells(m, q):
-    d = code.get((m, q), {})
-    s = [v for k, v in bfcl.get((m, q), {}).items() if v is not None and k in NONLIVE]
-    g = mt.get((m, q), {})
-    pu = None
-    if d:
-        pu = (sum(d[l] * LANG_N.get(l, 161) for l in d)
-              / sum(LANG_N.get(l, 161) for l in d))
-    return {"代码": pu,
-            "BFCL单轮": (sum(s) / len(s)) if s else None,
-            "多轮base": g.get("multi_turn_base"),
-            "long_ctx": g.get("multi_turn_long_context"),
-            "miss_func": g.get("multi_turn_miss_func"),
-            "miss_param": g.get("multi_turn_miss_param")}
+# ---- row helpers ----------------------------------------------------------
+def bench_key(bench, family):
+    """Map (_bench, bench_family) onto one report column key, or None."""
+    if family == "humaneval-multipl-e":
+        return "multipl_e"
+    if bench == "humaneval":
+        return "humaneval"
+    if bench == "humaneval-plus":
+        return "humaneval_plus"
+    if bench == "mbpp":
+        return "mbpp"
+    if bench == "mbpp-plus":
+        return "mbpp_plus"
+    if bench in ("mmlu", "arc_challenge", "truthfulqa_mc2", "gsm8k", "ifeval"):
+        return bench
+    return None
 
 
-SRC = {}
-for (m, q) in set(code) | set(bfcl) | set(mt):
-    if m in BPW:
-        SRC[(m, q)] = cells(m, q)
-QOF = collections.defaultdict(list)
-for (m, q) in SRC:
-    QOF[m].append(q)
+def query_cells_by(where, extra="''", params=()):
+    """{(model, extra): {bench_key: (score, n)}} for a subset of the DB.
+
+    MultiPL-E rows (bench_family='humaneval-multipl-e') are pooled across
+    languages, weighted by the language item count; the pooled cell's n is the
+    number of pooled items.  Every other row keeps its own (_score, n_items).
+    """
+    q = ("SELECT model, %s, _bench, bench_family, _score, n_items, language "
+         "FROM experiments WHERE run_tag IS NOT NULL AND run_tag <> '' "
+         "AND _score IS NOT NULL AND (%s)" % (extra, where))
+    cells = collections.defaultdict(dict)
+    mpl = collections.defaultdict(lambda: collections.defaultdict(list))
+    for model, tag, bench, fam, score, n, lang in con.execute(q, params):
+        if score is None:
+            continue
+        if fam == "humaneval-multipl-e":
+            mpl[(model, tag)][lang].append(score)
+            continue
+        k = bench_key(bench, fam)
+        if k is not None:
+            cells[(model, tag)][k] = (score, n)
+    for key, per_lang in mpl.items():
+        acc = tot = 0.0
+        for lang, scores in per_lang.items():
+            w = LANG_N.get(lang, 161)
+            acc += (sum(scores) / len(scores)) * w
+            tot += w
+        if tot:
+            cells[key]["multipl_e"] = (acc / tot, int(tot))
+    return cells
 
 
-def table(o, title, note, c1, c2, rows, cols=None):
-    """rows = [(col1, col2, cells)].  One table.  Drop col1 groups with <2 col2.
-    cols = the table's own column set (never filtered down)."""
-    cols = cols or BENCH
-    grp = collections.defaultdict(dict)
-    for a, b, c in rows:
-        if any(c.get(x) is not None for x in cols):
-            grp[a][b] = c
-    keep = {a: v for a, v in grp.items() if len(v) >= 2}
-    o.append(f"## {title}")
+# ---- model-name helpers ---------------------------------------------------
+QUANT_RE = re.compile(r"[-_](?P<q>m\d+-[\w]+|(?:UD-)?(?:IQ|TQ|Q)\d[\w.]*)$")
+SIZE_RE = re.compile(r"[-_]?((?:E)?\d+(?:\.\d+)?[Bb](?:-A\d+(?:\.\d+)?[Bb])?)")
+
+
+def model_stem(model):
+    return model[:-len(".gguf")] if model.endswith(".gguf") else model
+
+
+def split_quant(model):
+    """(stem without the quant suffix, quant recipe) for a gguf basename."""
+    stem = model_stem(model)
+    m = QUANT_RE.search(stem)
+    if not m:
+        return stem, None
+    return stem[:m.start()], m.group("q")
+
+
+def family_of(model):
+    """Model stem with the quant suffix removed (size is kept)."""
+    stem, _ = split_quant(model)
+    stem = re.sub(r"^Qwen_Qwen", "Qwen", stem)
+    return re.sub(r"[-_](it|instruct|chat)$", "", stem, flags=re.I)
+
+
+def is_recipe(model):
+    """True for panel-tagged recipes (mNN-...) that vary something other than
+    raw bpw -- they belong to their own axis, not to the bpw ladder (A/B/C)."""
+    _, q = split_quant(model)
+    return bool(q and re.match(r"^m\d+-", q))
+
+
+def lineage_and_size(model):
+    """(size-agnostic lineage, size token) for the size axis (B)."""
+    family = family_of(model)
+    m = SIZE_RE.search(family)
+    if not m:
+        return family, family
+    size = m.group(1)
+    lineage = (family[:m.start()] + family[m.end():]).strip("-_")
+    lineage = re.sub(r"[-_](it|instruct|chat)$", "", lineage, flags=re.I)
+    return lineage, size
+
+
+def size_value(size):
+    m = re.search(r"(\d+(?:\.\d+)?)", size)
+    return float(m.group(1)) if m else 0.0
+
+
+def recipe_of(model):
+    _, q = split_quant(model)
+    if q is None:
+        return None
+    return re.sub(r"^UD-", "", q)
+
+
+# ---- rendering ------------------------------------------------------------
+def fmt(cells, key, unit=None):
+    v = cells.get(key)
+    if v is None:
+        return "-"
+    val, n = v
+    if unit == "tok_s":
+        return "%.1f (%s)" % (val, n) if n is not None else "%.1f" % val
+    if n is None:
+        return "%.4f (n=?)" % val
+    return "%.4f (%s)" % (val, n)
+
+
+CELL_RE = re.compile(r"^-?\d+(\.\d+)? \([^)]+\)$")
+
+
+def selfcheck(txt):
+    """Every rendered value cell must carry its n (rule 8).  Returns the list
+    of offending cells (empty == pass)."""
+    bad = []
+    for ln in txt.splitlines():
+        if not ln.startswith("| ") or ln.startswith("|---") or "Σ coverage" in ln:
+            continue
+        cells = [c.strip() for c in ln.strip().strip("|").split("|")]
+        if any(c.startswith("**") for c in cells):   # header row
+            continue
+        for c in cells[2:]:
+            if c not in ("-", "") and not CELL_RE.match(c):
+                bad.append(c)
+    return bad
+
+
+def emit_table(o, title, note, c1_name, c2_name, col_keys, col_labels, rows,
+               sort_key=None, sort1=None, unit=None, waiting=None):
+    """Append one table; return the number of data rows shown.
+
+    rows = [(col1, col2, cells)].  Implements rules 3-8 exactly.
+    """
+    o.append("## " + title)
     o.append("")
     if note:
         o.append(note)
         o.append("")
-    if not keep:
-        o.append("*没有一组有 ≥2 个对比项，故不写。*")
-        o.append("")
-        return
-    o.append(f"| {c1} | {c2} | " + " | ".join(f"**{b}**" for b in cols) + " |")
-    o.append("|---" * (len(cols) + 2) + "|")
-    for a in sorted(keep):
-        for b in sorted(keep[a], key=lambda x: [float(t) for t in re.findall(r"[0-9.]+", x)] or [0.0]):
-            c = keep[a][b]
-            o.append(f"| {a} | {b} | " + " | ".join(
-                "-" if c.get(x) is None else f"{c[x]:.4f}" for x in cols) + " |")
+    o.append("| " + c1_name + " | " + c2_name + " | " +
+             " | ".join("**%s**" % l for l in col_labels) + " |")
+    o.append("|---" * (len(col_keys) + 2) + "|")
+
+    kept = [r for r in rows if any(r[2].get(k) is not None for k in col_keys)]
+    groups = collections.defaultdict(list)
+    for c1, c2, cells in kept:
+        groups[c1].append((c2, cells))
+    # rule 4: keep only groups with >=2 distinct values of the varied variable
+    groups = {c1: v for c1, v in groups.items()
+              if len({c2 for c2, _ in v}) >= 2}
+
+    shown = sum(len(v) for v in groups.values())
+    counts = {k: sum(1 for v in groups.values() for _, cells in v
+                     if cells.get(k) is not None) for k in col_keys}
+    data_cols = sum(1 for k in col_keys if counts[k] > 0)
+    o.append("| **Σ coverage** | rows=%d · data-cols=%d/%d | %s |" % (
+        shown, data_cols, len(col_keys),
+        " | ".join(str(counts[k]) for k in col_keys)))
+
+    keys = sorted(groups, key=sort1) if sort1 else sorted(groups)
+    for c1 in keys:
+        items = groups[c1]
+        if sort_key:
+            items = sorted(items, key=lambda kv: sort_key(kv[0]))
+        for c2, cells in items:
+            o.append("| " + c1 + " | " + c2 + " | " +
+                     " | ".join(fmt(cells, k, unit) for k in col_keys) + " |")
     o.append("")
+    if not groups and waiting:
+        o.append("*Waiting: " + waiting + "*")
+        o.append("")
+    return shown
+
+
+# ---- data -----------------------------------------------------------------
+def load_standard():
+    """Cells for the standard benchmark columns.
+
+    Sources: the running standard-benchmark campaign (`source_file LIKE
+    'mres/%'`, thinking-off rows only -- the thinking-on re-runs belong to axis
+    H) plus the retired MultiPL-E panel under its canonical raw-greedy
+    protocol only, so no two protocols are ever mixed in one cell.
+    """
+    where = ("(source_file LIKE 'mres/%' AND reasoning <> 'on') "
+             "OR (bench_family='humaneval-multipl-e' "
+             "AND protocol='multipl-e-raw-greedy-768')")
+    return {key[0]: cells for key, cells in query_cells_by(where).items()}
+
+
+# ---- axes -----------------------------------------------------------------
+def axis_a(std):
+    """BPW sweep: held = model family, varied = effective bpw."""
+    rows, missing = [], []
+    by_fam = collections.defaultdict(list)
+    for model, cells in std.items():
+        if model not in BPW:
+            missing.append(model)
+            continue
+        if is_recipe(model):          # m55 recipes vary bit allocation (axis D)
+            continue
+        by_fam[family_of(model)].append((model, cells))
+    for fam in sorted(by_fam):
+        for model, cells in by_fam[fam]:
+            rows.append((fam, "%.2f bpw" % BPW[model], cells))
+    return rows, missing
+
+
+def axis_b(std):
+    """Model size at a held recipe: held = lineage + recipe, varied = size."""
+    rows = []
+    by = collections.defaultdict(list)
+    for model, cells in std.items():
+        if model not in BPW or is_recipe(model):
+            continue
+        lineage, size = lineage_and_size(model)
+        recipe = recipe_of(model)
+        if recipe is None:
+            continue
+        by[(lineage, recipe)].append((size, cells))
+    for (lineage, recipe) in sorted(by):
+        for size, cells in by[(lineage, recipe)]:
+            rows.append(("%s @ %s" % (lineage, recipe), size, cells))
+    return rows
+
+
+def axis_c(std):
+    """Scheme/vendor inside one model: quants whose effective bpw are within
+    MATCH_BPW of each other (single-linkage cluster)."""
+    rows = []
+    by_fam = collections.defaultdict(list)
+    for model, cells in std.items():
+        if model not in BPW or is_recipe(model):
+            continue
+        _, quant = split_quant(model)
+        if quant is None:
+            continue
+        by_fam[family_of(model)].append((BPW[model], quant, cells))
+    for fam in sorted(by_fam):
+        items = sorted(by_fam[fam])
+        clusters = []
+        for bpw, quant, cells in items:
+            if clusters and bpw - clusters[-1][-1][0] <= MATCH_BPW:
+                clusters[-1].append((bpw, quant, cells))
+            else:
+                clusters.append([(bpw, quant, cells)])
+        for cl in clusters:
+            if len({q for _, q, _ in cl}) < 2:
+                continue
+            lo = min(b for b, _, _ in cl)
+            hi = max(b for b, _, _ in cl)
+            c1 = "%s @ %.2f-%.2f bpw" % (fam, lo, hi)
+            for bpw, quant, cells in cl:
+                rows.append((c1, quant, cells))
+    return rows
+
+
+def _bpw_tag(model):
+    b = BPW.get(model)
+    return "" if b is None else "@%.2fbpw" % b
+
+
+def m55_rank(label):
+    for i, (_, recipe) in enumerate(M55_RECIPES):
+        if label.startswith(recipe):
+            return i
+    return 99
+
+
+def axis_moe(o):
+    """MoE bit allocation: held = LFM2.5-8B-A1B + panel, varied = recipe."""
+    cells = query_cells_by("run_tag='m55-expertwise'")
+    by_model = {m: c for (m, _), c in cells.items()}
+    rows = []
+    for model, label in M55_RECIPES:
+        bpw = BPW.get(model)
+        c2 = label if bpw is None else "%s · %.2f bpw" % (label, bpw)
+        rows.append(("LFM2.5-8B-A1B (m55 MoE panel)", c2, by_model.get(model, {})))
+    return emit_table(
+        o, "D. MoE bit allocation -- LFM2.5-8B-A1B m55 recipes",
+        "Held constant: model, harness, protocol.  Varied: which layers get the "
+        "low bits (experts vs the rest).  Only the MultiPL-E column is measured "
+        "for these three files; the EvalPlus / lm-eval columns will fill in when "
+        "the campaign reaches these recipes.",
+        "model (all else equal)", "expert / non-expert recipe", BENCH_KEYS,
+        BENCH_LABELS, rows, sort_key=m55_rank,
+        waiting="m55 expert-wise standard-benchmark re-runs (rows now: MultiPL-E only).")
+
+
+def axis_kv(o):
+    """KV cache: held = model + bpw + ctx, varied = KV type (from protocol)."""
+    kv_rows = con.execute(
+        "SELECT DISTINCT model, protocol FROM experiments WHERE run_tag='m30-kv-ctx'"
+    ).fetchall()
+    # cells keyed by (model, protocol): ctx and KV type live in the protocol
+    # string, so each (model, ctx, kv) cell must stay separate.
+    cells = query_cells_by("run_tag='m30-kv-ctx'", "protocol")
+    rows, order = [], ["f16/f16", "f16/q8_0", "q8_0/f16", "q8_0/q8_0"]
+    for model, proto in kv_rows:
+        mc = re.search(r"ctx=(\d+)", proto or "")
+        mk = re.search(r"kv=([\w]+)/([\w]+)", proto or "")
+        if not (mc and mk):
+            continue
+        c1 = "%s %s · ctx%s" % (family_of(model), _bpw_tag(model), mc.group(1))
+        rows.append((c1, "%s/%s" % (mk.group(1), mk.group(2)),
+                     cells.get((model, proto), {})))
+    return emit_table(
+        o, "E. KV-cache quantisation -- Qwen3.5-2B-Q3_K_XL, m30",
+        "Held constant: model, effective bpw, ctx.  Varied: KV-cache type K/V, "
+        "parsed from the protocol string (the cache_type_k/v columns are NOT "
+        "usable here).  Only MultiPL-E cpp (n=161) is measured, so every cell "
+        "lands in the MultiPL-E column.",
+        "model @bpw · ctx (all else equal)", "KV type K/V", BENCH_KEYS,
+        BENCH_LABELS, rows, sort_key=lambda s: order.index(s) if s in order else 99,
+        sort1=lambda s: int(re.search(r"ctx(\d+)", s).group(1)),
+        waiting="standard-benchmark re-runs of m30 (rows now: MultiPL-E cpp only).")
+
+
+def axis_sampling(o):
+    """Sampling: held = model + bpw + axis, varied = the parameter value."""
+    rows, tk_order = [], ["1", "20", "40", "64", "200"]
+    for (model, tk), cells in query_cells_by("run_tag='m31-topk'", "top_k").items():
+        rows.append(("%s %s · top_k" % (family_of(model), _bpw_tag(model)),
+                     str(tk), cells))
+    for (model, tp), cells in query_cells_by("run_tag='m27-sampling'", "temp").items():
+        rows.append(("%s %s · temperature" % (family_of(model), _bpw_tag(model)),
+                     str(tp), cells))
+
+    def rank(s):
+        if s in tk_order:
+            return tk_order.index(s)
+        try:
+            return float(s)
+        except ValueError:
+            return 99
+    return emit_table(
+        o, "F. Sampling / decoding",
+        "Held constant: model, effective bpw, harness, ctx.  Varied: the "
+        "decoding parameter named in column 1 (m31 = top_k; m27 = temperature; "
+        "top_p is pinned at 0.95 and is not a variable).  Greedy floor is "
+        "K=1 / T=0.  Only MultiPL-E cpp+py are measured.",
+        "model · varied axis (all else equal)", "value", BENCH_KEYS, BENCH_LABELS,
+        rows, sort_key=rank,
+        waiting="standard-benchmark re-runs of m31/m27 (rows now: MultiPL-E cpp+py only).")
+
+
+def axis_spec(o):
+    """Speculative decoding: two blocks sharing the same rows -- tok/s (speed)
+    and score (quality damage)."""
+    raw = con.execute(
+        "SELECT model,_bench,bench_family,ctx_size,spec_draft_n_max,_tok_s,"
+        "_score,n_items,language FROM experiments "
+        "WHERE run_tag IN ('m28-speed','m52-speed') AND run_tag<>''").fetchall()
+    tok = collections.defaultdict(lambda: collections.defaultdict(list))
+    sc = collections.defaultdict(dict)
+    mpl = collections.defaultdict(lambda: collections.defaultdict(list))
+    for model, bench, fam, ctx, n, tok_s, score, nit, lang in raw:
+        key = (model, ctx, n)
+        if tok_s is not None and bench in dict(SCEN):
+            tok[key][bench].append(tok_s)
+        if score is not None:
+            if fam == "humaneval-multipl-e":
+                mpl[key][lang].append(score)
+            else:
+                k = bench_key(bench, fam)
+                if k is not None:
+                    sc[key][k] = (score, nit)
+    for key, per_lang in mpl.items():
+        acc = tot = 0.0
+        for lang, scores in per_lang.items():
+            w = LANG_N.get(lang, 161)
+            acc += (sum(scores) / len(scores)) * w
+            tot += w
+        if tot:
+            sc[key]["multipl_e"] = (acc / tot, int(tot))
+
+    tok_cells = {k: {b: (sum(v) / len(v), len(v)) for b, v in per.items()}
+                 for k, per in tok.items()}
+    tok_rows = [("%s · ctx%s" % (family_of(m), c), str(n), tok_cells[(m, c, n)])
+                for (m, c, n) in tok_cells]
+    sc_rows = [("%s · ctx%s" % (family_of(m), c), str(n), sc.get((m, c, n), {}))
+               for (m, c, n) in tok_cells]
+
+    n1 = emit_table(
+        o, "G1. Speculative decoding -- tok/s (SPEED indicator)",
+        "Held constant: model, ctx.  Varied: speculative draft depth "
+        "`spec_draft_n_max` (0 = speculative decoding off).  Unit: tokens/s; the "
+        "parenthesised number is the number of measurements, not an item count. "
+        "m28 = Qwen3.5-2B-Q4_K_XL, m52 = gemma-4-12b / Qwen3.5-9B.",
+        "model · ctx (all else equal)", "spec_draft_n_max",
+        [k for k, _ in SCEN], [l for _, l in SCEN], tok_rows,
+        sort_key=lambda s: int(s), unit="tok_s",
+        waiting="m28/m52 standard-benchmark runs with tok/s (none yet).")
+    n2 = emit_table(
+        o, "G2. Speculative decoding -- SCORE (QUALITY indicator)",
+        "Same runs as G1, checked for quality damage: a speed win is only usable "
+        "if the score holds.  No scores exist for m28/m52 yet -- the table is "
+        "deliberately empty and fills when the standard campaign covers those "
+        "models at the same spec depth.",
+        "model · ctx (all else equal)", "spec_draft_n_max", BENCH_KEYS,
+        BENCH_LABELS, sc_rows, sort_key=lambda s: int(s),
+        waiting="m28/m52 standard-benchmark scores: 0 rows in experiments.sqlite.")
+    return n1, n2
+
+
+def expected_on_tags():
+    """Thinking-on run tags declared in .wrapup/CAMPAIGN.txt."""
+    out = []
+    if os.path.exists(CAMPAIGN_TXT):
+        for line in open(CAMPAIGN_TXT):
+            parts = line.split("#")[0].split()
+            if len(parts) >= 2 and re.match(r"^m\d+on-2b", parts[1]):
+                out.append(parts[1])
+    return sorted(set(out))
+
+
+def axis_thinking(o):
+    """Thinking on/off: held = model file, varied = reasoning switch."""
+    tags = [r[0] for r in con.execute(
+        "SELECT DISTINCT run_tag FROM experiments WHERE run_tag LIKE 'm6%' AND run_tag<>''")]
+    on_tags = sorted(t for t in tags if re.match(r"^m\d+on-2b", t))
+    off_tags = sorted(t for t in tags if re.match(r"^m\d+-qwen-2b", t))
+
+    def cells_for(sub):
+        if not sub:
+            return {}
+        ph = ",".join("?" * len(sub))
+        return {k[0]: c for k, c
+                in query_cells_by("run_tag IN (%s)" % ph, "''", sub).items()}
+
+    on, off = cells_for(on_tags), cells_for(off_tags)
+    rows = []
+    for model in sorted(set(on) | set(off)):
+        c1 = model_stem(model)
+        if model in off:
+            rows.append((c1, "thinking off", off[model]))
+        if model in on:
+            rows.append((c1, "thinking on", on[model]))
+    exp = expected_on_tags() or ["m61on-2b", "m62on-2b", "m63on-2b", "m64on-2b"]
+    n = emit_table(
+        o, "H. Thinking on vs off -- the newly added axis",
+        "Held constant: model file.  Varied: `reasoning` on/off at the server "
+        "level.  The thinking-on runs re-measure ONLY gsm8k and ifeval, so the "
+        "off row carries the full column set and the on row only those two.",
+        "model (all else equal)", "thinking", BENCH_KEYS, BENCH_LABELS, rows,
+        sort_key=lambda s: 0 if "off" in s else 1,
+        waiting="thinking-on run tags %s (0 rows yet; the matched off rows are "
+                "in the DB but a group needs both to compare)." % ", ".join(exp))
+    return n, exp
 
 
 def main():
-    o = []
-    A = o.append
-    A("# 量化研究：每个变量一张表")
-    A("")
-    A("第 1 列 = 保持不变的一切；第 2 列 = 本次变化的变量；之后每列 = 一个 benchmark。")
-    A("**空单元格用 `-` 表示（数据本来就没跑），但不写整行全空的行。**")
-    A("第 1 列只有 1 个第 2 列取值的组（没有对比）才剔除。")
-    A("BPW = 8 × 文件字节 ÷ 参数量。代码 = MultiPL-E raw greedy 768 pooled；")
-    A("BFCL单轮 = native-FC 五类均值；多轮 = BFCL-MT temp0。")
-    A("")
+    std = load_standard()
+    o, results = [], []
 
-    # 1 BPW
-    rows = []
-    for m, qs in QOF.items():
-        if len({round(BPW[m], 2)}) < 1:
-            continue
-        for q in qs:
-            rows.append((short(m), f"{BPW[m]:.2f} bpw", SRC[(m, q)]))
-    table(o, "1. 变量 = BPW（第 1 列 = 模型，其他全同）",
-          "只保留跑过 ≥2 个 BPW 的模型。同一模型内的采样参数、ctx、协议、benchmark 版本完全一致。",
-          "模型（其他全同）", "BPW", rows)
+    o.append("# RESULTS_BY_COMPARISON.md -- one table per research variable")
+    o.append("")
+    o.append("*Generated by `.wrapup/mktables.py` from `experiments.sqlite` "
+             "(read-only).  Do not hand-edit; rerun the generator.*")
+    o.append("")
+    o.append("**Shape rules.** column 1 = everything held constant, column 2 = "
+             "the varied variable, the remaining columns = one per benchmark.  "
+             "Columns are never filtered (an empty benchmark column still "
+             "appears).  A row with no benchmark value at all is dropped; a "
+             "column-1 group with fewer than 2 values of the varied variable is "
+             "dropped (nothing to compare); nothing else is ever dropped.")
+    o.append("")
+    o.append("**x-axis.** quantisation is always plotted against EFFECTIVE BPW "
+             "= 8 x file_bytes / n_params from `.wrapup/bpw_map.json`.  Nominal "
+             "labels such as `Q2`/`Q3` are never used: they span 2.76-5.04 bpw.")
+    o.append("")
+    o.append("**Cells.** `score (n)` -- the number in parentheses is `n_items`, "
+             "so an item-level SE is `sqrt(p(1-p)/n)`.  `-` = not measured (no "
+             "row in the DB); the report never substitutes 0.0 for a missing "
+             "cell.  Every table's top row reports rows shown and columns with "
+             "data.")
+    o.append("")
+    o.append("**Columns.** HumanEval / HumanEval+ / MBPP / MBPP+ = EvalPlus "
+             "0.3.1 on the full problem set (164/164/378/378), greedy chat. "
+             "MultiPL-E = retired panel pooled over its languages (cpp/python/"
+             "java/js/rs/rb, 155-161 items each), raw greedy, canonical protocol "
+             "only.  MMLU / ARC-c / TruthfulQA = lm-eval 0.4.13 loglikelihood "
+             "shim; GSM8K / IFEval = lm-eval 0.4.13 greedy chat; all with "
+             "server-side thinking off.")
+    o.append("")
+    o.append("**One variable per table.** Panel-tagged recipes (`mNN-...`, e.g. the "
+             "m55 expert-wise files) change something other than raw bpw, so they "
+             "are kept out of tables A/B/C and appear only in their own table "
+             "(D).  That keeps each table varying exactly one thing.")
+    o.append("")
 
-    # 2 size
-    for fam, models in [("Ternary-Bonsai", ["Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
-                                            "Ternary-Bonsai-4B-Q2_0_g64.gguf",
-                                            "Ternary-Bonsai-8B-Q2_0_g64.gguf",
-                                            "Ternary-Bonsai-27B-Q2_g64.gguf"]),
-                        ("Qwen3.5 · UD-Q2_K_XL", ["Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
-                                                  "Qwen3.5-2B-UD-Q2_K_XL.gguf",
-                                                  "Qwen3.5-4B-UD-Q2_K_XL.gguf",
-                                                  "Qwen3.5-9B-UD-Q2_K_XL.gguf"]),
-                        ("Qwen3.5 · UD-Q3_K_XL", ["Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
-                                                  "Qwen3.5-2B-UD-Q3_K_XL.gguf",
-                                                  "Qwen3.5-4B-UD-Q3_K_XL.gguf",
-                                                  "Qwen3.5-9B-UD-Q3_K_XL.gguf"])]:
-        rows = []
-        for m in models:
-            if m not in QOF:
-                continue
-            sz = re.search(r"(\d+\.?\d*)B", m)
-            rows.append((fam, (sz.group(1) + "B") if sz else m, SRC[(m, QOF[m][0])]))
-        table(o, f"2. 变量 = 模型规模（{fam}，其他全同）",
-              "同一家族、同一 recipe，只有规模不同。",
-              "家族 + recipe（其他全同）", "规模", rows)
+    rows_a, missing = axis_a(std)
+    results.append(("A. BPW sweep", emit_table(
+        o, "A. BPW sweep -- every model family on its effective-bpw ladder",
+        "Held constant: model family (stem without the quant suffix), harness, "
+        "ctx, protocol.  Varied: effective bpw.  A family needs >=2 bpw levels "
+        "to appear.  MultiPL-E entries here are the older panel; the EvalPlus "
+        "and lm-eval columns fill in as the standard campaign drains.",
+        "model family (all else equal)", "effective BPW", BENCH_KEYS,
+        BENCH_LABELS, rows_a, sort_key=lambda s: float(s.split()[0]))))
+    if missing:
+        o.append("*Note: %d model(s) had no effective bpw in bpw_map.json and "
+                 "were skipped: %s.*" % (len(missing), ", ".join(sorted(missing))))
+        o.append("")
 
-    # 3 vendor
-    rows = []
-    for base, pairs in [("Qwen3.5-2B @≈4.0bpw", [("Qwen3.5-2B-UD-IQ3_XXS.gguf", "IQ3_XXS"),
-                                                 ("Qwen3.5-2B-UD-Q2_K_XL.gguf", "Q2_K_XL")]),
-                        ("Qwen3.5-4B @≈3.7bpw", [("Qwen3.5-4B-UD-IQ3_XXS.gguf", "IQ3_XXS"),
-                                                 ("Qwen3.5-4B-UD-Q2_K_XL.gguf", "Q2_K_XL")]),
-                        ("Qwen3.6-35B-A3B @≈3.9bpw", [("Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf", "厂商 Q3_K_M"),
-                                                      ("Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf", "UD-Q3_K_XL")])]:
-        for m, lab in pairs:
-            if m in QOF:
-                rows.append((base, lab, SRC[(m, QOF[m][0])]))
-    table(o, "3. 变量 = 量化方案 / vendor（第 1 列 = 模型+体积档，其他全同）",
-          "每组的两个方案文件大小基本相同（BPW 差 ≤0.15）。",
-          "模型 + 体积档（其他全同）", "方案", rows)
+    results.append(("B. Model size", emit_table(
+        o, "B. Model size at a held quant recipe",
+        "Held constant: family lineage + quant recipe.  Varied: parameter "
+        "count.  Every family is emitted at each recipe it was run at; a "
+        "lineage/recipe with only one size is dropped.  Q2_K_XL and Q3_K_XL "
+        "are the recipes the campaign currently covers.",
+        "family @ recipe (all else equal)", "model size", BENCH_KEYS,
+        BENCH_LABELS, axis_b(std), sort_key=size_value)))
 
-    # 4 MoE
-    rows = []
-    for m, lab in [("LFM2.5-8B-A1B-m55-exq2.gguf", "专家 Q2_K + 其余 Q5_K_M"),
-                   ("LFM2.5-8B-A1B-m55-Q3_K_M.gguf", "均匀 Q3_K_M（基线）"),
-                   ("LFM2.5-8B-A1B-m55-exq4.gguf", "专家 Q4_K + 其余 Q2_K")]:
-        if m in QOF:
-            rows.append((f"LFM2.5-8B-A1B", f"{lab}（{BPW[m]:.2f} bpw）", SRC[(m, QOF[m][0])]))
-    table(o, "4. 变量 = MoE 的比特分配（第 1 列 = LFM2.5-8B-A1B，同面板）",
-          "三个配方只改专家层与非专家层的比特分配，其余全同。",
-          "模型（其他全同）", "配方", rows)
+    results.append(("C. Scheme / vendor", emit_table(
+        o, "C. Scheme / vendor at a matched effective-bpw band",
+        "Held constant: model, and an effective-bpw band of +-%.2f bpw.  Varied: "
+        "the quant scheme/vendor (UD- = unsloth dynamic, plain = vendor).  "
+        "Quants further apart than the band are not a matched comparison; their "
+        "bpw ladder is in table A." % MATCH_BPW,
+        "model @ bpw band (all else equal)", "quant scheme (vendor)",
+        BENCH_KEYS, BENCH_LABELS, axis_c(std))))
 
-    # 5 KV
-    rows = []
-    for cx in (2048, 16384, 49152):
-        for a, b in (("f16", "f16"), ("f16", "q8_0"), ("q8_0", "f16"), ("q8_0", "q8_0")):
-            v = con.execute("""SELECT AVG(_score) FROM experiments WHERE run_tag='m30-kv-ctx'
-                AND _bench='humaneval-cpp' AND protocol LIKE ? AND protocol LIKE ?""",
-                (f"%ctx={cx},%", f"%kv={a}/{b}%")).fetchone()[0]
-            rows.append((f"Qwen3.5-2B @4.11bpw · ctx{cx}", f"{a}/{b}", {"代码": v}))
-    table(o, "5. 变量 = KV 量化（第 1 列 = 模型·BPW·ctx，其他全同）",
-          "只有代码（cpp）数据，每格 n=1。",
-          "模型·BPW·ctx（其他全同）", "KV 类型", rows)
+    results.append(("D. MoE bit allocation", axis_moe(o)))
+    results.append(("E. KV cache", axis_kv(o)))
+    results.append(("F. Sampling / decoding", axis_sampling(o)))
+    n1, n2 = axis_spec(o)
+    results.append(("G1. Spec depth tok/s", n1))
+    results.append(("G2. Spec depth score", n2))
+    n_h, exp_on = axis_thinking(o)
+    results.append(("H. Thinking on/off", n_h))
 
-    # 6 sampling
-    rows = []
-    tc = collections.defaultdict(dict)
-    for t, l, v in con.execute("""SELECT temp,language,AVG(_score) FROM experiments
-            WHERE run_tag='m27-sampling' GROUP BY 1,2"""):
-        tc[t][l] = v
-    for t in sorted(tc):
-        rows.append(("Qwen3.5-2B @4.11bpw · temperature", t,
-                     {"cpp": tc[t]["cpp"], "py": tc[t]["py"]}))
-    tk = collections.defaultdict(dict)
-    for k, l, v in con.execute("""SELECT top_k,language,AVG(_score) FROM experiments
-            WHERE run_tag='m31-topk' GROUP BY 1,2"""):
-        tk[k][l] = v
-    for k in sorted(tk, key=lambda x: int(x)):
-        rows.append(("Qwen3.5-2B @4.11bpw · top_k", k,
-                     {"cpp": tk[k]["cpp"], "py": tk[k]["py"]}))
-    table(o, "6. 变量 = 采样参数（第 1 列 = 模型·BPW·轴，其他全同）",
-          "只有代码数据（cpp / py 两个语言列）。",
-          "模型·BPW·轴（其他全同）", "取值", rows, cols=["cpp", "py"])
-
-    # 7 spec decode
-    rows = []
-    for n in ("0", "1", "2", "3", "4"):
-        r = {b: con.execute("""SELECT AVG(_tok_s) FROM experiments WHERE run_tag='m28-speed'
-             AND _bench=? AND spec_draft_n_max=?""", (b, n)).fetchone()[0]
-             for b in ("speed-code", "speed-longctx", "speed-prose")}
-        rows.append(("Qwen3.5-2B @5.70bpw · ctx16384", n,
-                     {"代码": r["speed-code"], "长上下文": r["speed-longctx"],
-                      "散文": r["speed-prose"]}))
-    table(o, "7. 变量 = 投机解码深度（第 1 列 = 模型·BPW·ctx，单位 tok/s）",
-          "单位 tok/s；三列是测速场景，不是准确率。",
-          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows,
-          cols=["代码", "长上下文", "散文"])
-
-    rows = []
-    for n in ("0", "2", "4", "6"):
-        r = {b: con.execute("""SELECT AVG(_tok_s) FROM experiments WHERE run_tag='m52-speed'
-             AND model='gemma-4-12b-it-UD-Q3_K_XL.gguf' AND _bench=? AND spec_draft_n_max=?""",
-             (b, n)).fetchone()[0] for b in ("speed-code", "speed-prose")}
-        rows.append(("gemma-4-12b @4.05bpw · ctx16384", n,
-                     {"代码": r["speed-code"], "散文": r["speed-prose"]}))
-    table(o, "7b. 对照组：gemma-4-12b 的投机深度（tok/s）",
-          "完全平坦 → 该模型的投机通路没有生效，是非测量。",
-          "模型·BPW·ctx（其他全同）", "spec_draft_n_max", rows,
-          cols=["代码", "散文"])
-
-    open("RESULTS_BY_COMPARISON.md", "w").write("\n".join(o) + "\n")
-    print("wrote RESULTS_BY_COMPARISON.md:", len(o), "lines")
+    txt = "\n".join(o) + "\n"
+    open(OUT, "w").write(txt)
+    bad = selfcheck(txt)
+    print("wrote %s (%d lines)" % (OUT, txt.count("\n")))
+    print("selfcheck: value cells lacking an n = %d" % len(bad))
+    for b in bad[:10]:
+        print("  MISSING n:", b)
+    print("per-table data rows shown:")
+    for name, n in results:
+        print("  %-26s %d" % (name, n))
+    print("thinking-on tags declared in CAMPAIGN.txt:", len(exp_on))
+    if bad:
+        raise SystemExit("FAIL: %d value cell(s) lack an n" % len(bad))
 
 
 if __name__ == "__main__":
