@@ -43,23 +43,38 @@ number produced under them must be re-derived:
 A pass is a pass and a fail is a fail, as the harness reports it. The agent does not annotate,
 interpret, or discard results.
 
-## 2c. Benchmarks — standard coding suites only
+## 2c. Benchmarks — standard suites only, and more than one task type
 
-Only these. Anything else needs an explicit written case, and no agent-invented scoring may be
-added.
+**Rule (operator, 2026-10-08): a conclusion is not accepted on a single task type. Every live
+claim must be measured on at least two benchmark families — code *and* knowledge/reasoning *and*
+instruction-following.** A quantisation result that holds only on code is a coding-harness finding,
+not a quantisation finding.
 
-| benchmark | items | status |
-|---|---|---|
-| **HumanEval** (EvalPlus 0.3.1) | 164 | 5 registry rows |
-| **HumanEval+** (extended tests) | 164 | 5 registry rows |
-| **MBPP** (EvalPlus 0.3.1) | 378 | 1 registry row |
-| **MBPP+** (extended tests) | 378 | 1 registry row |
-| **MultiPL-E** (HumanEval translated: cpp, py, java, js, rs, rb) | 164/lang | 54 rows |
+Only standard suites. Anything else needs an explicit written case, and no agent-invented scoring
+may be added.
+
+| family | benchmark | items | tool | status |
+|---|---|---|---|---|
+| code | **HumanEval / HumanEval+** | 164 | EvalPlus 0.3.1 | 5 registry rows |
+| code | **MBPP / MBPP+** | 378 | EvalPlus 0.3.1 | 1 registry row |
+| code | **MultiPL-E** (cpp, py, java, js, rs, rb) | 164/lang | MultiPL-E | 54 rows |
+| knowledge / reasoning | **MMLU** (57 subjects) | 14042 | lm-evaluation-harness | 0 rows |
+| reasoning | **GSM8K** (CoT) | 1319 | lm-evaluation-harness | 0 rows |
+| instruction following | **IFEval** | 541 | lm-evaluation-harness | 0 rows |
+| knowledge | **ARC-Challenge** | 1172 | lm-evaluation-harness | 0 rows |
+| commonsense | **HellaSwag** | 10042 | lm-evaluation-harness | 0 rows |
+| truthfulness | **TruthfulQA (mc2)** | 817 | lm-evaluation-harness | 0 rows |
 
 Retired from the main tables (kept in the DB as history, not planned further): BFCL single-turn,
 BFCL multi-turn (incl. `miss_func` / `miss_param`), `testfrac`, `fa-probe`. `miss_func` and
 `miss_param` are **BFCL multi-turn sub-categories**, not benchmarks — a function or a required
 argument is deliberately withheld to test whether the model invents it.
+
+**Sampling policy for the added suites.** MMLU / ARC / HellaSwag / TruthfulQA are scored by
+log-likelihood over the answer letters, so they are deterministic given the context and are the
+*cleanest* quantisation probe (no decoding stochasticity at all). GSM8K and IFEval generate text
+and are run **greedy** so that the only moving part is the weights. Every harness run goes through
+`llama-server` on a recorded port with a recorded `-c/-np`, and its `run_tag` is `mu<N>-<suite>`.
 
 ## 3. Protocol discipline (each rule bought with a real bug)
 
