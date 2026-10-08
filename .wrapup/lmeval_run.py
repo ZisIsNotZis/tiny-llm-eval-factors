@@ -56,20 +56,23 @@ SHIM_LAUNCHER = WR / "lmeshim/lm_eval_cli.py"
 LOGLIK_TASKS = ["mmlu", "arc_challenge", "truthfulqa_mc2"]
 GEN_TASKS = ["gsm8k", "ifeval"]
 
-# Per-task server profile.  Thinking mode is NOT a global: it is a property of whether the
-# benchmark can be answered at all in that mode, and both directions were measured.
-#   * gsm8k with thinking off does not terminate its answer: 2/60 raw responses contained
-#     the '####' marker on IQ3_XXS vs 42/60 on Q2_K_XL, so the score measured format
-#     compliance, not arithmetic (0.01 vs 0.36).  With thinking on and a 4096-token budget
-#     the same model scores 0.16 -- a 16x change from the mode alone.
-#   * ifeval with thinking on collapses to 0.00 (vs 0.50 off) and takes 27 s/item instead
-#     of 5 s/item, because the instruction checker sees the reasoning stream.
+# Per-task server profile.
+#
+# gsm8k: KEPT AT THINKING OFF.  The lm_eval default for chat models (5-shot,
+# fewshot_as_multiturn=True, temperature 0) was measured directly on UD-Q2_K_XL and gives
+# strict 0.38 / flexible 0.44 -- matching the campaign's 0.36.  Turning thinking ON for the
+# same model drops it to 0.06, and a single-string (fewshot_as_multiturn=False) prompt gives
+# strict 0.08 / flexible 0.50.  So the score is strongly protocol-sensitive and the default
+# is the one to standardise on; the thinking-on variant is kept as an explicit diagnostic
+# axis rather than as the primary protocol.
+#
+# ifeval: thinking OFF.  With thinking ON the instruction checker sees the reasoning stream
+# and the score collapses to 0.00 (vs 0.50 off, a real number) while costing 27 s/item
+# instead of 5 s/item.
+#
 # The loglikelihood tasks use raw completion, so the mode does not apply to them.
 DEFAULT_PROFILE = {"reasoning": "off", "max_gen_toks": 1024, "ctx": 8192}
-TASK_PROFILE = {
-    "gsm8k": {"reasoning": "on", "max_gen_toks": 4096, "ctx": 16384},
-    "ifeval": {"reasoning": "off", "max_gen_toks": 1024, "ctx": 8192},
-}
+TASK_PROFILE: dict[str, dict] = {}
 
 
 def profile_for(task: str, base_reasoning: str) -> dict:
