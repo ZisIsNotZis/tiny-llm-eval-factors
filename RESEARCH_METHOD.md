@@ -76,6 +76,24 @@ log-likelihood over the answer letters, so they are deterministic given the cont
 and are run **greedy** so that the only moving part is the weights. Every harness run goes through
 `llama-server` on a recorded port with a recorded `-c/-np`, and its `run_tag` is `mu<N>-<suite>`.
 
+## 2d. Measurement protocol (established; each line bought with a measurement)
+
+| setting | value | why |
+|---|---|---|
+| runtime | `llama-server` build 4399 (commit 4bc272fd72) | the only runtime for which every gguf we own loads; mixing runtimes inside one benchmark would confound the quant effect with the dequantisation kernel |
+| context | `-c 8192 -np 1` | enough for 5-shot GSM8K + a full generation |
+| thinking | `--reasoning off` at the **server** level | measured: with thinking on, an instruct model spends the whole generation budget inside `reasoning_content` and the scored `content` comes back as `''`; gsm8k and ifeval then score 0.0000 with empty raw responses. The server switch leaves the benchmark prompt text untouched. |
+| generative decoding | greedy, `max_gen_toks=1024`, chat template | only the weights move |
+| loglikelihood transport | exact echo shim (`.wrapup/lmeval_run.py`) | measured: this build silently **ignores** OpenAI `echo` and returns only the generated token in the new `logprobs.content[*]` shape, so stock `lm_eval --model gguf` gets a KeyError. The shim reads each continuation token's true logprob out of `top_logprobs` at tiers 100 -> 8000 -> full vocabulary, and **refuses to guess** rather than fabricate. Selftest measures 0.000e+00 error against llama.cpp's own value for both argmax and non-argmax tokens. |
+| network | `HF_HUB_OFFLINE=1`, `HF_DATASETS_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1` | measured: a transient DNS failure made mmlu return **null** while the dataset cache was intact (`[Errno -3] Temporary failure in name resolution`) |
+| code | EvalPlus 0.3.1 on the FULL 164/378 problems | the published headline is the full set; the build's `eval_results.json` has no `pass_at_k`, so pass@1 is computed from the `eval` dict with the numerator recorded (46/164 regression check reproduces the existing numbers) |
+| limits | `--limit 100`; `--mmlu-limit 16` | MMLU's limit is **per subject** (57 subjects) so a shared limit either starves the other tasks or inflates MMLU 57x. n=912 gives SE ~ 0.017 on MMLU, SE ~ 0.05 on the others. |
+
+**Known non-measurements — never cite these as results** (each is a harness artifact with a
+measurement behind it): gemma-4 output format vs the code graders (m26/m51/m54); the `-fa on/off`
+byte-identical pair at Q3 (m44) which makes m29's "fa null" a non-measurement; MTP
+`--spec-draft-n-max` never engaging on gemma (m52); the granite Q2 BFCL native-FC dialect mismatch.
+
 ## 3. Protocol discipline (each rule bought with a real bug)
 
 1. **Name the generation protocol in every claim**: raw-completion vs chat vs native-tools;

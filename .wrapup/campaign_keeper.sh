@@ -20,6 +20,14 @@ LOG="$WR/keeper.log"
 
 log() { echo "[$(date -Is)] $*" >> "$LOG"; }
 
+# single instance: a second keeper would race the first into launching two drivers, and
+# although panels are serialised by the GPU lock that only wastes hours of GPU time.
+exec 8>"$WR/.keeper.lock"
+if ! flock -n 8; then
+  log "another keeper already holds the lock; exiting"
+  exit 0
+fi
+
 pending() {  # count lines whose two DONE banners are not both present
   local n=0
   while IFS= read -r line || [ -n "$line" ]; do
@@ -35,13 +43,15 @@ pending() {  # count lines whose two DONE banners are not both present
 }
 
 driver_running() {
-  # exact-path match, own PID excluded
-  local me=$$
-  for p in $(pgrep -f -- "$DRIVER" 2>/dev/null); do
-    [ "$p" = "$me" ] && continue
-    return 0
-  done
-  # also catch a panel currently holding the GPU on the campaign's behalf
+  # SSOT 6b rule 5: never decide liveness by matching a process name with pgrep.  The
+  # driver writes an explicit completion banner in campaign.log; if the last banner is a
+  # start, the driver is still working.  A held GPU lock is the second, independent proof
+  # that some panel is currently running on the campaign's behalf.
+  local last
+  last=$(grep -E '=== campaign (start|end)' "$WR/campaign.log" 2>/dev/null | tail -1)
+  case "$last" in
+    *"campaign start"*) return 0 ;;
+  esac
   if ! flock -n /tmp/llama_gpu.lock true 2>/dev/null; then
     return 0
   fi
