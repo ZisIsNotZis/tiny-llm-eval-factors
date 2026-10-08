@@ -1006,22 +1006,31 @@ def ingest_campaign(con):
             if p:
                 model = os.path.basename(p.get("model", "")) or None
                 lim = p.get("limit_per_task")
+                prof = p.get("profiles") or {}
                 for task, score in (p.get("tasks") or {}).items():
                     if score is None or task not in LMEVAL_TASKS:
                         continue
                     fam, proto = LMEVAL_TASKS[task]
+                    tp = prof.get(task) or {}
+                    # Reasoning mode is per task: gsm8k runs with thinking ON (without it the
+                    # model does not terminate its answer and the score measures format
+                    # compliance), while ifeval collapses with thinking ON.  Recording the
+                    # per-task value is what keeps the two protocols from being conflated.
+                    reason = tp.get("reasoning", p.get("reasoning", "off"))
+                    proto = f"lmeval-0.4.13-{'chat' if task in ('gsm8k', 'ifeval') else 'gguf-shim'}-reasoning-{reason}"
                     row = base_row(norm_model(model), task, 0.0, score, None)
                     row.update({
                         "_bench": task, "bench_family": fam, "run_tag": p.get("tag", tag_dir),
-                        "rep": 1, "ctx_size": p.get("ctx_size", 8192), "parallel_slots": 1,
+                        "rep": 1, "ctx_size": tp.get("ctx", p.get("ctx_size", 8192)),
+                        "parallel_slots": 1,
                         "protocol": proto, "language": None,
-                        "max_tokens": (p.get("max_gen_toks") if task in ("gsm8k", "ifeval") else None),
+                        "max_tokens": (tp.get("max_gen_toks") if task in ("gsm8k", "ifeval") else None),
                         "source_file": f"mres/{tag_dir}/lmeval_panel.json",
                         "completed_at": None,
                         "n_items": (p.get("n") or {}).get(task),
                         "limit_spec": None if lim is None else str(lim),
                     })
-                    row["reasoning"] = p.get("reasoning", "off")
+                    row["reasoning"] = reason
                     insert(con, row)
                     n += 1
 

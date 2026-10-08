@@ -60,7 +60,9 @@ run_stage() {  # <stage> <script> <model> <tag> <limit> [mmlu_limit] [reasoning]
       continue
     fi
     t0=$(date +%s)
-    MMLU_LIMIT="$mmlu" REASONING="$reason" TASKS="$tasks" "$script" "$model" "$tag" "$limit"
+    # 7>&- : panels must NOT inherit the driver's lifetime lock, otherwise killing the driver
+    # leaves the lock held by an orphaned panel and the keeper can never restart the queue.
+    MMLU_LIMIT="$mmlu" REASONING="$reason" TASKS="$tasks" "$script" "$model" "$tag" "$limit" 7>&-
     rc=$?
     t1=$(date +%s)
     if [ "$rc" -eq 3 ]; then

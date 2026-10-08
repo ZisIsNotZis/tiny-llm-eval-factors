@@ -55,6 +55,31 @@ SHIM_LAUNCHER = WR / "lmeshim/lm_eval_cli.py"
 
 LOGLIK_TASKS = ["mmlu", "arc_challenge", "truthfulqa_mc2"]
 GEN_TASKS = ["gsm8k", "ifeval"]
+
+# Per-task server profile.  Thinking mode is NOT a global: it is a property of whether the
+# benchmark can be answered at all in that mode, and both directions were measured.
+#   * gsm8k with thinking off does not terminate its answer: 2/60 raw responses contained
+#     the '####' marker on IQ3_XXS vs 42/60 on Q2_K_XL, so the score measured format
+#     compliance, not arithmetic (0.01 vs 0.36).  With thinking on and a 4096-token budget
+#     the same model scores 0.16 -- a 16x change from the mode alone.
+#   * ifeval with thinking on collapses to 0.00 (vs 0.50 off) and takes 27 s/item instead
+#     of 5 s/item, because the instruction checker sees the reasoning stream.
+# The loglikelihood tasks use raw completion, so the mode does not apply to them.
+DEFAULT_PROFILE = {"reasoning": "off", "max_gen_toks": 1024, "ctx": 8192}
+TASK_PROFILE = {
+    "gsm8k": {"reasoning": "on", "max_gen_toks": 4096, "ctx": 16384},
+    "ifeval": {"reasoning": "off", "max_gen_toks": 1024, "ctx": 8192},
+}
+
+
+def profile_for(task: str, base_reasoning: str) -> dict:
+    """Effective server profile for one task.  `--reasoning on` (the diagnostic flag)
+    forces every task to that mode so a protocol comparison stays a comparison."""
+    p = dict(DEFAULT_PROFILE)
+    p.update(TASK_PROFILE.get(task, {}))
+    if base_reasoning != "off":
+        p["reasoning"] = base_reasoning
+    return p
 # Headline metric per task, in preference order ("," is part of lm_eval's metric key).
 PRIMARY_METRIC = {
     "mmlu": ["acc,none", "acc"],
@@ -75,10 +100,10 @@ TOP_N_RETRY = 8000
 # the shim correctly refuses to guess and the whole task is lost.
 TOP_N_FULL = 200000
 
-CTX_SIZE = 8192
+CTX_SIZE = int(os.environ.get("PANEL_CTX", "8192"))
 # With --reasoning off this is generous (answers are short); with --reasoning on it is
 # the budget that must survive a full thinking block, otherwise content comes back empty.
-MAX_GEN_TOKS = 1024
+MAX_GEN_TOKS = int(os.environ.get("PANEL_MAX_GEN", "1024"))
 NP_SLOTS = 1
 NGL = 99
 
@@ -440,16 +465,10 @@ def run_panel(args) -> int:
     srv = start_shim(shim, shim_port)
     proc = None
     panel = {"tag": tag, "model": model, "tasks": {}, "n": {}, "errors": [],
-             "reasoning": args.reasoning, "ctx_size": CTX_SIZE, "max_gen_toks": MAX_GEN_TOKS}
+             "reasoning": args.reasoning, "ctx_size": CTX_SIZE, "max_gen_toks": MAX_GEN_TOKS,
+             "profile_note": "per-task server profiles; see the `profiles` map"}
     timings = {}
     try:
-        proc = start_llama(llama_bin, model, llama_port, out_dir / "server.log", args.reasoning)
-        # a healthy port is not proof the weights answer: demand one real completion
-        probe = requests.post(f"http://127.0.0.1:{llama_port}/v1/completions",
-                              json={"prompt": "1+1=", "max_tokens": 1, "temperature": 0},
-                              timeout=300).json()
-        log(f"smoke completion ok: {probe['choices'][0]['text']!r}", panel_log)
-
         env = dict(os.environ)
         # Every dataset we need is already cached under ~/.cache/huggingface.  Without these
         # flags lm_eval re-contacts huggingface.co on every task and a transient DNS failure
@@ -458,43 +477,71 @@ def run_panel(args) -> int:
         env["HF_HUB_OFFLINE"] = "1"
         env["HF_DATASETS_OFFLINE"] = "1"
         env["TRANSFORMERS_OFFLINE"] = "1"
-        for task in tasks:
-            cmd, out_json = task_spec(task, shim_port, llama_port, limit, out_dir,
-                                      getattr(args, "mmlu_limit", None))
-            task_log = out_dir / f"lmeval_{task}.log"
-            log(f"--- {task}: running", panel_log)
-            t0 = time.time()
-            rc = run_cmd(cmd, env, task_log, timeout=args.task_timeout)
-            elapsed = time.time() - t0
-            timings[task] = elapsed
-            produced = newest_output(str(out_dir / f"lmeval_{task}*.json"))
-            value, metric = (None, None)
-            n = None
-            if rc == 0 and produced is not None:
-                try:
-                    doc = json.loads(produced.read_text())
-                    value, metric = extract_metric(doc.get("results", {}), task)
-                    n = extract_n(doc, task)
-                except Exception as exc:  # noqa: BLE001
-                    rc = rc or 1
-                    log(f"{task}: could not parse {produced}: {exc!r}", panel_log)
-            panel["tasks"][task] = value
-            panel["n"][task] = n
-            if value is None:
-                panel["errors"].append({"task": task, "returncode": rc,
-                                        "metric": metric,
-                                        "output_json": str(produced) if produced else None,
-                                        "stderr_tail": tail(task_log)})
-                log(f"{task}: NO RESULT (rc={rc}) after {elapsed:.1f}s", panel_log)
+
+        # Group consecutive tasks that need the same server profile, so the server is
+        # started once per distinct (reasoning, ctx, max_gen_toks) combination.
+        groups: list[tuple[dict, list[str]]] = []
+        for t in tasks:
+            prof = profile_for(t, args.reasoning)
+            if groups and groups[-1][0] == prof:
+                groups[-1][1].append(t)
             else:
-                log(f"{task}: {metric}={value:.4f} n={n} in {elapsed:.1f}s", panel_log)
+                groups.append((prof, [t]))
+
+        panel["profiles"] = {}
+        for prof, gtasks in groups:
+            globals()["CTX_SIZE"] = prof["ctx"]
+            globals()["MAX_GEN_TOKS"] = prof["max_gen_toks"]
+            for t in gtasks:
+                panel["profiles"][t] = dict(prof)
+            stop_llama(proc, panel_log)
+            proc = start_llama(llama_bin, model, llama_port, out_dir / "server.log",
+                               prof["reasoning"])
+            # a healthy port is not proof the weights answer: demand one real completion
+            probe = requests.post(f"http://127.0.0.1:{llama_port}/v1/completions",
+                                  json={"prompt": "1+1=", "max_tokens": 1, "temperature": 0},
+                                  timeout=300).json()
+            log(f"server up for {gtasks}: reasoning={prof['reasoning']} ctx={prof['ctx']} "
+                f"max_gen_toks={prof['max_gen_toks']} smoke={probe['choices'][0]['text']!r}", panel_log)
+
+            for task in gtasks:
+                cmd, out_json = task_spec(task, shim_port, llama_port, limit, out_dir,
+                                          getattr(args, "mmlu_limit", None))
+                task_log = out_dir / f"lmeval_{task}.log"
+                log(f"--- {task}: running", panel_log)
+                t0 = time.time()
+                rc = run_cmd(cmd, env, task_log, timeout=args.task_timeout)
+                elapsed = time.time() - t0
+                timings[task] = elapsed
+                produced = newest_output(str(out_dir / f"lmeval_{task}*.json"))
+                value, metric = (None, None)
+                n = None
+                if rc == 0 and produced is not None:
+                    try:
+                        doc = json.loads(produced.read_text())
+                        value, metric = extract_metric(doc.get("results", {}), task)
+                        n = extract_n(doc, task)
+                    except Exception as exc:  # noqa: BLE001
+                        rc = rc or 1
+                        log(f"{task}: could not parse {produced}: {exc!r}", panel_log)
+                panel["tasks"][task] = value
+                panel["n"][task] = n
+                if value is None:
+                    panel["errors"].append({"task": task, "returncode": rc,
+                                            "metric": metric,
+                                            "output_json": str(produced) if produced else None,
+                                            "stderr_tail": tail(task_log)})
+                    log(f"{task}: NO RESULT (rc={rc}) after {elapsed:.1f}s", panel_log)
+                else:
+                    log(f"{task}: {metric}={value:.4f} n={n} in {elapsed:.1f}s", panel_log)
     finally:
         stop_llama(proc, panel_log)
         srv.shutdown()
 
     panel["timings_s"] = {k: round(v, 1) for k, v in timings.items()}
     panel["llama_server"] = {"binary": llama_bin, "version": version, "port": llama_port,
-                             "args": ["-c", CTX_SIZE, "-np", NP_SLOTS, "-ngl", NGL, "--jinja"]}
+                             "args": ["-c", "per-task (see profiles)", "-np", NP_SLOTS,
+                                      "-ngl", NGL, "--jinja"]}
     panel["shim"] = {"port": shim_port, "top_n": TOP_N, "top_n_retry": TOP_N_RETRY,
                      "llama_requests": shim.requests_made}
     panel["limit_per_task"] = limit
@@ -594,12 +641,20 @@ def main() -> int:
     ap.add_argument("--task-timeout", type=int, default=7200)
     ap.add_argument("--reasoning", default="off", choices=["off", "on", "auto"],
                     help="server-level thinking mode; recorded in the panel json")
+    ap.add_argument("--ctx", type=int, default=None, help="override PANEL_CTX")
+    ap.add_argument("--max-gen-toks", type=int, default=None, help="override PANEL_MAX_GEN")
     ap.add_argument("--mmlu-limit", type=int, default=None,
                     help="MMLU --limit is per SUBJECT (57 subjects); defaults to --limit")
     ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args()
     if args.limit == 0:
         args.limit = None
+    # ctx / max_gen_toks live as module globals because task_spec and start_llama read them
+    # at call time; the CLI flags are the documented way to override the env defaults.
+    if args.ctx:
+        globals()["CTX_SIZE"] = args.ctx
+    if args.max_gen_toks:
+        globals()["MAX_GEN_TOKS"] = args.max_gen_toks
     return run_selftest(args) if args.selftest else run_panel(args)
 
 

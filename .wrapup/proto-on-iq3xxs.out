@@ -1,0 +1,13 @@
+[16:27:28] === panel tag=proto-on-iq3xxs model=/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf
+[16:27:28] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[16:27:28] ports: llama=8900 shim=8901
+[16:27:28] tasks=['gsm8k', 'ifeval'] limit=50
+[16:27:28] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf --port 8900 --host 127.0.0.1 -c 16384 -np 1 -ngl 99 --jinja --reasoning on
+[16:27:30] smoke completion ok: '2'
+[16:27:30] --- gsm8k: running
+[16:35:06] gsm8k: exact_match,strict-match=0.1600 n=50 in 455.2s
+[16:35:06] --- ifeval: running
+[16:58:10] ifeval: prompt_level_strict_acc,none=0.0000 n=50 in 1384.8s
+[16:58:11] llama-server stopped
+[16:58:11] panel done: /home/z/hf/research/.wrapup/mres/proto-on-iq3xxs/lmeval_panel.json
+[16:58:11] real numbers: ['gsm8k', 'ifeval']

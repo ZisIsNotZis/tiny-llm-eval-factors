@@ -1,0 +1,33 @@
+=== v-iq3xxs  /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf
+  rc=0 samples -> /home/z/hf/research/.wrapup/mres/verify-gsm8k/v-iq3xxs/qdpv68r5/samples_gsm8k_2026-10-08T16-25-02.900951.jsonl
+=== v-q2kxl  /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf
+  rc=0 samples -> /home/z/hf/research/.wrapup/mres/verify-gsm8k/v-q2kxl/qdpv68r5/samples_gsm8k_2026-10-08T16-26-02.149477.jsonl
+
+===== v-iq3xxs: n=60  with-'####'=0  empty=0
+  target_tail='very day at the farmer’s market.|#### 18'
+    resp="['[invalid]']"
+  target_tail='is 2+1=<<2+1=3>>3 bolts of fabric|#### 3'
+    resp="['[invalid]']"
+  target_tail='<<200000-130000=70000>>70,000|#### 70000'
+    resp="['[invalid]']"
+  target_tail='uns 9*60=<<9*60=540>>540 meters|#### 540'
+    resp="['[invalid]']"
+  target_tail='-25=20>>20 cups of chicken feed.|#### 20'
+    resp="['[invalid]']"
+  target_tail='for the glasses he wants to buy.|#### 64'
+    resp="['[invalid]']"
+
+===== v-q2kxl: n=60  with-'####'=0  empty=0
+  target_tail='very day at the farmer’s market.|#### 18'
+    resp="['26']"
+  target_tail='is 2+1=<<2+1=3>>3 bolts of fabric|#### 3'
+    resp="['3']"
+  target_tail='<<200000-130000=70000>>70,000|#### 70000'
+    resp="['70']"
+  target_tail='uns 9*60=<<9*60=540>>540 meters|#### 540'
+    resp="['1260']"
+  target_tail='-25=20>>20 cups of chicken feed.|#### 20'
+    resp="['800']"
+  target_tail='for the glasses he wants to buy.|#### 64'
+    resp="['[invalid]']"
+verify done
