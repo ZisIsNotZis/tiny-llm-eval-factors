@@ -112,3 +112,53 @@ REAL_BENCHES ['humaneval', 'mbpp']
 [11:04:19] --- arc_challenge: running
 [11:07:08] arc_challenge: acc_norm,none=0.4300 n=100 in 169.5s
 [11:07:08] --- truthfulqa_mc2: running
+[11:10:17] truthfulqa_mc2: acc,none=0.4261 n=100 in 188.9s
+[11:10:17] --- gsm8k: running
+[11:12:53] gsm8k: exact_match,strict-match=0.3600 n=100 in 155.4s
+[11:12:53] --- ifeval: running
+[11:16:26] ifeval: prompt_level_strict_acc,none=0.4000 n=100 in 213.1s
+[11:16:27] llama-server stopped
+[11:16:27] panel done: /home/z/hf/research/.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_panel.json
+[11:16:27] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== lmeval_panel start tag=m64-qwen-2b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-08T11:16:27+08:00
+[11:16:28] === panel tag=m64-qwen-2b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf
+[11:16:28] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[11:16:28] ports: llama=8900 shim=8902
+[11:16:28] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[11:16:28] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[11:16:30] smoke completion ok: '2'
+[11:16:30] --- mmlu: running
+[11:18:35] mmlu: acc,none=0.5504 n=912 in 125.5s
+[11:18:35] --- arc_challenge: running
+[11:21:20] arc_challenge: acc_norm,none=0.4300 n=100 in 164.4s
+[11:21:20] --- truthfulqa_mc2: running
+[11:24:20] truthfulqa_mc2: acc,none=0.4261 n=100 in 180.3s
+[11:24:20] --- gsm8k: running
+[11:27:17] gsm8k: exact_match,strict-match=0.3600 n=100 in 177.1s
+[11:27:17] --- ifeval: running
+[11:30:37] ifeval: prompt_level_strict_acc,none=0.4000 n=100 in 200.3s
+[11:30:38] llama-server stopped
+[11:30:38] panel done: /home/z/hf/research/.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_panel.json
+[11:30:38] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m64-qwen-2b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf limit=100 2026-10-08T11:30:38+08:00
+[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
+[codepanel] llama-server port=9200 (proven free by ss -ltn)
+[codepanel] smoke completion ok
+[11:30:40] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m64-qwen-2b-q2kxl/codegen/humaneval/m64-qwen-2b-q2kxl_openai_temp_0.0.jsonl
+[11:33:55] evaluate humaneval (codegen rc=0)
+[11:34:18] DONE bench humaneval codegen_rc=0 eval_rc=0 218s
+[11:34:18] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m64-qwen-2b-q2kxl/codegen/mbpp/m64-qwen-2b-q2kxl_openai_temp_0.0.jsonl
+[11:39:48] evaluate mbpp (codegen rc=0)
+[11:40:13] DONE bench mbpp codegen_rc=0 eval_rc=0 355s
+REAL_BENCHES ['humaneval', 'mbpp']
+  humaneval: base=0.25609756097560976 plus=0.23780487804878048 n=164 base_pass=42 plus_pass=39 bad_rate=0.0
+  mbpp: base=0.35978835978835977 plus=0.2724867724867725 n=378 base_pass=136 plus_pass=103 bad_rate=0.0
+=== codepanel done tag=m64-qwen-2b-q2kxl 2026-10-08T11:40:13+08:00
+=== lmeval_panel start tag=m65-qwen-2b-q3kxl model=/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 limit=100 llama=/home/z/.local/bin/llama-server 2026-10-08T11:40:43+08:00
+[11:40:44] === panel tag=m65-qwen-2b-q3kxl model=/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263
+[11:40:44] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[11:40:44] ports: llama=8900 shim=8902
+[11:40:44] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[11:40:44] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[11:40:47] smoke completion ok: '2'
+[11:40:47] --- mmlu: running

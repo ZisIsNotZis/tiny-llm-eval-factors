@@ -30,13 +30,23 @@ MAX_LOCK_TRIES="${MAX_LOCK_TRIES:-10}"
 
 [ -f "$CAMP" ] || { echo "campaign: missing $CAMP" >&2; exit 2; }
 
+# The driver holds its own lock for its whole lifetime.  This is the ONLY legitimate
+# liveness proof (SSOT 6b rule 5) and it makes pausing safe: kill the driver, wait for
+# the in-flight panel to finish, edit the queue, and the keeper will relaunch it.
+exec 7>/tmp/campaign_driver.lock
+if ! flock -n 7; then
+  echo "campaign: another driver already holds /tmp/campaign_driver.lock; exiting" >&2
+  exit 0
+fi
+
 log() { echo "[$(date -Is)] $*" >> "$LOG"; }
 lock_free() { flock -n "$LOCK" true 2>/dev/null; }
 
 # run one panel stage, retrying only while the lock is held.  Returns the panel rc, or 4
 # if the lock stayed held through MAX_LOCK_TRIES attempts (caller then moves on).
-run_stage() {  # <stage-name> <script> <model> <tag> <limit> [mmlu_limit]
-  local name="$1" script="$2" model="$3" tag="$4" limit="$5" mmlu="${6:-}"
+run_stage() {  # <stage> <script> <model> <tag> <limit> [mmlu_limit] [reasoning] [tasks]
+  local name="$1" script="$2" model="$3" tag="$4" limit="$5"
+  local mmlu="${6:-}" reason="${7:-off}" tasks="${8:-}"
   local tries=0 rc t0 t1
   while :; do
     if ! lock_free; then
@@ -50,7 +60,7 @@ run_stage() {  # <stage-name> <script> <model> <tag> <limit> [mmlu_limit]
       continue
     fi
     t0=$(date +%s)
-    MMLU_LIMIT="$mmlu" "$script" "$model" "$tag" "$limit"
+    MMLU_LIMIT="$mmlu" REASONING="$reason" TASKS="$tasks" "$script" "$model" "$tag" "$limit"
     rc=$?
     t1=$(date +%s)
     if [ "$rc" -eq 3 ]; then
@@ -75,7 +85,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   # shellcheck disable=SC2086
   set -- $line
   [ "$#" -lt 2 ] && continue
-  model="$1"; tag="$2"; limit="${3:-20}"; mmlu="${4:-}"
+  model="$1"; tag="$2"; limit="${3:-20}"; mmlu="${4:-}"; reason="${5:-off}"; tasks="${6:-}"
   out="$WR/mres/$tag"
 
   if [ -f "$out/DONE" ] && [ -f "$out/code.DONE" ]; then
@@ -83,17 +93,28 @@ while IFS= read -r line || [ -n "$line" ]; do
     log "SKIP $tag (both DONE banners present)"
     continue
   fi
+  # A task-restricted entry is a partial re-run of a variable probe (e.g. the thinking-on
+  # comparison only touches the generative tasks); it has no code half to run.
+  partial=0
+  [ -n "$tasks" ] && partial=1
+  if [ "$partial" -eq 1 ] && [ -f "$out/DONE" ]; then
+    n_skip=$((n_skip + 1))
+    log "SKIP $tag (partial re-run, DONE present)"
+    continue
+  fi
   mkdir -p "$out"
 
   if [ -f "$out/DONE" ]; then
     log "SKIP lmeval $tag (DONE present)"
   else
-    run_stage lmeval "$LMEVAL" "$model" "$tag" "$limit" "$mmlu"; rc=$?
+    run_stage lmeval "$LMEVAL" "$model" "$tag" "$limit" "$mmlu" "$reason" "$tasks"; rc=$?
     if [ "$rc" -eq 4 ]; then log "GIVEUP lmeval $tag (lock held); next model"; continue; fi
     if [ -f "$out/DONE" ]; then log "OK lmeval $tag (rc=$rc)"; else n_fail=$((n_fail + 1)); log "FAIL lmeval $tag (rc=$rc, no DONE)"; fi
   fi
 
-  if [ -f "$out/code.DONE" ]; then
+  if [ "$partial" -eq 1 ]; then
+    log "PARTIAL $tag (tasks=$tasks); code stage not applicable"
+  elif [ -f "$out/code.DONE" ]; then
     log "SKIP code $tag (code.DONE present)"
   else
     run_stage code "$CODE" "$model" "$tag" "$limit"; rc=$?
@@ -101,7 +122,9 @@ while IFS= read -r line || [ -n "$line" ]; do
     if [ -f "$out/code.DONE" ]; then log "OK code $tag (rc=$rc)"; else n_fail=$((n_fail + 1)); log "FAIL code $tag (rc=$rc, no code.DONE)"; fi
   fi
 
-  if [ -f "$out/DONE" ] && [ -f "$out/code.DONE" ]; then
+  if [ "$partial" -eq 1 ]; then
+    if [ -f "$out/DONE" ]; then n_done=$((n_done + 1)); log "MODEL DONE $tag (partial)"; else log "MODEL INCOMPLETE $tag (partial)"; fi
+  elif [ -f "$out/DONE" ] && [ -f "$out/code.DONE" ]; then
     n_done=$((n_done + 1))
     log "MODEL DONE $tag"
   else

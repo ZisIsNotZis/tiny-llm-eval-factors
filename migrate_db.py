@@ -40,6 +40,12 @@ NEW_COLS = [
     # Timing probe only: `_score` has a CHECK in [0, 1], so the MTP speed panel
     # (m28) stores generation tok/s here with `_score` NULL.
     ("_tok_s", "REAL"),
+    # Item count behind `_score`.  SSOT section 2 makes significance item-level, and
+    # SE = sqrt(p(1-p)/n), so n is not optional metadata - without it no CI can be
+    # computed from the DB alone.  `limit_spec` records the lm_eval --limit used
+    # (MMLU's is per subject, hence the separate mmlu entry).
+    ("n_items", "INTEGER"),
+    ("limit_spec", "TEXT"),
 ]
 
 
@@ -82,7 +88,8 @@ ROW_COLS = ["model", "cache_type_k", "cache_type_k_draft", "cache_type_v",
             "temp", "top_p", "top_k", "min_p", "presence_penalty", "_bench",
             "_score", "_bad_rate", "_wall_time", "_tok_s", "_file_size",
             "run_tag", "rep", "ctx_size", "parallel_slots", "seed", "protocol",
-            "language", "bench_family", "max_tokens", "source_file", "completed_at"]
+            "language", "bench_family", "max_tokens", "source_file", "completed_at",
+            "n_items", "limit_spec"]
 
 
 def insert(con, row):
@@ -998,6 +1005,7 @@ def ingest_campaign(con):
                 p = None
             if p:
                 model = os.path.basename(p.get("model", "")) or None
+                lim = p.get("limit_per_task")
                 for task, score in (p.get("tasks") or {}).items():
                     if score is None or task not in LMEVAL_TASKS:
                         continue
@@ -1010,6 +1018,8 @@ def ingest_campaign(con):
                         "max_tokens": (p.get("max_gen_toks") if task in ("gsm8k", "ifeval") else None),
                         "source_file": f"mres/{tag_dir}/lmeval_panel.json",
                         "completed_at": None,
+                        "n_items": (p.get("n") or {}).get(task),
+                        "limit_spec": None if lim is None else str(lim),
                     })
                     row["reasoning"] = p.get("reasoning", "off")
                     insert(con, row)
@@ -1040,6 +1050,8 @@ def ingest_campaign(con):
                             "max_tokens": (e.get("protocol") or {}).get("max_new_tokens"),
                             "source_file": f"mres/{tag_dir}/evalplus.json",
                             "completed_at": None,
+                            "n_items": v.get("n"),
+                            "limit_spec": "full",
                         })
                         insert(con, row)
                         n += 1

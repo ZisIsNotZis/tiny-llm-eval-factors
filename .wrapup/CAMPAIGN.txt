@@ -2,6 +2,15 @@
 /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_M.gguf m62-qwen-2b-iq2m 100 16
 /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf m63-qwen-2b-iq3xxs 100 16
 /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf m64-qwen-2b-q2kxl 100 16
+
+# thinking-ON comparison, right after the matched thinking-off rows: with
+# --reasoning off the IQ2/IQ3 2B models sit at the gsm8k floor (0.01-0.02) while
+# UD-Q2_K_XL reaches 0.36.  These re-run ONLY the two generative tasks with
+# thinking on, to separate "quantisation broke reasoning" from "the protocol did".
+/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_XXS.gguf m61on-2b 100 16 on gsm8k,ifeval
+/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_M.gguf m62on-2b 100 16 on gsm8k,ifeval
+/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf m63on-2b 100 16 on gsm8k,ifeval
+/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf m64on-2b 100 16 on gsm8k,ifeval
 /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 m65-qwen-2b-q3kxl 100 16
 /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35 m66-qwen-2b-q4kxl 100 16
 /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/67bff9774bc55e44af2eee3c448dc054478b45c0607858fc6df5b336b55f36f4 m67-qwen-2b-q5kxl 100 16

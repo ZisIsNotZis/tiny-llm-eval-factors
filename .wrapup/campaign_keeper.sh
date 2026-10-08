@@ -43,15 +43,12 @@ pending() {  # count lines whose two DONE banners are not both present
 }
 
 driver_running() {
-  # SSOT 6b rule 5: never decide liveness by matching a process name with pgrep.  The
-  # driver writes an explicit completion banner in campaign.log; if the last banner is a
-  # start, the driver is still working.  A held GPU lock is the second, independent proof
-  # that some panel is currently running on the campaign's behalf.
-  local last
-  last=$(grep -E '=== campaign (start|end)' "$WR/campaign.log" 2>/dev/null | tail -1)
-  case "$last" in
-    *"campaign start"*) return 0 ;;
-  esac
+  # SSOT 6b rule 5: liveness is proved by a lock, never by matching a process name.
+  # The driver holds /tmp/campaign_driver.lock for its whole lifetime; a panel holding the
+  # GPU lock is the second, independent proof that work is in flight.
+  if ! flock -n /tmp/campaign_driver.lock true 2>/dev/null; then
+    return 0
+  fi
   if ! flock -n /tmp/llama_gpu.lock true 2>/dev/null; then
     return 0
   fi
@@ -71,7 +68,9 @@ while :; do
   else
     idle=$((idle + 1))
     log "driver not running, $left pending -> relaunch (idle streak $idle)"
-    setsid nohup "$DRIVER" > "$WR/campaign.out" 2>&1 < /dev/null &
+    # 8>&- so the driver does NOT inherit the keeper's single-instance lock: otherwise
+    # killing the keeper would leave the lock held by a surviving driver process.
+    setsid nohup "$DRIVER" > "$WR/campaign.out" 2>&1 < /dev/null 8>&- &
     sleep 60
   fi
   sleep 300

@@ -29,6 +29,13 @@ fi
 ARGS=(--model "$MODEL" --tag "$TAG" --llama-bin "$LLAMA_SERVER" --reasoning "${REASONING:-off}")
 [ "$LIMIT" != "0" ] && ARGS+=(--limit "$LIMIT")
 [ -n "${MMLU_LIMIT:-}" ] && ARGS+=(--mmlu-limit "$MMLU_LIMIT")
+# TASKS lets a follow-up run touch only the tasks a variable can actually affect (e.g. the
+# thinking-on comparison only needs the two generative tasks).
+if [ -n "${TASKS:-}" ]; then
+  # shellcheck disable=SC2206
+  read -r -a _taskarr <<< "${TASKS//,/ }"
+  ARGS+=(--tasks "${_taskarr[@]}")
+fi
 
 echo "=== lmeval_panel start tag=$TAG model=$MODEL limit=$LIMIT llama=$LLAMA_SERVER $(date -Is)" | tee -a "$OUT/panel.log"
 "$PY" "$RUNNER" "${ARGS[@]}"
