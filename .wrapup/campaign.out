@@ -1,0 +1,10 @@
+=== lmeval_panel start tag=m61-qwen-2b-iq2xxs model=/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_XXS.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-08T09:27:10+08:00
+[09:27:10] === panel tag=m61-qwen-2b-iq2xxs model=/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_XXS.gguf
+[09:27:10] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[09:27:10] ports: llama=8900 shim=8902
+[09:27:10] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[09:27:10] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_XXS.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[09:27:16] smoke completion ok: '2'
+[09:27:16] --- mmlu: running
+[09:29:25] mmlu: acc,none=0.3596 n=912 in 129.0s
+[09:29:25] --- arc_challenge: running

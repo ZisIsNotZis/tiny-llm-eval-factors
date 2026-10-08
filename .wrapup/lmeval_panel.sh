@@ -28,6 +28,7 @@ fi
 
 ARGS=(--model "$MODEL" --tag "$TAG" --llama-bin "$LLAMA_SERVER" --reasoning "${REASONING:-off}")
 [ "$LIMIT" != "0" ] && ARGS+=(--limit "$LIMIT")
+[ -n "${MMLU_LIMIT:-}" ] && ARGS+=(--mmlu-limit "$MMLU_LIMIT")
 
 echo "=== lmeval_panel start tag=$TAG model=$MODEL limit=$LIMIT llama=$LLAMA_SERVER $(date -Is)" | tee -a "$OUT/panel.log"
 "$PY" "$RUNNER" "${ARGS[@]}"

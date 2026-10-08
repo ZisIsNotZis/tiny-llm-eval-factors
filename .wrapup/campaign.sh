@@ -35,8 +35,8 @@ lock_free() { flock -n "$LOCK" true 2>/dev/null; }
 
 # run one panel stage, retrying only while the lock is held.  Returns the panel rc, or 4
 # if the lock stayed held through MAX_LOCK_TRIES attempts (caller then moves on).
-run_stage() {  # <stage-name> <script> <model> <tag> <limit>
-  local name="$1" script="$2" model="$3" tag="$4" limit="$5"
+run_stage() {  # <stage-name> <script> <model> <tag> <limit> [mmlu_limit]
+  local name="$1" script="$2" model="$3" tag="$4" limit="$5" mmlu="${6:-}"
   local tries=0 rc t0 t1
   while :; do
     if ! lock_free; then
@@ -50,7 +50,7 @@ run_stage() {  # <stage-name> <script> <model> <tag> <limit>
       continue
     fi
     t0=$(date +%s)
-    "$script" "$model" "$tag" "$limit"
+    MMLU_LIMIT="$mmlu" "$script" "$model" "$tag" "$limit"
     rc=$?
     t1=$(date +%s)
     if [ "$rc" -eq 3 ]; then
@@ -75,7 +75,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   # shellcheck disable=SC2086
   set -- $line
   [ "$#" -lt 2 ] && continue
-  model="$1"; tag="$2"; limit="${3:-20}"
+  model="$1"; tag="$2"; limit="${3:-20}"; mmlu="${4:-}"
   out="$WR/mres/$tag"
 
   if [ -f "$out/DONE" ] && [ -f "$out/code.DONE" ]; then
@@ -88,7 +88,7 @@ while IFS= read -r line || [ -n "$line" ]; do
   if [ -f "$out/DONE" ]; then
     log "SKIP lmeval $tag (DONE present)"
   else
-    run_stage lmeval "$LMEVAL" "$model" "$tag" "$limit"; rc=$?
+    run_stage lmeval "$LMEVAL" "$model" "$tag" "$limit" "$mmlu"; rc=$?
     if [ "$rc" -eq 4 ]; then log "GIVEUP lmeval $tag (lock held); next model"; continue; fi
     if [ -f "$out/DONE" ]; then log "OK lmeval $tag (rc=$rc)"; else n_fail=$((n_fail + 1)); log "FAIL lmeval $tag (rc=$rc, no DONE)"; fi
   fi

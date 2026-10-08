@@ -952,6 +952,100 @@ def ingest_m28(con):
     return n
 
 
+CAMPAIGN_ROOT = ".wrapup/mres"
+
+# lm-eval task -> (bench_family, protocol).  The loglikelihood tasks are scored through the
+# exact echo shim (llama-server build 4399 ignores OpenAI `echo`), the generative ones through
+# the chat endpoint.  Thinking is disabled at the SERVER level with --reasoning off, which is
+# why an instruct model does not return an empty `content`.
+LMEVAL_TASKS = {
+    "mmlu":            ("mmlu",            "lmeval-0.4.13-gguf-shim-reasoning-off"),
+    "arc_challenge":   ("arc_challenge",   "lmeval-0.4.13-gguf-shim-reasoning-off"),
+    "truthfulqa_mc2":  ("truthfulqa_mc2",  "lmeval-0.4.13-gguf-shim-reasoning-off"),
+    "gsm8k":           ("gsm8k",           "lmeval-0.4.13-chat-reasoning-off"),
+    "ifeval":          ("ifeval",          "lmeval-0.4.13-chat-reasoning-off"),
+}
+
+
+def ingest_campaign(con):
+    """Ingest the standard-benchmark campaign from .wrapup/mres/<tag>/{
+    lmeval_panel.json,evalplus.json}.  REFRESH: panels are re-read as the campaign drains.
+
+    Data contract (SSOT 2b): a task that produced no number is NOT written as 0.0.  It is
+    simply not inserted; the raw error stays in the panel json.  Every inserted score keeps
+    its numerator/denominator where the harness provides one.
+    """
+    if not os.path.isdir(CAMPAIGN_ROOT):
+        print("  (no campaign results)"); return 0
+    # drop previous campaign rows, then re-read (REFRESH semantics)
+    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%'")
+    n = 0
+    for tag_dir in sorted(os.listdir(CAMPAIGN_ROOT)):
+        d = os.path.join(CAMPAIGN_ROOT, tag_dir)
+        if not os.path.isdir(d):
+            continue
+        # p0-* are calibration/smoke panels (tiny limits, throwaway models); they are not
+        # campaign measurements and must not enter the DB as if they were.
+        if tag_dir.startswith("p0-"):
+            continue
+
+        # ---- lm-evaluation-harness panel ----
+        lp = os.path.join(d, "lmeval_panel.json")
+        if os.path.exists(lp):
+            try:
+                p = json.load(open(lp))
+            except Exception:
+                p = None
+            if p:
+                model = os.path.basename(p.get("model", "")) or None
+                for task, score in (p.get("tasks") or {}).items():
+                    if score is None or task not in LMEVAL_TASKS:
+                        continue
+                    fam, proto = LMEVAL_TASKS[task]
+                    row = base_row(norm_model(model), task, 0.0, score, None)
+                    row.update({
+                        "_bench": task, "bench_family": fam, "run_tag": p.get("tag", tag_dir),
+                        "rep": 1, "ctx_size": p.get("ctx_size", 8192), "parallel_slots": 1,
+                        "protocol": proto, "language": None,
+                        "max_tokens": (p.get("max_gen_toks") if task in ("gsm8k", "ifeval") else None),
+                        "source_file": f"mres/{tag_dir}/lmeval_panel.json",
+                        "completed_at": None,
+                    })
+                    row["reasoning"] = p.get("reasoning", "off")
+                    insert(con, row)
+                    n += 1
+
+        # ---- EvalPlus panel (base and plus are separate benchmarks) ----
+        ep = os.path.join(d, "evalplus.json")
+        if os.path.exists(ep):
+            try:
+                e = json.load(open(ep))
+            except Exception:
+                e = None
+            if e:
+                model = os.path.basename(e.get("model", "")) or None
+                for bench, v in (e.get("benches") or {}).items():
+                    for variant in ("base", "plus"):
+                        score = (v or {}).get(variant)
+                        if score is None:
+                            continue
+                        name = bench if variant == "base" else f"{bench}-plus"
+                        row = base_row(norm_model(model), name, 0.0, score, v.get("bad_rate"))
+                        row.update({
+                            "_bench": name, "bench_family": bench,
+                            "run_tag": e.get("tag", tag_dir), "rep": 1,
+                            "ctx_size": 8192, "parallel_slots": 1,
+                            "protocol": f"evalplus-0.3.1-openai-chat-greedy-{variant}",
+                            "language": "python",
+                            "max_tokens": (e.get("protocol") or {}).get("max_new_tokens"),
+                            "source_file": f"mres/{tag_dir}/evalplus.json",
+                            "completed_at": None,
+                        })
+                        insert(con, row)
+                        n += 1
+    return n
+
+
 def main():
     con = sqlite3.connect(DB)
     con.execute("PRAGMA foreign_keys=ON")
@@ -997,6 +1091,7 @@ def main():
         ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),
+        ("campaign", ingest_campaign),
     ]
     tally = {}
     for label, tag, fn in ONCE:

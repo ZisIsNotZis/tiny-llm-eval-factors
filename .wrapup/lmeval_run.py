@@ -393,9 +393,12 @@ def tail(path: Path, n: int = 40) -> list[str]:
 
 # ------------------------------------------------------------------------------------
 def task_spec(task: str, shim_port: int, llama_port: int, limit: int | None,
-              out_dir: Path) -> tuple[list[str], Path]:
+              out_dir: Path, mmlu_limit: int | None = None) -> tuple[list[str], Path]:
     out_json = out_dir / f"lmeval_{task}.json"
-    limit_args = [] if not limit else ["--limit", str(limit)]
+    # MMLU's --limit is applied PER SUBJECT (57 subjects), so a single shared limit either
+    # starves the other tasks or explodes MMLU to 57x the item count.  They are separate.
+    eff = mmlu_limit if (task == "mmlu" and mmlu_limit) else limit
+    limit_args = [] if not eff else ["--limit", str(eff)]
     if task in GEN_TASKS:
         cmd = [str(LMENV_LM_EVAL), "--model", "local-chat-completions",
                "--model_args", f"base_url=http://127.0.0.1:{llama_port}/v1/chat/completions",
@@ -456,7 +459,8 @@ def run_panel(args) -> int:
         env["HF_DATASETS_OFFLINE"] = "1"
         env["TRANSFORMERS_OFFLINE"] = "1"
         for task in tasks:
-            cmd, out_json = task_spec(task, shim_port, llama_port, limit, out_dir)
+            cmd, out_json = task_spec(task, shim_port, llama_port, limit, out_dir,
+                                      getattr(args, "mmlu_limit", None))
             task_log = out_dir / f"lmeval_{task}.log"
             log(f"--- {task}: running", panel_log)
             t0 = time.time()
@@ -590,6 +594,8 @@ def main() -> int:
     ap.add_argument("--task-timeout", type=int, default=7200)
     ap.add_argument("--reasoning", default="off", choices=["off", "on", "auto"],
                     help="server-level thinking mode; recorded in the panel json")
+    ap.add_argument("--mmlu-limit", type=int, default=None,
+                    help="MMLU --limit is per SUBJECT (57 subjects); defaults to --limit")
     ap.add_argument("--selftest", action="store_true")
     args = ap.parse_args()
     if args.limit == 0:
