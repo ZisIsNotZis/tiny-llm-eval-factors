@@ -978,3 +978,83 @@ REAL_BENCHES ['humaneval', 'mbpp']
 [18:14:03] --- gsm8k: running
 [18:15:33] gsm8k: exact_match,strict-match=0.1100 n=100 in 89.6s
 [18:15:33] --- ifeval: running
+[18:19:23] ifeval: prompt_level_strict_acc,none=0.5000 n=100 in 229.6s
+[18:19:24] llama-server stopped
+[18:19:24] panel done: /home/z/hf/research/.wrapup/mres/m112-qwen-0.8b-q3kxl/lmeval_panel.json
+[18:19:24] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m112-qwen-0.8b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf limit=100 2026-10-09T18:19:24+08:00
+[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
+[codepanel] llama-server port=9200 (proven free by ss -ltn)
+[codepanel] smoke completion ok
+[18:19:26] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m112-qwen-0.8b-q3kxl/codegen/humaneval/m112-qwen-0.8b-q3kxl_openai_temp_0.0.jsonl
+[18:22:38] evaluate humaneval (codegen rc=0)
+[18:23:00] DONE bench humaneval codegen_rc=0 eval_rc=0 214s
+[18:23:00] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m112-qwen-0.8b-q3kxl/codegen/mbpp/m112-qwen-0.8b-q3kxl_openai_temp_0.0.jsonl
+[18:32:40] evaluate mbpp (codegen rc=0)
+[18:33:27] DONE bench mbpp codegen_rc=0 eval_rc=0 627s
+REAL_BENCHES ['humaneval', 'mbpp']
+  humaneval: base=0.23780487804878048 plus=0.21951219512195122 n=164 base_pass=39 plus_pass=36 bad_rate=0.0
+  mbpp: base=0.30158730158730157 plus=0.2619047619047619 n=378 base_pass=114 plus_pass=99 bad_rate=0.0
+=== codepanel done tag=m112-qwen-0.8b-q3kxl 2026-10-09T18:33:27+08:00
+=== lmeval_panel start tag=m113-nemotron-4b-q3kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T18:33:57+08:00
+[18:33:57] === panel tag=m113-nemotron-4b-q3kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf
+[18:33:57] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[18:33:57] ports: llama=8900 shim=8901
+[18:33:57] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[18:33:57] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[18:34:02] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[18:34:02] --- mmlu: running
+[18:42:30] mmlu: acc,none=0.6689 n=912 in 508.1s
+[18:42:30] --- arc_challenge: running
+[18:47:21] arc_challenge: acc_norm,none=0.4400 n=100 in 291.2s
+[18:47:21] --- truthfulqa_mc2: running
+[18:58:04] truthfulqa_mc2: acc,none=0.5458 n=100 in 642.1s
+[18:58:04] --- gsm8k: running
+[19:00:07] gsm8k: exact_match,strict-match=0.8600 n=100 in 123.9s
+[19:00:07] --- ifeval: running
+[19:02:45] ifeval: prompt_level_strict_acc,none=0.7600 n=100 in 157.9s
+[19:02:46] llama-server stopped
+[19:02:47] panel done: /home/z/hf/research/.wrapup/mres/m113-nemotron-4b-q3kxl/lmeval_panel.json
+[19:02:47] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m113-nemotron-4b-q3kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf limit=100 2026-10-09T19:02:47+08:00
+[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
+[codepanel] llama-server port=9200 (proven free by ss -ltn)
+[codepanel] smoke completion ok
+[19:02:49] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m113-nemotron-4b-q3kxl/codegen/humaneval/m113-nemotron-4b-q3kxl_openai_temp_0.0.jsonl
+[19:06:47] evaluate humaneval (codegen rc=0)
+[19:07:09] DONE bench humaneval codegen_rc=0 eval_rc=0 260s
+[19:07:09] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m113-nemotron-4b-q3kxl/codegen/mbpp/m113-nemotron-4b-q3kxl_openai_temp_0.0.jsonl
+[19:14:23] evaluate mbpp (codegen rc=0)
+[19:15:08] DONE bench mbpp codegen_rc=0 eval_rc=0 479s
+REAL_BENCHES ['humaneval', 'mbpp']
+  humaneval: base=0.8414634146341463 plus=0.8048780487804879 n=164 base_pass=138 plus_pass=132 bad_rate=0.0
+  mbpp: base=0.8121693121693122 plus=0.6825396825396826 n=378 base_pass=307 plus_pass=258 bad_rate=0.0
+=== codepanel done tag=m113-nemotron-4b-q3kxl 2026-10-09T19:15:08+08:00
+=== lmeval_panel start tag=m114-ornith-9b-q5km model=/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T19:15:38+08:00
+[19:15:39] === panel tag=m114-ornith-9b-q5km model=/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf
+[19:15:39] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[19:15:39] ports: llama=8900 shim=8901
+[19:15:39] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[19:15:39] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[19:15:50] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[19:15:50] --- mmlu: running
+[19:20:52] mmlu: acc,none=0.7774 n=912 in 302.0s
+[19:20:52] --- arc_challenge: running
+[19:25:04] arc_challenge: acc_norm,none=0.5400 n=100 in 252.7s
+[19:25:04] --- truthfulqa_mc2: running
+[19:32:32] truthfulqa_mc2: acc,none=0.5035 n=100 in 448.0s
+[19:32:32] --- gsm8k: running
+[19:35:20] gsm8k: exact_match,strict-match=0.9000 n=100 in 167.2s
+[19:35:20] --- ifeval: running
+[19:41:14] ifeval: prompt_level_strict_acc,none=0.6700 n=100 in 354.5s
+[19:41:15] llama-server stopped
+[19:41:15] panel done: /home/z/hf/research/.wrapup/mres/m114-ornith-9b-q5km/lmeval_panel.json
+[19:41:15] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m114-ornith-9b-q5km model=/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf limit=100 2026-10-09T19:41:15+08:00
+[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
+[codepanel] llama-server port=9200 (proven free by ss -ltn)
+[codepanel] smoke completion ok
+[19:41:18] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m114-ornith-9b-q5km/codegen/humaneval/m114-ornith-9b-q5km_openai_temp_0.0.jsonl
+[19:51:09] evaluate humaneval (codegen rc=0)
+[19:51:31] DONE bench humaneval codegen_rc=0 eval_rc=0 613s
+[19:51:31] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m114-ornith-9b-q5km/codegen/mbpp/m114-ornith-9b-q5km_openai_temp_0.0.jsonl

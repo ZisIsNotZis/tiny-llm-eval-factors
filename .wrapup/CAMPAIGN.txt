@@ -52,3 +52,17 @@
 /home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf m112-qwen-0.8b-q3kxl 100 16
 /home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf m113-nemotron-4b-q3kxl 100 16
 /home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf m114-ornith-9b-q5km 100 16
+
+# Wave 2: the 10 models the first wave missed.  They carry the size axis (Qwen3.5-9B,
+# gemma-4-E2B/E4B, Ternary-Bonsai 8B/27B) and the study's largest measured effect
+# (Phi-4-mini, where Q2->Q3 moved MultiPL-E by +0.385).
+/home/z/hf/Phi-4-mini-instruct-Q2_K.gguf m115-phi4mini-q2k 100 16
+/home/z/hf/Phi-4-mini-instruct-Q3_K_M.gguf m116-phi4mini-q3km 100 16
+/home/z/hf/Qwen3.5-9B-UD-Q2_K_XL.gguf m117-qwen9b-q2kxl 100 16
+/home/z/hf/Qwen3.5-9B-UD-Q3_K_XL.gguf m118-qwen9b-q3kxl 100 16
+/home/z/hf/gemma-4-E2B-it-UD-Q2_K_XL.gguf m119-gemma-e2b-q2kxl 100 16
+/home/z/hf/gemma-4-E2B-it-UD-Q3_K_XL.gguf m120-gemma-e2b-q3kxl 100 16
+/home/z/hf/gemma-4-E4B-it-UD-Q2_K_XL.gguf m121-gemma-e4b-q2kxl 100 16
+/home/z/hf/gemma-4-E4B-it-UD-Q3_K_XL.gguf m122-gemma-e4b-q3kxl 100 16
+/home/z/hf/Ternary-Bonsai-8B-Q2_0_g64.gguf m123-bonsai-8b-q2 100 16
+/home/z/hf/Ternary-Bonsai-27B-Q2_g64.gguf m124-bonsai-27b-q2 100 16
