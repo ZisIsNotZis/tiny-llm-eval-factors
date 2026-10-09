@@ -1058,3 +1058,34 @@ REAL_BENCHES ['humaneval', 'mbpp']
 [19:51:09] evaluate humaneval (codegen rc=0)
 [19:51:31] DONE bench humaneval codegen_rc=0 eval_rc=0 613s
 [19:51:31] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m114-ornith-9b-q5km/codegen/mbpp/m114-ornith-9b-q5km_openai_temp_0.0.jsonl
+[20:19:57] evaluate mbpp (codegen rc=0)
+[20:20:47] DONE bench mbpp codegen_rc=0 eval_rc=0 1756s
+REAL_BENCHES ['humaneval', 'mbpp']
+  humaneval: base=0.7560975609756098 plus=0.7317073170731707 n=164 base_pass=124 plus_pass=120 bad_rate=0.0
+  mbpp: base=0.8465608465608465 plus=0.7248677248677249 n=378 base_pass=320 plus_pass=274 bad_rate=0.0
+=== codepanel done tag=m114-ornith-9b-q5km 2026-10-09T20:20:47+08:00
+=== lmeval_panel start tag=m115-phi4mini-q2k model=/home/z/hf/Phi-4-mini-instruct-Q2_K.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T20:21:17+08:00
+[20:21:18] === panel tag=m115-phi4mini-q2k model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf
+[20:21:18] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[20:21:18] ports: llama=8900 shim=8901
+[20:21:18] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[20:21:18] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[20:21:24] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[20:21:24] --- mmlu: running
+[20:24:22] mmlu: acc,none=0.2774 n=912 in 177.9s
+[20:24:22] --- arc_challenge: running
+[20:28:26] arc_challenge: acc_norm,none=0.3700 n=100 in 244.4s
+[20:28:26] --- truthfulqa_mc2: running
+[20:34:02] truthfulqa_mc2: acc,none=0.4675 n=100 in 335.4s
+[20:34:02] --- gsm8k: running
+[20:41:22] gsm8k: exact_match,strict-match=0.0000 n=100 in 440.2s
+[20:41:22] --- ifeval: running
+[20:47:31] ifeval: prompt_level_strict_acc,none=0.1700 n=100 in 369.0s
+[20:47:32] llama-server stopped
+[20:47:33] panel done: /home/z/hf/research/.wrapup/mres/m115-phi4mini-q2k/lmeval_panel.json
+[20:47:33] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m115-phi4mini-q2k model=/home/z/hf/Phi-4-mini-instruct-Q2_K.gguf limit=100 2026-10-09T20:47:33+08:00
+[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
+[codepanel] llama-server port=9200 (proven free by ss -ltn)
+[codepanel] smoke completion ok
+[20:47:35] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m115-phi4mini-q2k/codegen/humaneval/m115-phi4mini-q2k_openai_temp_0.0.jsonl

@@ -71,6 +71,25 @@ handler dialect artifact).
 MultiPL-E, raw completion, greedy, 2–4 languages each, **item-level** 95% CIs
 (`multipl_e_analysis.py` → `.wrapup/out/MULTIPLE.md`):
 
+**Cross-benchmark confirmation (the multi-benchmark requirement).** The same Q2→Q3 step measured
+on all seven standard benchmarks, per family, low = 3.0-3.7 bpw and high = 3.9-4.5 bpw
+(gsm8k reasoning-off, the primary protocol):
+
+| benchmark | families | median step | positive |
+|---|---|---|---|
+| HumanEval+ | 6 | **+0.409** | 5/6 |
+| GSM8K | 5 | +0.250 | 4/5 |
+| IFEval | 6 | +0.250 | 5/6 |
+| MBPP+ | 6 | +0.235 | 6/6 |
+| MMLU | 5 | +0.107 | 4/5 |
+| ARC-Challenge | 4 | +0.100 | 3/4 |
+| TruthfulQA mc2 | 6 | **+0.048** | 4/6 |
+
+Same step, same families, seven harnesses: the ordering reproduces F9's independent slope ranking
+exactly (code > math/instruction > MMLU/ARC > TruthfulQA), and on the code columns the step is an
+order of magnitude larger than on TruthfulQA. `granite-4.1-3b` is again the extremes: +0.579 on
+HumanEval+ against −0.030 on ARC-Challenge.
+
 *Expanded tally (after m58/m59, `run_tag` in {`m58-llama32-family`,`m59-phi4mini-family`}): the two
 largest effects in the whole study are **Phi-4-mini 3.8B Δ=+0.385 [I: +0.329, +0.441]** (Q2 nearly
 collapses to 0.022) and **granite-4.1-3b Δ=+0.344**, followed by MiniCPM5-2B +0.314. The only
