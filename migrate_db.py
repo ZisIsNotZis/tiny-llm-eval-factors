@@ -23,6 +23,12 @@ import sqlite3
 import sys
 
 DB = "experiments.sqlite"
+
+# Logical gguf names known to the study (the bpw map is the canonical roster).
+try:
+    BPW_KEYS = set(json.load(open(".wrapup/bpw_map.json")))
+except Exception:  # noqa: BLE001
+    BPW_KEYS = set()
 HF = "/home/z/hf"
 
 NEW_COLS = [
@@ -961,6 +967,41 @@ def ingest_m28(con):
 
 CAMPAIGN_ROOT = ".wrapup/mres"
 
+# The runners load the model by its RESOLVED path (llama.cpp needs the real file), so a
+# result json can carry a bare `blobs/<sha256>` basename.  That breaks every analysis keyed
+# on the model name (bpw map, family grouping).  Recover the logical name from the HF cache
+# snapshot symlinks, which point at exactly those blobs.
+def build_blob_map():
+    import glob as _glob
+    m = {}
+    pats = ["/home/z/hf/models--*/snapshots/*/*.gguf",
+            "/home/z/hf/mscache/*/*/*.gguf",
+            "/home/z/hf/*.gguf"]
+    for pat in pats:
+        for snap in _glob.glob(pat):
+            try:
+                real = os.path.realpath(snap)
+            except OSError:
+                continue
+            m.setdefault(os.path.basename(real), os.path.basename(snap))
+    return m
+
+
+BLOB_MAP = None
+
+
+def canonical_model(path_or_name):
+    """Logical gguf basename for a result record, dereferencing blob hashes."""
+    global BLOB_MAP
+    if not path_or_name:
+        return None
+    b = os.path.basename(str(path_or_name))
+    if b in BPW_KEYS:
+        return b
+    if BLOB_MAP is None:
+        BLOB_MAP = build_blob_map()
+    return BLOB_MAP.get(b, b)
+
 # lm-eval task -> (bench_family, protocol).  The loglikelihood tasks are scored through the
 # exact echo shim (llama-server build 4399 ignores OpenAI `echo`), the generative ones through
 # the chat endpoint.  Thinking is disabled at the SERVER level with --reasoning off, which is
@@ -1004,7 +1045,7 @@ def ingest_campaign(con):
             except Exception:
                 p = None
             if p:
-                model = os.path.basename(p.get("model", "")) or None
+                model = canonical_model(p.get("model", "")) or None
                 lim = p.get("limit_per_task")
                 prof = p.get("profiles") or {}
                 for task, score in (p.get("tasks") or {}).items():
@@ -1042,7 +1083,7 @@ def ingest_campaign(con):
             except Exception:
                 e = None
             if e:
-                model = os.path.basename(e.get("model", "")) or None
+                model = canonical_model(e.get("model_arg") or e.get("model", "")) or None
                 for bench, v in (e.get("benches") or {}).items():
                     for variant in ("base", "plus"):
                         score = (v or {}).get(variant)
