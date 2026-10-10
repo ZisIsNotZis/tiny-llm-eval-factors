@@ -1,1091 +1,652 @@
-=== lmeval_panel start tag=m84-bonsai-4b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-4B-gguf/Ternary-Bonsai-4B-Q2_0_g64.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-08T22:16:03+08:00
-[22:16:03] === panel tag=m84-bonsai-4b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-4B-gguf/Ternary-Bonsai-4B-Q2_0_g64.gguf
-[22:16:03] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[22:16:03] ports: llama=8900 shim=8901
-[22:16:03] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[22:16:03] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/prism-ml/Ternary-Bonsai-4B-gguf/Ternary-Bonsai-4B-Q2_0_g64.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[22:16:06] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[22:16:06] --- mmlu: running
-[22:17:43] mmlu: acc,none=0.6272 n=912 in 96.5s
-[22:17:43] --- arc_challenge: running
-[22:19:39] arc_challenge: acc_norm,none=0.4800 n=100 in 116.6s
-[22:19:39] --- truthfulqa_mc2: running
-[22:22:21] truthfulqa_mc2: acc,none=0.5500 n=100 in 162.2s
-[22:22:21] --- gsm8k: running
-[22:25:59] gsm8k: exact_match,strict-match=0.5700 n=100 in 218.2s
-[22:25:59] --- ifeval: running
-[22:30:02] ifeval: prompt_level_strict_acc,none=0.6800 n=100 in 242.5s
-[22:30:03] llama-server stopped
-[22:30:03] panel done: /home/z/hf/research/.wrapup/mres/m84-bonsai-4b-q2/lmeval_panel.json
-[22:30:03] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m84-bonsai-4b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-4B-gguf/Ternary-Bonsai-4B-Q2_0_g64.gguf limit=100 2026-10-08T22:30:03+08:00
+=== codepanel start tag=m73-qwen-4b-q3kxl model=/home/z/hf/models--unsloth--Qwen3.5-4B-GGUF/blobs/1874727e4bb6ac23fd0cd134ac6562d2759fe44f37fa68c55197b36526da4e37 limit=100 2026-10-09T22:39:26+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[22:30:05] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m84-bonsai-4b-q2/codegen/humaneval/m84-bonsai-4b-q2_openai_temp_0.0.jsonl
-[22:32:39] evaluate humaneval (codegen rc=0)
-[22:33:01] DONE bench humaneval codegen_rc=0 eval_rc=0 176s
-[22:33:01] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m84-bonsai-4b-q2/codegen/mbpp/m84-bonsai-4b-q2_openai_temp_0.0.jsonl
-[22:42:06] evaluate mbpp (codegen rc=0)
-[22:42:31] DONE bench mbpp codegen_rc=0 eval_rc=0 570s
+[22:39:33] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m73-qwen-4b-q3kxl/codegen/humaneval/m73-qwen-4b-q3kxl_openai_temp_0.0.jsonl
+[22:46:45] evaluate humaneval (codegen rc=0)
+[22:47:09] DONE bench humaneval codegen_rc=0 eval_rc=0 456s
+[22:47:09] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m73-qwen-4b-q3kxl/codegen/mbpp/m73-qwen-4b-q3kxl_openai_temp_0.0.jsonl
+[23:02:25] evaluate mbpp (codegen rc=0)
+[23:03:15] DONE bench mbpp codegen_rc=0 eval_rc=0 966s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.8292682926829268 plus=0.7804878048780488 n=164 base_pass=136 plus_pass=128 bad_rate=0.0
-  mbpp: base=0.6534391534391535 plus=0.5740740740740741 n=378 base_pass=247 plus_pass=217 bad_rate=0.0
-=== codepanel done tag=m84-bonsai-4b-q2 2026-10-08T22:42:31+08:00
-=== lmeval_panel start tag=m85-bonsai-1.7b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-1.7B-gguf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-08T22:43:01+08:00
-[22:43:02] === panel tag=m85-bonsai-1.7b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-1.7B-gguf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf
-[22:43:02] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[22:43:02] ports: llama=8900 shim=8901
-[22:43:02] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[22:43:02] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/prism-ml/Ternary-Bonsai-1.7B-gguf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[22:43:04] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[22:43:04] --- mmlu: running
-[22:44:31] mmlu: acc,none=0.5077 n=912 in 87.6s
-[22:44:31] --- arc_challenge: running
-[22:46:46] arc_challenge: acc_norm,none=0.3900 n=100 in 134.9s
-[22:46:46] --- truthfulqa_mc2: running
-[22:49:41] truthfulqa_mc2: acc,none=0.5073 n=100 in 174.2s
-[22:49:41] --- gsm8k: running
-[22:51:31] gsm8k: exact_match,strict-match=0.4900 n=100 in 110.7s
-[22:51:31] --- ifeval: running
-[22:54:39] ifeval: prompt_level_strict_acc,none=0.6900 n=100 in 188.1s
-[22:54:40] llama-server stopped
-[22:54:40] panel done: /home/z/hf/research/.wrapup/mres/m85-bonsai-1.7b-q2/lmeval_panel.json
-[22:54:40] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m85-bonsai-1.7b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-1.7B-gguf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf limit=100 2026-10-08T22:54:41+08:00
+  humaneval: base=0.8170731707317073 plus=0.7804878048780488 n=164 base_pass=134 plus_pass=128 bad_rate=0.0
+  mbpp: base=0.7619047619047619 plus=0.626984126984127 n=378 base_pass=288 plus_pass=237 bad_rate=0.0
+=== codepanel done tag=m73-qwen-4b-q3kxl 2026-10-09T23:03:15+08:00
+=== lmeval_panel start tag=m74-qwen-9b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T23:03:45+08:00
+[23:03:46] === panel tag=m74-qwen-9b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf
+[23:03:46] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[23:03:46] ports: llama=8900 shim=8901
+[23:03:46] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[23:03:46] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[23:03:56] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[23:03:56] --- mmlu: running
+[23:09:33] mmlu: acc,none=0.7368 n=912 in 336.9s
+[23:09:33] --- arc_challenge: running
+[23:15:57] arc_challenge: acc_norm,none=0.4800 n=100 in 383.9s
+[23:15:57] --- truthfulqa_mc2: running
+[23:27:03] truthfulqa_mc2: acc,none=0.4712 n=100 in 666.7s
+[23:27:03] --- gsm8k: running
+[23:30:36] gsm8k: exact_match,strict-match=0.8200 n=100 in 212.4s
+[23:30:36] --- ifeval: running
+[23:36:36] ifeval: prompt_level_strict_acc,none=0.7500 n=100 in 360.5s
+[23:36:37] llama-server stopped
+[23:36:38] panel done: /home/z/hf/research/.wrapup/mres/m74-qwen-9b-q2kxl/lmeval_panel.json
+[23:36:38] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m74-qwen-9b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf limit=100 2026-10-09T23:36:38+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[22:54:43] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m85-bonsai-1.7b-q2/codegen/humaneval/m85-bonsai-1.7b-q2_openai_temp_0.0.jsonl
-[22:57:48] evaluate humaneval (codegen rc=0)
-[22:58:10] DONE bench humaneval codegen_rc=0 eval_rc=0 207s
-[22:58:10] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m85-bonsai-1.7b-q2/codegen/mbpp/m85-bonsai-1.7b-q2_openai_temp_0.0.jsonl
-[23:01:00] evaluate mbpp (codegen rc=0)
-[23:01:25] DONE bench mbpp codegen_rc=0 eval_rc=0 195s
+[23:36:41] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m74-qwen-9b-q2kxl/codegen/humaneval/m74-qwen-9b-q2kxl_openai_temp_0.0.jsonl
+[23:44:33] evaluate humaneval (codegen rc=0)
+[23:44:55] DONE bench humaneval codegen_rc=0 eval_rc=0 494s
+[23:44:55] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m74-qwen-9b-q2kxl/codegen/mbpp/m74-qwen-9b-q2kxl_openai_temp_0.0.jsonl
+[00:01:51] evaluate mbpp (codegen rc=0)
+[00:02:17] DONE bench mbpp codegen_rc=0 eval_rc=0 1042s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.5426829268292683 plus=0.4817073170731707 n=164 base_pass=89 plus_pass=79 bad_rate=0.0
-  mbpp: base=0.5370370370370371 plus=0.4470899470899471 n=378 base_pass=203 plus_pass=169 bad_rate=0.0
-=== codepanel done tag=m85-bonsai-1.7b-q2 2026-10-08T23:01:25+08:00
-=== lmeval_panel start tag=m86-bonsai27b-q1 model=/home/z/hf/mscache/prism-ml/Bonsai-27B-gguf/Bonsai-27B-Q1_0.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-08T23:01:55+08:00
-[23:01:55] === panel tag=m86-bonsai27b-q1 model=/home/z/hf/mscache/prism-ml/Bonsai-27B-gguf/Bonsai-27B-Q1_0.gguf
-[23:01:55] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[23:01:55] ports: llama=8900 shim=8901
-[23:01:55] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[23:01:55] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/prism-ml/Bonsai-27B-gguf/Bonsai-27B-Q1_0.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[23:02:03] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[23:02:03] --- mmlu: running
-[23:13:24] mmlu: acc,none=0.6864 n=912 in 681.2s
-[23:13:24] --- arc_challenge: running
-[23:19:59] SHIM FAIL: TypeError("'NoneType' object is not subscriptable")
-[23:20:05] SHIM FAIL: TypeError("'NoneType' object is not subscriptable")
-[23:20:11] SHIM FAIL: TypeError("'NoneType' object is not subscriptable")
-[23:20:17] arc_challenge: NO RESULT (rc=1) after 413.1s
-[23:20:17] --- truthfulqa_mc2: running
-[23:36:32] truthfulqa_mc2: acc,none=0.5164 n=100 in 975.3s
-[23:36:32] --- gsm8k: running
-[23:41:23] gsm8k: exact_match,strict-match=0.9000 n=100 in 290.4s
-[23:41:23] --- ifeval: running
-[23:47:15] ifeval: prompt_level_strict_acc,none=0.7300 n=100 in 352.5s
-[23:47:16] llama-server stopped
-[23:47:16] panel done: /home/z/hf/research/.wrapup/mres/m86-bonsai27b-q1/lmeval_panel.json
-[23:47:16] real numbers: ['mmlu', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m86-bonsai27b-q1 model=/home/z/hf/mscache/prism-ml/Bonsai-27B-gguf/Bonsai-27B-Q1_0.gguf limit=100 2026-10-08T23:47:16+08:00
+  humaneval: base=0.7987804878048781 plus=0.7621951219512195 n=164 base_pass=131 plus_pass=125 bad_rate=0.0
+  mbpp: base=0.6798941798941799 plus=0.5767195767195767 n=378 base_pass=257 plus_pass=218 bad_rate=0.0
+=== codepanel done tag=m74-qwen-9b-q2kxl 2026-10-10T00:02:17+08:00
+=== lmeval_panel start tag=m75-qwen-9b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T00:02:47+08:00
+[00:02:47] === panel tag=m75-qwen-9b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf
+[00:02:47] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[00:02:47] ports: llama=8900 shim=8901
+[00:02:47] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[00:02:47] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[00:02:56] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[00:02:56] --- mmlu: running
+[00:08:11] mmlu: acc,none=0.7829 n=912 in 314.6s
+[00:08:11] --- arc_challenge: running
+[00:12:05] arc_challenge: acc_norm,none=0.5000 n=100 in 233.9s
+[00:12:05] --- truthfulqa_mc2: running
+[00:20:06] truthfulqa_mc2: acc,none=0.5500 n=100 in 481.6s
+[00:20:06] --- gsm8k: running
+[00:24:11] gsm8k: exact_match,strict-match=0.9400 n=100 in 244.7s
+[00:24:11] --- ifeval: running
+[00:29:55] ifeval: prompt_level_strict_acc,none=0.7900 n=100 in 343.9s
+[00:29:56] llama-server stopped
+[00:29:56] panel done: /home/z/hf/research/.wrapup/mres/m75-qwen-9b-q3kxl/lmeval_panel.json
+[00:29:56] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m75-qwen-9b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf limit=100 2026-10-10T00:29:56+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[23:47:19] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m86-bonsai27b-q1/codegen/humaneval/m86-bonsai27b-q1_openai_temp_0.0.jsonl
-[23:54:19] evaluate humaneval (codegen rc=0)
-[23:54:41] DONE bench humaneval codegen_rc=0 eval_rc=0 442s
-[23:54:41] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m86-bonsai27b-q1/codegen/mbpp/m86-bonsai27b-q1_openai_temp_0.0.jsonl
-[00:09:54] evaluate mbpp (codegen rc=0)
-[00:10:19] DONE bench mbpp codegen_rc=0 eval_rc=0 938s
+[00:29:59] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m75-qwen-9b-q3kxl/codegen/humaneval/m75-qwen-9b-q3kxl_openai_temp_0.0.jsonl
+[00:40:05] evaluate humaneval (codegen rc=0)
+[00:40:27] DONE bench humaneval codegen_rc=0 eval_rc=0 628s
+[00:40:27] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m75-qwen-9b-q3kxl/codegen/mbpp/m75-qwen-9b-q3kxl_openai_temp_0.0.jsonl
+[01:05:37] evaluate mbpp (codegen rc=0)
+[01:06:25] DONE bench mbpp codegen_rc=0 eval_rc=0 1558s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.8658536585365854 plus=0.8292682926829268 n=164 base_pass=142 plus_pass=136 bad_rate=0.0
-  mbpp: base=0.8518518518518519 plus=0.6931216931216931 n=378 base_pass=322 plus_pass=262 bad_rate=0.0
-=== codepanel done tag=m86-bonsai27b-q1 2026-10-09T00:10:19+08:00
-=== lmeval_panel start tag=m87-qwen35-35b-a3b-iq1m model=/home/z/hf/mscache/Manojb/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T00:10:49+08:00
-[00:10:50] === panel tag=m87-qwen35-35b-a3b-iq1m model=/home/z/hf/mscache/Manojb/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf
-[00:10:50] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[00:10:50] ports: llama=8900 shim=8901
-[00:10:50] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[00:10:50] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/Manojb/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[00:11:03] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[00:11:03] --- mmlu: running
-[00:18:46] mmlu: acc,none=0.7675 n=912 in 463.7s
-[00:18:46] --- arc_challenge: running
-[00:22:38] arc_challenge: acc_norm,none=0.5500 n=100 in 231.6s
-[00:22:38] --- truthfulqa_mc2: running
-[00:30:37] truthfulqa_mc2: acc,none=0.5109 n=100 in 478.7s
-[00:30:37] --- gsm8k: running
-[00:35:23] gsm8k: exact_match,strict-match=0.8800 n=100 in 286.1s
-[00:35:23] --- ifeval: running
-[00:39:13] ifeval: prompt_level_strict_acc,none=0.8200 n=100 in 230.5s
-[00:39:14] llama-server stopped
-[00:39:14] panel done: /home/z/hf/research/.wrapup/mres/m87-qwen35-35b-a3b-iq1m/lmeval_panel.json
-[00:39:14] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m87-qwen35-35b-a3b-iq1m model=/home/z/hf/mscache/Manojb/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf limit=100 2026-10-09T00:39:14+08:00
+  humaneval: base=0.823170731707317 plus=0.774390243902439 n=164 base_pass=135 plus_pass=127 bad_rate=0.0
+  mbpp: base=0.8253968253968254 plus=0.6666666666666666 n=378 base_pass=312 plus_pass=252 bad_rate=0.0
+=== codepanel done tag=m75-qwen-9b-q3kxl 2026-10-10T01:06:25+08:00
+=== lmeval_panel start tag=m76-phi4mini-q2k model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T01:06:55+08:00
+[01:06:56] === panel tag=m76-phi4mini-q2k model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf
+[01:06:56] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[01:06:56] ports: llama=8900 shim=8901
+[01:06:56] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[01:06:56] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[01:06:59] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[01:06:59] --- mmlu: running
+[01:09:28] mmlu: acc,none=0.2774 n=912 in 149.6s
+[01:09:28] --- arc_challenge: running
+[01:13:42] arc_challenge: acc_norm,none=0.3700 n=100 in 253.3s
+[01:13:42] --- truthfulqa_mc2: running
+[01:18:06] truthfulqa_mc2: acc,none=0.4675 n=100 in 264.4s
+[01:18:06] --- gsm8k: running
+[01:29:31] gsm8k: exact_match,strict-match=0.0000 n=100 in 684.4s
+[01:29:31] --- ifeval: running
+[01:37:38] ifeval: prompt_level_strict_acc,none=0.1700 n=100 in 487.0s
+[01:37:39] llama-server stopped
+[01:37:39] panel done: /home/z/hf/research/.wrapup/mres/m76-phi4mini-q2k/lmeval_panel.json
+[01:37:39] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m76-phi4mini-q2k model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf limit=100 2026-10-10T01:37:39+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[00:39:17] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m87-qwen35-35b-a3b-iq1m/codegen/humaneval/m87-qwen35-35b-a3b-iq1m_openai_temp_0.0.jsonl
-[00:44:25] evaluate humaneval (codegen rc=0)
-[00:44:47] DONE bench humaneval codegen_rc=0 eval_rc=0 330s
-[00:44:47] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m87-qwen35-35b-a3b-iq1m/codegen/mbpp/m87-qwen35-35b-a3b-iq1m_openai_temp_0.0.jsonl
-[00:57:39] evaluate mbpp (codegen rc=0)
-[00:58:04] DONE bench mbpp codegen_rc=0 eval_rc=0 797s
+[01:37:41] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m76-phi4mini-q2k/codegen/humaneval/m76-phi4mini-q2k_openai_temp_0.0.jsonl
+.wrapup/campaign.sh: line 47: 2491975 Killed                  MMLU_LIMIT="$mmlu" REASONING="$reason" TASKS="$tasks" "$script" "$model" "$tag" "$limit" 7>&-
+=== lmeval_panel start tag=m77-phi4mini-q3km model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T03:00:33+08:00
+[03:00:33] === panel tag=m77-phi4mini-q3km model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf
+[03:00:33] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[03:00:33] ports: llama=8900 shim=8901
+[03:00:33] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[03:00:33] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[03:00:39] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[03:00:39] --- mmlu: running
+[03:02:52] mmlu: acc,none=0.6195 n=912 in 133.0s
+[03:02:52] --- arc_challenge: running
+[03:05:15] arc_challenge: acc_norm,none=0.5100 n=100 in 143.1s
+[03:05:15] --- truthfulqa_mc2: running
+[03:08:11] truthfulqa_mc2: acc,none=0.4471 n=100 in 175.8s
+[03:08:11] --- gsm8k: running
+[03:09:51] gsm8k: exact_match,strict-match=0.7200 n=100 in 99.8s
+[03:09:51] --- ifeval: running
+[03:13:43] ifeval: prompt_level_strict_acc,none=0.5400 n=100 in 232.0s
+[03:13:45] llama-server stopped
+[03:13:45] panel done: /home/z/hf/research/.wrapup/mres/m77-phi4mini-q3km/lmeval_panel.json
+[03:13:45] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m77-phi4mini-q3km model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf limit=100 2026-10-10T03:13:45+08:00
+[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
+[codepanel] llama-server port=9200 (proven free by ss -ltn)
+[codepanel] smoke completion ok
+[03:13:49] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m77-phi4mini-q3km/codegen/humaneval/m77-phi4mini-q3km_openai_temp_0.0.jsonl
+[03:19:33] evaluate humaneval (codegen rc=0)
+[03:19:56] DONE bench humaneval codegen_rc=0 eval_rc=0 367s
+[03:19:56] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m77-phi4mini-q3km/codegen/mbpp/m77-phi4mini-q3km_openai_temp_0.0.jsonl
+[03:32:18] evaluate mbpp (codegen rc=0)
+[03:33:07] DONE bench mbpp codegen_rc=0 eval_rc=0 791s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.8475609756097561 plus=0.8109756097560976 n=164 base_pass=139 plus_pass=133 bad_rate=0.0
-  mbpp: base=0.791005291005291 plus=0.6613756613756614 n=378 base_pass=299 plus_pass=250 bad_rate=0.0
-=== codepanel done tag=m87-qwen35-35b-a3b-iq1m 2026-10-09T00:58:04+08:00
-=== lmeval_panel start tag=m88-glm47flash-tq1 model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-TQ1_0.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T00:58:34+08:00
-[00:58:35] === panel tag=m88-glm47flash-tq1 model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-TQ1_0.gguf
-[00:58:35] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[00:58:35] ports: llama=8900 shim=8901
-[00:58:35] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[00:58:35] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-TQ1_0.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[00:58:47] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[00:58:47] --- mmlu: running
-[01:00:43] mmlu: acc,none=0.6217 n=912 in 116.0s
-[01:00:43] --- arc_challenge: running
-[01:02:36] arc_challenge: acc_norm,none=0.4800 n=100 in 113.0s
-[01:02:36] --- truthfulqa_mc2: running
-[01:05:12] truthfulqa_mc2: acc,none=0.4645 n=100 in 156.0s
-[01:05:12] --- gsm8k: running
-[01:07:10] gsm8k: exact_match,strict-match=0.4900 n=100 in 117.9s
-[01:07:10] --- ifeval: running
-[01:12:36] ifeval: prompt_level_strict_acc,none=0.5000 n=100 in 326.1s
-[01:12:37] llama-server stopped
-[01:12:37] panel done: /home/z/hf/research/.wrapup/mres/m88-glm47flash-tq1/lmeval_panel.json
-[01:12:37] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m88-glm47flash-tq1 model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-TQ1_0.gguf limit=100 2026-10-09T01:12:37+08:00
+  humaneval: base=0.5853658536585366 plus=0.5548780487804879 n=164 base_pass=96 plus_pass=91 bad_rate=0.0
+  mbpp: base=0.4523809523809524 plus=0.3783068783068783 n=378 base_pass=171 plus_pass=143 bad_rate=0.0
+=== codepanel done tag=m77-phi4mini-q3km 2026-10-10T03:33:07+08:00
+=== lmeval_panel start tag=m78-gemma-e2b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T03:33:37+08:00
+[03:33:37] === panel tag=m78-gemma-e2b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf
+[03:33:37] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[03:33:37] ports: llama=8900 shim=8901
+[03:33:37] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[03:33:37] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[03:33:44] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[03:33:44] --- mmlu: running
+[03:35:47] mmlu: acc,none=0.4748 n=912 in 122.6s
+[03:35:47] --- arc_challenge: running
+[03:44:13] arc_challenge: acc_norm,none=0.4200 n=100 in 506.2s
+[03:44:13] --- truthfulqa_mc2: running
+[03:50:41] truthfulqa_mc2: acc,none=0.4325 n=100 in 387.8s
+[03:50:41] --- gsm8k: running
+[03:52:58] gsm8k: exact_match,strict-match=0.1900 n=100 in 136.6s
+[03:52:58] --- ifeval: running
+[03:55:57] ifeval: prompt_level_strict_acc,none=0.5900 n=100 in 179.8s
+[03:55:59] llama-server stopped
+[03:55:59] panel done: /home/z/hf/research/.wrapup/mres/m78-gemma-e2b-q2kxl/lmeval_panel.json
+[03:55:59] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m78-gemma-e2b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf limit=100 2026-10-10T03:55:59+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[01:12:40] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m88-glm47flash-tq1/codegen/humaneval/m88-glm47flash-tq1_openai_temp_0.0.jsonl
-[01:20:09] evaluate humaneval (codegen rc=0)
-[01:20:31] DONE bench humaneval codegen_rc=0 eval_rc=0 471s
-[01:20:31] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m88-glm47flash-tq1/codegen/mbpp/m88-glm47flash-tq1_openai_temp_0.0.jsonl
-[01:35:11] evaluate mbpp (codegen rc=0)
-[01:35:35] DONE bench mbpp codegen_rc=0 eval_rc=0 904s
+[03:56:02] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m78-gemma-e2b-q2kxl/codegen/humaneval/m78-gemma-e2b-q2kxl_openai_temp_0.0.jsonl
+[04:03:05] evaluate humaneval (codegen rc=0)
+[04:03:27] DONE bench humaneval codegen_rc=0 eval_rc=0 445s
+[04:03:27] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m78-gemma-e2b-q2kxl/codegen/mbpp/m78-gemma-e2b-q2kxl_openai_temp_0.0.jsonl
+[04:17:09] evaluate mbpp (codegen rc=0)
+[04:17:55] DONE bench mbpp codegen_rc=0 eval_rc=0 868s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.47560975609756095 plus=0.4634146341463415 n=164 base_pass=78 plus_pass=76 bad_rate=0.0
-  mbpp: base=0.582010582010582 plus=0.49206349206349204 n=378 base_pass=220 plus_pass=186 bad_rate=0.0
-=== codepanel done tag=m88-glm47flash-tq1 2026-10-09T01:35:35+08:00
-=== lmeval_panel start tag=m89-lfm25-8b-a1b-q2kxl model=/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T01:36:05+08:00
-[01:36:06] === panel tag=m89-lfm25-8b-a1b-q2kxl model=/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q2_K_XL.gguf
-[01:36:06] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[01:36:06] ports: llama=8900 shim=8901
-[01:36:06] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[01:36:06] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[01:36:11] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[01:36:11] --- mmlu: running
-[01:37:36] mmlu: acc,none=0.3125 n=912 in 85.5s
-[01:37:36] --- arc_challenge: running
-[01:39:59] arc_challenge: acc_norm,none=0.3800 n=100 in 143.2s
-[01:39:59] --- truthfulqa_mc2: running
-[01:42:33] truthfulqa_mc2: acc,none=0.4864 n=100 in 153.5s
-[01:42:33] --- gsm8k: running
-[01:44:18] gsm8k: exact_match,strict-match=0.5200 n=100 in 104.9s
-[01:44:18] --- ifeval: running
-[01:45:10] ifeval: NO RESULT (rc=1) after 52.4s
-[01:45:11] llama-server stopped
-[01:45:11] panel done: /home/z/hf/research/.wrapup/mres/m89-lfm25-8b-a1b-q2kxl/lmeval_panel.json
-[01:45:11] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k']
-=== codepanel start tag=m89-lfm25-8b-a1b-q2kxl model=/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q2_K_XL.gguf limit=100 2026-10-09T01:45:11+08:00
+  humaneval: base=0.5304878048780488 plus=0.5121951219512195 n=164 base_pass=87 plus_pass=84 bad_rate=0.0
+  mbpp: base=0.4973544973544973 plus=0.43386243386243384 n=378 base_pass=188 plus_pass=164 bad_rate=0.0
+=== codepanel done tag=m78-gemma-e2b-q2kxl 2026-10-10T04:17:55+08:00
+=== lmeval_panel start tag=m79-gemma-e2b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T04:18:26+08:00
+[04:18:26] === panel tag=m79-gemma-e2b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf
+[04:18:26] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[04:18:26] ports: llama=8900 shim=8901
+[04:18:26] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[04:18:26] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[04:18:33] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[04:18:33] --- mmlu: running
+[04:20:45] mmlu: acc,none=0.5603 n=912 in 132.3s
+[04:20:45] --- arc_challenge: running
+[04:25:38] arc_challenge: acc_norm,none=0.4700 n=100 in 292.2s
+[04:25:38] --- truthfulqa_mc2: running
+[04:30:38] truthfulqa_mc2: acc,none=0.4706 n=100 in 300.9s
+[04:30:38] --- gsm8k: running
+[04:33:16] gsm8k: exact_match,strict-match=0.4300 n=100 in 157.4s
+[04:33:16] --- ifeval: running
+[04:36:35] ifeval: prompt_level_strict_acc,none=0.6500 n=100 in 199.0s
+[04:36:36] llama-server stopped
+[04:36:37] panel done: /home/z/hf/research/.wrapup/mres/m79-gemma-e2b-q3kxl/lmeval_panel.json
+[04:36:37] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m79-gemma-e2b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf limit=100 2026-10-10T04:36:37+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[01:45:13] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m89-lfm25-8b-a1b-q2kxl/codegen/humaneval/m89-lfm25-8b-a1b-q2kxl_openai_temp_0.0.jsonl
-[01:49:38] evaluate humaneval (codegen rc=0)
-[01:50:00] DONE bench humaneval codegen_rc=0 eval_rc=0 287s
-[01:50:00] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m89-lfm25-8b-a1b-q2kxl/codegen/mbpp/m89-lfm25-8b-a1b-q2kxl_openai_temp_0.0.jsonl
-[01:59:31] evaluate mbpp (codegen rc=0)
-[01:59:55] DONE bench mbpp codegen_rc=0 eval_rc=0 595s
+[04:36:40] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m79-gemma-e2b-q3kxl/codegen/humaneval/m79-gemma-e2b-q3kxl_openai_temp_0.0.jsonl
+[04:45:02] evaluate humaneval (codegen rc=0)
+[04:45:24] DONE bench humaneval codegen_rc=0 eval_rc=0 524s
+[04:45:24] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m79-gemma-e2b-q3kxl/codegen/mbpp/m79-gemma-e2b-q3kxl_openai_temp_0.0.jsonl
+[05:01:36] evaluate mbpp (codegen rc=0)
+[05:02:01] DONE bench mbpp codegen_rc=0 eval_rc=0 997s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.32926829268292684 plus=0.31097560975609756 n=164 base_pass=54 plus_pass=51 bad_rate=0.5365853658536586
-  mbpp: base=0.4497354497354497 plus=0.40476190476190477 n=378 base_pass=170 plus_pass=153 bad_rate=0.36507936507936506
-=== codepanel done tag=m89-lfm25-8b-a1b-q2kxl 2026-10-09T01:59:55+08:00
-=== lmeval_panel start tag=m90-qwen36-35b-a3b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T02:00:25+08:00
-[02:00:26] === panel tag=m90-qwen36-35b-a3b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf
-[02:00:26] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[02:00:26] ports: llama=8900 shim=8901
-[02:00:26] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[02:00:26] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[02:00:44] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[02:00:44] --- mmlu: running
-[02:06:21] mmlu: acc,none=0.8322 n=912 in 336.8s
-[02:06:21] --- arc_challenge: running
-[02:10:26] arc_challenge: acc_norm,none=0.5400 n=100 in 245.7s
-[02:10:26] --- truthfulqa_mc2: running
-[02:17:55] truthfulqa_mc2: acc,none=0.5228 n=100 in 448.7s
-[02:17:55] --- gsm8k: running
-[02:20:19] gsm8k: exact_match,strict-match=0.9400 n=100 in 144.0s
-[02:20:19] --- ifeval: running
-[02:23:48] ifeval: prompt_level_strict_acc,none=0.8200 n=100 in 209.2s
-[02:23:49] llama-server stopped
-[02:23:50] panel done: /home/z/hf/research/.wrapup/mres/m90-qwen36-35b-a3b-q2kxl/lmeval_panel.json
-[02:23:50] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m90-qwen36-35b-a3b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf limit=100 2026-10-09T02:23:50+08:00
+  humaneval: base=0.676829268292683 plus=0.6402439024390244 n=164 base_pass=111 plus_pass=105 bad_rate=0.0
+  mbpp: base=0.6084656084656085 plus=0.49206349206349204 n=378 base_pass=230 plus_pass=186 bad_rate=0.0
+=== codepanel done tag=m79-gemma-e2b-q3kxl 2026-10-10T05:02:02+08:00
+=== lmeval_panel start tag=m80-gemma-e4b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T05:02:32+08:00
+[05:02:32] === panel tag=m80-gemma-e4b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf
+[05:02:32] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[05:02:32] ports: llama=8900 shim=8901
+[05:02:32] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[05:02:32] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[05:02:39] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[05:02:39] --- mmlu: running
+[05:05:06] mmlu: acc,none=0.6502 n=912 in 146.7s
+[05:05:06] --- arc_challenge: running
+[05:10:52] arc_challenge: acc_norm,none=0.4600 n=100 in 346.1s
+[05:10:52] --- truthfulqa_mc2: running
+[05:16:28] truthfulqa_mc2: acc,none=0.5177 n=100 in 336.5s
+[05:16:28] --- gsm8k: running
+[05:18:28] gsm8k: exact_match,strict-match=0.7800 n=100 in 119.7s
+[05:18:28] --- ifeval: running
+[05:22:04] ifeval: prompt_level_strict_acc,none=0.7700 n=100 in 216.2s
+[05:22:06] llama-server stopped
+[05:22:06] panel done: /home/z/hf/research/.wrapup/mres/m80-gemma-e4b-q2kxl/lmeval_panel.json
+[05:22:06] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m80-gemma-e4b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf limit=100 2026-10-10T05:22:06+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[02:23:54] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m90-qwen36-35b-a3b-q2kxl/codegen/humaneval/m90-qwen36-35b-a3b-q2kxl_openai_temp_0.0.jsonl
-[02:28:32] evaluate humaneval (codegen rc=0)
-[02:28:54] DONE bench humaneval codegen_rc=0 eval_rc=0 300s
-[02:28:54] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m90-qwen36-35b-a3b-q2kxl/codegen/mbpp/m90-qwen36-35b-a3b-q2kxl_openai_temp_0.0.jsonl
-[02:38:39] evaluate mbpp (codegen rc=0)
-[02:39:04] DONE bench mbpp codegen_rc=0 eval_rc=0 610s
+[05:22:09] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m80-gemma-e4b-q2kxl/codegen/humaneval/m80-gemma-e4b-q2kxl_openai_temp_0.0.jsonl
+[05:32:44] evaluate humaneval (codegen rc=0)
+[05:33:07] DONE bench humaneval codegen_rc=0 eval_rc=0 658s
+[05:33:07] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m80-gemma-e4b-q2kxl/codegen/mbpp/m80-gemma-e4b-q2kxl_openai_temp_0.0.jsonl
+[05:55:54] evaluate mbpp (codegen rc=0)
+[05:56:19] DONE bench mbpp codegen_rc=0 eval_rc=0 1392s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.9390243902439024 plus=0.9085365853658537 n=164 base_pass=154 plus_pass=149 bad_rate=0.0
-  mbpp: base=0.8994708994708994 plus=0.7619047619047619 n=378 base_pass=340 plus_pass=288 bad_rate=0.0
-=== codepanel done tag=m90-qwen36-35b-a3b-q2kxl 2026-10-09T02:39:04+08:00
-=== lmeval_panel start tag=m91-qwen38-27b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T02:39:34+08:00
-[02:39:34] === panel tag=m91-qwen38-27b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q2_K_XL.gguf
-[02:39:34] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[02:39:34] ports: llama=8900 shim=8901
-[02:39:34] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[02:39:34] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[02:39:49] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[02:39:49] --- mmlu: running
-[02:51:10] mmlu: acc,none=0.8037 n=912 in 680.6s
-[02:51:10] --- arc_challenge: running
-[02:58:02] arc_challenge: acc_norm,none=0.6100 n=100 in 412.5s
-[02:58:02] --- truthfulqa_mc2: running
-[03:13:31] truthfulqa_mc2: acc,none=0.5210 n=100 in 928.6s
-[03:13:31] --- gsm8k: running
-[03:18:52] gsm8k: exact_match,strict-match=0.9800 n=100 in 321.6s
-[03:18:52] --- ifeval: running
-[03:27:18] ifeval: prompt_level_strict_acc,none=0.8300 n=100 in 505.7s
-[03:27:19] llama-server stopped
-[03:27:19] panel done: /home/z/hf/research/.wrapup/mres/m91-qwen38-27b-q2kxl/lmeval_panel.json
-[03:27:19] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m91-qwen38-27b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q2_K_XL.gguf limit=100 2026-10-09T03:27:19+08:00
+  humaneval: base=0.7439024390243902 plus=0.6951219512195121 n=164 base_pass=122 plus_pass=114 bad_rate=0.0
+  mbpp: base=0.6931216931216931 plus=0.582010582010582 n=378 base_pass=262 plus_pass=220 bad_rate=0.0
+=== codepanel done tag=m80-gemma-e4b-q2kxl 2026-10-10T05:56:19+08:00
+=== lmeval_panel start tag=m81-gemma-e4b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T05:56:49+08:00
+[05:56:50] === panel tag=m81-gemma-e4b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf
+[05:56:50] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[05:56:50] ports: llama=8900 shim=8901
+[05:56:50] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[05:56:50] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[05:56:58] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[05:56:58] --- mmlu: running
+[05:59:26] mmlu: acc,none=0.6930 n=912 in 148.4s
+[05:59:26] --- arc_challenge: running
+[06:04:43] arc_challenge: acc_norm,none=0.4600 n=100 in 316.8s
+[06:04:43] --- truthfulqa_mc2: running
+[06:10:35] truthfulqa_mc2: acc,none=0.5624 n=100 in 352.4s
+[06:10:35] --- gsm8k: running
+[06:13:00] gsm8k: exact_match,strict-match=0.8500 n=100 in 144.5s
+[06:13:00] --- ifeval: running
+[06:17:32] ifeval: prompt_level_strict_acc,none=0.8300 n=100 in 272.3s
+[06:17:34] llama-server stopped
+[06:17:34] panel done: /home/z/hf/research/.wrapup/mres/m81-gemma-e4b-q3kxl/lmeval_panel.json
+[06:17:34] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m81-gemma-e4b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf limit=100 2026-10-10T06:17:34+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[03:27:22] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m91-qwen38-27b-q2kxl/codegen/humaneval/m91-qwen38-27b-q2kxl_openai_temp_0.0.jsonl
-[03:38:59] evaluate humaneval (codegen rc=0)
-[03:39:21] DONE bench humaneval codegen_rc=0 eval_rc=0 719s
-[03:39:21] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m91-qwen38-27b-q2kxl/codegen/mbpp/m91-qwen38-27b-q2kxl_openai_temp_0.0.jsonl
-[03:58:53] evaluate mbpp (codegen rc=0)
-[03:59:17] DONE bench mbpp codegen_rc=0 eval_rc=0 1196s
+[06:17:37] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m81-gemma-e4b-q3kxl/codegen/humaneval/m81-gemma-e4b-q3kxl_openai_temp_0.0.jsonl
+[06:29:34] evaluate humaneval (codegen rc=0)
+[06:29:56] DONE bench humaneval codegen_rc=0 eval_rc=0 739s
+[06:29:56] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m81-gemma-e4b-q3kxl/codegen/mbpp/m81-gemma-e4b-q3kxl_openai_temp_0.0.jsonl
+[06:57:59] evaluate mbpp (codegen rc=0)
+[06:58:24] DONE bench mbpp codegen_rc=0 eval_rc=0 1708s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.926829268292683 plus=0.8963414634146342 n=164 base_pass=152 plus_pass=147 bad_rate=0.0
-  mbpp: base=0.8888888888888888 plus=0.7619047619047619 n=378 base_pass=336 plus_pass=288 bad_rate=0.0
-=== codepanel done tag=m91-qwen38-27b-q2kxl 2026-10-09T03:59:18+08:00
-=== lmeval_panel start tag=m92-lfm25-8b-a1b-m55-exq2 model=/home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T03:59:48+08:00
-[03:59:48] === panel tag=m92-lfm25-8b-a1b-m55-exq2 model=/home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf
-[03:59:48] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[03:59:48] ports: llama=8900 shim=8901
-[03:59:48] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[03:59:48] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[03:59:53] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='4'
-[03:59:53] --- mmlu: running
-[04:01:23] mmlu: acc,none=0.4265 n=912 in 90.4s
-[04:01:23] --- arc_challenge: running
-[04:03:33] arc_challenge: acc_norm,none=0.4600 n=100 in 129.9s
-[04:03:33] --- truthfulqa_mc2: running
-[04:06:02] truthfulqa_mc2: acc,none=0.5257 n=100 in 148.8s
-[04:06:02] --- gsm8k: running
-[04:08:07] gsm8k: exact_match,strict-match=0.7200 n=100 in 124.5s
-[04:08:07] --- ifeval: running
-[04:11:35] ifeval: prompt_level_strict_acc,none=0.3900 n=100 in 208.1s
-[04:11:35] llama-server stopped
-[04:11:35] panel done: /home/z/hf/research/.wrapup/mres/m92-lfm25-8b-a1b-m55-exq2/lmeval_panel.json
-[04:11:35] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m92-lfm25-8b-a1b-m55-exq2 model=/home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf limit=100 2026-10-09T04:11:35+08:00
+  humaneval: base=0.8170731707317073 plus=0.7804878048780488 n=164 base_pass=134 plus_pass=128 bad_rate=0.0
+  mbpp: base=0.746031746031746 plus=0.6164021164021164 n=378 base_pass=282 plus_pass=233 bad_rate=0.0
+=== codepanel done tag=m81-gemma-e4b-q3kxl 2026-10-10T06:58:24+08:00
+=== lmeval_panel start tag=m82-bonsai-27b-q2 model=/home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T06:58:54+08:00
+[06:58:55] === panel tag=m82-bonsai-27b-q2 model=/home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb
+[06:58:55] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[06:58:55] ports: llama=8900 shim=8901
+[06:58:55] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[06:58:55] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[06:59:07] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[06:59:07] --- mmlu: running
+[07:10:33] mmlu: acc,none=0.7818 n=912 in 685.8s
+[07:10:33] --- arc_challenge: running
+[07:17:50] arc_challenge: acc_norm,none=0.5200 n=100 in 437.4s
+[07:17:50] --- truthfulqa_mc2: running
+[07:33:15] truthfulqa_mc2: acc,none=0.4971 n=100 in 925.4s
+[07:33:15] --- gsm8k: running
+[07:37:47] gsm8k: exact_match,strict-match=0.9100 n=100 in 271.7s
+[07:37:47] --- ifeval: running
+[07:45:21] ifeval: prompt_level_strict_acc,none=0.7500 n=100 in 454.0s
+[07:45:22] llama-server stopped
+[07:45:22] panel done: /home/z/hf/research/.wrapup/mres/m82-bonsai-27b-q2/lmeval_panel.json
+[07:45:22] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m82-bonsai-27b-q2 model=/home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb limit=100 2026-10-10T07:45:22+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[04:11:37] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m92-lfm25-8b-a1b-m55-exq2/codegen/humaneval/m92-lfm25-8b-a1b-m55-exq2_openai_temp_0.0.jsonl
-[04:16:01] evaluate humaneval (codegen rc=0)
-[04:16:23] DONE bench humaneval codegen_rc=0 eval_rc=0 286s
-[04:16:23] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m92-lfm25-8b-a1b-m55-exq2/codegen/mbpp/m92-lfm25-8b-a1b-m55-exq2_openai_temp_0.0.jsonl
-[04:26:04] evaluate mbpp (codegen rc=0)
-[04:26:48] DONE bench mbpp codegen_rc=0 eval_rc=0 625s
+[07:45:25] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m82-bonsai-27b-q2/codegen/humaneval/m82-bonsai-27b-q2_openai_temp_0.0.jsonl
+[07:55:25] evaluate humaneval (codegen rc=0)
+[07:55:47] DONE bench humaneval codegen_rc=0 eval_rc=0 622s
+[07:55:47] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m82-bonsai-27b-q2/codegen/mbpp/m82-bonsai-27b-q2_openai_temp_0.0.jsonl
+[08:15:15] evaluate mbpp (codegen rc=0)
+[08:15:40] DONE bench mbpp codegen_rc=0 eval_rc=0 1193s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.2926829268292683 plus=0.2865853658536585 n=164 base_pass=48 plus_pass=47 bad_rate=0.6036585365853658
-  mbpp: base=0.34656084656084657 plus=0.328042328042328 n=378 base_pass=131 plus_pass=124 bad_rate=0.5873015873015873
-=== codepanel done tag=m92-lfm25-8b-a1b-m55-exq2 2026-10-09T04:26:48+08:00
-=== lmeval_panel start tag=m93-gemma-12b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T04:27:18+08:00
-[04:27:19] === panel tag=m93-gemma-12b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf
-[04:27:19] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[04:27:19] ports: llama=8900 shim=8901
-[04:27:19] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[04:27:19] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[04:27:27] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke=''
-[04:27:27] --- mmlu: running
-[04:31:41] mmlu: acc,none=0.3695 n=912 in 254.4s
-[04:31:41] --- arc_challenge: running
-[04:39:08] SHIM ERROR: continuation token id=82080 absent even from the full-vocabulary distribution at prompt position 42 -- refusing to guess
-[04:39:15] SHIM ERROR: continuation token id=82080 absent even from the full-vocabulary distribution at prompt position 42 -- refusing to guess
-[04:39:22] SHIM ERROR: continuation token id=82080 absent even from the full-vocabulary distribution at prompt position 42 -- refusing to guess
-[04:39:28] arc_challenge: NO RESULT (rc=1) after 466.4s
-[04:39:28] --- truthfulqa_mc2: running
-[04:54:47] truthfulqa_mc2: acc,none=0.5008 n=100 in 919.0s
-[04:54:47] --- gsm8k: running
-[05:01:59] gsm8k: exact_match,strict-match=0.6300 n=100 in 432.7s
-[05:01:59] --- ifeval: running
-[05:06:44] ifeval: prompt_level_strict_acc,none=0.7000 n=100 in 284.7s
-[05:06:45] llama-server stopped
-[05:06:46] panel done: /home/z/hf/research/.wrapup/mres/m93-gemma-12b-q2kxl/lmeval_panel.json
-[05:06:46] real numbers: ['mmlu', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m93-gemma-12b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf limit=100 2026-10-09T05:06:46+08:00
+  humaneval: base=0.9146341463414634 plus=0.8902439024390244 n=164 base_pass=150 plus_pass=146 bad_rate=0.0
+  mbpp: base=0.8650793650793651 plus=0.7248677248677249 n=378 base_pass=327 plus_pass=274 bad_rate=0.0
+=== codepanel done tag=m82-bonsai-27b-q2 2026-10-10T08:15:40+08:00
+=== lmeval_panel start tag=m83-bonsai-8b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T08:16:10+08:00
+[08:16:10] === panel tag=m83-bonsai-8b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf
+[08:16:10] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[08:16:10] ports: llama=8900 shim=8901
+[08:16:10] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[08:16:10] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[08:16:14] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[08:16:14] --- mmlu: running
+[08:17:50] mmlu: acc,none=0.6765 n=912 in 95.4s
+[08:17:50] --- arc_challenge: running
+[08:19:39] arc_challenge: acc_norm,none=0.5000 n=100 in 108.9s
+[08:19:39] --- truthfulqa_mc2: running
+[08:21:52] truthfulqa_mc2: acc,none=0.5347 n=100 in 133.5s
+[08:21:52] --- gsm8k: running
+[08:23:34] gsm8k: exact_match,strict-match=0.7600 n=100 in 102.2s
+[08:23:34] --- ifeval: running
+[08:26:27] ifeval: prompt_level_strict_acc,none=0.7700 n=100 in 173.0s
+[08:26:28] llama-server stopped
+[08:26:28] panel done: /home/z/hf/research/.wrapup/mres/m83-bonsai-8b-q2/lmeval_panel.json
+[08:26:28] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m83-bonsai-8b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf limit=100 2026-10-10T08:26:28+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[05:06:49] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m93-gemma-12b-q2kxl/codegen/humaneval/m93-gemma-12b-q2kxl_openai_temp_0.0.jsonl
-[05:21:10] evaluate humaneval (codegen rc=0)
-[05:21:32] DONE bench humaneval codegen_rc=0 eval_rc=0 883s
-[05:21:32] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m93-gemma-12b-q2kxl/codegen/mbpp/m93-gemma-12b-q2kxl_openai_temp_0.0.jsonl
-[05:50:18] evaluate mbpp (codegen rc=0)
-[05:50:43] DONE bench mbpp codegen_rc=0 eval_rc=0 1751s
+[08:26:30] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m83-bonsai-8b-q2/codegen/humaneval/m83-bonsai-8b-q2_openai_temp_0.0.jsonl
+[08:30:41] evaluate humaneval (codegen rc=0)
+[08:31:03] DONE bench humaneval codegen_rc=0 eval_rc=0 273s
+[08:31:03] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m83-bonsai-8b-q2/codegen/mbpp/m83-bonsai-8b-q2_openai_temp_0.0.jsonl
+[08:36:05] evaluate mbpp (codegen rc=0)
+[08:36:30] DONE bench mbpp codegen_rc=0 eval_rc=0 327s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.5426829268292683 plus=0.5060975609756098 n=164 base_pass=89 plus_pass=83 bad_rate=0.0
-  mbpp: base=0.58994708994709 plus=0.5132275132275133 n=378 base_pass=223 plus_pass=194 bad_rate=0.0
-=== codepanel done tag=m93-gemma-12b-q2kxl 2026-10-09T05:50:43+08:00
-=== lmeval_panel start tag=m94-glm47flash-q2kxl model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T05:51:13+08:00
-[05:51:13] === panel tag=m94-glm47flash-q2kxl model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q2_K_XL.gguf
-[05:51:13] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[05:51:13] ports: llama=8900 shim=8901
-[05:51:13] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[05:51:13] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[05:51:30] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[05:51:30] --- mmlu: running
-[05:53:28] mmlu: acc,none=0.7072 n=912 in 118.0s
-[05:53:28] --- arc_challenge: running
-[05:55:13] arc_challenge: acc_norm,none=0.5600 n=100 in 104.3s
-[05:55:13] --- truthfulqa_mc2: running
-[05:57:33] truthfulqa_mc2: acc,none=0.4825 n=100 in 139.9s
-[05:57:33] --- gsm8k: running
-[05:59:17] gsm8k: exact_match,strict-match=0.8200 n=100 in 104.4s
-[05:59:17] --- ifeval: running
-[06:03:36] ifeval: prompt_level_strict_acc,none=0.7700 n=100 in 259.4s
-[06:03:37] llama-server stopped
-[06:03:38] panel done: /home/z/hf/research/.wrapup/mres/m94-glm47flash-q2kxl/lmeval_panel.json
-[06:03:38] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m94-glm47flash-q2kxl model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q2_K_XL.gguf limit=100 2026-10-09T06:03:38+08:00
+  humaneval: base=0.7987804878048781 plus=0.7317073170731707 n=164 base_pass=131 plus_pass=120 bad_rate=0.0
+  mbpp: base=0.6798941798941799 plus=0.5767195767195767 n=378 base_pass=257 plus_pass=218 bad_rate=0.0
+=== codepanel done tag=m83-bonsai-8b-q2 2026-10-10T08:36:30+08:00
+=== lmeval_panel start tag=m116-phi4mini-q3km model=/home/z/hf/Phi-4-mini-instruct-Q3_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T08:37:00+08:00
+[08:37:00] === panel tag=m116-phi4mini-q3km model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf
+[08:37:00] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[08:37:00] ports: llama=8900 shim=8901
+[08:37:00] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[08:37:00] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[08:37:02] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[08:37:02] --- mmlu: running
+[08:38:49] mmlu: acc,none=0.6195 n=912 in 106.6s
+[08:38:49] --- arc_challenge: running
+[08:40:27] arc_challenge: acc_norm,none=0.5100 n=100 in 97.9s
+[08:40:27] --- truthfulqa_mc2: running
+[08:42:57] truthfulqa_mc2: acc,none=0.4471 n=100 in 149.8s
+[08:42:57] --- gsm8k: running
+[08:44:30] gsm8k: exact_match,strict-match=0.7200 n=100 in 93.6s
+[08:44:30] --- ifeval: running
+[08:47:38] ifeval: prompt_level_strict_acc,none=0.5400 n=100 in 188.1s
+[08:47:39] llama-server stopped
+[08:47:39] panel done: /home/z/hf/research/.wrapup/mres/m116-phi4mini-q3km/lmeval_panel.json
+[08:47:39] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m116-phi4mini-q3km model=/home/z/hf/Phi-4-mini-instruct-Q3_K_M.gguf limit=100 2026-10-10T08:47:39+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[06:03:41] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m94-glm47flash-q2kxl/codegen/humaneval/m94-glm47flash-q2kxl_openai_temp_0.0.jsonl
-[06:07:54] evaluate humaneval (codegen rc=0)
-[06:08:16] DONE bench humaneval codegen_rc=0 eval_rc=0 275s
-[06:08:16] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m94-glm47flash-q2kxl/codegen/mbpp/m94-glm47flash-q2kxl_openai_temp_0.0.jsonl
-[06:17:24] evaluate mbpp (codegen rc=0)
-[06:17:50] DONE bench mbpp codegen_rc=0 eval_rc=0 574s
+[08:47:42] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m116-phi4mini-q3km/codegen/humaneval/m116-phi4mini-q3km_openai_temp_0.0.jsonl
+[08:52:14] evaluate humaneval (codegen rc=0)
+[08:52:36] DONE bench humaneval codegen_rc=0 eval_rc=0 294s
+[08:52:36] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m116-phi4mini-q3km/codegen/mbpp/m116-phi4mini-q3km_openai_temp_0.0.jsonl
+[09:02:13] evaluate mbpp (codegen rc=0)
+[09:02:38] DONE bench mbpp codegen_rc=0 eval_rc=0 602s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.8048780487804879 plus=0.7621951219512195 n=164 base_pass=132 plus_pass=125 bad_rate=0.0
-  mbpp: base=0.8121693121693122 plus=0.6772486772486772 n=378 base_pass=307 plus_pass=256 bad_rate=0.0
-=== codepanel done tag=m94-glm47flash-q2kxl 2026-10-09T06:17:50+08:00
-=== lmeval_panel start tag=m95-minicpm5-2b-q2k model=/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q2_K.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T06:18:20+08:00
-[06:18:20] === panel tag=m95-minicpm5-2b-q2k model=/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q2_K.gguf
-[06:18:20] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[06:18:20] ports: llama=8900 shim=8901
-[06:18:20] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[06:18:20] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q2_K.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[06:18:23] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[06:18:23] --- mmlu: running
-[06:19:57] mmlu: acc,none=0.3794 n=912 in 93.5s
-[06:19:57] --- arc_challenge: running
-[06:22:47] arc_challenge: acc_norm,none=0.2700 n=100 in 170.5s
-[06:22:47] --- truthfulqa_mc2: running
-[06:25:58] truthfulqa_mc2: acc,none=0.4993 n=100 in 190.8s
-[06:25:58] --- gsm8k: running
-[06:28:20] gsm8k: exact_match,strict-match=0.0800 n=100 in 141.6s
-[06:28:20] --- ifeval: running
-[06:30:01] ifeval: prompt_level_strict_acc,none=0.5600 n=100 in 101.7s
-[06:30:02] llama-server stopped
-[06:30:02] panel done: /home/z/hf/research/.wrapup/mres/m95-minicpm5-2b-q2k/lmeval_panel.json
-[06:30:02] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m95-minicpm5-2b-q2k model=/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q2_K.gguf limit=100 2026-10-09T06:30:03+08:00
+  humaneval: base=0.5853658536585366 plus=0.5548780487804879 n=164 base_pass=96 plus_pass=91 bad_rate=0.0
+  mbpp: base=0.4523809523809524 plus=0.3783068783068783 n=378 base_pass=171 plus_pass=143 bad_rate=0.0
+=== codepanel done tag=m116-phi4mini-q3km 2026-10-10T09:02:38+08:00
+=== lmeval_panel start tag=m117-qwen9b-q2kxl model=/home/z/hf/Qwen3.5-9B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T09:03:08+08:00
+[09:03:08] === panel tag=m117-qwen9b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf
+[09:03:08] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[09:03:08] ports: llama=8900 shim=8901
+[09:03:08] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[09:03:08] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[09:03:10] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[09:03:10] --- mmlu: running
+[09:07:48] mmlu: acc,none=0.7368 n=912 in 278.0s
+[09:07:48] --- arc_challenge: running
+[09:11:16] arc_challenge: acc_norm,none=0.4800 n=100 in 207.9s
+[09:11:16] --- truthfulqa_mc2: running
+[09:17:43] truthfulqa_mc2: acc,none=0.4712 n=100 in 386.4s
+[09:17:43] --- gsm8k: running
+[09:19:59] gsm8k: exact_match,strict-match=0.8200 n=100 in 136.0s
+[09:19:59] --- ifeval: running
+[09:23:48] ifeval: prompt_level_strict_acc,none=0.7600 n=100 in 229.5s
+[09:23:49] llama-server stopped
+[09:23:49] panel done: /home/z/hf/research/.wrapup/mres/m117-qwen9b-q2kxl/lmeval_panel.json
+[09:23:49] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m117-qwen9b-q2kxl model=/home/z/hf/Qwen3.5-9B-UD-Q2_K_XL.gguf limit=100 2026-10-10T09:23:49+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[06:30:04] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m95-minicpm5-2b-q2k/codegen/humaneval/m95-minicpm5-2b-q2k_openai_temp_0.0.jsonl
-[06:33:34] evaluate humaneval (codegen rc=0)
-[06:33:56] DONE bench humaneval codegen_rc=0 eval_rc=0 232s
-[06:33:56] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m95-minicpm5-2b-q2k/codegen/mbpp/m95-minicpm5-2b-q2k_openai_temp_0.0.jsonl
-[06:41:53] evaluate mbpp (codegen rc=0)
-[06:42:18] DONE bench mbpp codegen_rc=0 eval_rc=0 502s
+[09:23:51] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m117-qwen9b-q2kxl/codegen/humaneval/m117-qwen9b-q2kxl_openai_temp_0.0.jsonl
+[09:29:16] evaluate humaneval (codegen rc=0)
+[09:29:38] DONE bench humaneval codegen_rc=0 eval_rc=0 347s
+[09:29:38] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m117-qwen9b-q2kxl/codegen/mbpp/m117-qwen9b-q2kxl_openai_temp_0.0.jsonl
+[09:41:33] evaluate mbpp (codegen rc=0)
+[09:41:58] DONE bench mbpp codegen_rc=0 eval_rc=0 740s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.1402439024390244 plus=0.12804878048780488 n=164 base_pass=23 plus_pass=21 bad_rate=0.0
-  mbpp: base=0.2037037037037037 plus=0.17195767195767195 n=378 base_pass=77 plus_pass=65 bad_rate=0.0
-=== codepanel done tag=m95-minicpm5-2b-q2k 2026-10-09T06:42:18+08:00
-=== lmeval_panel start tag=m96-gemma-26b-a4b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T06:42:48+08:00
-[06:42:49] === panel tag=m96-gemma-26b-a4b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf
-[06:42:49] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[06:42:49] ports: llama=8900 shim=8901
-[06:42:49] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[06:42:49] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[06:43:06] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='6'
-[06:43:06] --- mmlu: running
-[06:46:32] mmlu: acc,none=0.6425 n=912 in 205.8s
-[06:46:32] --- arc_challenge: running
-[06:50:36] SHIM FAIL: HTTPError('500 Server Error: Internal Server Error for url: http://127.0.0.1:8900/v1/completions')
-[06:50:42] SHIM FAIL: HTTPError('500 Server Error: Internal Server Error for url: http://127.0.0.1:8900/v1/completions')
-[06:50:47] SHIM FAIL: HTTPError('500 Server Error: Internal Server Error for url: http://127.0.0.1:8900/v1/completions')
-[06:50:53] arc_challenge: NO RESULT (rc=1) after 261.1s
-[06:50:53] --- truthfulqa_mc2: running
-[07:01:12] truthfulqa_mc2: acc,none=0.6070 n=100 in 619.0s
-[07:01:12] --- gsm8k: running
-[07:04:02] gsm8k: exact_match,strict-match=0.9100 n=100 in 170.3s
-[07:04:02] --- ifeval: running
-[07:07:27] ifeval: prompt_level_strict_acc,none=0.8700 n=100 in 204.7s
-[07:07:28] llama-server stopped
-[07:07:28] panel done: /home/z/hf/research/.wrapup/mres/m96-gemma-26b-a4b-q2kxl/lmeval_panel.json
-[07:07:28] real numbers: ['mmlu', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m96-gemma-26b-a4b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf limit=100 2026-10-09T07:07:28+08:00
+  humaneval: base=0.7987804878048781 plus=0.7621951219512195 n=164 base_pass=131 plus_pass=125 bad_rate=0.0
+  mbpp: base=0.6798941798941799 plus=0.5767195767195767 n=378 base_pass=257 plus_pass=218 bad_rate=0.0
+=== codepanel done tag=m117-qwen9b-q2kxl 2026-10-10T09:41:58+08:00
+=== lmeval_panel start tag=m118-qwen9b-q3kxl model=/home/z/hf/Qwen3.5-9B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T09:42:28+08:00
+[09:42:28] === panel tag=m118-qwen9b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf
+[09:42:28] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[09:42:28] ports: llama=8900 shim=8901
+[09:42:28] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[09:42:28] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[09:42:31] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[09:42:31] --- mmlu: running
+[09:47:15] mmlu: acc,none=0.7829 n=912 in 283.3s
+[09:47:15] --- arc_challenge: running
+[09:50:51] arc_challenge: acc_norm,none=0.5000 n=100 in 216.4s
+[09:50:51] --- truthfulqa_mc2: running
+[09:57:54] truthfulqa_mc2: acc,none=0.5500 n=100 in 423.0s
+[09:57:54] --- gsm8k: running
+[10:00:46] gsm8k: exact_match,strict-match=0.9400 n=100 in 172.4s
+[10:00:46] --- ifeval: running
+[10:05:14] ifeval: prompt_level_strict_acc,none=0.7900 n=100 in 267.9s
+[10:05:15] llama-server stopped
+[10:05:16] panel done: /home/z/hf/research/.wrapup/mres/m118-qwen9b-q3kxl/lmeval_panel.json
+[10:05:16] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m118-qwen9b-q3kxl model=/home/z/hf/Qwen3.5-9B-UD-Q3_K_XL.gguf limit=100 2026-10-10T10:05:16+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[07:07:32] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m96-gemma-26b-a4b-q2kxl/codegen/humaneval/m96-gemma-26b-a4b-q2kxl_openai_temp_0.0.jsonl
-[07:17:07] evaluate humaneval (codegen rc=0)
-[07:17:29] DONE bench humaneval codegen_rc=0 eval_rc=0 597s
-[07:17:29] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m96-gemma-26b-a4b-q2kxl/codegen/mbpp/m96-gemma-26b-a4b-q2kxl_openai_temp_0.0.jsonl
-[07:35:32] evaluate mbpp (codegen rc=0)
-[07:35:57] DONE bench mbpp codegen_rc=0 eval_rc=0 1108s
+[10:05:19] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m118-qwen9b-q3kxl/codegen/humaneval/m118-qwen9b-q3kxl_openai_temp_0.0.jsonl
+[10:12:29] evaluate humaneval (codegen rc=0)
+[10:12:51] DONE bench humaneval codegen_rc=0 eval_rc=0 452s
+[10:12:51] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m118-qwen9b-q3kxl/codegen/mbpp/m118-qwen9b-q3kxl_openai_temp_0.0.jsonl
+[10:29:58] evaluate mbpp (codegen rc=0)
+[10:30:22] DONE bench mbpp codegen_rc=0 eval_rc=0 1051s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.9573170731707317 plus=0.9390243902439024 n=164 base_pass=157 plus_pass=154 bad_rate=0.0
-  mbpp: base=0.8703703703703703 plus=0.7354497354497355 n=378 base_pass=329 plus_pass=278 bad_rate=0.0
-=== codepanel done tag=m96-gemma-26b-a4b-q2kxl 2026-10-09T07:35:57+08:00
-=== lmeval_panel start tag=m97-llama32-3b-q2k model=/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q2_K.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T07:36:27+08:00
-[07:36:28] === panel tag=m97-llama32-3b-q2k model=/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q2_K.gguf
-[07:36:28] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[07:36:28] ports: llama=8900 shim=8901
-[07:36:28] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[07:36:28] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q2_K.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[07:36:31] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[07:36:31] --- mmlu: running
-[07:37:55] mmlu: acc,none=0.4978 n=912 in 84.6s
-[07:37:55] --- arc_challenge: running
-[07:40:11] arc_challenge: acc_norm,none=0.3600 n=100 in 135.8s
-[07:40:11] --- truthfulqa_mc2: running
-[07:42:21] truthfulqa_mc2: acc,none=0.4623 n=100 in 129.6s
-[07:42:21] --- gsm8k: running
-[07:43:27] gsm8k: exact_match,strict-match=0.4500 n=100 in 66.6s
-[07:43:27] --- ifeval: running
-[07:45:38] ifeval: prompt_level_strict_acc,none=0.5800 n=100 in 131.1s
-[07:45:39] llama-server stopped
-[07:45:39] panel done: /home/z/hf/research/.wrapup/mres/m97-llama32-3b-q2k/lmeval_panel.json
-[07:45:39] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m97-llama32-3b-q2k model=/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q2_K.gguf limit=100 2026-10-09T07:45:39+08:00
+  humaneval: base=0.823170731707317 plus=0.774390243902439 n=164 base_pass=135 plus_pass=127 bad_rate=0.0
+  mbpp: base=0.8253968253968254 plus=0.6666666666666666 n=378 base_pass=312 plus_pass=252 bad_rate=0.0
+=== codepanel done tag=m118-qwen9b-q3kxl 2026-10-10T10:30:22+08:00
+=== lmeval_panel start tag=m119-gemma-e2b-q2kxl model=/home/z/hf/gemma-4-E2B-it-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T10:30:52+08:00
+[10:30:53] === panel tag=m119-gemma-e2b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf
+[10:30:53] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[10:30:53] ports: llama=8900 shim=8901
+[10:30:53] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[10:30:53] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[10:30:56] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[10:30:56] --- mmlu: running
+[10:32:53] mmlu: acc,none=0.4748 n=912 in 116.9s
+[10:32:53] --- arc_challenge: running
+[10:38:17] arc_challenge: acc_norm,none=0.4200 n=100 in 323.8s
+[10:38:17] --- truthfulqa_mc2: running
+[10:42:49] truthfulqa_mc2: acc,none=0.4325 n=100 in 272.4s
+[10:42:49] --- gsm8k: running
+[10:44:37] gsm8k: exact_match,strict-match=0.1900 n=100 in 108.0s
+[10:44:37] --- ifeval: running
+[10:47:17] ifeval: prompt_level_strict_acc,none=0.5900 n=100 in 159.8s
+[10:47:18] llama-server stopped
+[10:47:18] panel done: /home/z/hf/research/.wrapup/mres/m119-gemma-e2b-q2kxl/lmeval_panel.json
+[10:47:18] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m119-gemma-e2b-q2kxl model=/home/z/hf/gemma-4-E2B-it-UD-Q2_K_XL.gguf limit=100 2026-10-10T10:47:18+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[07:45:41] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m97-llama32-3b-q2k/codegen/humaneval/m97-llama32-3b-q2k_openai_temp_0.0.jsonl
-[07:48:48] evaluate humaneval (codegen rc=0)
-[07:49:10] DONE bench humaneval codegen_rc=0 eval_rc=0 209s
-[07:49:10] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m97-llama32-3b-q2k/codegen/mbpp/m97-llama32-3b-q2k_openai_temp_0.0.jsonl
-[07:54:25] evaluate mbpp (codegen rc=0)
-[07:54:49] DONE bench mbpp codegen_rc=0 eval_rc=0 339s
+[10:47:21] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m119-gemma-e2b-q2kxl/codegen/humaneval/m119-gemma-e2b-q2kxl_openai_temp_0.0.jsonl
+[10:53:59] evaluate humaneval (codegen rc=0)
+[10:54:21] DONE bench humaneval codegen_rc=0 eval_rc=0 420s
+[10:54:21] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m119-gemma-e2b-q2kxl/codegen/mbpp/m119-gemma-e2b-q2kxl_openai_temp_0.0.jsonl
+[11:07:00] evaluate mbpp (codegen rc=0)
+[11:07:25] DONE bench mbpp codegen_rc=0 eval_rc=0 784s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.4329268292682927 plus=0.38414634146341464 n=164 base_pass=71 plus_pass=63 bad_rate=0.0
-  mbpp: base=0.4576719576719577 plus=0.3968253968253968 n=378 base_pass=173 plus_pass=150 bad_rate=0.0
-=== codepanel done tag=m97-llama32-3b-q2k 2026-10-09T07:54:49+08:00
-=== lmeval_panel start tag=m98-glm47flash-q3kxl model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T07:55:19+08:00
-[07:55:20] === panel tag=m98-glm47flash-q3kxl model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q3_K_XL.gguf
-[07:55:20] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[07:55:20] ports: llama=8900 shim=8901
-[07:55:20] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[07:55:20] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[07:55:40] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[07:55:40] --- mmlu: running
-[07:57:38] mmlu: acc,none=0.7259 n=912 in 118.4s
-[07:57:38] --- arc_challenge: running
-[07:59:20] arc_challenge: acc_norm,none=0.5600 n=100 in 101.3s
-[07:59:20] --- truthfulqa_mc2: running
-[08:01:45] truthfulqa_mc2: acc,none=0.4886 n=100 in 145.0s
-[08:01:45] --- gsm8k: running
-[08:03:30] gsm8k: exact_match,strict-match=0.8400 n=100 in 105.8s
-[08:03:30] --- ifeval: running
-[08:07:55] ifeval: prompt_level_strict_acc,none=0.7600 n=100 in 265.0s
-[08:07:56] llama-server stopped
-[08:07:56] panel done: /home/z/hf/research/.wrapup/mres/m98-glm47flash-q3kxl/lmeval_panel.json
-[08:07:56] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m98-glm47flash-q3kxl model=/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q3_K_XL.gguf limit=100 2026-10-09T08:07:56+08:00
+  humaneval: base=0.5304878048780488 plus=0.5121951219512195 n=164 base_pass=87 plus_pass=84 bad_rate=0.0
+  mbpp: base=0.4973544973544973 plus=0.43386243386243384 n=378 base_pass=188 plus_pass=164 bad_rate=0.0
+=== codepanel done tag=m119-gemma-e2b-q2kxl 2026-10-10T11:07:25+08:00
+=== lmeval_panel start tag=m120-gemma-e2b-q3kxl model=/home/z/hf/gemma-4-E2B-it-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T11:07:55+08:00
+[11:07:55] === panel tag=m120-gemma-e2b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf
+[11:07:55] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[11:07:55] ports: llama=8900 shim=8901
+[11:07:55] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[11:07:55] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[11:07:58] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[11:07:58] --- mmlu: running
+[11:09:57] mmlu: acc,none=0.5603 n=912 in 118.7s
+[11:09:57] --- arc_challenge: running
+[11:14:03] arc_challenge: acc_norm,none=0.4700 n=100 in 246.1s
+[11:14:03] --- truthfulqa_mc2: running
+[11:18:38] truthfulqa_mc2: acc,none=0.4706 n=100 in 275.4s
+[11:18:38] --- gsm8k: running
+[11:20:55] gsm8k: exact_match,strict-match=0.4300 n=100 in 136.2s
+[11:20:55] --- ifeval: running
+[11:23:45] ifeval: prompt_level_strict_acc,none=0.6500 n=100 in 170.1s
+[11:23:46] llama-server stopped
+[11:23:46] panel done: /home/z/hf/research/.wrapup/mres/m120-gemma-e2b-q3kxl/lmeval_panel.json
+[11:23:46] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m120-gemma-e2b-q3kxl model=/home/z/hf/gemma-4-E2B-it-UD-Q3_K_XL.gguf limit=100 2026-10-10T11:23:46+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[08:08:00] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m98-glm47flash-q3kxl/codegen/humaneval/m98-glm47flash-q3kxl_openai_temp_0.0.jsonl
-[08:12:19] evaluate humaneval (codegen rc=0)
-[08:12:41] DONE bench humaneval codegen_rc=0 eval_rc=0 281s
-[08:12:41] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m98-glm47flash-q3kxl/codegen/mbpp/m98-glm47flash-q3kxl_openai_temp_0.0.jsonl
-[08:21:37] evaluate mbpp (codegen rc=0)
-[08:22:02] DONE bench mbpp codegen_rc=0 eval_rc=0 561s
+[11:23:49] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m120-gemma-e2b-q3kxl/codegen/humaneval/m120-gemma-e2b-q3kxl_openai_temp_0.0.jsonl
+[11:31:55] evaluate humaneval (codegen rc=0)
+[11:32:17] DONE bench humaneval codegen_rc=0 eval_rc=0 508s
+[11:32:17] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m120-gemma-e2b-q3kxl/codegen/mbpp/m120-gemma-e2b-q3kxl_openai_temp_0.0.jsonl
+[11:47:55] evaluate mbpp (codegen rc=0)
+[11:48:20] DONE bench mbpp codegen_rc=0 eval_rc=0 963s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.7987804878048781 plus=0.75 n=164 base_pass=131 plus_pass=123 bad_rate=0.0
-  mbpp: base=0.8227513227513228 plus=0.6931216931216931 n=378 base_pass=311 plus_pass=262 bad_rate=0.0
-=== codepanel done tag=m98-glm47flash-q3kxl 2026-10-09T08:22:02+08:00
-=== lmeval_panel start tag=m99-lfm25-8b-a1b-q3kxl model=/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T08:22:32+08:00
-[08:22:32] === panel tag=m99-lfm25-8b-a1b-q3kxl model=/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf
-[08:22:32] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[08:22:32] ports: llama=8900 shim=8901
-[08:22:32] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[08:22:32] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[08:22:39] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[08:22:39] --- mmlu: running
-[08:24:16] mmlu: acc,none=0.4803 n=912 in 96.4s
-[08:24:16] --- arc_challenge: running
-[08:26:26] arc_challenge: acc_norm,none=0.4300 n=100 in 130.4s
-[08:26:26] --- truthfulqa_mc2: running
-[08:28:49] truthfulqa_mc2: acc,none=0.4877 n=100 in 143.3s
-[08:28:49] --- gsm8k: running
-[08:30:42] gsm8k: exact_match,strict-match=0.7300 n=100 in 112.3s
-[08:30:42] --- ifeval: running
-[08:34:18] ifeval: prompt_level_strict_acc,none=0.4700 n=100 in 216.6s
-[08:34:19] llama-server stopped
-[08:34:19] panel done: /home/z/hf/research/.wrapup/mres/m99-lfm25-8b-a1b-q3kxl/lmeval_panel.json
-[08:34:19] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m99-lfm25-8b-a1b-q3kxl model=/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf limit=100 2026-10-09T08:34:19+08:00
+  humaneval: base=0.676829268292683 plus=0.6402439024390244 n=164 base_pass=111 plus_pass=105 bad_rate=0.0
+  mbpp: base=0.6084656084656085 plus=0.49206349206349204 n=378 base_pass=230 plus_pass=186 bad_rate=0.0
+=== codepanel done tag=m120-gemma-e2b-q3kxl 2026-10-10T11:48:20+08:00
+=== lmeval_panel start tag=m121-gemma-e4b-q2kxl model=/home/z/hf/gemma-4-E4B-it-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T11:48:50+08:00
+[11:48:50] === panel tag=m121-gemma-e4b-q2kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf
+[11:48:50] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[11:48:50] ports: llama=8900 shim=8901
+[11:48:50] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[11:48:50] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[11:48:53] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[11:48:53] --- mmlu: running
+[11:51:16] mmlu: acc,none=0.6502 n=912 in 142.0s
+[11:51:16] --- arc_challenge: running
+[11:56:32] arc_challenge: acc_norm,none=0.4600 n=100 in 316.5s
+[11:56:32] --- truthfulqa_mc2: running
+[12:01:43] truthfulqa_mc2: acc,none=0.5177 n=100 in 311.3s
+[12:01:43] --- gsm8k: running
+[12:03:40] gsm8k: exact_match,strict-match=0.7800 n=100 in 116.2s
+[12:03:40] --- ifeval: running
+[12:07:10] ifeval: prompt_level_strict_acc,none=0.7700 n=100 in 210.6s
+[12:07:11] llama-server stopped
+[12:07:12] panel done: /home/z/hf/research/.wrapup/mres/m121-gemma-e4b-q2kxl/lmeval_panel.json
+[12:07:12] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m121-gemma-e4b-q2kxl model=/home/z/hf/gemma-4-E4B-it-UD-Q2_K_XL.gguf limit=100 2026-10-10T12:07:12+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[08:34:21] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m99-lfm25-8b-a1b-q3kxl/codegen/humaneval/m99-lfm25-8b-a1b-q3kxl_openai_temp_0.0.jsonl
-[08:39:01] evaluate humaneval (codegen rc=0)
-[08:39:23] DONE bench humaneval codegen_rc=0 eval_rc=0 302s
-[08:39:23] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m99-lfm25-8b-a1b-q3kxl/codegen/mbpp/m99-lfm25-8b-a1b-q3kxl_openai_temp_0.0.jsonl
-[08:49:19] evaluate mbpp (codegen rc=0)
-[08:49:44] DONE bench mbpp codegen_rc=0 eval_rc=0 621s
+[12:07:15] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m121-gemma-e4b-q2kxl/codegen/humaneval/m121-gemma-e4b-q2kxl_openai_temp_0.0.jsonl
+[12:17:34] evaluate humaneval (codegen rc=0)
+[12:17:56] DONE bench humaneval codegen_rc=0 eval_rc=0 641s
+[12:17:56] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m121-gemma-e4b-q2kxl/codegen/mbpp/m121-gemma-e4b-q2kxl_openai_temp_0.0.jsonl
+[12:40:01] evaluate mbpp (codegen rc=0)
+[12:40:25] DONE bench mbpp codegen_rc=0 eval_rc=0 1349s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.3780487804878049 plus=0.3597560975609756 n=164 base_pass=62 plus_pass=59 bad_rate=0.5060975609756098
-  mbpp: base=0.5185185185185185 plus=0.46296296296296297 n=378 base_pass=196 plus_pass=175 bad_rate=0.31746031746031744
-=== codepanel done tag=m99-lfm25-8b-a1b-q3kxl 2026-10-09T08:49:44+08:00
-=== lmeval_panel start tag=m100-qwen38-27b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T08:50:14+08:00
-[08:50:14] === panel tag=m100-qwen38-27b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf
-[08:50:14] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[08:50:14] ports: llama=8900 shim=8901
-[08:50:14] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[08:50:14] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[08:50:33] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[08:50:33] --- mmlu: running
-[09:02:14] mmlu: acc,none=0.8366 n=912 in 700.9s
-[09:02:14] --- arc_challenge: running
-[09:09:28] arc_challenge: acc_norm,none=0.5900 n=100 in 433.4s
-[09:09:28] --- truthfulqa_mc2: running
-[09:25:32] truthfulqa_mc2: acc,none=0.5693 n=100 in 964.0s
-[09:25:32] --- gsm8k: running
-[09:32:02] gsm8k: exact_match,strict-match=0.9600 n=100 in 390.6s
-[09:32:02] --- ifeval: running
-[09:42:28] ifeval: prompt_level_strict_acc,none=0.7500 n=100 in 625.6s
-[09:42:29] llama-server stopped
-[09:42:29] panel done: /home/z/hf/research/.wrapup/mres/m100-qwen38-27b-q3kxl/lmeval_panel.json
-[09:42:29] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m100-qwen38-27b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf limit=100 2026-10-09T09:42:29+08:00
+  humaneval: base=0.7439024390243902 plus=0.6951219512195121 n=164 base_pass=122 plus_pass=114 bad_rate=0.0
+  mbpp: base=0.6931216931216931 plus=0.582010582010582 n=378 base_pass=262 plus_pass=220 bad_rate=0.0
+=== codepanel done tag=m121-gemma-e4b-q2kxl 2026-10-10T12:40:25+08:00
+=== lmeval_panel start tag=m122-gemma-e4b-q3kxl model=/home/z/hf/gemma-4-E4B-it-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T12:40:55+08:00
+[12:40:56] === panel tag=m122-gemma-e4b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf
+[12:40:56] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[12:40:56] ports: llama=8900 shim=8901
+[12:40:56] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[12:40:56] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[12:40:59] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[12:40:59] --- mmlu: running
+[12:43:21] mmlu: acc,none=0.6930 n=912 in 142.2s
+[12:43:21] --- arc_challenge: running
+[12:47:54] arc_challenge: acc_norm,none=0.4600 n=100 in 273.6s
+[12:47:54] --- truthfulqa_mc2: running
+[12:53:13] truthfulqa_mc2: acc,none=0.5624 n=100 in 318.5s
+[12:53:13] --- gsm8k: running
+[12:55:29] gsm8k: exact_match,strict-match=0.8500 n=100 in 136.3s
+[12:55:29] --- ifeval: running
+[12:59:47] ifeval: prompt_level_strict_acc,none=0.8300 n=100 in 258.0s
+[12:59:49] llama-server stopped
+[12:59:49] panel done: /home/z/hf/research/.wrapup/mres/m122-gemma-e4b-q3kxl/lmeval_panel.json
+[12:59:49] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m122-gemma-e4b-q3kxl model=/home/z/hf/gemma-4-E4B-it-UD-Q3_K_XL.gguf limit=100 2026-10-10T12:59:49+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[09:42:33] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m100-qwen38-27b-q3kxl/codegen/humaneval/m100-qwen38-27b-q3kxl_openai_temp_0.0.jsonl
-[10:05:13] evaluate humaneval (codegen rc=0)
-[10:05:35] DONE bench humaneval codegen_rc=0 eval_rc=0 1382s
-[10:05:35] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m100-qwen38-27b-q3kxl/codegen/mbpp/m100-qwen38-27b-q3kxl_openai_temp_0.0.jsonl
-[10:40:18] evaluate mbpp (codegen rc=0)
-[10:40:44] DONE bench mbpp codegen_rc=0 eval_rc=0 2109s
+[12:59:52] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m122-gemma-e4b-q3kxl/codegen/humaneval/m122-gemma-e4b-q3kxl_openai_temp_0.0.jsonl
+[13:11:24] evaluate humaneval (codegen rc=0)
+[13:11:46] DONE bench humaneval codegen_rc=0 eval_rc=0 714s
+[13:11:46] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m122-gemma-e4b-q3kxl/codegen/mbpp/m122-gemma-e4b-q3kxl_openai_temp_0.0.jsonl
+[13:39:14] evaluate mbpp (codegen rc=0)
+[13:39:39] DONE bench mbpp codegen_rc=0 eval_rc=0 1673s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.8719512195121951 plus=0.8353658536585366 n=164 base_pass=143 plus_pass=137 bad_rate=0.0
-  mbpp: base=0.8703703703703703 plus=0.7380952380952381 n=378 base_pass=329 plus_pass=279 bad_rate=0.0
-=== codepanel done tag=m100-qwen38-27b-q3kxl 2026-10-09T10:40:44+08:00
-=== lmeval_panel start tag=m101-qwen36-35b-a3b-q3km model=/home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T10:41:14+08:00
-[10:41:14] === panel tag=m101-qwen36-35b-a3b-q3km model=/home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf
-[10:41:14] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[10:41:14] ports: llama=8900 shim=8901
-[10:41:14] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[10:41:14] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[10:41:39] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[10:41:39] --- mmlu: running
-[10:47:39] mmlu: acc,none=0.8454 n=912 in 360.2s
-[10:47:39] --- arc_challenge: running
-[10:52:21] arc_challenge: acc_norm,none=0.6200 n=100 in 282.5s
-[10:52:21] --- truthfulqa_mc2: running
-[11:00:24] truthfulqa_mc2: acc,none=0.5032 n=100 in 482.4s
-[11:00:24] --- gsm8k: running
-[11:03:05] gsm8k: exact_match,strict-match=0.9700 n=100 in 160.9s
-[11:03:05] --- ifeval: running
-[11:07:56] ifeval: prompt_level_strict_acc,none=0.8300 n=100 in 291.2s
-[11:07:57] llama-server stopped
-[11:07:57] panel done: /home/z/hf/research/.wrapup/mres/m101-qwen36-35b-a3b-q3km/lmeval_panel.json
-[11:07:57] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m101-qwen36-35b-a3b-q3km model=/home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf limit=100 2026-10-09T11:07:57+08:00
+  humaneval: base=0.8170731707317073 plus=0.7804878048780488 n=164 base_pass=134 plus_pass=128 bad_rate=0.0
+  mbpp: base=0.746031746031746 plus=0.6164021164021164 n=378 base_pass=282 plus_pass=233 bad_rate=0.0
+=== codepanel done tag=m122-gemma-e4b-q3kxl 2026-10-10T13:39:39+08:00
+=== lmeval_panel start tag=m123-bonsai-8b-q2 model=/home/z/hf/Ternary-Bonsai-8B-Q2_0_g64.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T13:40:09+08:00
+[13:40:10] === panel tag=m123-bonsai-8b-q2 model=/home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf
+[13:40:10] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[13:40:10] ports: llama=8900 shim=8901
+[13:40:10] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[13:40:10] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[13:40:12] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[13:40:12] --- mmlu: running
+[13:41:47] mmlu: acc,none=0.6765 n=912 in 95.6s
+[13:41:47] --- arc_challenge: running
+[13:43:34] arc_challenge: acc_norm,none=0.5000 n=100 in 107.3s
+[13:43:34] --- truthfulqa_mc2: running
+[13:45:47] truthfulqa_mc2: acc,none=0.5347 n=100 in 132.8s
+[13:45:47] --- gsm8k: running
+[13:47:29] gsm8k: exact_match,strict-match=0.7600 n=100 in 101.5s
+[13:47:29] --- ifeval: running
+[13:50:23] ifeval: prompt_level_strict_acc,none=0.7700 n=100 in 174.1s
+[13:50:24] llama-server stopped
+[13:50:24] panel done: /home/z/hf/research/.wrapup/mres/m123-bonsai-8b-q2/lmeval_panel.json
+[13:50:24] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m123-bonsai-8b-q2 model=/home/z/hf/Ternary-Bonsai-8B-Q2_0_g64.gguf limit=100 2026-10-10T13:50:24+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[11:08:01] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m101-qwen36-35b-a3b-q3km/codegen/humaneval/m101-qwen36-35b-a3b-q3km_openai_temp_0.0.jsonl
-[11:14:19] evaluate humaneval (codegen rc=0)
-[11:14:41] DONE bench humaneval codegen_rc=0 eval_rc=0 400s
-[11:14:41] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m101-qwen36-35b-a3b-q3km/codegen/mbpp/m101-qwen36-35b-a3b-q3km_openai_temp_0.0.jsonl
-[11:27:06] evaluate mbpp (codegen rc=0)
-[11:27:31] DONE bench mbpp codegen_rc=0 eval_rc=0 770s
+[13:50:26] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m123-bonsai-8b-q2/codegen/humaneval/m123-bonsai-8b-q2_openai_temp_0.0.jsonl
+[13:54:44] evaluate humaneval (codegen rc=0)
+[13:55:06] DONE bench humaneval codegen_rc=0 eval_rc=0 280s
+[13:55:06] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m123-bonsai-8b-q2/codegen/mbpp/m123-bonsai-8b-q2_openai_temp_0.0.jsonl
+[14:00:13] evaluate mbpp (codegen rc=0)
+[14:00:38] DONE bench mbpp codegen_rc=0 eval_rc=0 332s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.926829268292683 plus=0.8841463414634146 n=164 base_pass=152 plus_pass=145 bad_rate=0.0
-  mbpp: base=0.9153439153439153 plus=0.7777777777777778 n=378 base_pass=346 plus_pass=294 bad_rate=0.0
-=== codepanel done tag=m101-qwen36-35b-a3b-q3km 2026-10-09T11:27:31+08:00
-=== lmeval_panel start tag=m102-lfm25-8b-a1b-m55-q3km model=/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T11:28:01+08:00
-[11:28:02] === panel tag=m102-lfm25-8b-a1b-m55-q3km model=/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf
-[11:28:02] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[11:28:02] ports: llama=8900 shim=8901
-[11:28:02] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[11:28:02] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[11:28:09] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[11:28:09] --- mmlu: running
-[11:29:48] mmlu: acc,none=0.4474 n=912 in 99.1s
-[11:29:48] --- arc_challenge: running
-[11:32:01] arc_challenge: acc_norm,none=0.4600 n=100 in 133.2s
-[11:32:01] --- truthfulqa_mc2: running
-[11:34:30] truthfulqa_mc2: acc,none=0.4940 n=100 in 149.0s
-[11:34:30] --- gsm8k: running
-[11:36:34] gsm8k: exact_match,strict-match=0.6700 n=100 in 123.7s
-[11:36:34] --- ifeval: running
-[11:40:15] ifeval: prompt_level_strict_acc,none=0.5700 n=100 in 221.5s
-[11:40:16] llama-server stopped
-[11:40:16] panel done: /home/z/hf/research/.wrapup/mres/m102-lfm25-8b-a1b-m55-q3km/lmeval_panel.json
-[11:40:16] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m102-lfm25-8b-a1b-m55-q3km model=/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf limit=100 2026-10-09T11:40:16+08:00
+  humaneval: base=0.7987804878048781 plus=0.7317073170731707 n=164 base_pass=131 plus_pass=120 bad_rate=0.0
+  mbpp: base=0.6798941798941799 plus=0.5767195767195767 n=378 base_pass=257 plus_pass=218 bad_rate=0.0
+=== codepanel done tag=m123-bonsai-8b-q2 2026-10-10T14:00:38+08:00
+=== lmeval_panel start tag=m124-bonsai-27b-q2 model=/home/z/hf/Ternary-Bonsai-27B-Q2_g64.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-10T14:01:08+08:00
+[14:01:08] === panel tag=m124-bonsai-27b-q2 model=/home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb
+[14:01:08] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[14:01:08] ports: llama=8900 shim=8901
+[14:01:08] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[14:01:08] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[14:01:12] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
+[14:01:12] --- mmlu: running
+[14:12:23] mmlu: acc,none=0.7818 n=912 in 671.1s
+[14:12:23] --- arc_challenge: running
+[14:19:30] arc_challenge: acc_norm,none=0.5200 n=100 in 427.2s
+[14:19:30] --- truthfulqa_mc2: running
+[14:34:37] truthfulqa_mc2: acc,none=0.4971 n=100 in 907.3s
+[14:34:37] --- gsm8k: running
+[14:39:13] gsm8k: exact_match,strict-match=0.9100 n=100 in 276.1s
+[14:39:13] --- ifeval: running
+[14:46:47] ifeval: prompt_level_strict_acc,none=0.7500 n=100 in 453.9s
+[14:46:48] llama-server stopped
+[14:46:48] panel done: /home/z/hf/research/.wrapup/mres/m124-bonsai-27b-q2/lmeval_panel.json
+[14:46:48] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
+=== codepanel start tag=m124-bonsai-27b-q2 model=/home/z/hf/Ternary-Bonsai-27B-Q2_g64.gguf limit=100 2026-10-10T14:46:48+08:00
 [codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
 [codepanel] llama-server port=9200 (proven free by ss -ltn)
 [codepanel] smoke completion ok
-[11:40:18] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m102-lfm25-8b-a1b-m55-q3km/codegen/humaneval/m102-lfm25-8b-a1b-m55-q3km_openai_temp_0.0.jsonl
-[11:45:04] evaluate humaneval (codegen rc=0)
-[11:45:26] DONE bench humaneval codegen_rc=0 eval_rc=0 308s
-[11:45:26] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m102-lfm25-8b-a1b-m55-q3km/codegen/mbpp/m102-lfm25-8b-a1b-m55-q3km_openai_temp_0.0.jsonl
-[11:55:19] evaluate mbpp (codegen rc=0)
-[11:56:04] DONE bench mbpp codegen_rc=0 eval_rc=0 638s
+[14:46:51] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m124-bonsai-27b-q2/codegen/humaneval/m124-bonsai-27b-q2_openai_temp_0.0.jsonl
+[14:56:53] evaluate humaneval (codegen rc=0)
+[14:57:15] DONE bench humaneval codegen_rc=0 eval_rc=0 624s
+[14:57:15] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m124-bonsai-27b-q2/codegen/mbpp/m124-bonsai-27b-q2_openai_temp_0.0.jsonl
+[15:17:20] evaluate mbpp (codegen rc=0)
+[15:17:45] DONE bench mbpp codegen_rc=0 eval_rc=0 1230s
 REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.35365853658536583 plus=0.3353658536585366 n=164 base_pass=58 plus_pass=55 bad_rate=0.5304878048780488
-  mbpp: base=0.5317460317460317 plus=0.48148148148148145 n=378 base_pass=201 plus_pass=182 bad_rate=0.30423280423280424
-=== codepanel done tag=m102-lfm25-8b-a1b-m55-q3km 2026-10-09T11:56:04+08:00
-=== lmeval_panel start tag=m103-qwen36-35b-a3b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T11:56:34+08:00
-[11:56:34] === panel tag=m103-qwen36-35b-a3b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf
-[11:56:34] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[11:56:34] ports: llama=8900 shim=8901
-[11:56:34] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[11:56:34] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[11:56:59] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='3'
-[11:56:59] --- mmlu: running
-[12:02:43] mmlu: acc,none=0.8432 n=912 in 344.3s
-[12:02:43] --- arc_challenge: running
-[12:07:07] arc_challenge: acc_norm,none=0.5700 n=100 in 263.9s
-[12:07:07] --- truthfulqa_mc2: running
-[12:14:46] truthfulqa_mc2: acc,none=0.5272 n=100 in 459.6s
-[12:14:46] --- gsm8k: running
-[12:17:42] gsm8k: exact_match,strict-match=0.9800 n=100 in 175.7s
-[12:17:42] --- ifeval: running
-[12:21:34] ifeval: prompt_level_strict_acc,none=0.8200 n=100 in 232.2s
-[12:21:35] llama-server stopped
-[12:21:35] panel done: /home/z/hf/research/.wrapup/mres/m103-qwen36-35b-a3b-q3kxl/lmeval_panel.json
-[12:21:35] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m103-qwen36-35b-a3b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf limit=100 2026-10-09T12:21:35+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[12:21:40] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m103-qwen36-35b-a3b-q3kxl/codegen/humaneval/m103-qwen36-35b-a3b-q3kxl_openai_temp_0.0.jsonl
-[12:26:44] evaluate humaneval (codegen rc=0)
-[12:27:06] DONE bench humaneval codegen_rc=0 eval_rc=0 326s
-[12:27:06] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m103-qwen36-35b-a3b-q3kxl/codegen/mbpp/m103-qwen36-35b-a3b-q3kxl_openai_temp_0.0.jsonl
-[12:38:33] evaluate mbpp (codegen rc=0)
-[12:38:58] DONE bench mbpp codegen_rc=0 eval_rc=0 712s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.9207317073170732 plus=0.8780487804878049 n=164 base_pass=151 plus_pass=144 bad_rate=0.0
-  mbpp: base=0.8994708994708994 plus=0.7619047619047619 n=378 base_pass=340 plus_pass=288 bad_rate=0.0
-=== codepanel done tag=m103-qwen36-35b-a3b-q3kxl 2026-10-09T12:38:58+08:00
-=== lmeval_panel start tag=m104-minicpm5-2b-q3km model=/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q3_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T12:39:28+08:00
-[12:39:28] === panel tag=m104-minicpm5-2b-q3km model=/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q3_K_M.gguf
-[12:39:28] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[12:39:28] ports: llama=8900 shim=8901
-[12:39:28] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[12:39:28] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q3_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[12:39:31] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[12:39:31] --- mmlu: running
-[12:41:04] mmlu: acc,none=0.5252 n=912 in 92.8s
-[12:41:04] --- arc_challenge: running
-[12:43:20] arc_challenge: acc_norm,none=0.3700 n=100 in 136.1s
-[12:43:20] --- truthfulqa_mc2: running
-[12:46:02] truthfulqa_mc2: acc,none=0.5468 n=100 in 161.3s
-[12:46:02] --- gsm8k: running
-[12:47:04] gsm8k: exact_match,strict-match=0.6800 n=100 in 62.2s
-[12:47:04] --- ifeval: running
-[12:48:38] ifeval: prompt_level_strict_acc,none=0.8100 n=100 in 93.8s
-[12:48:38] llama-server stopped
-[12:48:39] panel done: /home/z/hf/research/.wrapup/mres/m104-minicpm5-2b-q3km/lmeval_panel.json
-[12:48:39] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m104-minicpm5-2b-q3km model=/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q3_K_M.gguf limit=100 2026-10-09T12:48:39+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[12:48:40] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m104-minicpm5-2b-q3km/codegen/humaneval/m104-minicpm5-2b-q3km_openai_temp_0.0.jsonl
-[12:50:54] evaluate humaneval (codegen rc=0)
-[12:51:16] DONE bench humaneval codegen_rc=0 eval_rc=0 156s
-[12:51:16] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m104-minicpm5-2b-q3km/codegen/mbpp/m104-minicpm5-2b-q3km_openai_temp_0.0.jsonl
-[12:55:13] evaluate mbpp (codegen rc=0)
-[12:55:38] DONE bench mbpp codegen_rc=0 eval_rc=0 262s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.7317073170731707 plus=0.6829268292682927 n=164 base_pass=120 plus_pass=112 bad_rate=0.0
-  mbpp: base=0.6851851851851852 plus=0.582010582010582 n=378 base_pass=259 plus_pass=220 bad_rate=0.0
-=== codepanel done tag=m104-minicpm5-2b-q3km 2026-10-09T12:55:38+08:00
-=== lmeval_panel start tag=m105-gemma-12b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T12:56:08+08:00
-[12:56:08] === panel tag=m105-gemma-12b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf
-[12:56:08] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[12:56:08] ports: llama=8900 shim=8901
-[12:56:08] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[12:56:08] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[12:56:18] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke=' {'
-[12:56:18] --- mmlu: running
-[13:02:01] mmlu: acc,none=0.4178 n=912 in 342.7s
-[13:02:01] --- arc_challenge: running
-[13:12:41] arc_challenge: acc_norm,none=0.3300 n=100 in 640.4s
-[13:12:41] --- truthfulqa_mc2: running
-[13:27:25] truthfulqa_mc2: acc,none=0.4986 n=100 in 883.3s
-[13:27:25] --- gsm8k: running
-[13:31:52] gsm8k: exact_match,strict-match=0.9300 n=100 in 267.4s
-[13:31:52] --- ifeval: running
-[13:37:30] ifeval: prompt_level_strict_acc,none=0.8700 n=100 in 337.7s
-[13:37:31] llama-server stopped
-[13:37:31] panel done: /home/z/hf/research/.wrapup/mres/m105-gemma-12b-q3kxl/lmeval_panel.json
-[13:37:31] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m105-gemma-12b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf limit=100 2026-10-09T13:37:31+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[13:37:34] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m105-gemma-12b-q3kxl/codegen/humaneval/m105-gemma-12b-q3kxl_openai_temp_0.0.jsonl
-[13:50:10] evaluate humaneval (codegen rc=0)
-[13:50:32] DONE bench humaneval codegen_rc=0 eval_rc=0 778s
-[13:50:32] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m105-gemma-12b-q3kxl/codegen/mbpp/m105-gemma-12b-q3kxl_openai_temp_0.0.jsonl
-[14:14:43] evaluate mbpp (codegen rc=0)
-[14:15:28] DONE bench mbpp codegen_rc=0 eval_rc=0 1496s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.9390243902439024 plus=0.9146341463414634 n=164 base_pass=154 plus_pass=150 bad_rate=0.0
-  mbpp: base=0.8597883597883598 plus=0.7301587301587301 n=378 base_pass=325 plus_pass=276 bad_rate=0.0
-=== codepanel done tag=m105-gemma-12b-q3kxl 2026-10-09T14:15:28+08:00
-=== lmeval_panel start tag=m106-gemma-26b-a4b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T14:15:58+08:00
-[14:15:58] === panel tag=m106-gemma-26b-a4b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf
-[14:15:58] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[14:15:58] ports: llama=8900 shim=8901
-[14:15:58] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[14:15:58] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[14:16:17] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[14:16:17] --- mmlu: running
-[14:19:57] mmlu: acc,none=0.6371 n=912 in 220.1s
-[14:19:57] --- arc_challenge: running
-[14:24:09] SHIM FAIL: HTTPError('500 Server Error: Internal Server Error for url: http://127.0.0.1:8900/v1/completions')
-[14:24:14] SHIM FAIL: HTTPError('500 Server Error: Internal Server Error for url: http://127.0.0.1:8900/v1/completions')
-[14:24:20] SHIM FAIL: HTTPError('500 Server Error: Internal Server Error for url: http://127.0.0.1:8900/v1/completions')
-[14:24:26] arc_challenge: NO RESULT (rc=1) after 268.3s
-[14:24:26] --- truthfulqa_mc2: running
-[14:36:22] truthfulqa_mc2: acc,none=0.6123 n=100 in 716.1s
-[14:36:22] --- gsm8k: running
-[14:39:40] gsm8k: exact_match,strict-match=0.9300 n=100 in 198.4s
-[14:39:40] --- ifeval: running
-[14:43:41] ifeval: prompt_level_strict_acc,none=0.8500 n=100 in 241.0s
-[14:43:42] llama-server stopped
-[14:43:43] panel done: /home/z/hf/research/.wrapup/mres/m106-gemma-26b-a4b-q3kxl/lmeval_panel.json
-[14:43:43] real numbers: ['mmlu', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m106-gemma-26b-a4b-q3kxl model=/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf limit=100 2026-10-09T14:43:43+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[14:43:47] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m106-gemma-26b-a4b-q3kxl/codegen/humaneval/m106-gemma-26b-a4b-q3kxl_openai_temp_0.0.jsonl
-[14:54:03] evaluate humaneval (codegen rc=0)
-[14:54:25] DONE bench humaneval codegen_rc=0 eval_rc=0 638s
-[14:54:25] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m106-gemma-26b-a4b-q3kxl/codegen/mbpp/m106-gemma-26b-a4b-q3kxl_openai_temp_0.0.jsonl
-[15:17:44] evaluate mbpp (codegen rc=0)
-[15:18:09] DONE bench mbpp codegen_rc=0 eval_rc=0 1424s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.9146341463414634 plus=0.8841463414634146 n=164 base_pass=150 plus_pass=145 bad_rate=0.0
-  mbpp: base=0.8941798941798942 plus=0.7671957671957672 n=378 base_pass=338 plus_pass=290 bad_rate=0.0
-=== codepanel done tag=m106-gemma-26b-a4b-q3kxl 2026-10-09T15:18:09+08:00
-=== lmeval_panel start tag=m107-llama32-3b-q3km model=/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q3_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T15:18:39+08:00
-[15:18:40] === panel tag=m107-llama32-3b-q3km model=/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q3_K_M.gguf
-[15:18:40] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[15:18:40] ports: llama=8900 shim=8901
-[15:18:40] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[15:18:40] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q3_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[15:18:44] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[15:18:44] --- mmlu: running
-[15:20:16] mmlu: acc,none=0.6053 n=912 in 92.6s
-[15:20:16] --- arc_challenge: running
-[15:22:18] arc_challenge: acc_norm,none=0.4400 n=100 in 122.1s
-[15:22:18] --- truthfulqa_mc2: running
-[15:24:23] truthfulqa_mc2: acc,none=0.5141 n=100 in 124.4s
-[15:24:23] --- gsm8k: running
-[15:25:33] gsm8k: exact_match,strict-match=0.7000 n=100 in 69.9s
-[15:25:33] --- ifeval: running
-[15:28:00] ifeval: prompt_level_strict_acc,none=0.7200 n=100 in 147.8s
-[15:28:01] llama-server stopped
-[15:28:02] panel done: /home/z/hf/research/.wrapup/mres/m107-llama32-3b-q3km/lmeval_panel.json
-[15:28:02] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m107-llama32-3b-q3km model=/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q3_K_M.gguf limit=100 2026-10-09T15:28:02+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[15:28:04] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m107-llama32-3b-q3km/codegen/humaneval/m107-llama32-3b-q3km_openai_temp_0.0.jsonl
-[15:31:03] evaluate humaneval (codegen rc=0)
-[15:31:25] DONE bench humaneval codegen_rc=0 eval_rc=0 201s
-[15:31:25] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m107-llama32-3b-q3km/codegen/mbpp/m107-llama32-3b-q3km_openai_temp_0.0.jsonl
-[15:36:23] evaluate mbpp (codegen rc=0)
-[15:36:48] DONE bench mbpp codegen_rc=0 eval_rc=0 323s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.5853658536585366 plus=0.5304878048780488 n=164 base_pass=96 plus_pass=87 bad_rate=0.0
-  mbpp: base=0.6455026455026455 plus=0.5264550264550265 n=378 base_pass=244 plus_pass=199 bad_rate=0.0
-=== codepanel done tag=m107-llama32-3b-q3km 2026-10-09T15:36:48+08:00
-=== lmeval_panel start tag=m108-qwen-0.8b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T15:37:18+08:00
-[15:37:18] === panel tag=m108-qwen-0.8b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q2_K_XL.gguf
-[15:37:18] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[15:37:18] ports: llama=8900 shim=8901
-[15:37:18] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[15:37:18] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[15:37:20] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[15:37:20] --- mmlu: running
-[15:39:20] mmlu: acc,none=0.3476 n=912 in 120.3s
-[15:39:20] --- arc_challenge: running
-[15:42:26] arc_challenge: acc_norm,none=0.2400 n=100 in 185.3s
-[15:42:26] --- truthfulqa_mc2: running
-[15:45:56] truthfulqa_mc2: acc,none=0.4578 n=100 in 210.7s
-[15:45:56] --- gsm8k: running
-[15:48:34] gsm8k: exact_match,strict-match=0.0800 n=100 in 157.4s
-[15:48:34] --- ifeval: running
-[15:52:25] ifeval: prompt_level_strict_acc,none=0.2400 n=100 in 231.3s
-[15:52:26] llama-server stopped
-[15:52:27] panel done: /home/z/hf/research/.wrapup/mres/m108-qwen-0.8b-q2kxl/lmeval_panel.json
-[15:52:27] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m108-qwen-0.8b-q2kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q2_K_XL.gguf limit=100 2026-10-09T15:52:27+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[15:52:29] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m108-qwen-0.8b-q2kxl/codegen/humaneval/m108-qwen-0.8b-q2kxl_openai_temp_0.0.jsonl
-[15:52:31] evaluate humaneval (codegen rc=0)
-[15:52:32] DONE bench humaneval codegen_rc=0 eval_rc=0 3s
-[15:52:32] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m108-qwen-0.8b-q2kxl/codegen/mbpp/m108-qwen-0.8b-q2kxl_openai_temp_0.0.jsonl
-[15:52:34] evaluate mbpp (codegen rc=0)
-[15:52:35] DONE bench mbpp codegen_rc=0 eval_rc=0 3s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.09146341463414634 plus=0.08536585365853659 n=164 base_pass=15 plus_pass=14 bad_rate=0.0
-  mbpp: base=0.09523809523809523 plus=0.07936507936507936 n=378 base_pass=36 plus_pass=30 bad_rate=0.0
-=== codepanel done tag=m108-qwen-0.8b-q2kxl 2026-10-09T15:52:35+08:00
-=== lmeval_panel start tag=m109-lfm25-8b-a1b-m55-exq4 model=/home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T15:53:05+08:00
-[15:53:05] === panel tag=m109-lfm25-8b-a1b-m55-exq4 model=/home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf
-[15:53:05] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[15:53:05] ports: llama=8900 shim=8901
-[15:53:05] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[15:53:05] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[15:53:13] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[15:53:13] --- mmlu: running
-[15:54:53] mmlu: acc,none=0.2873 n=912 in 99.5s
-[15:54:53] --- arc_challenge: running
-[15:58:03] arc_challenge: acc_norm,none=0.3700 n=100 in 190.6s
-[15:58:03] --- truthfulqa_mc2: running
-[16:00:51] truthfulqa_mc2: acc,none=0.5669 n=100 in 167.5s
-[16:00:51] --- gsm8k: running
-[16:03:13] gsm8k: exact_match,strict-match=0.5000 n=100 in 142.4s
-[16:03:13] --- ifeval: running
-[16:06:54] ifeval: prompt_level_strict_acc,none=0.3900 n=100 in 220.9s
-[16:06:55] llama-server stopped
-[16:06:55] panel done: /home/z/hf/research/.wrapup/mres/m109-lfm25-8b-a1b-m55-exq4/lmeval_panel.json
-[16:06:55] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m109-lfm25-8b-a1b-m55-exq4 model=/home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf limit=100 2026-10-09T16:06:55+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[16:06:57] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m109-lfm25-8b-a1b-m55-exq4/codegen/humaneval/m109-lfm25-8b-a1b-m55-exq4_openai_temp_0.0.jsonl
-[16:11:39] evaluate humaneval (codegen rc=0)
-[16:12:01] DONE bench humaneval codegen_rc=0 eval_rc=0 304s
-[16:12:01] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m109-lfm25-8b-a1b-m55-exq4/codegen/mbpp/m109-lfm25-8b-a1b-m55-exq4_openai_temp_0.0.jsonl
-[16:22:37] evaluate mbpp (codegen rc=0)
-[16:23:02] DONE bench mbpp codegen_rc=0 eval_rc=0 661s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.1402439024390244 plus=0.13414634146341464 n=164 base_pass=23 plus_pass=22 bad_rate=0.75
-  mbpp: base=0.2619047619047619 plus=0.23809523809523808 n=378 base_pass=99 plus_pass=90 bad_rate=0.5502645502645502
-=== codepanel done tag=m109-lfm25-8b-a1b-m55-exq4 2026-10-09T16:23:02+08:00
-=== lmeval_panel start tag=m110-ornith-9b-q4km model=/home/z/hf/models--ornith-ai--Ornith-1.5-9B-GGUF/blobs/70c112196e0b7023803c9762752e46d29e612a92c83f995bc3ba1ceb07e8fab6 limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T16:23:32+08:00
-[16:23:33] === panel tag=m110-ornith-9b-q4km model=/home/z/hf/models--ornith-ai--Ornith-1.5-9B-GGUF/blobs/70c112196e0b7023803c9762752e46d29e612a92c83f995bc3ba1ceb07e8fab6
-[16:23:33] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[16:23:33] ports: llama=8900 shim=8901
-[16:23:33] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[16:23:33] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--ornith-ai--Ornith-1.5-9B-GGUF/blobs/70c112196e0b7023803c9762752e46d29e612a92c83f995bc3ba1ceb07e8fab6 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[16:23:43] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[16:23:43] --- mmlu: running
-[16:28:38] mmlu: acc,none=0.7796 n=912 in 294.7s
-[16:28:38] --- arc_challenge: running
-[16:32:43] arc_challenge: acc_norm,none=0.5400 n=100 in 245.7s
-[16:32:43] --- truthfulqa_mc2: running
-[16:39:54] truthfulqa_mc2: acc,none=0.4954 n=100 in 431.1s
-[16:39:54] --- gsm8k: running
-[16:42:22] gsm8k: exact_match,strict-match=0.8400 n=100 in 147.3s
-[16:42:22] --- ifeval: running
-[16:47:51] ifeval: prompt_level_strict_acc,none=0.5900 n=100 in 329.6s
-[16:47:52] llama-server stopped
-[16:47:53] panel done: /home/z/hf/research/.wrapup/mres/m110-ornith-9b-q4km/lmeval_panel.json
-[16:47:53] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m110-ornith-9b-q4km model=/home/z/hf/models--ornith-ai--Ornith-1.5-9B-GGUF/blobs/70c112196e0b7023803c9762752e46d29e612a92c83f995bc3ba1ceb07e8fab6 limit=100 2026-10-09T16:47:53+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[16:47:56] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m110-ornith-9b-q4km/codegen/humaneval/m110-ornith-9b-q4km_openai_temp_0.0.jsonl
-[16:59:20] evaluate humaneval (codegen rc=0)
-[16:59:42] DONE bench humaneval codegen_rc=0 eval_rc=0 706s
-[16:59:42] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m110-ornith-9b-q4km/codegen/mbpp/m110-ornith-9b-q4km_openai_temp_0.0.jsonl
-[17:27:05] evaluate mbpp (codegen rc=0)
-[17:27:30] DONE bench mbpp codegen_rc=0 eval_rc=0 1668s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.7804878048780488 plus=0.7378048780487805 n=164 base_pass=128 plus_pass=121 bad_rate=0.0
-  mbpp: base=0.8412698412698413 plus=0.708994708994709 n=378 base_pass=318 plus_pass=268 bad_rate=0.0
-=== codepanel done tag=m110-ornith-9b-q4km 2026-10-09T17:27:30+08:00
-=== lmeval_panel start tag=m111-nemotron-4b-q2kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T17:28:00+08:00
-[17:28:00] === panel tag=m111-nemotron-4b-q2kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf
-[17:28:00] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[17:28:00] ports: llama=8900 shim=8901
-[17:28:00] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[17:28:00] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[17:28:05] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[17:28:05] --- mmlu: running
-[17:35:53] mmlu: acc,none=0.6623 n=912 in 468.2s
-[17:35:53] --- arc_challenge: running
-[17:40:25] arc_challenge: acc_norm,none=0.4700 n=100 in 271.3s
-[17:40:25] --- truthfulqa_mc2: running
-[17:49:39] truthfulqa_mc2: acc,none=0.5441 n=100 in 554.3s
-[17:49:39] --- gsm8k: running
-[17:51:30] gsm8k: exact_match,strict-match=0.8500 n=100 in 110.8s
-[17:51:30] --- ifeval: running
-[17:54:07] ifeval: prompt_level_strict_acc,none=0.7400 n=100 in 157.6s
-[17:54:08] llama-server stopped
-[17:54:09] panel done: /home/z/hf/research/.wrapup/mres/m111-nemotron-4b-q2kxl/lmeval_panel.json
-[17:54:09] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m111-nemotron-4b-q2kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf limit=100 2026-10-09T17:54:09+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[17:54:11] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m111-nemotron-4b-q2kxl/codegen/humaneval/m111-nemotron-4b-q2kxl_openai_temp_0.0.jsonl
-[17:58:01] evaluate humaneval (codegen rc=0)
-[17:58:23] DONE bench humaneval codegen_rc=0 eval_rc=0 252s
-[17:58:23] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m111-nemotron-4b-q2kxl/codegen/mbpp/m111-nemotron-4b-q2kxl_openai_temp_0.0.jsonl
-[18:05:28] evaluate mbpp (codegen rc=0)
-[18:05:53] DONE bench mbpp codegen_rc=0 eval_rc=0 450s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.8292682926829268 plus=0.774390243902439 n=164 base_pass=136 plus_pass=127 bad_rate=0.0
-  mbpp: base=0.7936507936507936 plus=0.671957671957672 n=378 base_pass=300 plus_pass=254 bad_rate=0.0
-=== codepanel done tag=m111-nemotron-4b-q2kxl 2026-10-09T18:05:53+08:00
-=== lmeval_panel start tag=m112-qwen-0.8b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T18:06:23+08:00
-[18:06:24] === panel tag=m112-qwen-0.8b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf
-[18:06:24] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[18:06:24] ports: llama=8900 shim=8901
-[18:06:24] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[18:06:24] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[18:06:27] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[18:06:27] --- mmlu: running
-[18:08:28] mmlu: acc,none=0.4814 n=912 in 121.1s
-[18:08:28] --- arc_challenge: running
-[18:10:43] arc_challenge: acc_norm,none=0.3900 n=100 in 135.3s
-[18:10:43] --- truthfulqa_mc2: running
-[18:14:03] truthfulqa_mc2: acc,none=0.4051 n=100 in 200.2s
-[18:14:03] --- gsm8k: running
-[18:15:33] gsm8k: exact_match,strict-match=0.1100 n=100 in 89.6s
-[18:15:33] --- ifeval: running
-[18:19:23] ifeval: prompt_level_strict_acc,none=0.5000 n=100 in 229.6s
-[18:19:24] llama-server stopped
-[18:19:24] panel done: /home/z/hf/research/.wrapup/mres/m112-qwen-0.8b-q3kxl/lmeval_panel.json
-[18:19:24] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m112-qwen-0.8b-q3kxl model=/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf limit=100 2026-10-09T18:19:24+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[18:19:26] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m112-qwen-0.8b-q3kxl/codegen/humaneval/m112-qwen-0.8b-q3kxl_openai_temp_0.0.jsonl
-[18:22:38] evaluate humaneval (codegen rc=0)
-[18:23:00] DONE bench humaneval codegen_rc=0 eval_rc=0 214s
-[18:23:00] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m112-qwen-0.8b-q3kxl/codegen/mbpp/m112-qwen-0.8b-q3kxl_openai_temp_0.0.jsonl
-[18:32:40] evaluate mbpp (codegen rc=0)
-[18:33:27] DONE bench mbpp codegen_rc=0 eval_rc=0 627s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.23780487804878048 plus=0.21951219512195122 n=164 base_pass=39 plus_pass=36 bad_rate=0.0
-  mbpp: base=0.30158730158730157 plus=0.2619047619047619 n=378 base_pass=114 plus_pass=99 bad_rate=0.0
-=== codepanel done tag=m112-qwen-0.8b-q3kxl 2026-10-09T18:33:27+08:00
-=== lmeval_panel start tag=m113-nemotron-4b-q3kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T18:33:57+08:00
-[18:33:57] === panel tag=m113-nemotron-4b-q3kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf
-[18:33:57] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[18:33:57] ports: llama=8900 shim=8901
-[18:33:57] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[18:33:57] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[18:34:02] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[18:34:02] --- mmlu: running
-[18:42:30] mmlu: acc,none=0.6689 n=912 in 508.1s
-[18:42:30] --- arc_challenge: running
-[18:47:21] arc_challenge: acc_norm,none=0.4400 n=100 in 291.2s
-[18:47:21] --- truthfulqa_mc2: running
-[18:58:04] truthfulqa_mc2: acc,none=0.5458 n=100 in 642.1s
-[18:58:04] --- gsm8k: running
-[19:00:07] gsm8k: exact_match,strict-match=0.8600 n=100 in 123.9s
-[19:00:07] --- ifeval: running
-[19:02:45] ifeval: prompt_level_strict_acc,none=0.7600 n=100 in 157.9s
-[19:02:46] llama-server stopped
-[19:02:47] panel done: /home/z/hf/research/.wrapup/mres/m113-nemotron-4b-q3kxl/lmeval_panel.json
-[19:02:47] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m113-nemotron-4b-q3kxl model=/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf limit=100 2026-10-09T19:02:47+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[19:02:49] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m113-nemotron-4b-q3kxl/codegen/humaneval/m113-nemotron-4b-q3kxl_openai_temp_0.0.jsonl
-[19:06:47] evaluate humaneval (codegen rc=0)
-[19:07:09] DONE bench humaneval codegen_rc=0 eval_rc=0 260s
-[19:07:09] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m113-nemotron-4b-q3kxl/codegen/mbpp/m113-nemotron-4b-q3kxl_openai_temp_0.0.jsonl
-[19:14:23] evaluate mbpp (codegen rc=0)
-[19:15:08] DONE bench mbpp codegen_rc=0 eval_rc=0 479s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.8414634146341463 plus=0.8048780487804879 n=164 base_pass=138 plus_pass=132 bad_rate=0.0
-  mbpp: base=0.8121693121693122 plus=0.6825396825396826 n=378 base_pass=307 plus_pass=258 bad_rate=0.0
-=== codepanel done tag=m113-nemotron-4b-q3kxl 2026-10-09T19:15:08+08:00
-=== lmeval_panel start tag=m114-ornith-9b-q5km model=/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T19:15:38+08:00
-[19:15:39] === panel tag=m114-ornith-9b-q5km model=/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf
-[19:15:39] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[19:15:39] ports: llama=8900 shim=8901
-[19:15:39] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[19:15:39] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[19:15:50] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[19:15:50] --- mmlu: running
-[19:20:52] mmlu: acc,none=0.7774 n=912 in 302.0s
-[19:20:52] --- arc_challenge: running
-[19:25:04] arc_challenge: acc_norm,none=0.5400 n=100 in 252.7s
-[19:25:04] --- truthfulqa_mc2: running
-[19:32:32] truthfulqa_mc2: acc,none=0.5035 n=100 in 448.0s
-[19:32:32] --- gsm8k: running
-[19:35:20] gsm8k: exact_match,strict-match=0.9000 n=100 in 167.2s
-[19:35:20] --- ifeval: running
-[19:41:14] ifeval: prompt_level_strict_acc,none=0.6700 n=100 in 354.5s
-[19:41:15] llama-server stopped
-[19:41:15] panel done: /home/z/hf/research/.wrapup/mres/m114-ornith-9b-q5km/lmeval_panel.json
-[19:41:15] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m114-ornith-9b-q5km model=/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf limit=100 2026-10-09T19:41:15+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[19:41:18] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m114-ornith-9b-q5km/codegen/humaneval/m114-ornith-9b-q5km_openai_temp_0.0.jsonl
-[19:51:09] evaluate humaneval (codegen rc=0)
-[19:51:31] DONE bench humaneval codegen_rc=0 eval_rc=0 613s
-[19:51:31] codegen mbpp -> /home/z/hf/research/.wrapup/mres/m114-ornith-9b-q5km/codegen/mbpp/m114-ornith-9b-q5km_openai_temp_0.0.jsonl
-[20:19:57] evaluate mbpp (codegen rc=0)
-[20:20:47] DONE bench mbpp codegen_rc=0 eval_rc=0 1756s
-REAL_BENCHES ['humaneval', 'mbpp']
-  humaneval: base=0.7560975609756098 plus=0.7317073170731707 n=164 base_pass=124 plus_pass=120 bad_rate=0.0
-  mbpp: base=0.8465608465608465 plus=0.7248677248677249 n=378 base_pass=320 plus_pass=274 bad_rate=0.0
-=== codepanel done tag=m114-ornith-9b-q5km 2026-10-09T20:20:47+08:00
-=== lmeval_panel start tag=m115-phi4mini-q2k model=/home/z/hf/Phi-4-mini-instruct-Q2_K.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-09T20:21:17+08:00
-[20:21:18] === panel tag=m115-phi4mini-q2k model=/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf
-[20:21:18] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
-[20:21:18] ports: llama=8900 shim=8901
-[20:21:18] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
-[20:21:18] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
-[20:21:24] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='2'
-[20:21:24] --- mmlu: running
-[20:24:22] mmlu: acc,none=0.2774 n=912 in 177.9s
-[20:24:22] --- arc_challenge: running
-[20:28:26] arc_challenge: acc_norm,none=0.3700 n=100 in 244.4s
-[20:28:26] --- truthfulqa_mc2: running
-[20:34:02] truthfulqa_mc2: acc,none=0.4675 n=100 in 335.4s
-[20:34:02] --- gsm8k: running
-[20:41:22] gsm8k: exact_match,strict-match=0.0000 n=100 in 440.2s
-[20:41:22] --- ifeval: running
-[20:47:31] ifeval: prompt_level_strict_acc,none=0.1700 n=100 in 369.0s
-[20:47:32] llama-server stopped
-[20:47:33] panel done: /home/z/hf/research/.wrapup/mres/m115-phi4mini-q2k/lmeval_panel.json
-[20:47:33] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']
-=== codepanel start tag=m115-phi4mini-q2k model=/home/z/hf/Phi-4-mini-instruct-Q2_K.gguf limit=100 2026-10-09T20:47:33+08:00
-[codepanel] limit=100 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
-[codepanel] llama-server port=9200 (proven free by ss -ltn)
-[codepanel] smoke completion ok
-[20:47:35] codegen humaneval -> /home/z/hf/research/.wrapup/mres/m115-phi4mini-q2k/codegen/humaneval/m115-phi4mini-q2k_openai_temp_0.0.jsonl
+  humaneval: base=0.9146341463414634 plus=0.8902439024390244 n=164 base_pass=150 plus_pass=146 bad_rate=0.0
+  mbpp: base=0.8650793650793651 plus=0.7248677248677249 n=378 base_pass=327 plus_pass=274 bad_rate=0.0
+=== codepanel done tag=m124-bonsai-27b-q2 2026-10-10T15:17:45+08:00

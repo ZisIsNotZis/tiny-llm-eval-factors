@@ -73,8 +73,12 @@ trap cleanup EXIT
 trap 'exit 130' INT TERM HUP
 
 echo "[codepanel] llama-server port=$PORT (proven free by ss -ltn)" | tee -a "$LOG"
+# --reasoning-format none: Phi-4-mini Q2 emits text that llama.cpp's peg-native parser
+# rejects with a 500 ("output that does not match the expected peg-native format"), which
+# makes evalplus retry the item.  Measured: 83/164 humaneval items took 2 h.  We never use
+# thoughts or tools here, so the parser is pure overhead and is disabled.
 llama-server -m "$MODEL_REAL" --port "$PORT" --host 127.0.0.1 \
-  -c 8192 -np 1 -ngl 99 --jinja --reasoning off >> "$LOG" 2>&1 &
+  -c 8192 -np 1 -ngl 99 --jinja --reasoning off --reasoning-format none >> "$LOG" 2>&1 &
 SRV=$!
 ok=0
 for _ in $(seq 1 300); do

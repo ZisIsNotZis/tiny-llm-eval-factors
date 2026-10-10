@@ -1014,6 +1014,42 @@ LMEVAL_TASKS = {
     "ifeval":          ("ifeval",          "lmeval-0.4.13-chat-reasoning-off"),
 }
 
+# Headline metric per task, in preference order.  gsm8k is the important one: lm_eval reports
+# both `strict-match` (requires the model to emit the '#### N' marker) and `flexible-extract`
+# (extracts the final number however it is written).  Taking strict-match first measures format
+# compliance, not arithmetic -- measured on Qwen3.5-2B IQ2_M: strict 0.01 but flexible 0.38, and
+# on IQ3_XXS: strict 0.01 but flexible 0.52.  flexible-extract is therefore the primary and the
+# strict variant is stored separately as `gsm8k-strict` so both remain auditable.
+PRIMARY_METRIC = {
+    "mmlu": ["acc,none", "acc"],
+    "arc_challenge": ["acc_norm,none", "acc_norm", "acc,none"],
+    "truthfulqa_mc2": ["acc,none", "acc"],
+    "gsm8k": ["exact_match,flexible-extract", "exact_match,none", "exact_match,strict-match"],
+    "ifeval": ["prompt_level_strict_acc,none", "prompt_level_strict_acc",
+               "inst_level_strict_acc,none"],
+}
+# extra (task, variant, metric-key) rows recorded alongside the primary
+EXTRA_ROWS = [("gsm8k", "gsm8k-strict", "exact_match,strict-match")]
+
+
+def extract_metric(results: dict, task: str, prefer: list[str] | None = None):
+    """First present metric from the preference list, or any exact_match/acc key."""
+    node = results.get(task) or (results.get("groups", {}) or {}).get(task) or {}
+    for key in (prefer or PRIMARY_METRIC.get(task, [])):
+        if isinstance(node, dict) and node.get(key) is not None:
+            return node[key], key
+    for key, val in (node or {}).items():
+        if isinstance(val, (int, float)) and (
+                key.startswith("exact_match") or key.startswith("acc")):
+            return val, key
+    return None, None
+
+
+def newest_task_json(out_dir, tag_dir, task):
+    import glob
+    fs = sorted(glob.glob(f"{out_dir}/lmeval_{task}_*.json"), key=os.path.getmtime)
+    return fs[-1] if fs else None
+
 
 def ingest_campaign(con):
     """Ingest the standard-benchmark campaign from .wrapup/mres/<tag>/{
@@ -1051,7 +1087,7 @@ def ingest_campaign(con):
                 for task, score in (p.get("tasks") or {}).items():
                     if score is None or task not in LMEVAL_TASKS:
                         continue
-                    fam, proto = LMEVAL_TASKS[task]
+                    fam, _proto = LMEVAL_TASKS[task]
                     tp = prof.get(task) or {}
                     # Reasoning mode is per task: gsm8k runs with thinking ON (without it the
                     # model does not terminate its answer and the score measures format
@@ -1059,6 +1095,24 @@ def ingest_campaign(con):
                     # per-task value is what keeps the two protocols from being conflated.
                     reason = tp.get("reasoning", p.get("reasoning", "off"))
                     proto = f"lmeval-0.4.13-{'chat' if task in ('gsm8k', 'ifeval') else 'gguf-shim'}-reasoning-{reason}"
+                    # Re-derive the number from the task's own json rather than trusting the
+                    # panel's stored pick, so a metric-preference fix applies retroactively
+                    # without re-running an hour-long panel.
+                    score, metric = score, None
+                    tj = newest_task_json(d, tag_dir, task)
+                    avail = {}
+                    if tj:
+                        try:
+                            doc = json.load(open(tj))
+                            score, metric = extract_metric(doc.get("results", {}), task)
+                            for _t, _v, key in EXTRA_ROWS:
+                                if _t != task:
+                                    continue
+                                avail[_v] = extract_metric(doc.get("results", {}), task, [key])[0]
+                        except Exception:
+                            pass
+                    if score is None:
+                        continue
                     row = base_row(norm_model(model), task, 0.0, score, None)
                     row.update({
                         "_bench": task, "bench_family": fam, "run_tag": p.get("tag", tag_dir),
@@ -1066,7 +1120,7 @@ def ingest_campaign(con):
                         "parallel_slots": 1,
                         "protocol": proto, "language": None,
                         "max_tokens": (tp.get("max_gen_toks") if task in ("gsm8k", "ifeval") else None),
-                        "source_file": f"mres/{tag_dir}/lmeval_panel.json",
+                        "source_file": f"mres/{tag_dir}/lmeval_panel.json#{metric}",
                         "completed_at": None,
                         "n_items": (p.get("n") or {}).get(task),
                         "limit_spec": None if lim is None else str(lim),
@@ -1074,6 +1128,16 @@ def ingest_campaign(con):
                     row["reasoning"] = reason
                     insert(con, row)
                     n += 1
+                    for vname, vscore in avail.items():
+                        if vscore is None:
+                            continue
+                        vrow = dict(row)
+                        vrow["_bench"] = vname
+                        vrow["_score"] = vscore
+                        vrow["source_file"] = f"mres/{tag_dir}/lmeval_panel.json#{vname}"
+                        vrow["completed_at"] = None
+                        insert(con, vrow)
+                        n += 1
 
         # ---- EvalPlus panel (base and plus are separate benchmarks) ----
         ep = os.path.join(d, "evalplus.json")

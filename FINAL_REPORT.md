@@ -11,10 +11,11 @@
 Operational/harness detail lives in `OPERATIONS.md`; the rules live in `RESEARCH_METHOD.md`.*
 
 **Headline.** Quantisation damage is strongly **benchmark-dependent**: per +1 effective bpw a
-model loses ~0.17 of its code score but ~0.01 of its TruthfulQA score, and a paired test across
-14 model families puts the capability-vs-knowledge gap at **+0.117 per bpw, 95% CI
-[+0.029, +0.204]** (§3 F9). Sensitivity is a vector, not a number, and multiple-choice
-knowledge is the last thing to degrade — so it is the worst benchmark for judging a quant.
+model loses ~0.17 of its GSM8K score and ~0.10 of its code score but ~0.02 of its TruthfulQA
+score, and a paired test across 18 model families puts the capability-vs-knowledge gap at
+**+0.120 per bpw, 95% CI [+0.039, +0.201]** (§3 F9). Sensitivity is a vector, not a number, and
+multiple-choice knowledge — above all TruthfulQA — is the last thing to degrade, so it is the
+worst benchmark for judging a quant.
 
 ---
 
@@ -73,22 +74,22 @@ MultiPL-E, raw completion, greedy, 2–4 languages each, **item-level** 95% CIs
 
 **Cross-benchmark confirmation (the multi-benchmark requirement).** The same Q2→Q3 step measured
 on all seven standard benchmarks, per family, low = 3.0-3.7 bpw and high = 3.9-4.5 bpw
-(gsm8k reasoning-off, the primary protocol):
+(gsm8k reasoning-off, flexible-extract):
 
 | benchmark | families | median step | positive |
 |---|---|---|---|
+| GSM8K | 6 | **+0.460** | 6/6 |
 | HumanEval+ | 6 | **+0.409** | 5/6 |
-| GSM8K | 5 | +0.250 | 4/5 |
-| IFEval | 6 | +0.250 | 5/6 |
+| IFEval | 7 | +0.250 | 6/7 |
 | MBPP+ | 6 | +0.235 | 6/6 |
-| MMLU | 5 | +0.107 | 4/5 |
-| ARC-Challenge | 4 | +0.100 | 3/4 |
-| TruthfulQA mc2 | 6 | **+0.048** | 4/6 |
+| MMLU | 6 | +0.146 | 5/6 |
+| ARC-Challenge | 5 | +0.100 | 4/5 |
+| TruthfulQA mc2 | 7 | **+0.005** | 4/7 |
 
 Same step, same families, seven harnesses: the ordering reproduces F9's independent slope ranking
-exactly (code > math/instruction > MMLU/ARC > TruthfulQA), and on the code columns the step is an
-order of magnitude larger than on TruthfulQA. `granite-4.1-3b` is again the extremes: +0.579 on
-HumanEval+ against −0.030 on ARC-Challenge.
+(capability > knowledge > truth), and on GSM8K and the code columns the step is two orders of
+magnitude larger than on TruthfulQA — whose median step is +0.005, i.e. nothing.
+`granite-4.1-3b` is again the extreme: +0.579 on HumanEval+ against −0.030 on ARC-Challenge.
 
 *Expanded tally (after m58/m59, `run_tag` in {`m58-llama32-family`,`m59-phi4mini-family`}): the two
 largest effects in the whole study are **Phi-4-mini 3.8B Δ=+0.385 [I: +0.329, +0.441]** (Q2 nearly
@@ -251,29 +252,32 @@ the only varied quantity. Slopes are then compared **paired inside each family**
 family-level variance — the pooled ranking alone could make a benchmark look sensitive merely
 because sensitive models landed in its sample. Scripts: `bpw_sensitivity.py`, `bpw_paired.py`.
 
-**Result — median sensitivity per +1 effective bpw, n = 12-14 families each:**
+**Result — median sensitivity per +1 effective bpw, n = 16-18 families each:**
 
 | benchmark | task type | median slope | mean slope | positive |
 |---|---|---|---|---|
-| **HumanEval+** | code | **+0.169** | +0.180 | 8/12 |
-| **IFEval** | instruction following | **+0.162** | +0.128 | 10/14 |
-| **MBPP+** | code | **+0.138** | +0.143 | 9/12 |
-| **GSM8K** | arithmetic reasoning | +0.080 | +0.176 | 10/12 |
-| **MMLU** | knowledge (MC) | +0.053 | +0.063 | 11/14 |
-| **ARC-Challenge** | science QA (MC) | +0.027 | +0.038 | 7/12 |
-| **TruthfulQA mc2** | truthfulness (MC) | **+0.011** | +0.016 | 10/14 |
+| **GSM8K** | arithmetic reasoning | **+0.168** | +0.222 | 14/16 |
+| **IFEval** | instruction following | **+0.127** | +0.132 | 14/18 |
+| **HumanEval+** | code | **+0.104** | +0.147 | 12/17 |
+| **MBPP+** | code | +0.065 | +0.118 | 14/17 |
+| **MMLU** | knowledge (MC) | +0.055 | +0.081 | 15/18 |
+| **ARC-Challenge** | science QA (MC) | +0.027 | +0.043 | 10/16 |
+| **TruthfulQA mc2** | truthfulness (MC) | **+0.017** | +0.021 | 13/18 |
 
-The spread is 15x between the most and least sensitive benchmark.
+A 10x spread between the most and least sensitive benchmark.
 
 **Grouped paired test** — capability tasks (HumanEval+, MBPP+, IFEval, GSM8K) against
 knowledge/truth tasks (MMLU, ARC-c, TruthfulQA), one paired difference per family:
 
-> **mean difference +0.1165 per bpw, 95% CI [+0.0289, +0.2041], n = 14 families, 10/14 in that direction.**
+> **mean difference +0.1201 per bpw, 95% CI [+0.0393, +0.2010], n = 18 families, 14/18 in that direction.**
 
 Significant. Pairwise, the 95% CI on the paired difference excludes zero for:
-`MBPP+ > TruthfulQA +0.124`, `IFEval > TruthfulQA +0.112`, `IFEval > ARC-c +0.098`,
-`IFEval > MMLU +0.065`, `MMLU > TruthfulQA +0.047`, `MMLU > ARC-c +0.032`,
-`GSM8K > TruthfulQA +0.160`.
+`HumanEval+ > TruthfulQA +0.123`, `HumanEval+ > ARC-c +0.107`, `GSM8K > IFEval +0.095`,
+`MBPP+ > TruthfulQA +0.094`, `MBPP+ > ARC-c +0.079`, `MMLU > TruthfulQA +0.060`,
+`MMLU > ARC-c +0.045`; and in the other direction (the capability column is more sensitive)
+`IFEval > MMLU`, `IFEval > ARC-c`, `IFEval > TruthfulQA`, `GSM8K > MMLU`,
+`GSM8K > ARC-c`, `GSM8K > TruthfulQA` — the last by +0.200/bpw, the largest
+single gap in the table.
 
 **Worked example (one family, no aggregation at all).** `granite-4.1-3b`, 3.22 -> 4.94 bpw:
 
@@ -342,6 +346,8 @@ four options.
 | m32 `multi_turn_base` = 0.700 | **CORRECTED** | repaired full re-run scores **0.675**; with m22 0.695, Bonsai's two runs span 0.675–0.700 (≈ the ±0.015 agentic floor) | `m32-bonsai-ternary-mt` |
 | "the pooled structural score model is a usable predictor" | **RETRACTED** | a plain ridge beats it once a whole architecture is held out (family RMSE 0.294 vs 0.282) | `.wrapup/out/WRAPUP.md` |
 | any conclusion phrased with `ctx=`/`parallel=`/`seed=` | **UNAUDITABLE** | those columns did not exist before this work added them | schema gap |
+| gsm8k taken from lm_eval's `strict-match` | **CORRECTED: wrong metric** | `strict-match` requires the literal `#### N` marker, so it scored format compliance, not arithmetic. Same run, IQ3_XXS: strict **0.01** but flexible-extract **0.52**; IQ2_M: strict **0.01** but flexible **0.38**. The primary is now `flexible-extract`, the strict variant is stored separately as `gsm8k-strict`, and the ingest re-derives both from each task's own json so the fix applied retroactively without re-running a panel | `m61`-`m67` (§2d, F9) |
+| "with thinking on the model spends its budget on `reasoning_content`" as the gsm8k explanation | **CORRECTED** | true only when the budget is too small. At a 4096-token budget on the same model the thinking-on run still scores *lower* than thinking-off (0.06 vs 0.38 on UD-Q2_K_XL), so the primary protocol is thinking-off — lm_eval's own default — and thinking-on is kept as a separate diagnostic axis | `proto-on-iq3xxs`, `m6?gs-gsm8k` |
 
 ---
 
