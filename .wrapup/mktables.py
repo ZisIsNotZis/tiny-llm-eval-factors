@@ -517,22 +517,31 @@ def axis_spec(o):
 
 
 def expected_on_tags():
-    """Thinking-on run tags declared in .wrapup/CAMPAIGN.txt."""
+    """Thinking-on run tags declared in .wrapup/CAMPAIGN.txt.
+
+    Two tag shapes have been used for this axis: `m6?on-2b` (an early, invalid attempt whose
+    1024-token budget truncated every generation) and `m6?gs-gsm8k` (the corrected one).
+    """
     out = []
     if os.path.exists(CAMPAIGN_TXT):
         for line in open(CAMPAIGN_TXT):
             parts = line.split("#")[0].split()
-            if len(parts) >= 2 and re.match(r"^m\d+on-2b", parts[1]):
+            if len(parts) >= 2 and re.match(r"^m\d+(on-2b|gs-gsm8k)", parts[1]):
                 out.append(parts[1])
     return sorted(set(out))
 
 
 def axis_thinking(o):
     """Thinking on/off: held = model file, varied = reasoning switch."""
-    tags = [r[0] for r in con.execute(
-        "SELECT DISTINCT run_tag FROM experiments WHERE run_tag LIKE 'm6%' AND run_tag<>''")]
-    on_tags = sorted(t for t in tags if re.match(r"^m\d+on-2b", t))
-    off_tags = sorted(t for t in tags if re.match(r"^m\d+-qwen-2b", t))
+    # Derived from the DB, not from tag names: a row is a thinking-on row iff its
+    # `reasoning` column says so, which is what the ingest writes per task.
+    on_rows = con.execute(
+        "SELECT model, run_tag, _bench, _score, n_items FROM experiments "
+        "WHERE source_file LIKE 'mres/%' AND reasoning='on' AND _score IS NOT NULL").fetchall()
+    on_tags = sorted({r[1] for r in on_rows})
+    off_tags = sorted({r[0] for r in con.execute(
+        "SELECT DISTINCT run_tag FROM experiments WHERE source_file LIKE 'mres/%' "
+        "AND reasoning='off' AND run_tag LIKE 'm6%' AND run_tag<>''")})
 
     def cells_for(sub):
         if not sub:
@@ -549,7 +558,7 @@ def axis_thinking(o):
             rows.append((c1, "thinking off", off[model]))
         if model in on:
             rows.append((c1, "thinking on", on[model]))
-    exp = expected_on_tags() or ["m61on-2b", "m62on-2b", "m63on-2b", "m64on-2b"]
+    exp = expected_on_tags() or ["m61gs-gsm8k", "m62gs-gsm8k", "m63gs-gsm8k"]
     n = emit_table(
         o, "H. Thinking on vs off -- the newly added axis",
         "Held constant: model file.  Varied: `reasoning` on/off at the server "
