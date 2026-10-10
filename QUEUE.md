@@ -159,3 +159,27 @@ about — the GPU then sat idle ~59 h. The driver above replaces the chain tail.
 * Verify the model loads (one real completion) before committing a long panel (`panel_mpl.sh`).
 * A panel writes only its own summary; the integrator owns `migrate_db.py` and git.
 * 0.00 ⇒ suspect the harness (per-slot ctx, handler dialect, stale result file) before capability.
+
+---
+
+## Standard-benchmark campaign — COMPLETE (2026-10-10)
+
+The seven-standard-benchmark campaign is finished. The persisted queue is
+`.wrapup/CAMPAIGN.txt` (64 entries: 54 models + 10 duplicate replicates), driven by
+`.wrapup/campaign.sh` with `.wrapup/campaign_keeper.sh` as the detached watchdog.
+
+`=== campaign end done=19 skipped_complete=44 failed_stages=1 ===`
+
+* **54 of 54 models measured**, 42-44 of them on every one of the seven benchmark columns
+  and 50-54 on each lm-eval column. 4928 rows in `experiments.sqlite`.
+* The single failed stage is Phi-4-mini-`Q2_K`'s EvalPlus code panel, recorded as
+  **NO RESULT** (not 0.0) in `.wrapup/mres/{m76,m115}-phi4mini-q2k/evalplus.json`: at Q2 the
+  model emits text that llama.cpp's peg-native parser rejects with a 500, and evalplus
+  retries each item, so 83/164 humaneval items took 82 min. The same model at Q3 completes
+  in 19 min with zero parser errors, so this is a property of the damaged Q2 checkpoint.
+  Its MultiPL-E columns (the +0.385 effect) are unaffected.
+* qwen3.5-9b and the 10 wave-2 entries double as **replicates** for the noise floor on the
+  standard benchmarks.
+
+Analyse with `python3 bpw_sensitivity.py`, `python3 bpw_paired.py`, `python3 bpw_step.py`;
+regenerate the tables with `python3 .wrapup/mktables.py`; ingest with `python3 migrate_db.py`.
