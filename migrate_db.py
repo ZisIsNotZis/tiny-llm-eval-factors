@@ -1172,6 +1172,71 @@ def ingest_campaign(con):
     return n
 
 
+def ingest_spec(con):
+    """Speculative-decoding panel: TIME and QUALITY side by side.
+
+    The operator's point was that draft/MTP depth is a SPEED knob, so the table needs tok/s;
+    but it also needs scores, because the draft path changes the sampled sequence.  The old
+    m28 panel measured tok/s only and never scored anything, so this closes that gap.
+
+    Note the models: the plain Qwen3.5 GGUF has no MTP layers (llama-server: "model doesn't
+    contain MTP layers"), so this axis can only run on the -MTP-GGUF repos.
+    """
+    import glob
+    n = 0
+    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%-spec-%'")
+    for path in sorted(glob.glob(".wrapup/mres/*-spec-*/spec_panel.json")):
+        try:
+            p = json.load(open(path))
+        except Exception:
+            continue
+        tag = p.get("tag") or os.path.basename(os.path.dirname(path))
+        model = canonical_model(p.get("model", "")) or None
+        for nstr, row in (p.get("rows") or {}).items():
+            depth = int(row.get("draft_n", nstr))
+            spec_type = "none" if depth == 0 else "draft-mtp"
+            common = {
+                "model": norm_model(model), "cache_type_k": "q8_0", "cache_type_k_draft": "q8_0",
+                "cache_type_v": "q8_0", "cache_type_v_draft": "q8_0", "reasoning": "off",
+                "spec_type": spec_type, "spec_draft_n_max": str(depth),
+                "temp": "0.0", "top_p": "0.95", "top_k": "40", "min_p": "0.05",
+                "presence_penalty": "0.0", "_bad_rate": None, "_wall_time": None,
+                "_file_size": None, "run_tag": tag, "rep": 1, "ctx_size": 8192,
+                "parallel_slots": 1, "seed": None, "language": None,
+                "bench_family": None, "max_tokens": None,
+                "source_file": f"mres/{os.path.basename(os.path.dirname(path))}/spec_panel.json",
+                "completed_at": None, "n_items": None, "limit_spec": "1",
+            }
+            if row.get("tok_s"):
+                r = dict(common)
+                r.update({"_bench": "speed", "_score": None,
+                          "_tok_s": round(float(row["tok_s"]), 2),
+                          "protocol": f"spec-mtp-{spec_type}-n{depth}-greedy-256",
+                          "bench_family": "speed", "max_tokens": 256,
+                          "n_items": 3})
+                insert(con, r)
+                n += 1
+            for bench in ("mmlu", "gsm8k", "ifeval", "humaneval"):
+                val = row.get(bench)
+                if val is None:
+                    continue
+                r = dict(common)
+                fam = "humaneval" if bench == "humaneval" else bench
+                # mmlu's --limit is per SUBJECT (57), the others are plain item counts
+                nit = {"humaneval": row.get("humaneval_n", 164), "mmlu": 456,
+                       "gsm8k": 50, "ifeval": 50}[bench]
+                r.update({"_bench": bench, "_score": val,
+                          "_tok_s": (round(float(row["tok_s"]), 2) if row.get("tok_s") else None),
+                          "protocol": f"spec-mtp-{spec_type}-n{depth}-{'evalplus' if bench == 'humaneval' else 'lmeval'}",
+                          "bench_family": fam,
+                          "max_tokens": (None if bench == "humaneval" else 1024),
+                          "language": ("python" if bench == "humaneval" else None),
+                          "n_items": nit})
+                insert(con, r)
+                n += 1
+    return n
+
+
 def main():
     con = sqlite3.connect(DB)
     con.execute("PRAGMA foreign_keys=ON")
@@ -1218,6 +1283,7 @@ def main():
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),
         ("campaign", ingest_campaign),
+        ("spec", ingest_spec),
     ]
     tally = {}
     for label, tag, fn in ONCE:

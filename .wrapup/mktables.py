@@ -68,7 +68,8 @@ BENCH_KEYS = [k for k, _ in BENCH]
 BENCH_LABELS = [l for _, l in BENCH]
 
 # speculative-decoding tok/s scenarios (columns of block 1 of table G)
-SCEN = [("speed-code", "code"), ("speed-longctx", "long-ctx"), ("speed-prose", "prose")]
+SCEN = [("speed-code", "code"), ("speed-longctx", "long-ctx"), ("speed-prose", "prose"),
+        ("speed", "code-256")]
 
 # effective-bpw band that counts as "matched" for the scheme/vendor table (C).
 # Single-linkage, so 0.45 puts the whole Qwen3.5-2B IQ2_XXS(3.27) / IQ2_M(3.66) /
@@ -463,7 +464,7 @@ def axis_spec(o):
     raw = con.execute(
         "SELECT model,_bench,bench_family,ctx_size,spec_draft_n_max,_tok_s,"
         "_score,n_items,language FROM experiments "
-        "WHERE run_tag IN ('m28-speed','m52-speed') AND run_tag<>''").fetchall()
+        "WHERE spec_type IS NOT NULL AND spec_type<>'' AND run_tag<>''").fetchall()
     tok = collections.defaultdict(lambda: collections.defaultdict(list))
     sc = collections.defaultdict(dict)
     mpl = collections.defaultdict(lambda: collections.defaultdict(list))
@@ -497,22 +498,27 @@ def axis_spec(o):
     n1 = emit_table(
         o, "G1. Speculative decoding -- tok/s (SPEED indicator)",
         "Held constant: model, ctx.  Varied: speculative draft depth "
-        "`spec_draft_n_max` (0 = speculative decoding off).  Unit: tokens/s; the "
-        "parenthesised number is the number of measurements, not an item count. "
-        "m28 = Qwen3.5-2B-Q4_K_XL, m52 = gemma-4-12b / Qwen3.5-9B.",
+        "`spec_draft_n_max` (0 = speculative decoding off).  Unit: tokens/s, read from "
+        "llama-server's own `timings.predicted_per_second` so server startup is excluded; "
+        "the parenthesised number is the number of measurements, not an item count. "
+        "`code`/`long-ctx`/`prose` are the m28 prompt scenarios; `code-256` is the MTP "
+        "campaign's fixed 256-token greedy generation.  NOTE: only the `-MTP-GGUF` repos "
+        "carry MTP layers -- the plain Qwen3.5 gguf fails with 'model doesn't contain MTP "
+        "layers', which is why this axis uses separate model files.",
         "model · ctx (all else equal)", "spec_draft_n_max",
         [k for k, _ in SCEN], [l for _, l in SCEN], tok_rows,
         sort_key=lambda s: int(s), unit="tok_s",
-        waiting="m28/m52 standard-benchmark runs with tok/s (none yet).")
+        waiting="no panel with a tok/s measurement yet.")
     n2 = emit_table(
         o, "G2. Speculative decoding -- SCORE (QUALITY indicator)",
-        "Same runs as G1, checked for quality damage: a speed win is only usable "
-        "if the score holds.  No scores exist for m28/m52 yet -- the table is "
-        "deliberately empty and fills when the standard campaign covers those "
-        "models at the same spec depth.",
+        "Same runs as G1, checked for quality damage: a speed win is only usable if the "
+        "score holds.  MMLU is the sharpest control here because it is scored by "
+        "log-likelihood, which does not go through the draft path at all -- so it must be "
+        "bit-identical across draft depths, and it is (0.5241/0.6250 at every depth).  The "
+        "generative columns and humaneval are the ones that can actually move.",
         "model · ctx (all else equal)", "spec_draft_n_max", BENCH_KEYS,
         BENCH_LABELS, sc_rows, sort_key=lambda s: int(s),
-        waiting="m28/m52 standard-benchmark scores: 0 rows in experiments.sqlite.")
+        waiting="no scored speculative-decoding run yet.")
     return n1, n2
 
 

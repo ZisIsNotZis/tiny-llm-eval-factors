@@ -1,0 +1,9 @@
+[21:34:14] === spec panel tag=m125-spec-2b model=/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35 drafts=[0, 4]
+[21:34:14] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type none
+[21:34:19] draft_n=0: tok/s=311.49772110232306
+[21:35:28] draft_n=0: mmlu=0.6337719298245614
+[21:36:17] draft_n=0: gsm8k=0.625
+[21:37:12] draft_n=0: ifeval=0.625
+[21:37:13] draft_n=0: humaneval=None
+[21:37:13] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 4
+server died rc=1

@@ -1,0 +1,58 @@
+[22:03:25] === spec panel tag=m125-spec-0.8b model=/home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/blobs/2da9c6ba82ffe7d2a01bdfebd4357662582e48a7f36e8708661207a9edd022f4 drafts=[0, 1, 2, 4]
+[22:03:25] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/blobs/2da9c6ba82ffe7d2a01bdfebd4357662582e48a7f36e8708661207a9edd022f4 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type none
+[22:03:30] draft_n=0: tok/s=423.44983446739394
+[22:04:37] draft_n=0: mmlu=0.5241228070175439
+[22:05:24] draft_n=0: gsm8k=0.46
+[22:06:31] draft_n=0: ifeval=0.58
+[22:08:52] draft_n=0: humaneval=0.0
+[22:08:53] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/blobs/2da9c6ba82ffe7d2a01bdfebd4357662582e48a7f36e8708661207a9edd022f4 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 1
+[22:08:58] draft_n=1: tok/s=460.6872317999173
+[22:10:04] draft_n=1: mmlu=0.5241228070175439
+[22:10:50] draft_n=1: gsm8k=0.5
+[22:11:54] draft_n=1: ifeval=0.54
+[22:14:04] draft_n=1: humaneval=0.0
+[22:14:05] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/blobs/2da9c6ba82ffe7d2a01bdfebd4357662582e48a7f36e8708661207a9edd022f4 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 2
+[22:14:09] draft_n=2: tok/s=534.879693126638
+[22:15:14] draft_n=2: mmlu=0.5241228070175439
+[22:16:03] draft_n=2: gsm8k=0.44
+[22:17:06] draft_n=2: ifeval=0.52
+[22:19:08] draft_n=2: humaneval=0.0
+[22:19:09] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/blobs/2da9c6ba82ffe7d2a01bdfebd4357662582e48a7f36e8708661207a9edd022f4 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 4
+[22:19:13] draft_n=4: tok/s=576.1851180633128
+[22:20:19] draft_n=4: mmlu=0.5241228070175439
+[22:21:08] draft_n=4: gsm8k=0.42
+[22:22:10] draft_n=4: ifeval=0.56
+[22:24:05] draft_n=4: humaneval=0.0
+[22:24:06] spec panel done
+[22:24:07] === spec panel tag=m126-spec-2b model=/home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/blobs/9f7b15d04cf2d5878c8122a7c181dbc09f050cd66080ce3374576e734ccb0910 drafts=[0, 1, 2, 4]
+[22:24:07] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/blobs/9f7b15d04cf2d5878c8122a7c181dbc09f050cd66080ce3374576e734ccb0910 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type none
+[22:24:14] draft_n=0: tok/s=319.61961987457545
+[22:25:24] draft_n=0: mmlu=0.625
+[22:26:25] draft_n=0: gsm8k=0.6
+[22:27:26] draft_n=0: ifeval=0.66
+[22:30:28] draft_n=0: humaneval=0.0
+[22:30:29] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/blobs/9f7b15d04cf2d5878c8122a7c181dbc09f050cd66080ce3374576e734ccb0910 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 1
+[22:30:34] draft_n=1: tok/s=350.1471258159504
+[22:31:42] draft_n=1: mmlu=0.625
+[22:32:43] draft_n=1: gsm8k=0.56
+[22:33:46] draft_n=1: ifeval=0.7
+[22:36:28] draft_n=1: humaneval=0.0
+[22:36:29] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/blobs/9f7b15d04cf2d5878c8122a7c181dbc09f050cd66080ce3374576e734ccb0910 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 2
+[22:36:34] draft_n=2: tok/s=360.08041313805643
+[22:37:43] draft_n=2: mmlu=0.625
+[22:38:36] draft_n=2: gsm8k=0.54
+[22:39:37] draft_n=2: ifeval=0.72
+[22:42:07] draft_n=2: humaneval=0.0
+[22:42:07] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/blobs/9f7b15d04cf2d5878c8122a7c181dbc09f050cd66080ce3374576e734ccb0910 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 4
+[22:42:13] draft_n=4: tok/s=345.23634589526836
+[22:43:21] draft_n=4: mmlu=0.625
+[22:44:14] draft_n=4: gsm8k=0.6
+[22:45:22] draft_n=4: ifeval=0.68
+[22:47:47] draft_n=4: humaneval=0.0
+[22:47:48] spec panel done
+[22:47:48] === spec panel tag=m127-spec-4b model=/home/z/hf/models--unsloth--Qwen3.5-4B-MTP-GGUF/blobs/d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc drafts=[0, 1, 2, 4]
+[22:47:48] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-4B-MTP-GGUF/blobs/d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type none
+[22:47:59] draft_n=0: tok/s=184.07012387634873
+[22:50:23] draft_n=0: mmlu=0.7456140350877193
+[22:51:43] draft_n=0: gsm8k=0.92
+[22:53:13] draft_n=0: ifeval=0.78

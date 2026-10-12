@@ -1,0 +1,9 @@
+# Speculative-decoding panel: TIME (tok/s from llama-server's own timings) AND QUALITY
+# (mmlu + gsm8k + ifeval + EvalPlus humaneval) at each draft depth.
+# These are the MTP-variant GGUFs: the plain Qwen3.5 GGUF has no MTP layers and fails with
+# "model doesn't contain MTP layers", so an MTP repo is required for this axis.
+/home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/snapshots/*/Qwen3.5-0.8B-UD-Q4_K_XL.gguf m125-spec-0.8b
+/home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/snapshots/*/Qwen3.5-2B-UD-Q4_K_XL.gguf m126-spec-2b
+/home/z/hf/models--unsloth--Qwen3.5-4B-MTP-GGUF/snapshots/*/Qwen3.5-4B-UD-Q4_K_XL.gguf m127-spec-4b
+/home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/snapshots/*/Qwen3.5-9B-UD-Q4_K_XL.gguf m128-spec-9b
+/home/z/hf/models--unsloth--Qwen3.6-35B-A3B-MTP-GGUF/snapshots/*/Qwen3.6-35B-A3B-UD-IQ4_XS.gguf m129-spec-35b

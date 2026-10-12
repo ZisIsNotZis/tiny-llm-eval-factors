@@ -41,7 +41,7 @@ Held constant: model family (stem without the quant suffix), harness, ctx, proto
 | Qwen3.5-2B | 3.96 bpw | 0.3902 (164) | 0.3720 (164) | 0.3333 (378) | 0.2857 (378) | 0.1894 (322) | 0.5603 (912) | 0.4400 (100) | 0.4351 (100) | 0.5200 (100) | 0.5000 (100) |
 | Qwen3.5-2B | 4.11 bpw | 0.2561 (164) | 0.2378 (164) | 0.3598 (378) | 0.2725 (378) | 0.0920 (957) | 0.5504 (912) | 0.4300 (100) | 0.4261 (100) | 0.4400 (100) | 0.4000 (100) |
 | Qwen3.5-2B | 4.93 bpw | 0.5732 (164) | 0.5244 (164) | 0.5820 (378) | 0.4444 (378) | 0.2184 (957) | 0.6173 (912) | 0.4100 (100) | 0.4350 (100) | 0.6500 (100) | 0.5500 (100) |
-| Qwen3.5-2B | 5.70 bpw | 0.5671 (164) | 0.5061 (164) | 0.5317 (378) | 0.4206 (378) | 0.2836 (483) | 0.6228 (912) | 0.4300 (100) | 0.4240 (100) | 0.6600 (100) | 0.5500 (100) |
+| Qwen3.5-2B | 5.70 bpw | 0.5549 (164) | 0.5061 (164) | 0.5317 (378) | 0.4206 (378) | 0.2836 (483) | 0.6250 (456) | 0.4300 (100) | 0.4240 (100) | 0.6000 (50) | 0.6800 (50) |
 | Qwen3.5-2B | 6.24 bpw | 0.5427 (164) | 0.5061 (164) | 0.5265 (378) | 0.4180 (378) | 0.2774 (483) | 0.6239 (912) | 0.4200 (100) | 0.4232 (100) | 0.7300 (100) | 0.6200 (100) |
 | Qwen3.5-4B | 3.69 bpw | 0.7195 (164) | 0.6829 (164) | 0.6878 (378) | 0.5688 (378) | 0.3145 (957) | 0.6678 (912) | 0.4900 (100) | 0.4859 (100) | - | 0.6800 (100) |
 | Qwen3.5-4B | 3.71 bpw | 0.7195 (164) | 0.6890 (164) | 0.6799 (378) | 0.5794 (378) | 0.3944 (322) | 0.7270 (912) | 0.5400 (100) | 0.4825 (100) | - | 0.7700 (100) |
@@ -64,6 +64,8 @@ Held constant: model family (stem without the quant suffix), harness, ctx, proto
 | granite-4.1-3b | 3.22 bpw | 0.0976 (164) | 0.0854 (164) | 0.1534 (378) | 0.1349 (378) | 0.0476 (483) | - | 0.5100 (100) | 0.4313 (100) | 0.1200 (100) | 0.4100 (100) |
 | granite-4.1-3b | 4.06 bpw | 0.7256 (164) | 0.6646 (164) | 0.6746 (378) | 0.5979 (378) | 0.3913 (483) | 0.6118 (912) | 0.4800 (100) | 0.5467 (100) | - | 0.7800 (100) |
 | granite-4.1-3b | 4.94 bpw | 0.8049 (164) | 0.7683 (164) | 0.7275 (378) | 0.6270 (378) | 0.4379 (322) | 0.6557 (912) | 0.5500 (100) | 0.5107 (100) | - | 0.7900 (100) |
+
+*Note: 1 model(s) had no effective bpw in bpw_map.json and were skipped: Qwen3.5-0.8B-UD-Q4_K_XL.gguf.*
 
 ## B. Model size at a held quant recipe
 
@@ -175,30 +177,44 @@ Held constant: model, effective bpw, harness, ctx.  Varied: the decoding paramet
 
 ## G1. Speculative decoding -- tok/s (SPEED indicator)
 
-Held constant: model, ctx.  Varied: speculative draft depth `spec_draft_n_max` (0 = speculative decoding off).  Unit: tokens/s; the parenthesised number is the number of measurements, not an item count. m28 = Qwen3.5-2B-Q4_K_XL, m52 = gemma-4-12b / Qwen3.5-9B.
+Held constant: model, ctx.  Varied: speculative draft depth `spec_draft_n_max` (0 = speculative decoding off).  Unit: tokens/s, read from llama-server's own `timings.predicted_per_second` so server startup is excluded; the parenthesised number is the number of measurements, not an item count. `code`/`long-ctx`/`prose` are the m28 prompt scenarios; `code-256` is the MTP campaign's fixed 256-token greedy generation.  NOTE: only the `-MTP-GGUF` repos carry MTP layers -- the plain Qwen3.5 gguf fails with 'model doesn't contain MTP layers', which is why this axis uses separate model files.
 
-| model · ctx (all else equal) | spec_draft_n_max | **code** | **long-ctx** | **prose** |
-|---|---|---|---|---|
-| **Σ coverage** | rows=9 · data-cols=3/3 | 9 | 5 | 9 |
-| Qwen3.5-2B · ctx16384 | 0 | 168.6 (1) | 169.3 (1) | 171.6 (1) |
-| Qwen3.5-2B · ctx16384 | 1 | 177.2 (1) | 155.4 (1) | 173.6 (1) |
-| Qwen3.5-2B · ctx16384 | 2 | 212.8 (1) | 160.0 (1) | 203.8 (1) |
-| Qwen3.5-2B · ctx16384 | 3 | 223.1 (1) | 147.4 (1) | 198.1 (1) |
-| Qwen3.5-2B · ctx16384 | 4 | 217.8 (1) | 142.8 (1) | 204.6 (1) |
-| gemma-4-12b · ctx4096 | 0 | 90.4 (1) | - | 90.8 (1) |
-| gemma-4-12b · ctx4096 | 2 | 90.5 (1) | - | 90.9 (1) |
-| gemma-4-12b · ctx4096 | 4 | 90.5 (1) | - | 90.3 (1) |
-| gemma-4-12b · ctx4096 | 6 | 90.0 (1) | - | 90.5 (1) |
+| model · ctx (all else equal) | spec_draft_n_max | **code** | **long-ctx** | **prose** | **code-256** |
+|---|---|---|---|---|---|
+| **Σ coverage** | rows=17 · data-cols=4/4 | 9 | 5 | 9 | 8 |
+| Qwen3.5-0.8B · ctx8192 | 0 | - | - | - | 423.4 (1) |
+| Qwen3.5-0.8B · ctx8192 | 1 | - | - | - | 460.7 (1) |
+| Qwen3.5-0.8B · ctx8192 | 2 | - | - | - | 534.9 (1) |
+| Qwen3.5-0.8B · ctx8192 | 4 | - | - | - | 576.2 (1) |
+| Qwen3.5-2B · ctx16384 | 0 | 168.6 (1) | 169.3 (1) | 171.6 (1) | - |
+| Qwen3.5-2B · ctx16384 | 1 | 177.2 (1) | 155.4 (1) | 173.6 (1) | - |
+| Qwen3.5-2B · ctx16384 | 2 | 212.8 (1) | 160.0 (1) | 203.8 (1) | - |
+| Qwen3.5-2B · ctx16384 | 3 | 223.1 (1) | 147.4 (1) | 198.1 (1) | - |
+| Qwen3.5-2B · ctx16384 | 4 | 217.8 (1) | 142.8 (1) | 204.6 (1) | - |
+| Qwen3.5-2B · ctx8192 | 0 | - | - | - | 319.6 (1) |
+| Qwen3.5-2B · ctx8192 | 1 | - | - | - | 350.1 (1) |
+| Qwen3.5-2B · ctx8192 | 2 | - | - | - | 360.1 (1) |
+| Qwen3.5-2B · ctx8192 | 4 | - | - | - | 345.2 (1) |
+| gemma-4-12b · ctx4096 | 0 | 90.4 (1) | - | 90.8 (1) | - |
+| gemma-4-12b · ctx4096 | 2 | 90.5 (1) | - | 90.9 (1) | - |
+| gemma-4-12b · ctx4096 | 4 | 90.5 (1) | - | 90.3 (1) | - |
+| gemma-4-12b · ctx4096 | 6 | 90.0 (1) | - | 90.5 (1) | - |
 
 ## G2. Speculative decoding -- SCORE (QUALITY indicator)
 
-Same runs as G1, checked for quality damage: a speed win is only usable if the score holds.  No scores exist for m28/m52 yet -- the table is deliberately empty and fills when the standard campaign covers those models at the same spec depth.
+Same runs as G1, checked for quality damage: a speed win is only usable if the score holds.  MMLU is the sharpest control here because it is scored by log-likelihood, which does not go through the draft path at all -- so it must be bit-identical across draft depths, and it is (0.5241/0.6250 at every depth).  The generative columns and humaneval are the ones that can actually move.
 
 | model · ctx (all else equal) | spec_draft_n_max | **HumanEval** | **HumanEval+** | **MBPP** | **MBPP+** | **MultiPL-E** | **MMLU** | **ARC-c** | **TruthfulQA** | **GSM8K** | **IFEval** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **Σ coverage** | rows=0 · data-cols=0/10 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-
-*Waiting: m28/m52 standard-benchmark scores: 0 rows in experiments.sqlite.*
+| **Σ coverage** | rows=8 · data-cols=9/10 | 8 | 1 | 1 | 1 | 0 | 8 | 1 | 1 | 8 | 8 |
+| Qwen3.5-0.8B · ctx8192 | 0 | 0.3171 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.4600 (50) | 0.5800 (50) |
+| Qwen3.5-0.8B · ctx8192 | 1 | 0.3232 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.5000 (50) | 0.5400 (50) |
+| Qwen3.5-0.8B · ctx8192 | 2 | 0.2988 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.4400 (50) | 0.5200 (50) |
+| Qwen3.5-0.8B · ctx8192 | 4 | 0.3049 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.4200 (50) | 0.5600 (50) |
+| Qwen3.5-2B · ctx8192 | 0 | 0.5061 (164) | 0.5061 (164) | 0.5317 (378) | 0.4206 (378) | - | 0.6250 (456) | 0.4300 (100) | 0.4240 (100) | 0.6000 (50) | 0.6600 (50) |
+| Qwen3.5-2B · ctx8192 | 1 | 0.5427 (164) | - | - | - | - | 0.6250 (456) | - | - | 0.5600 (50) | 0.7000 (50) |
+| Qwen3.5-2B · ctx8192 | 2 | 0.5305 (164) | - | - | - | - | 0.6250 (456) | - | - | 0.5400 (50) | 0.7200 (50) |
+| Qwen3.5-2B · ctx8192 | 4 | 0.5549 (164) | - | - | - | - | 0.6250 (456) | - | - | 0.6000 (50) | 0.6800 (50) |
 
 ## H. Thinking on vs off -- the newly added axis
 
