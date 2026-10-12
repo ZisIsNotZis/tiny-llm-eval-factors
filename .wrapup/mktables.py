@@ -382,8 +382,14 @@ def m55_rank(label):
 
 
 def axis_moe(o):
-    """MoE bit allocation: held = LFM2.5-8B-A1B + panel, varied = recipe."""
-    cells = query_cells_by("run_tag='m55-expertwise'")
+    """MoE bit allocation: held = LFM2.5-8B-A1B, varied = recipe.
+
+    Two sources for the same three files: the original m55 panel (MultiPL-E only) and the
+    later standard-benchmark run of the same recipes.  They cover different columns, so both
+    are pooled - the model file is the identity.
+    """
+    names = ",".join("'%s'" % m for m, _ in M55_RECIPES)
+    cells = query_cells_by(f"model IN ({names})")
     by_model = {m: c for (m, _), c in cells.items()}
     rows = []
     for model, label in M55_RECIPES:
@@ -392,13 +398,14 @@ def axis_moe(o):
         rows.append(("LFM2.5-8B-A1B (m55 MoE panel)", c2, by_model.get(model, {})))
     return emit_table(
         o, "D. MoE bit allocation -- LFM2.5-8B-A1B m55 recipes",
-        "Held constant: model, harness, protocol.  Varied: which layers get the "
-        "low bits (experts vs the rest).  Only the MultiPL-E column is measured "
-        "for these three files; the EvalPlus / lm-eval columns will fill in when "
-        "the campaign reaches these recipes.",
+        "Held constant: model, harness, protocol.  Varied: which layers get the low bits "
+        "(the expert FFN tensors vs the rest of the network).  All three recipes are the "
+        "same base weights, so any difference is purely the bit allocation.  Columns come "
+        "from two panels of the same files: the original MultiPL-E run and the later "
+        "standard-benchmark run.",
         "model (all else equal)", "expert / non-expert recipe", BENCH_KEYS,
         BENCH_LABELS, rows, sort_key=m55_rank,
-        waiting="m55 expert-wise standard-benchmark re-runs (rows now: MultiPL-E only).")
+        waiting="m55 standard-benchmark rows (none yet).")
 
 
 def axis_kv(o):

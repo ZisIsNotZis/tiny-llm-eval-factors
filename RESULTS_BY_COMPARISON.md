@@ -116,14 +116,14 @@ Held constant: model, and an effective-bpw band of +-0.45 bpw.  Varied: the quan
 
 ## D. MoE bit allocation -- LFM2.5-8B-A1B m55 recipes
 
-Held constant: model, harness, protocol.  Varied: which layers get the low bits (experts vs the rest).  Only the MultiPL-E column is measured for these three files; the EvalPlus / lm-eval columns will fill in when the campaign reaches these recipes.
+Held constant: model, harness, protocol.  Varied: which layers get the low bits (the expert FFN tensors vs the rest of the network).  All three recipes are the same base weights, so any difference is purely the bit allocation.  Columns come from two panels of the same files: the original MultiPL-E run and the later standard-benchmark run.
 
 | model (all else equal) | expert / non-expert recipe | **HumanEval** | **HumanEval+** | **MBPP** | **MBPP+** | **MultiPL-E** | **MMLU** | **ARC-c** | **TruthfulQA** | **GSM8K** | **IFEval** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **Σ coverage** | rows=3 · data-cols=1/10 | 0 | 0 | 0 | 0 | 3 | 0 | 0 | 0 | 0 | 0 |
-| LFM2.5-8B-A1B (m55 MoE panel) | uniform Q3_K_M (baseline) · 3.88 bpw | - | - | - | - | 0.0807 (322) | - | - | - | - | - |
-| LFM2.5-8B-A1B (m55 MoE panel) | experts IQ2/Q2, rest Q5_K_M (exq2) · 2.92 bpw | - | - | - | - | 0.1025 (322) | - | - | - | - | - |
-| LFM2.5-8B-A1B (m55 MoE panel) | experts Q4_K, rest Q2_K (exq4) · 4.48 bpw | - | - | - | - | 0.0683 (322) | - | - | - | - | - |
+| **Σ coverage** | rows=3 · data-cols=10/10 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 |
+| LFM2.5-8B-A1B (m55 MoE panel) | uniform Q3_K_M (baseline) · 3.88 bpw | 0.3537 (164) | 0.3354 (164) | 0.5317 (378) | 0.4815 (378) | 0.0807 (322) | 0.4474 (912) | 0.4600 (100) | 0.4940 (100) | 0.7500 (100) | 0.5600 (100) |
+| LFM2.5-8B-A1B (m55 MoE panel) | experts IQ2/Q2, rest Q5_K_M (exq2) · 2.92 bpw | 0.2927 (164) | 0.2866 (164) | 0.3466 (378) | 0.3280 (378) | 0.1025 (322) | 0.4265 (912) | 0.4600 (100) | 0.5257 (100) | 0.7800 (100) | 0.3900 (100) |
+| LFM2.5-8B-A1B (m55 MoE panel) | experts Q4_K, rest Q2_K (exq4) · 4.48 bpw | 0.1402 (164) | 0.1341 (164) | 0.2619 (378) | 0.2381 (378) | 0.0683 (322) | 0.2873 (912) | 0.3700 (100) | 0.5669 (100) | 0.5300 (100) | 0.3900 (100) |
 
 ## E. KV-cache quantisation
 
