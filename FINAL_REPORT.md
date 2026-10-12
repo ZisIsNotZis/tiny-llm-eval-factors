@@ -301,6 +301,42 @@ well-formed output (a compilable function, an instruction-following answer, a `#
 number) can lose that output entirely while the model still recognises the right answer among
 four options.
 
+### F10 — speculative decoding (MTP) buys speed and costs nothing measurable — with a built-in proof
+
+Draft/MTP depth is a **speed** knob, so it belongs on a tok/s axis; but it also changes the
+sampled sequence, so it must be checked for quality damage. Both halves are measured on the
+`-MTP-GGUF` repos at draft depths 0/1/2/4 (`.wrapup/spec_panel.py`, tables G1 and G2):
+
+| model | draft depth | tok/s | MMLU | GSM8K | IFEval | HumanEval |
+|---|---|---|---|---|---|---|
+| Qwen3.5-0.8B-Q4_K_XL | 0 | 423 | 0.5241 | 0.460 | 0.580 | 0.317 |
+| | 1 | 461 | 0.5241 | 0.500 | 0.540 | 0.323 |
+| | 2 | 535 | 0.5241 | 0.440 | 0.520 | 0.299 |
+| | 4 | **576** | 0.5241 | 0.420 | 0.560 | 0.305 |
+| Qwen3.5-2B-Q4_K_XL | 0 | 320 | 0.6250 | 0.600 | 0.660 | 0.506 |
+| | 1 | 350 | 0.6250 | 0.560 | 0.700 | 0.543 |
+| | 2 | 360 | 0.6250 | 0.540 | 0.720 | 0.531 |
+| | 4 | 345 | 0.6250 | 0.600 | 0.680 | 0.555 |
+
+* **Speed**: +36% at depth 4 for the 0.8B, and +13% peaking at depth 2 for the 2B (depth 4 is
+  already past the optimum there — deeper drafts cost more than they accept).
+* **Quality**: **MMLU is bit-identical at every draft depth**, which is not a coincidence but a
+  structural control — MMLU is scored by log-likelihood over answer letters, and that path never
+  invokes the draft model at all. It is the cleanest possible demonstration that the axis is
+  wired correctly.
+* The columns that *can* move — GSM8K, IFEval, HumanEval — move by **less than one item-level SE**
+  (n = 50, 50, 164) and with no consistent direction: GSM8K wanders 0.46→0.42 while HumanEval
+  wanders 0.317→0.305 on the same model. Nothing here is a quality claim in either direction.
+
+**Practical reading**: turn MTP on for throughput; it is free at these depths. But the win is
+model- and depth-specific (+36% vs +13%), it inverts between models, and the earlier m28 panel's
+apparently large `long-ctx` *slowdown* is a reminder that depth interacts with prompt length.
+
+**Caveat that must travel with this table.** This axis can only run on the `-MTP-GGUF` repos: the
+plain Qwen3.5 GGUF contains no MTP layers and `llama-server` refuses with "model doesn't contain
+MTP layers". So the spec-decode models are a *different checkpoint family* from the rest of the
+study and their absolute scores are not comparable to the quant-ladder rows.
+
 ### F8 — protocol choice flips the sign of quant conclusions (twice)
 
 | case | protocol A | protocol B |
