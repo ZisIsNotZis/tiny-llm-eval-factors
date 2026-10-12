@@ -307,30 +307,39 @@ Draft/MTP depth is a **speed** knob, so it belongs on a tok/s axis; but it also 
 sampled sequence, so it must be checked for quality damage. Both halves are measured on the
 `-MTP-GGUF` repos at draft depths 0/1/2/4 (`.wrapup/spec_panel.py`, tables G1 and G2):
 
-| model | draft depth | tok/s | MMLU | GSM8K | IFEval | HumanEval |
-|---|---|---|---|---|---|---|
-| Qwen3.5-0.8B-Q4_K_XL | 0 | 423 | 0.5241 | 0.460 | 0.580 | 0.317 |
-| | 1 | 461 | 0.5241 | 0.500 | 0.540 | 0.323 |
-| | 2 | 535 | 0.5241 | 0.440 | 0.520 | 0.299 |
-| | 4 | **576** | 0.5241 | 0.420 | 0.560 | 0.305 |
-| Qwen3.5-2B-Q4_K_XL | 0 | 320 | 0.6250 | 0.600 | 0.660 | 0.506 |
-| | 1 | 350 | 0.6250 | 0.560 | 0.700 | 0.543 |
-| | 2 | 360 | 0.6250 | 0.540 | 0.720 | 0.531 |
-| | 4 | 345 | 0.6250 | 0.600 | 0.680 | 0.555 |
+| model | draft depth | tok/s | speedup | MMLU | GSM8K | IFEval | HumanEval |
+|---|---|---|---|---|---|---|---|
+| Qwen3.5-0.8B-Q4_K_XL | 0 | 423 | — | 0.5241 | 0.460 | 0.580 | 0.317 |
+| | 1 | 461 | +9% | 0.5241 | 0.500 | 0.540 | 0.323 |
+| | 2 | 535 | +26% | 0.5241 | 0.440 | 0.520 | 0.299 |
+| | 4 | **576** | **+36%** | 0.5241 | 0.420 | 0.560 | 0.305 |
+| Qwen3.5-2B-Q4_K_XL | 0 | 320 | — | 0.6250 | 0.600 | 0.660 | 0.506 |
+| | 1 | 350 | +9% | 0.6250 | 0.560 | 0.700 | 0.543 |
+| | 2 | **360** | **+13%** | 0.6250 | 0.540 | 0.720 | 0.531 |
+| | 4 | 345 | +8% | 0.6250 | 0.600 | 0.680 | 0.555 |
+| Qwen3.5-4B-Q4_K_XL | 0 | 184 | — | 0.7456 | 0.920 | 0.780 | 0.829 |
+| | 1 | 248 | +35% | 0.7456 | 0.920 | 0.800 | 0.817 |
+| | 2 | 302 | +64% | 0.7456 | 0.920 | 0.780 | 0.805 |
+| | 4 | **337** | **+83%** | 0.7456 | 0.900 | 0.820 | 0.835 |
+| Qwen3.5-9B-Q4_K_XL | 0 | 123 | — | 0.7939 | 0.960 | 0.880 | 0.872 |
+| | 1 | 177 | +44% | 0.7939 | 0.960 | 0.880 | 0.872 |
+| | 2 | 212 | +72% | 0.7939 | 0.960 | 0.860 | 0.890 |
+| | 4 | **237** | **+93%** | 0.7939 | 0.980 | 0.880 | 0.878 |
 
-* **Speed**: +36% at depth 4 for the 0.8B, and +13% peaking at depth 2 for the 2B (depth 4 is
-  already past the optimum there — deeper drafts cost more than they accept).
-* **Quality**: **MMLU is bit-identical at every draft depth**, which is not a coincidence but a
-  structural control — MMLU is scored by log-likelihood over answer letters, and that path never
-  invokes the draft model at all. It is the cleanest possible demonstration that the axis is
-  wired correctly.
+* **Speed reward scales with model size**: +36% at 0.8B against **+93% at 9B**. Small models are
+  already memory-bandwidth-bound at batch 1, so there is less headroom for the draft path to
+  exploit; the bigger the model, the more the extra tokens per forward pass are worth.
+* **MMLU is bit-identical at every draft depth on every model** (0.5241 / 0.6250 / 0.7456 /
+  0.7939). That is not luck — MMLU is scored by log-likelihood over answer letters, and that path
+  never invokes the draft model at all. It is the cleanest possible demonstration that the
+  measurement is wired correctly, and it is a *positive control* rather than a null.
 * The columns that *can* move — GSM8K, IFEval, HumanEval — move by **less than one item-level SE**
-  (n = 50, 50, 164) and with no consistent direction: GSM8K wanders 0.46→0.42 while HumanEval
-  wanders 0.317→0.305 on the same model. Nothing here is a quality claim in either direction.
+  (n = 50, 50, 164) and with no consistent sign on any model. There is no evidence of quality
+  damage at these depths, and no evidence of a gain either.
 
-**Practical reading**: turn MTP on for throughput; it is free at these depths. But the win is
-model- and depth-specific (+36% vs +13%), it inverts between models, and the earlier m28 panel's
-apparently large `long-ctx` *slowdown* is a reminder that depth interacts with prompt length.
+**Practical reading**: turn MTP on, and use a depth around 4 — but expect the payoff to depend on
+model size, and re-check it per model rather than assuming a fixed depth: the 2B *peaked* at depth
+2 and regressed at 4, so "deeper is better" is false in general.
 
 **Caveat that must travel with this table.** This axis can only run on the `-MTP-GGUF` repos: the
 plain Qwen3.5 GGUF contains no MTP layers and `llama-server` refuses with "model doesn't contain

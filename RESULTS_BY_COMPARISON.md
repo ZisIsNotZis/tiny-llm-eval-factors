@@ -65,7 +65,7 @@ Held constant: model family (stem without the quant suffix), harness, ctx, proto
 | granite-4.1-3b | 4.06 bpw | 0.7256 (164) | 0.6646 (164) | 0.6746 (378) | 0.5979 (378) | 0.3913 (483) | 0.6118 (912) | 0.4800 (100) | 0.5467 (100) | - | 0.7800 (100) |
 | granite-4.1-3b | 4.94 bpw | 0.8049 (164) | 0.7683 (164) | 0.7275 (378) | 0.6270 (378) | 0.4379 (322) | 0.6557 (912) | 0.5500 (100) | 0.5107 (100) | - | 0.7900 (100) |
 
-*Note: 1 model(s) had no effective bpw in bpw_map.json and were skipped: Qwen3.5-0.8B-UD-Q4_K_XL.gguf.*
+*Note: 3 model(s) had no effective bpw in bpw_map.json and were skipped: Qwen3.5-0.8B-UD-Q4_K_XL.gguf, Qwen3.5-4B-UD-Q4_K_XL.gguf, Qwen3.5-9B-UD-Q4_K_XL.gguf.*
 
 ## B. Model size at a held quant recipe
 
@@ -181,7 +181,7 @@ Held constant: model, ctx.  Varied: speculative draft depth `spec_draft_n_max` (
 
 | model · ctx (all else equal) | spec_draft_n_max | **code** | **long-ctx** | **prose** | **code-256** |
 |---|---|---|---|---|---|
-| **Σ coverage** | rows=17 · data-cols=4/4 | 9 | 5 | 9 | 8 |
+| **Σ coverage** | rows=25 · data-cols=4/4 | 9 | 5 | 9 | 16 |
 | Qwen3.5-0.8B · ctx8192 | 0 | - | - | - | 423.4 (1) |
 | Qwen3.5-0.8B · ctx8192 | 1 | - | - | - | 460.7 (1) |
 | Qwen3.5-0.8B · ctx8192 | 2 | - | - | - | 534.9 (1) |
@@ -195,6 +195,14 @@ Held constant: model, ctx.  Varied: speculative draft depth `spec_draft_n_max` (
 | Qwen3.5-2B · ctx8192 | 1 | - | - | - | 350.1 (1) |
 | Qwen3.5-2B · ctx8192 | 2 | - | - | - | 360.1 (1) |
 | Qwen3.5-2B · ctx8192 | 4 | - | - | - | 345.2 (1) |
+| Qwen3.5-4B · ctx8192 | 0 | - | - | - | 184.1 (1) |
+| Qwen3.5-4B · ctx8192 | 1 | - | - | - | 247.8 (1) |
+| Qwen3.5-4B · ctx8192 | 2 | - | - | - | 301.9 (1) |
+| Qwen3.5-4B · ctx8192 | 4 | - | - | - | 336.6 (1) |
+| Qwen3.5-9B · ctx8192 | 0 | - | - | - | 123.4 (1) |
+| Qwen3.5-9B · ctx8192 | 1 | - | - | - | 176.6 (1) |
+| Qwen3.5-9B · ctx8192 | 2 | - | - | - | 212.1 (1) |
+| Qwen3.5-9B · ctx8192 | 4 | - | - | - | 236.6 (1) |
 | gemma-4-12b · ctx4096 | 0 | 90.4 (1) | - | 90.8 (1) | - |
 | gemma-4-12b · ctx4096 | 2 | 90.5 (1) | - | 90.9 (1) | - |
 | gemma-4-12b · ctx4096 | 4 | 90.5 (1) | - | 90.3 (1) | - |
@@ -206,7 +214,7 @@ Same runs as G1, checked for quality damage: a speed win is only usable if the s
 
 | model · ctx (all else equal) | spec_draft_n_max | **HumanEval** | **HumanEval+** | **MBPP** | **MBPP+** | **MultiPL-E** | **MMLU** | **ARC-c** | **TruthfulQA** | **GSM8K** | **IFEval** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **Σ coverage** | rows=8 · data-cols=9/10 | 8 | 1 | 1 | 1 | 0 | 8 | 1 | 1 | 8 | 8 |
+| **Σ coverage** | rows=16 · data-cols=9/10 | 16 | 1 | 1 | 1 | 0 | 16 | 1 | 1 | 16 | 16 |
 | Qwen3.5-0.8B · ctx8192 | 0 | 0.3171 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.4600 (50) | 0.5800 (50) |
 | Qwen3.5-0.8B · ctx8192 | 1 | 0.3232 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.5000 (50) | 0.5400 (50) |
 | Qwen3.5-0.8B · ctx8192 | 2 | 0.2988 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.4400 (50) | 0.5200 (50) |
@@ -215,6 +223,14 @@ Same runs as G1, checked for quality damage: a speed win is only usable if the s
 | Qwen3.5-2B · ctx8192 | 1 | 0.5427 (164) | - | - | - | - | 0.6250 (456) | - | - | 0.5600 (50) | 0.7000 (50) |
 | Qwen3.5-2B · ctx8192 | 2 | 0.5305 (164) | - | - | - | - | 0.6250 (456) | - | - | 0.5400 (50) | 0.7200 (50) |
 | Qwen3.5-2B · ctx8192 | 4 | 0.5549 (164) | - | - | - | - | 0.6250 (456) | - | - | 0.6000 (50) | 0.6800 (50) |
+| Qwen3.5-4B · ctx8192 | 0 | 0.8293 (164) | - | - | - | - | 0.7456 (456) | - | - | 0.9200 (50) | 0.7800 (50) |
+| Qwen3.5-4B · ctx8192 | 1 | 0.8171 (164) | - | - | - | - | 0.7456 (456) | - | - | 0.9200 (50) | 0.8000 (50) |
+| Qwen3.5-4B · ctx8192 | 2 | 0.8049 (164) | - | - | - | - | 0.7456 (456) | - | - | 0.9200 (50) | 0.7800 (50) |
+| Qwen3.5-4B · ctx8192 | 4 | 0.8354 (164) | - | - | - | - | 0.7456 (456) | - | - | 0.9000 (50) | 0.8200 (50) |
+| Qwen3.5-9B · ctx8192 | 0 | 0.8720 (164) | - | - | - | - | 0.7939 (456) | - | - | 0.9600 (50) | 0.8800 (50) |
+| Qwen3.5-9B · ctx8192 | 1 | 0.8720 (164) | - | - | - | - | 0.7939 (456) | - | - | 0.9600 (50) | 0.8800 (50) |
+| Qwen3.5-9B · ctx8192 | 2 | 0.8902 (164) | - | - | - | - | 0.7939 (456) | - | - | 0.9600 (50) | 0.8600 (50) |
+| Qwen3.5-9B · ctx8192 | 4 | 0.8780 (164) | - | - | - | - | 0.7939 (456) | - | - | 0.9800 (50) | 0.8800 (50) |
 
 ## H. Thinking on vs off -- the newly added axis
 

@@ -56,3 +56,59 @@
 [22:50:23] draft_n=0: mmlu=0.7456140350877193
 [22:51:43] draft_n=0: gsm8k=0.92
 [22:53:13] draft_n=0: ifeval=0.78
+[22:57:56] draft_n=0: humaneval=0.0
+[22:57:57] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-4B-MTP-GGUF/blobs/d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 1
+[22:58:03] draft_n=1: tok/s=247.76875300465244
+[23:00:29] draft_n=1: mmlu=0.7456140350877193
+[23:01:44] draft_n=1: gsm8k=0.92
+[23:03:05] draft_n=1: ifeval=0.8
+[23:06:53] draft_n=1: humaneval=0.0
+[23:06:54] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-4B-MTP-GGUF/blobs/d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 2
+[23:07:00] draft_n=2: tok/s=301.89953966177376
+[23:09:24] draft_n=2: mmlu=0.7456140350877193
+[23:10:31] draft_n=2: gsm8k=0.92
+[23:11:51] draft_n=2: ifeval=0.78
+[23:15:10] draft_n=2: humaneval=0.0
+[23:15:11] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-4B-MTP-GGUF/blobs/d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 4
+[23:15:16] draft_n=4: tok/s=336.603632426386
+[23:17:42] draft_n=4: mmlu=0.7456140350877193
+[23:18:49] draft_n=4: gsm8k=0.9
+[23:20:18] draft_n=4: ifeval=0.82
+[23:23:25] draft_n=4: humaneval=0.0
+[23:23:26] spec panel done
+[23:23:27] === spec panel tag=m128-spec-9b model=/home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/blobs/362f85a2d7dbc0259e926d5ac33ca0d0f17fd3753496d65bfd2106384c929d3f drafts=[0, 1, 2, 4]
+[23:23:27] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/blobs/362f85a2d7dbc0259e926d5ac33ca0d0f17fd3753496d65bfd2106384c929d3f --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type none
+[23:23:43] draft_n=0: tok/s=123.36750575606568
+[23:26:16] draft_n=0: mmlu=0.793859649122807
+[23:27:59] draft_n=0: gsm8k=0.96
+[23:30:16] draft_n=0: ifeval=0.88
+[23:37:42] draft_n=0: humaneval=0.8719512195121951
+[23:37:43] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/blobs/362f85a2d7dbc0259e926d5ac33ca0d0f17fd3753496d65bfd2106384c929d3f --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 1
+[23:37:50] draft_n=1: tok/s=176.63581585983368
+[23:40:25] draft_n=1: mmlu=0.793859649122807
+[23:41:52] draft_n=1: gsm8k=0.96
+[23:43:47] draft_n=1: ifeval=0.88
+[23:49:30] draft_n=1: humaneval=0.8719512195121951
+[23:49:31] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/blobs/362f85a2d7dbc0259e926d5ac33ca0d0f17fd3753496d65bfd2106384c929d3f --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 2
+[23:49:38] draft_n=2: tok/s=212.1406185264096
+[23:52:13] draft_n=2: mmlu=0.793859649122807
+[23:53:32] draft_n=2: gsm8k=0.96
+[23:55:20] draft_n=2: ifeval=0.86
+[00:00:06] draft_n=2: humaneval=0.8902439024390244
+[00:00:07] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/blobs/362f85a2d7dbc0259e926d5ac33ca0d0f17fd3753496d65bfd2106384c929d3f --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 4
+[00:00:13] draft_n=4: tok/s=236.61929981236332
+[00:02:50] draft_n=4: mmlu=0.793859649122807
+[00:04:07] draft_n=4: gsm8k=0.98
+[00:06:09] draft_n=4: ifeval=0.88
+[00:10:32] draft_n=4: humaneval=0.8780487804878049
+[00:10:33] spec panel done
+[00:10:34] === spec panel tag=m129-spec-35b model=/home/z/hf/models--unsloth--Qwen3.6-35B-A3B-MTP-GGUF/blobs/df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf drafts=[0, 1, 2, 4]
+[00:10:34] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.6-35B-A3B-MTP-GGUF/blobs/df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type none
+[00:11:24] draft_n=0: tok/s=163.47018328215896
+[00:14:29] draft_n=0: mmlu=0.8442982456140351
+[00:16:02] draft_n=0: gsm8k=0.98
+[00:17:53] draft_n=0: ifeval=0.86
+[00:23:24] draft_n=0: humaneval=0.9146341463414634
+[00:23:25] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.6-35B-A3B-MTP-GGUF/blobs/df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --spec-type draft-mtp --spec-draft-n-max 1
+[00:23:36] draft_n=1: tok/s=214.1706683272699
+[00:26:42] draft_n=1: mmlu=0.8442982456140351
