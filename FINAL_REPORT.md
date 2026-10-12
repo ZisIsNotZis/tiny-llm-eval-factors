@@ -246,7 +246,18 @@ across all draft depths on four models).
   but not `Q3→Q4`/`Q3→Q5` (m41/testfrac). So "≥Q3 is enough" is a statement about **what these
   benchmarks can measure**, not about model quality.
 
-### F9 — quantisation damage is **benchmark-dependent**: capability tasks lose ~15x more per bpw than multiple-choice knowledge
+### F8 — protocol choice flips the sign of quant conclusions (twice)
+
+| case | protocol A | protocol B |
+|---|---|---|
+| Qwen3.5-9B `Q2→Q3` | HumanEval chat/thinking: **−0.073** (W2) | MultiPL-E raw completion: **+0.143** (m2) |
+| Qwen3.5-4B tool calling | forced-JSON prompt: a "profile flip" (abstention ↑, multi-call ↓) (m4) | native `tools=`: uniformly better (+0.08) (m4b) |
+
+**Any quant-effect claim is meaningless without naming its generation protocol.**
+
+---
+
+### F9 — quantisation damage is **benchmark-dependent**: capability tasks lose ~10x more per bpw than multiple-choice knowledge
 
 This is the finding the multi-benchmark requirement was designed to expose, and it is the
 largest single effect in the study.
@@ -308,33 +319,6 @@ well-formed output (a compilable function, an instruction-following answer, a `#
 number) can lose that output entirely while the model still recognises the right answer among
 four options.
 
-### F11 — for MoE models the bits on the **non-expert** layers decide the score, not the expert bits
-
-Three recipes built from the same LFM2.5-8B-A1B base weights, differing only in which tensors
-get the low bits (22 MoE layers, 66 expert tensors; `--tensor-type 'ffn_(gate|up|down)_exps'`).
-Ten benchmark columns each, so this is not a single-harness effect:
-
-| recipe | effective bpw | HumanEval+ | MBPP+ | MMLU | GSM8K | IFEval | TruthfulQA |
-|---|---|---|---|---|---|---|---|
-| uniform Q3_K_M (baseline) | 3.88 | **0.335** | **0.482** | **0.447** | 0.75 | **0.56** | 0.494 |
-| experts IQ2/Q2, **rest Q5_K_M** | **2.92** | 0.287 | 0.328 | 0.427 | **0.78** | 0.39 | 0.526 |
-| experts Q4_K, **rest Q2_K** | **4.48** | **0.134** | **0.238** | **0.287** | **0.53** | 0.39 | 0.567 |
-
-**The highest-bpw recipe is the worst model.** exq4 spends 4.48 bits/weight — more than the
-uniform baseline — and still loses more than half its HumanEval+ (0.335 → 0.134) and a third of
-its MMLU (0.447 → 0.287), because it buys those expert bits by pushing **every non-expert layer
-to Q2_K**. Conversely exq2, at 2.92 bpw — a full bit *below* the baseline — holds 86% of the
-baseline's HumanEval+ and 96% of its MMLU, because what it starves is only the experts, and a
-MoE can route around a damaged expert.
-
-**Reading.** "Experts are the big tensors, so they must be the sensitive ones" is the wrong
-intuition and it is measurably wrong here: the shared/attention/norm layers are used by *every*
-token on *every* forward pass, while any single expert is reached by only a fraction of tokens.
-For an MoE, protect the non-expert layers first; the expert tensors are the safe place to save
-bits. This also explains why the earlier m55 MultiPL-E-only reading was inconclusive — that
-column's ordering (exq2 0.103 > uniform 0.081 > exq4 0.068, but with an ns item-level CI) was
-the same story with too little signal to see it.
-
 ### F10 — speculative decoding (MTP) buys speed and costs nothing measurable — with a built-in proof
 
 Draft/MTP depth is a **speed** knob, so it belongs on a tok/s axis; but it also changes the
@@ -380,16 +364,32 @@ plain Qwen3.5 GGUF contains no MTP layers and `llama-server` refuses with "model
 MTP layers". So the spec-decode models are a *different checkpoint family* from the rest of the
 study and their absolute scores are not comparable to the quant-ladder rows.
 
-### F8 — protocol choice flips the sign of quant conclusions (twice)
+### F11 — for MoE models the bits on the **non-expert** layers decide the score, not the expert bits
 
-| case | protocol A | protocol B |
-|---|---|---|
-| Qwen3.5-9B `Q2→Q3` | HumanEval chat/thinking: **−0.073** (W2) | MultiPL-E raw completion: **+0.143** (m2) |
-| Qwen3.5-4B tool calling | forced-JSON prompt: a "profile flip" (abstention ↑, multi-call ↓) (m4) | native `tools=`: uniformly better (+0.08) (m4b) |
+Three recipes built from the same LFM2.5-8B-A1B base weights, differing only in which tensors
+get the low bits (22 MoE layers, 66 expert tensors; `--tensor-type 'ffn_(gate|up|down)_exps'`).
+Ten benchmark columns each, so this is not a single-harness effect:
 
-**Any quant-effect claim is meaningless without naming its generation protocol.**
+| recipe | effective bpw | HumanEval+ | MBPP+ | MMLU | GSM8K | IFEval | TruthfulQA |
+|---|---|---|---|---|---|---|---|
+| uniform Q3_K_M (baseline) | 3.88 | **0.335** | **0.482** | **0.447** | 0.75 | **0.56** | 0.494 |
+| experts IQ2/Q2, **rest Q5_K_M** | **2.92** | 0.287 | 0.328 | 0.427 | **0.78** | 0.39 | 0.526 |
+| experts Q4_K, **rest Q2_K** | **4.48** | **0.134** | **0.238** | **0.287** | **0.53** | 0.39 | 0.567 |
 
----
+**The highest-bpw recipe is the worst model.** exq4 spends 4.48 bits/weight — more than the
+uniform baseline — and still loses more than half its HumanEval+ (0.335 → 0.134) and a third of
+its MMLU (0.447 → 0.287), because it buys those expert bits by pushing **every non-expert layer
+to Q2_K**. Conversely exq2, at 2.92 bpw — a full bit *below* the baseline — holds 86% of the
+baseline's HumanEval+ and 96% of its MMLU, because what it starves is only the experts, and a
+MoE can route around a damaged expert.
+
+**Reading.** "Experts are the big tensors, so they must be the sensitive ones" is the wrong
+intuition and it is measurably wrong here: the shared/attention/norm layers are used by *every*
+token on *every* forward pass, while any single expert is reached by only a fraction of tokens.
+For an MoE, protect the non-expert layers first; the expert tensors are the safe place to save
+bits. This also explains why the earlier m55 MultiPL-E-only reading was inconclusive — that
+column's ordering (exq2 0.103 > uniform 0.081 > exq4 0.068, but with an ns item-level CI) was
+the same story with too little signal to see it.
 
 ## 4. Practical answer for choosing a quant
 
