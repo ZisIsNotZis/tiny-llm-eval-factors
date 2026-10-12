@@ -223,7 +223,8 @@ def main():
                       "--base_url", f"http://127.0.0.1:{port}/v1", "--temperature", "0.0",
                       "--greedy", "True", "--root", str(cg)],
                      str(out / f"code_n{n}.log"))
-            samples = next(cg.rglob("*_openai_temp_0.0.jsonl"), None)
+            cands = [p for p in cg.rglob("*_openai_temp_0.0.jsonl") if ".raw." not in p.name]
+            samples = sorted(cands)[0] if cands else None
             if rc == 0 and samples:
                 rc2 = run([str(EVALPLUS_EV), "humaneval", "--samples", str(samples)],
                           str(out / f"code_n{n}.log"))

@@ -40,7 +40,7 @@ Held constant: model family (stem without the quant suffix), harness, ctx, proto
 | Qwen3.5-2B | 3.66 bpw | 0.2683 (164) | 0.2378 (164) | 0.2698 (378) | 0.2407 (378) | 0.1387 (483) | 0.5022 (912) | 0.4400 (100) | 0.4319 (100) | 0.3800 (100) | 0.3300 (100) |
 | Qwen3.5-2B | 3.96 bpw | 0.3902 (164) | 0.3720 (164) | 0.3333 (378) | 0.2857 (378) | 0.1894 (322) | 0.5603 (912) | 0.4400 (100) | 0.4351 (100) | 0.5200 (100) | 0.5000 (100) |
 | Qwen3.5-2B | 4.11 bpw | 0.2561 (164) | 0.2378 (164) | 0.3598 (378) | 0.2725 (378) | 0.0920 (957) | 0.5504 (912) | 0.4300 (100) | 0.4261 (100) | 0.4400 (100) | 0.4000 (100) |
-| Qwen3.5-2B | 4.93 bpw | 0.5732 (164) | 0.5244 (164) | 0.5820 (378) | 0.4444 (378) | 0.2184 (957) | 0.6173 (912) | 0.4100 (100) | 0.4350 (100) | 0.6500 (100) | 0.5500 (100) |
+| Qwen3.5-2B | 4.93 bpw | 0.5732 (164) | 0.5244 (164) | 0.5820 (378) | 0.4444 (378) | 0.2184 (957) | 0.6075 (456) | 0.4100 (100) | 0.4350 (100) | 0.6000 (50) | 0.6200 (50) |
 | Qwen3.5-2B | 5.70 bpw | 0.5549 (164) | 0.5061 (164) | 0.5317 (378) | 0.4206 (378) | 0.2836 (483) | 0.6250 (456) | 0.4300 (100) | 0.4240 (100) | 0.6000 (50) | 0.6800 (50) |
 | Qwen3.5-2B | 6.24 bpw | 0.5427 (164) | 0.5061 (164) | 0.5265 (378) | 0.4180 (378) | 0.2774 (483) | 0.6239 (912) | 0.4200 (100) | 0.4232 (100) | 0.7300 (100) | 0.6200 (100) |
 | Qwen3.5-4B | 3.69 bpw | 0.7195 (164) | 0.6829 (164) | 0.6878 (378) | 0.5688 (378) | 0.3145 (957) | 0.6678 (912) | 0.4900 (100) | 0.4859 (100) | - | 0.6800 (100) |
@@ -65,7 +65,7 @@ Held constant: model family (stem without the quant suffix), harness, ctx, proto
 | granite-4.1-3b | 4.06 bpw | 0.7256 (164) | 0.6646 (164) | 0.6746 (378) | 0.5979 (378) | 0.3913 (483) | 0.6118 (912) | 0.4800 (100) | 0.5467 (100) | - | 0.7800 (100) |
 | granite-4.1-3b | 4.94 bpw | 0.8049 (164) | 0.7683 (164) | 0.7275 (378) | 0.6270 (378) | 0.4379 (322) | 0.6557 (912) | 0.5500 (100) | 0.5107 (100) | - | 0.7900 (100) |
 
-*Note: 3 model(s) had no effective bpw in bpw_map.json and were skipped: Qwen3.5-0.8B-UD-Q4_K_XL.gguf, Qwen3.5-4B-UD-Q4_K_XL.gguf, Qwen3.5-9B-UD-Q4_K_XL.gguf.*
+*Note: 4 model(s) had no effective bpw in bpw_map.json and were skipped: Qwen3.5-0.8B-UD-Q4_K_XL.gguf, Qwen3.5-4B-UD-Q4_K_XL.gguf, Qwen3.5-9B-UD-Q4_K_XL.gguf, Qwen3.6-35B-A3B-UD-IQ4_XS.gguf.*
 
 ## B. Model size at a held quant recipe
 
@@ -81,7 +81,7 @@ Held constant: family lineage + quant recipe.  Varied: parameter count.  Every f
 | Qwen3.5 @ Q2_K_XL | 4B | 0.7195 (164) | 0.6829 (164) | 0.6878 (378) | 0.5688 (378) | 0.3145 (957) | 0.6678 (912) | 0.4900 (100) | 0.4859 (100) | - | 0.6800 (100) |
 | Qwen3.5 @ Q2_K_XL | 9B | 0.7988 (164) | 0.7622 (164) | 0.6799 (378) | 0.5767 (378) | 0.4286 (483) | 0.7368 (912) | 0.4800 (100) | 0.4712 (100) | 0.8200 (100) | 0.7500 (100) |
 | Qwen3.5 @ Q3_K_XL | 0.8B | 0.2378 (164) | 0.2195 (164) | 0.3016 (378) | 0.2619 (378) | 0.1061 (641) | 0.4814 (912) | 0.3900 (100) | 0.4051 (100) | 0.4400 (100) | 0.5000 (100) |
-| Qwen3.5 @ Q3_K_XL | 2B | 0.5732 (164) | 0.5244 (164) | 0.5820 (378) | 0.4444 (378) | 0.2184 (957) | 0.6173 (912) | 0.4100 (100) | 0.4350 (100) | 0.6500 (100) | 0.5500 (100) |
+| Qwen3.5 @ Q3_K_XL | 2B | 0.5732 (164) | 0.5244 (164) | 0.5820 (378) | 0.4444 (378) | 0.2184 (957) | 0.6075 (456) | 0.4100 (100) | 0.4350 (100) | 0.6000 (50) | 0.6200 (50) |
 | Qwen3.5 @ Q3_K_XL | 4B | 0.8171 (164) | 0.7805 (164) | 0.7619 (378) | 0.6270 (378) | 0.4566 (957) | 0.7357 (912) | 0.4900 (100) | 0.4734 (100) | - | 0.8000 (100) |
 | Qwen3.5 @ Q3_K_XL | 9B | 0.8232 (164) | 0.7744 (164) | 0.8254 (378) | 0.6667 (378) | 0.5714 (483) | 0.7829 (912) | 0.5000 (100) | 0.5500 (100) | 0.9400 (100) | 0.7900 (100) |
 | Ternary-Bonsai @ Q2_0_g64 | 1.7B | 0.5427 (164) | 0.4817 (164) | 0.5370 (378) | 0.4471 (378) | 0.3540 (322) | 0.5077 (912) | 0.3900 (100) | 0.5073 (100) | 0.6200 (100) | 0.6900 (100) |
@@ -125,17 +125,20 @@ Held constant: model, harness, protocol.  Varied: which layers get the low bits 
 | LFM2.5-8B-A1B (m55 MoE panel) | experts IQ2/Q2, rest Q5_K_M (exq2) · 2.92 bpw | - | - | - | - | 0.1025 (322) | - | - | - | - | - |
 | LFM2.5-8B-A1B (m55 MoE panel) | experts Q4_K, rest Q2_K (exq4) · 4.48 bpw | - | - | - | - | 0.0683 (322) | - | - | - | - | - |
 
-## E. KV-cache quantisation -- Qwen3.5-2B-Q3_K_XL, m30
+## E. KV-cache quantisation
 
-Held constant: model, effective bpw, ctx.  Varied: KV-cache type K/V, parsed from the protocol string (the cache_type_k/v columns are NOT usable here).  Only MultiPL-E cpp (n=161) is measured, so every cell lands in the MultiPL-E column.
+Held constant: model, effective bpw, ctx.  Varied: KV-cache type K/V.  The m30 rows encode ctx and the KV pair inside the protocol string (its cache_type_k/v columns are unusable) and measure MultiPL-E cpp only; the m130 rows carry the KV pair in cache_type_k/v and cover the four standard columns.  Narrow context is the caveat: these prompts are ~1k tokens, and quantising the KV cache can only bite as context grows, so this bounds the effect at short-to-moderate context, not at 100k.
 
 | model @bpw · ctx (all else equal) | KV type K/V | **HumanEval** | **HumanEval+** | **MBPP** | **MBPP+** | **MultiPL-E** | **MMLU** | **ARC-c** | **TruthfulQA** | **GSM8K** | **IFEval** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **Σ coverage** | rows=12 · data-cols=1/10 | 0 | 0 | 0 | 0 | 12 | 0 | 0 | 0 | 0 | 0 |
+| **Σ coverage** | rows=15 · data-cols=5/10 | 3 | 0 | 0 | 0 | 12 | 3 | 0 | 0 | 3 | 3 |
 | Qwen3.5-2B @4.93bpw · ctx2048 | f16/f16 | - | - | - | - | 0.0667 (161) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · ctx2048 | f16/q8_0 | - | - | - | - | 0.0667 (161) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · ctx2048 | q8_0/f16 | - | - | - | - | 0.0667 (161) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · ctx2048 | q8_0/q8_0 | - | - | - | - | 0.0667 (161) | - | - | - | - | - |
+| Qwen3.5-2B @4.93bpw · ctx8192 | f16/f16 | 0.5732 (164) | - | - | - | - | 0.6096 (456) | - | - | 0.6000 (50) | 0.6200 (50) |
+| Qwen3.5-2B @4.93bpw · ctx8192 | q8_0/q8_0 | 0.5488 (164) | - | - | - | - | 0.6075 (456) | - | - | 0.6800 (50) | 0.6400 (50) |
+| Qwen3.5-2B @4.93bpw · ctx8192 | q4_0/q4_0 | 0.5488 (164) | - | - | - | - | 0.6140 (456) | - | - | 0.6000 (50) | 0.6800 (50) |
 | Qwen3.5-2B @4.93bpw · ctx16384 | f16/f16 | - | - | - | - | 0.0000 (161) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · ctx16384 | f16/q8_0 | - | - | - | - | 0.0000 (161) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · ctx16384 | q8_0/f16 | - | - | - | - | 0.0167 (161) | - | - | - | - | - |
@@ -151,7 +154,7 @@ Held constant: model, effective bpw, harness, ctx.  Varied: the decoding paramet
 
 | model · varied axis (all else equal) | value | **HumanEval** | **HumanEval+** | **MBPP** | **MBPP+** | **MultiPL-E** | **MMLU** | **ARC-c** | **TruthfulQA** | **GSM8K** | **IFEval** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **Σ coverage** | rows=22 · data-cols=1/10 | 0 | 0 | 0 | 0 | 22 | 0 | 0 | 0 | 0 | 0 |
+| **Σ coverage** | rows=27 · data-cols=5/10 | 5 | 0 | 0 | 0 | 22 | 5 | 0 | 0 | 5 | 5 |
 | Qwen3.5-2B @4.11bpw · temperature | 0.0 | - | - | - | - | 0.1242 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.11bpw · temperature | 0.3 | - | - | - | - | 0.1366 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.11bpw · temperature | 0.6 | - | - | - | - | 0.1025 (322) | - | - | - | - | - |
@@ -161,12 +164,17 @@ Held constant: model, effective bpw, harness, ctx.  Varied: the decoding paramet
 | Qwen3.5-2B @4.11bpw · top_k | 64 | - | - | - | - | 0.1366 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.11bpw · top_k | 200 | - | - | - | - | 0.1366 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · temperature | 0.3 | - | - | - | - | 0.2205 (322) | - | - | - | - | - |
+| Qwen3.5-2B @4.93bpw · temperature | 0.3 | 0.5122 (164) | - | - | - | - | 0.6075 (456) | - | - | 0.6400 (50) | 0.7000 (50) |
 | Qwen3.5-2B @4.93bpw · temperature | 0.6 | - | - | - | - | 0.2112 (322) | - | - | - | - | - |
+| Qwen3.5-2B @4.93bpw · temperature | 0.7 | 0.5122 (164) | - | - | - | - | 0.6075 (456) | - | - | 0.6200 (50) | 0.6600 (50) |
 | Qwen3.5-2B @4.93bpw · top_k | 1 | - | - | - | - | 0.2547 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · top_k | 20 | - | - | - | - | 0.2205 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · top_k | 40 | - | - | - | - | 0.2205 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · top_k | 64 | - | - | - | - | 0.2205 (322) | - | - | - | - | - |
 | Qwen3.5-2B @4.93bpw · top_k | 200 | - | - | - | - | 0.2205 (322) | - | - | - | - | - |
+| Qwen3.5-2B @4.93bpw · top_k @ temp 0 | 1 | 0.5732 (164) | - | - | - | - | 0.6075 (456) | - | - | 0.6000 (50) | 0.6200 (50) |
+| Qwen3.5-2B @4.93bpw · top_k @ temp 0 | 40 | 0.5732 (164) | - | - | - | - | 0.6075 (456) | - | - | 0.6000 (50) | 0.6200 (50) |
+| Qwen3.5-2B @4.93bpw · top_k @ temp 0 | 200 | 0.5732 (164) | - | - | - | - | 0.6075 (456) | - | - | 0.6000 (50) | 0.6200 (50) |
 | Qwen3.5-2B @5.70bpw · temperature | 0.3 | - | - | - | - | 0.2733 (322) | - | - | - | - | - |
 | Qwen3.5-2B @5.70bpw · temperature | 0.6 | - | - | - | - | 0.2547 (322) | - | - | - | - | - |
 | Qwen3.5-2B @5.70bpw · top_k | 1 | - | - | - | - | 0.2516 (322) | - | - | - | - | - |
@@ -181,7 +189,7 @@ Held constant: model, ctx.  Varied: speculative draft depth `spec_draft_n_max` (
 
 | model · ctx (all else equal) | spec_draft_n_max | **code** | **long-ctx** | **prose** | **code-256** |
 |---|---|---|---|---|---|
-| **Σ coverage** | rows=25 · data-cols=4/4 | 9 | 5 | 9 | 16 |
+| **Σ coverage** | rows=29 · data-cols=4/4 | 9 | 5 | 9 | 20 |
 | Qwen3.5-0.8B · ctx8192 | 0 | - | - | - | 423.4 (1) |
 | Qwen3.5-0.8B · ctx8192 | 1 | - | - | - | 460.7 (1) |
 | Qwen3.5-0.8B · ctx8192 | 2 | - | - | - | 534.9 (1) |
@@ -203,6 +211,10 @@ Held constant: model, ctx.  Varied: speculative draft depth `spec_draft_n_max` (
 | Qwen3.5-9B · ctx8192 | 1 | - | - | - | 176.6 (1) |
 | Qwen3.5-9B · ctx8192 | 2 | - | - | - | 212.1 (1) |
 | Qwen3.5-9B · ctx8192 | 4 | - | - | - | 236.6 (1) |
+| Qwen3.6-35B-A3B · ctx8192 | 0 | - | - | - | 163.5 (1) |
+| Qwen3.6-35B-A3B · ctx8192 | 1 | - | - | - | 214.2 (1) |
+| Qwen3.6-35B-A3B · ctx8192 | 2 | - | - | - | 262.6 (1) |
+| Qwen3.6-35B-A3B · ctx8192 | 4 | - | - | - | 289.4 (1) |
 | gemma-4-12b · ctx4096 | 0 | 90.4 (1) | - | 90.8 (1) | - |
 | gemma-4-12b · ctx4096 | 2 | 90.5 (1) | - | 90.9 (1) | - |
 | gemma-4-12b · ctx4096 | 4 | 90.5 (1) | - | 90.3 (1) | - |
@@ -214,7 +226,7 @@ Same runs as G1, checked for quality damage: a speed win is only usable if the s
 
 | model · ctx (all else equal) | spec_draft_n_max | **HumanEval** | **HumanEval+** | **MBPP** | **MBPP+** | **MultiPL-E** | **MMLU** | **ARC-c** | **TruthfulQA** | **GSM8K** | **IFEval** |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **Σ coverage** | rows=16 · data-cols=9/10 | 16 | 1 | 1 | 1 | 0 | 16 | 1 | 1 | 16 | 16 |
+| **Σ coverage** | rows=20 · data-cols=9/10 | 20 | 1 | 1 | 1 | 0 | 20 | 1 | 1 | 20 | 20 |
 | Qwen3.5-0.8B · ctx8192 | 0 | 0.3171 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.4600 (50) | 0.5800 (50) |
 | Qwen3.5-0.8B · ctx8192 | 1 | 0.3232 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.5000 (50) | 0.5400 (50) |
 | Qwen3.5-0.8B · ctx8192 | 2 | 0.2988 (164) | - | - | - | - | 0.5241 (456) | - | - | 0.4400 (50) | 0.5200 (50) |
@@ -231,6 +243,10 @@ Same runs as G1, checked for quality damage: a speed win is only usable if the s
 | Qwen3.5-9B · ctx8192 | 1 | 0.8720 (164) | - | - | - | - | 0.7939 (456) | - | - | 0.9600 (50) | 0.8800 (50) |
 | Qwen3.5-9B · ctx8192 | 2 | 0.8902 (164) | - | - | - | - | 0.7939 (456) | - | - | 0.9600 (50) | 0.8600 (50) |
 | Qwen3.5-9B · ctx8192 | 4 | 0.8780 (164) | - | - | - | - | 0.7939 (456) | - | - | 0.9800 (50) | 0.8800 (50) |
+| Qwen3.6-35B-A3B · ctx8192 | 0 | 0.9146 (164) | - | - | - | - | 0.8443 (456) | - | - | 0.9800 (50) | 0.8600 (50) |
+| Qwen3.6-35B-A3B · ctx8192 | 1 | 0.9146 (164) | - | - | - | - | 0.8443 (456) | - | - | 0.9800 (50) | 0.8600 (50) |
+| Qwen3.6-35B-A3B · ctx8192 | 2 | 0.9146 (164) | - | - | - | - | 0.8443 (456) | - | - | 0.9800 (50) | 0.8600 (50) |
+| Qwen3.6-35B-A3B · ctx8192 | 4 | 0.9085 (164) | - | - | - | - | 0.8443 (456) | - | - | 0.9800 (50) | 0.8400 (50) |
 
 ## H. Thinking on vs off -- the newly added axis
 

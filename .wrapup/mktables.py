@@ -402,14 +402,18 @@ def axis_moe(o):
 
 
 def axis_kv(o):
-    """KV cache: held = model + bpw + ctx, varied = KV type (from protocol)."""
+    """KV cache: held = model + bpw + ctx, varied = KV type.
+
+    Two sources.  m30 encodes ctx and the KV pair inside the PROTOCOL STRING (those
+    cache_type_k/v columns are unusable for it), and measures MultiPL-E cpp only.  The later
+    m130 panel runs the standard columns and records the KV pair in cache_type_k/v directly.
+    """
+    rows, order = [], ["f16/f16", "f16/q8_0", "q8_0/f16", "q8_0/q8_0",
+                       "q4_0/q4_0", "f16/q8_0"]
     kv_rows = con.execute(
         "SELECT DISTINCT model, protocol FROM experiments WHERE run_tag='m30-kv-ctx'"
     ).fetchall()
-    # cells keyed by (model, protocol): ctx and KV type live in the protocol
-    # string, so each (model, ctx, kv) cell must stay separate.
     cells = query_cells_by("run_tag='m30-kv-ctx'", "protocol")
-    rows, order = [], ["f16/f16", "f16/q8_0", "q8_0/f16", "q8_0/q8_0"]
     for model, proto in kv_rows:
         mc = re.search(r"ctx=(\d+)", proto or "")
         mk = re.search(r"kv=([\w]+)/([\w]+)", proto or "")
@@ -418,16 +422,34 @@ def axis_kv(o):
         c1 = "%s %s · ctx%s" % (family_of(model), _bpw_tag(model), mc.group(1))
         rows.append((c1, "%s/%s" % (mk.group(1), mk.group(2)),
                      cells.get((model, proto), {})))
+
+    # standard-benchmark KV panels: the KV pair lives in the cache_type_k/v columns
+    new = con.execute(
+        "SELECT DISTINCT model, cache_type_k, cache_type_v, ctx_size FROM experiments "
+        "WHERE source_file LIKE '%/variant_panel.json' AND protocol LIKE 'variant-kv-%'"
+    ).fetchall()
+    newcells = query_cells_by(
+        "source_file LIKE '%/variant_panel.json' AND protocol LIKE 'variant-kv-%'",
+        "cache_type_k || '/' || cache_type_v")
+    for model, k, v, ctx in new:
+        c1 = "%s %s · ctx%s" % (family_of(model), _bpw_tag(model), ctx)
+        label = f"{k}/{v}"
+        if label not in order:
+            order.append(label)
+        rows.append((c1, label, newcells.get((model, label), {})))
+
     return emit_table(
-        o, "E. KV-cache quantisation -- Qwen3.5-2B-Q3_K_XL, m30",
-        "Held constant: model, effective bpw, ctx.  Varied: KV-cache type K/V, "
-        "parsed from the protocol string (the cache_type_k/v columns are NOT "
-        "usable here).  Only MultiPL-E cpp (n=161) is measured, so every cell "
-        "lands in the MultiPL-E column.",
+        o, "E. KV-cache quantisation",
+        "Held constant: model, effective bpw, ctx.  Varied: KV-cache type K/V.  The m30 rows "
+        "encode ctx and the KV pair inside the protocol string (its cache_type_k/v columns "
+        "are unusable) and measure MultiPL-E cpp only; the m130 rows carry the KV pair in "
+        "cache_type_k/v and cover the four standard columns.  Narrow context is the caveat: "
+        "these prompts are ~1k tokens, and quantising the KV cache can only bite as context "
+        "grows, so this bounds the effect at short-to-moderate context, not at 100k.",
         "model @bpw · ctx (all else equal)", "KV type K/V", BENCH_KEYS,
         BENCH_LABELS, rows, sort_key=lambda s: order.index(s) if s in order else 99,
         sort1=lambda s: int(re.search(r"ctx(\d+)", s).group(1)),
-        waiting="standard-benchmark re-runs of m30 (rows now: MultiPL-E cpp only).")
+        waiting="standard-benchmark KV runs (none yet).")
 
 
 def axis_sampling(o):
@@ -439,6 +461,23 @@ def axis_sampling(o):
     for (model, tp), cells in query_cells_by("run_tag='m27-sampling'", "temp").items():
         rows.append(("%s %s · temperature" % (family_of(model), _bpw_tag(model)),
                      str(tp), cells))
+
+    # m131: the same axes re-measured on the standard columns.  Note the deliberate
+    # control: MMLU is scored by log-likelihood and does not sample, so it must be
+    # bit-identical across every sampling configuration, and top_k must be inert at
+    # temperature 0 because there is no distribution to truncate.
+    for (model, tp), cells in query_cells_by(
+            "source_file LIKE '%/variant_panel.json' AND protocol LIKE 'variant-sampling%'",
+            "temp").items():
+        if float(tp or 0) == 0.0:
+            continue                      # the greedy baseline is the top_k rows below
+        rows.append(("%s %s · temperature" % (family_of(model), _bpw_tag(model)),
+                     str(tp), cells))
+    for (model, tk), cells in query_cells_by(
+            "source_file LIKE '%/variant_panel.json' AND protocol LIKE 'variant-sampling%' "
+            "AND CAST(temp AS REAL)=0", "top_k").items():
+        rows.append(("%s %s · top_k @ temp 0" % (family_of(model), _bpw_tag(model)),
+                     str(tk), cells))
 
     def rank(s):
         if s in tk_order:

@@ -1237,6 +1237,66 @@ def ingest_spec(con):
     return n
 
 
+def ingest_variant(con):
+    """KV-cache and sampling panels on the standard benchmark set.
+
+    Tables E (KV) and F (sampling) were previously backed only by the old MultiPL-E panel, so
+    they had one column of ten.  This brings them onto the same four standard columns the rest
+    of the study uses: mmlu (loglikelihood), gsm8k, ifeval and EvalPlus humaneval.
+    """
+    import glob
+    n = 0
+    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%/variant_panel.json'")
+    for path in sorted(glob.glob(".wrapup/mres/*/variant_panel.json")):
+        try:
+            p = json.load(open(path))
+        except Exception:
+            continue
+        tag = p.get("tag") or os.path.basename(os.path.dirname(path))
+        axis = p.get("axis") or "variant"
+        model = canonical_model(p.get("model", "")) or None
+        for label, row in (p.get("rows") or {}).items():
+            extra = row.get("llama_args") or []
+            kv = "/".join(extra[i + 1] for i, a in enumerate(extra) if a == "--cache-type-k") \
+                if "--cache-type-k" in extra else "q8_0"
+            kvt = "/".join(extra[i + 1] for i, a in enumerate(extra) if a == "--cache-type-v") \
+                if "--cache-type-v" in extra else "q8_0"
+            kpart, vpart = (kv.split("/") + [kv])[:2]
+            samp = row.get("sampling") or {}
+            for bench in ("mmlu", "gsm8k", "ifeval", "humaneval"):
+                val = row.get(bench)
+                if val is None:
+                    continue
+                nit = {"mmlu": 456, "gsm8k": 50, "ifeval": 50,
+                       "humaneval": row.get("humaneval_n", 164)}[bench]
+                r = {
+                    "model": norm_model(model),
+                    "cache_type_k": kpart, "cache_type_v": vpart,
+                    # The schema carries a legacy CHECK (cache_type_*_draft = cache_type_*).
+                    # This panel runs with spec_type=none, so the draft cache is unused and
+                    # mirroring the main one is honest rather than a workaround for data we
+                    # would otherwise want to record.
+                    "cache_type_k_draft": kpart, "cache_type_v_draft": vpart,
+                    "reasoning": "off", "spec_type": "none", "spec_draft_n_max": "0",
+                    "temp": str(samp.get("temperature", 0.0)),
+                    "top_p": "0.95", "top_k": str(samp.get("top_k", 40)),
+                    "min_p": "0.05", "presence_penalty": "0.0",
+                    "_bench": bench, "_score": val, "_bad_rate": None,
+                    "_wall_time": None, "_tok_s": None, "_file_size": None,
+                    "run_tag": tag, "rep": 1, "ctx_size": 8192, "parallel_slots": 1,
+                    "seed": None,
+                    "protocol": f"variant-{axis}-{label}-{'evalplus' if bench == 'humaneval' else 'lmeval'}",
+                    "language": ("python" if bench == "humaneval" else None),
+                    "bench_family": ("humaneval" if bench == "humaneval" else bench),
+                    "max_tokens": (None if bench == "humaneval" else 1024),
+                    "source_file": f"mres/{os.path.basename(os.path.dirname(path))}/variant_panel.json",
+                    "completed_at": None, "n_items": nit, "limit_spec": "50",
+                }
+                insert(con, r)
+                n += 1
+    return n
+
+
 def main():
     con = sqlite3.connect(DB)
     con.execute("PRAGMA foreign_keys=ON")
@@ -1284,6 +1344,7 @@ def main():
         ("m38", ingest_m38), ("m39", ingest_m39),
         ("campaign", ingest_campaign),
         ("spec", ingest_spec),
+        ("variant", ingest_variant),
     ]
     tally = {}
     for label, tag, fn in ONCE:

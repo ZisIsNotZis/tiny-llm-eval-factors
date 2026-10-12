@@ -1,0 +1,63 @@
+[01:17:34] === variant panel tag=m130-kv axis=kv
+[01:17:34] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --cache-type-k f16 --cache-type-v f16
+[01:18:46] f16/f16: mmlu=0.6074561403508771
+[01:19:40] f16/f16: gsm8k=0.6
+[01:20:48] f16/f16: ifeval=0.62
+[01:23:50] f16/f16: humaneval=0.0
+[01:23:50] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --cache-type-k q8_0 --cache-type-v q8_0
+[01:25:00] q8_0/q8_0: mmlu=0.6074561403508771
+[01:25:53] q8_0/q8_0: gsm8k=0.68
+[01:27:03] q8_0/q8_0: ifeval=0.64
+[01:30:13] q8_0/q8_0: humaneval=0.5487804878048781
+[01:30:14] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --cache-type-k q4_0 --cache-type-v q4_0
+[01:31:22] q4_0/q4_0: mmlu=0.6140350877192983
+[01:32:16] q4_0/q4_0: gsm8k=0.6
+[01:33:32] q4_0/q4_0: ifeval=0.68
+[01:36:49] q4_0/q4_0: humaneval=0.0
+[01:36:50] variant panel done
+[01:36:51] === variant panel tag=m131-sampling axis=sampling
+[01:36:51] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[01:37:13] === variant panel tag=m130-kv axis=kv
+[01:37:13] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8901 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --cache-type-k f16 --cache-type-v f16
+[01:39:00] f16/f16: mmlu=0.6096491228070176
+[01:39:54] f16/f16: gsm8k=0.6
+[01:41:02] f16/f16: ifeval=0.62
+[01:44:04] f16/f16: humaneval=0.573170731707317
+[01:44:05] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8901 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --cache-type-k q8_0 --cache-type-v q8_0
+[01:45:14] q8_0/q8_0: mmlu=0.6074561403508771
+[01:46:06] q8_0/q8_0: gsm8k=0.68
+[01:47:17] q8_0/q8_0: ifeval=0.64
+[01:50:26] q8_0/q8_0: humaneval=0.5487804878048781
+[01:50:27] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8901 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off --cache-type-k q4_0 --cache-type-v q4_0
+[01:51:34] q4_0/q4_0: mmlu=0.6140350877192983
+[01:52:28] q4_0/q4_0: gsm8k=0.6
+[01:53:44] q4_0/q4_0: ifeval=0.68
+[01:57:01] q4_0/q4_0: humaneval=0.5487804878048781
+[01:57:02] variant panel done
+[01:57:03] === variant panel tag=m131-sampling axis=sampling
+[01:57:03] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[01:58:15] greedy: mmlu=0.6074561403508771
+[01:59:09] greedy: gsm8k=0.6
+[02:00:16] greedy: ifeval=0.62
+[02:03:18] greedy: humaneval=0.573170731707317
+[02:03:19] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[02:04:27] temp0.3: mmlu=0.6074561403508771
+[02:05:17] temp0.3: gsm8k=0.64
+[02:06:17] temp0.3: ifeval=0.7
+[02:09:26] temp0.3: humaneval=0.5121951219512195
+[02:09:27] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[02:10:36] temp0.7: mmlu=0.6074561403508771
+[02:11:30] temp0.7: gsm8k=0.62
+[02:12:31] temp0.7: ifeval=0.66
+[02:15:54] temp0.7: humaneval=0.5121951219512195
+[02:15:55] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[02:17:03] greedy-topk1: mmlu=0.6074561403508771
+[02:17:57] greedy-topk1: gsm8k=0.6
+[02:19:05] greedy-topk1: ifeval=0.62
+[02:22:08] greedy-topk1: humaneval=0.573170731707317
+[02:22:09] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263 --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[02:23:17] greedy-topk200: mmlu=0.6074561403508771
+[02:24:20] greedy-topk200: gsm8k=0.6
+[02:25:41] greedy-topk200: ifeval=0.62
+[02:28:43] greedy-topk200: humaneval=0.573170731707317
+[02:28:44] variant panel done
