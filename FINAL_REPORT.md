@@ -219,13 +219,20 @@ without beating conventional: Bonsai-27B **1-bit** `Q1_0` 0.547/0.373, Qwen3.5-3
 | axis | result | run_tag |
 |---|---|---|
 | KV-cache quant (K/V f16↔q8_0) | **no effect across a 48× context range** (996 / 15 328 / 48 096 prompt tokens; all four settings identical per length) | m30-kv-ctx |
+| KV-cache quant, **re-measured on the standard columns** | **extended down to q4_0 with no measurable cost**: f16/q8_0/q4_0 give MMLU 0.6096/0.6075/0.6140, GSM8K 0.60/0.68/0.60, IFEval 0.62/0.64/0.68, HumanEval 0.573/0.549/0.549 — every cell inside one item-level SE. Bounds the effect at ~1k-token context, not at 100k | m130-kv |
+| `top_k` at temperature 0 | **exactly inert**: top_k ∈ {1, 40, 200} give bit-identical HumanEval 0.5732 / MMLU 0.6075 / GSM8K 0.6000 / IFEval 0.6200. Not a null — a structural fact: at temp 0 there is no distribution to truncate | m131-sampling |
 | `top_k` above 20 (temp 0.3) | K ∈ {20,40,64,200} **byte-identical** on all 6 model×lang cells; only K=1 moves (both ways) | m31-topk |
-| temperature | no significant effect on pass@1 across Q2/Q3/Q4 (|Δ| ≤ 0.068, all CIs cross 0) | m27-sampling |
+| temperature (on the standard columns) | **costs code capability, leaves knowledge untouched**: HumanEval 0.573 at temp 0 → 0.512 at both 0.3 and 0.7, while MMLU stays **bit-identical at 0.6075** in every configuration (the log-likelihood path does not sample). GSM8K/IFEval wobble inside one SE | m131-sampling |
+| temperature (older MultiPL-E panel) | no significant effect on pass@1 across Q2/Q3/Q4 (\|Δ\| ≤ 0.068, all CIs cross 0) | m27-sampling |
 | flash-attn `-fa` | **no-op at Q3** (0/3 probes change) but **real at Q2** (1/3); V-cache-q8 control moves text at both | m44-fa-probe |
-| MTP draft length | task-dependent: code peaks at n=3 (**+32%**), but a ~10k-token long prompt is **slower for every n>0** (−15.6% at n=4) | m28-speed |
+| MTP draft length | task-dependent: code peaks at n=3 (**+32%**), but a ~10k-token long prompt is **slower for every n>0** (−15.6% at n=4); the MTP re-run (F10) finds +36%..+93% depending on model size | m28-speed, m125–m129 |
 
 **Reading:** the sampling/precision knobs people tune most are largely inert on these tasks; the
-lever that matters is the **weight-quant scheme** (F4).
+lever that matters is the **weight-quant scheme** (F4). Two of the entries above are not nulls but
+*structural controls*, and they are the strongest evidence in the table that the harness is wired
+correctly: MMLU is scored by log-likelihood, so it **must** be invariant to every sampling and
+draft-depth change — and it is (0.6075 across all sampling configs; 0.5241/0.6250/0.7456/0.7939
+across all draft depths on four models).
 
 ### F7 — PPL is a weak proxy for capability (agrees 5/7, fails in both directions)
 
