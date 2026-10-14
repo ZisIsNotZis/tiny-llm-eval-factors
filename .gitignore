@@ -28,3 +28,5 @@ experiments.sqlite.bak*
 .wrapup/msenv/
 .wrapup/bfclenv/
 .wrapup/mplenv/
+
+figures/

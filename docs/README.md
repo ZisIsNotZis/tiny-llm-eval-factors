@@ -50,8 +50,7 @@ KV 缓存精度、采样参数、投机解码深度、思考开关……），�
 ```sh
 python3 make_report.py            # 从 DB 生成 report.html（唯一报告）
 python3 .wrapup/mktables.py       # 打印每张结构化表的行数/覆盖（不写文件）
-python3 bpw_sensitivity.py        # 每基准的位宽敏感度（家族内斜率）
-python3 bpw_paired.py             # 能力型 vs 知识型的配对检验
+python3 migrate_db.py             # 入库（唯一入库路径；只跑一次，跑完校验 total==distinct）
 ```
 
 ## 许可
