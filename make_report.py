@@ -7,7 +7,7 @@
 运行：python3 make_report.py  ->  report.html
 """
 from __future__ import annotations
-import base64, html, json, os, sqlite3, sys
+import base64, html, json, math, os, sqlite3, sys
 
 import matplotlib
 matplotlib.use("Agg")
@@ -19,6 +19,55 @@ sys.path.insert(0, ".")
 sys.path.insert(0, ".wrapup")
 from bpw_sensitivity import BENCH, load  # noqa
 import mktables  # noqa
+
+# --- 唯一数据源 = experiments.sqlite；下面这些常量只是“哪些 run_tag 属于哪个对照”的设计信息 ---
+BPWMAP = json.load(open(".wrapup/bpw_map.json"))   # 有效位宽来源（8×字节÷参数量）
+QAT_PAIRS = [
+    ("gemma-4-12B-it", "UD-Q4_K_XL", "m140-qat-gemma12b-q4", "m141-native-gemma12b-q4"),
+    ("gemma-4-31B-it", "UD-Q4_K_XL", "m142-qat-gemma31b-q4", "m143-native-gemma31b-q4"),
+    ("gemma-4-26B-A4B-it", "UD-Q4_K_XL", "m144-qat-gemma26b-a4b-q4", "m145-native-gemma26b-a4b-q4"),
+    ("gemma-4-E2B-it", "UD-Q4_K_XL", "m147-qat-gemma-e2b-q4", "m148-native-gemma-e2b-q4"),
+    ("gemma-4-E2B-it", "UD-Q2_K_XL", "m146-qat-gemma-e2b-q2", "m119-gemma-e2b-q2kxl"),
+    ("gemma-4-E4B-it", "UD-Q4_K_XL", "m155-qat-gemma-e4b-q4", "m156-native-gemma-e4b-q4"),
+    ("gemma-4-E4B-it", "UD-Q2_K_XL", "m149-qat-gemma-e4b-q2", "m121-gemma-e4b-q2kxl"),
+]
+NATIVE_LADDER = [("m91-qwen38-27b-q2kxl", 2.878), ("m100-qwen38-27b-q3kxl", 3.850),
+                 ("m152-qwen38-27b-iq4xs", 4.173)]
+GSQ_QUANTS = [("GSQ-RCO IQ3_XXS", "m150-qwen38-gsqrco-iq3xxs", 3.058),
+              ("GSQ-RCO IQ3_S", "m151-qwen38-gsqrco-iq3s", 3.549)]
+
+
+def tag_bpw(tag):
+    r = CON.execute("SELECT model FROM experiments WHERE run_tag=? LIMIT 1", (tag,)).fetchone()
+    return BPWMAP.get(r[0]) if r and r[0] in BPWMAP else None
+
+
+def pair_delta(a_tag, b_tag):
+    """delta = a - b, 题目级 SE 的 95% CI。"""
+    a, b = raw_scores(a_tag), raw_scores(b_tag)
+    out = {}
+    for k in BENCH_ORDER:
+        ca, cb = a.get(k), b.get(k)
+        if ca and cb and ca[0] is not None and cb[0] is not None:
+            pa, na = ca; pb, nb = cb
+            se = math.sqrt(pa * (1 - pa) / max(na or 1, 1) + pb * (1 - pb) / max(nb or 1, 1))
+            out[k] = (pa - pb, se, pa - pb - 1.96 * se, pa - pb + 1.96 * se)
+        else:
+            out[k] = None
+    return out
+
+
+def interp_native(bpw):
+    pts = sorted((x, tag) for tag, x in NATIVE_LADDER)
+    out = {}
+    for k in BENCH_ORDER:
+        xs, ys = [], []
+        for x, tag in pts:
+            sc = raw_scores(tag).get(k)
+            if sc and sc[0] is not None:
+                xs.append(x); ys.append(sc[0])
+        out[k] = float(np.interp(bpw, xs, ys)) if len(xs) >= 2 else None
+    return out
 
 CON = sqlite3.connect("file:experiments.sqlite?mode=ro", uri=True)
 CANON = [(b, proto) for b, _k, proto in BENCH]
@@ -245,18 +294,18 @@ def fig_thinking(t):
 
 
 def fig_qat():
-    pairs = json.load(open(".wrapup/axes_findings.json"))["axis_1_6_qat"]["pairs"]
     zhb = {"humaneval-plus": "代码HE+", "mbpp-plus": "代码MBPP+", "mmlu": "知识MMLU",
            "arc_challenge": "科学ARC", "truthfulqa_mc2": "真实TQA", "gsm8k": "推理GSM8K", "ifeval": "指令IFEval"}
-    fig, axes = plt.subplots(1, len(pairs), figsize=(3.4 * len(pairs), 4.2), squeeze=False)
-    for ax, p in zip(axes[0], pairs):
-        bs = [b for b in BENCH_ORDER if p["deltas"].get(b)]
-        vals = [p["deltas"][b]["delta"] for b in bs]
-        sig = [(p["deltas"][b]["ci_lo"] > 0 or p["deltas"][b]["ci_hi"] < 0) for b in bs]
+    deltas = [pair_delta(q, n) for _, _, q, n in QAT_PAIRS]
+    fig, axes = plt.subplots(1, len(QAT_PAIRS), figsize=(3.4 * len(QAT_PAIRS), 4.2), squeeze=False)
+    for ax, (label, recipe, _q, _n), dl in zip(axes[0], QAT_PAIRS, deltas):
+        bs = [b for b in BENCH_ORDER if dl.get(b)]
+        vals = [dl[b][0] for b in bs]
+        sig = [(dl[b][2] > 0 or dl[b][3] < 0) for b in bs]
         ax.bar(range(len(bs)), vals, color=["#c0392b" if s else "#95a5a6" for s in sig])
         ax.axhline(0, color="#333", lw=.8)
         ax.set_xticks(range(len(bs))); ax.set_xticklabels([zhb[b] for b in bs], rotation=60, ha="right", fontsize=7)
-        ax.set_title(f"{p['label']}\n{p['recipe']}", fontsize=9); ax.grid(axis="y", alpha=.25)
+        ax.set_title(f"{label}\n{recipe}", fontsize=9); ax.grid(axis="y", alpha=.25)
         if ax is axes[0][0]:
             ax.set_ylabel("QAT − 原生 的分数差")
     fig.suptitle("量化感知训练 vs 原生（红=95% 区间不跨 0）")
@@ -264,22 +313,18 @@ def fig_qat():
 
 
 def fig_gsq():
-    d = json.load(open(".wrapup/axes_findings.json"))["axis_1_5_gsq_rco"]
-    nl = d.get("native_ladder") or []
     zhb = {"humaneval-plus": "代码HE+", "mmlu": "知识MMLU", "gsm8k": "推理GSM8K"}
-    gbpw = {"GSQ-RCO IQ3_XXS": 3.058, "GSQ-RCO IQ3_S": 3.549}
     fig, ax = plt.subplots(figsize=(9, 4.8))
-    prot = dict(CANON)
     for b in ("humaneval-plus", "mmlu", "gsm8k"):
-        ys = []
-        for r in nl:
-            row = CON.execute("SELECT _score FROM experiments WHERE run_tag=? AND protocol=? AND _bench=?",
-                              (r["tag"], prot[b], b)).fetchone()
-            ys.append(row[0] if row and row[0] is not None else np.nan)
-        ax.plot([r["bpw"] for r in nl], ys, "-o", label="原生 " + zhb[b])
-        for k, v in (d.get("quants") or {}).items():
-            if b in v and v[b].get("gsq") is not None:
-                ax.scatter([gbpw[k]], [v[b]["gsq"]], marker="*", s=170, zorder=5, label=f"{k} {zhb[b]}")
+        xs, ys = [], []
+        for tag, bpw in NATIVE_LADDER:
+            sc = raw_scores(tag).get(b)
+            xs.append(bpw); ys.append(sc[0] if sc and sc[0] is not None else np.nan)
+        ax.plot(xs, ys, "-o", label="原生 " + zhb[b])
+        for k, tag, bpw in GSQ_QUANTS:
+            g = raw_scores(tag).get(b)
+            if g and g[0] is not None:
+                ax.scatter([bpw], [g[0]], marker="*", s=170, zorder=5, label=f"{k} {zhb[b]}")
     ax.set_xlabel("有效位宽"); ax.set_ylabel("分数")
     ax.legend(fontsize=8); ax.grid(alpha=.25)
     ax.set_title("GSQ-RCO（星）与原生阶梯（线）")
@@ -346,24 +391,23 @@ def raw_scores(tag):
 
 
 def qat_tables():
-    pairs = json.load(open(".wrapup/axes_findings.json"))["axis_1_6_qat"]["pairs"]
     ks = BENCH_ORDER; labs = [ZH7[b] for b in ks]
     rows = []
-    for p in pairs:
-        for which, tag, bpw in (("QAT", p["tags"][0], p["bpw_qat"]), ("原生", p["tags"][1], p["bpw_native"])):
-            rows.append((f"{p['label']} {p['recipe']} {which}", f"{bpw:.3f}", raw_scores(tag)))
+    for label, recipe, q, n in QAT_PAIRS:
+        for which, tag in (("QAT", q), ("原生", n)):
+            bpw = tag_bpw(tag)
+            rows.append((f"{label} {recipe} {which}", f"{bpw:.3f}" if bpw else "—", raw_scores(tag)))
     t1 = {"title": "量化感知训练：原始分数", "c1_name": "系列", "c2_name": "有效位宽",
           "col_keys": ks, "col_labels": labs, "rows": rows,
-          "counts": {k: sum(1 for _, _, c in rows if c.get(k)) for k in ks},
-          "data_cols": len(ks)}
+          "counts": {k: sum(1 for _, _, c in rows if c.get(k)) for k in ks}, "data_cols": len(ks)}
     rows2 = []
-    for p in pairs:
-        cells = {}
+    for label, recipe, q, n in QAT_PAIRS:
+        dl = pair_delta(q, n); cells = {}
         for b in ks:
-            c = p["deltas"].get(b)
+            c = dl.get(b)
             if c:
-                cells[b] = (c["delta"], f"{c['ci_lo']:+.3f},{c['ci_hi']:+.3f}")
-        rows2.append((f"{p['label']} {p['recipe']}", "QAT − 原生", cells))
+                cells[b] = (c[0], f"[{c[2]:+.3f},{c[3]:+.3f}]")
+        rows2.append((f"{label} {recipe}", "QAT − 原生", cells))
     t2 = {"title": "量化感知训练：差值", "c1_name": "系列", "c2_name": "差值",
           "col_keys": ks, "col_labels": labs, "rows": rows2,
           "counts": {k: sum(1 for _, _, c in rows2 if c.get(k)) for k in ks}, "data_cols": len(ks)}
@@ -371,19 +415,33 @@ def qat_tables():
 
 
 def gsq_tables():
-    d = json.load(open(".wrapup/axes_findings.json"))["axis_1_5_gsq_rco"]
     ks = BENCH_ORDER; labs = [ZH7[b] for b in ks]
-    gbpw = {"GSQ-RCO IQ3_XXS": 3.058, "GSQ-RCO IQ3_S": 3.549}
-    rows = []
-    for r in (d.get("native_ladder") or []):
-        rows.append(("原生 " + r.get("label", ""), f"{r.get('bpw',0):.3f}", raw_scores(r.get("tag", ""))))
-    for k, v in (d.get("quants") or {}).items():
-        cells = {b: (v[b]["gsq"], 0) for b in ks if b in v and v[b].get("gsq") is not None}
-        rows.append((k, f"{gbpw[k]:.3f}", cells))
+    rows = [("原生 " + tag, f"{bpw:.3f}", raw_scores(tag)) for tag, bpw in NATIVE_LADDER]
+    rows += [(k, f"{bpw:.3f}", raw_scores(tag)) for k, tag, bpw in GSQ_QUANTS]
     t1 = {"title": "GSQ-RCO：原始分数", "c1_name": "系列", "c2_name": "有效位宽",
           "col_keys": ks, "col_labels": labs, "rows": rows,
           "counts": {k: sum(1 for _, _, c in rows if c.get(k)) for k in ks}, "data_cols": len(ks)}
-    return [t1]
+    nearest_all = {k: min(NATIVE_LADDER, key=lambda r: abs(r[1] - bpw))[0] for k, _t, bpw in GSQ_QUANTS}
+    rows2 = []
+    for k, tag, bpw in GSQ_QUANTS:
+        dl = pair_delta(tag, nearest_all[k]); cells = {}
+        for b in ks:
+            c = dl.get(b)
+            if c:
+                cells[b] = (c[0], f"[{c[2]:+.3f},{c[3]:+.3f}]")
+        rows2.append((k + " vs 最近原生", "GSQ − 原生", cells))
+    for k, tag, bpw in GSQ_QUANTS:
+        interp = interp_native(bpw); cells = {}
+        g = raw_scores(tag)
+        for b in ks:
+            if g.get(b) and interp.get(b) is not None:
+                d = g[b][0] - interp[b]
+                cells[b] = (d, "插值")
+        rows2.append((k + " vs 插值原生", "GSQ − 原生", cells))
+    t2 = {"title": "GSQ-RCO：差值", "c1_name": "系列", "c2_name": "差值",
+          "col_keys": ks, "col_labels": labs, "rows": rows2,
+          "counts": {k: sum(1 for _, _, c in rows2 if c.get(k)) for k in ks}, "data_cols": len(ks)}
+    return [t1, t2]
 
 
 def render_section(H, title, intro, tables, figure):
