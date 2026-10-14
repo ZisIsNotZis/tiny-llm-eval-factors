@@ -47,7 +47,7 @@
 | `bfcl-prompt-nothink-greedy` | BFCL，提示式（已被上面取代，历史保留） |
 | `mpl-raw-t<temp>-768` / `mpl-raw-greedy-768;topk-...` | 采样/KV 等变量面板 |
 
-**同一张表里绝不能混协议**（协议本身会让量化结论翻号，见 `FINDINGS.md` F8）。
+**同一张表里绝不能混协议**（协议本身会让量化结论翻号，见 `L2-结果.md` F8）。
 
 ## run_tag（来源键）
 
