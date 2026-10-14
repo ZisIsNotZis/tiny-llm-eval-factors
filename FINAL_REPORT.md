@@ -391,6 +391,183 @@ bits. This also explains why the earlier m55 MultiPL-E-only reading was inconclu
 column's ordering (exq2 0.103 > uniform 0.081 > exq4 0.068, but with an ns item-level CI) was
 the same story with too little signal to see it.
 
+### F12 — Quantisation-aware training (量化感知训练, QAT) buys no quality at a fixed recipe — the "QAT vs native" contrast is really a bpw contrast
+
+The AXES QAT panels hold the nominal recipe fixed and vary only whether the weights were
+QAT-trained. **But the QAT file does not keep the recipe's byte cost**: at the *same nominal*
+`UD-Q?_K_XL` label the QAT GGUF is **0.36–0.95 bpw smaller** than its native partner (12B
+4.512 vs 4.949; E2B Q2 3.779 vs 4.138; E2B Q4 4.529 vs 5.482; E4B Q2 3.451 vs 3.998; 26B-A4B
+4.518 vs 5.393). So a QAT-vs-native delta is a
+*joint* QAT + fewer-bits delta, and no byte-matched pair exists in this batch. Item-level SE,
+95% CI, delta = QAT − native:
+
+| pair | recipe | HumanEval+ | MBPP+ | MMLU | ARC-c | TruthfulQA | GSM8K | IFEval |
+|---|---|---|---|---|---|---|---|---|
+| 12B (m140−m141) | UD-Q4_K_XL | −0.006 ns | −0.011 ns | **−0.197** [−0.242,−0.153] | NO RESULT | +0.026 ns | +0.020 ns | −0.020 ns |
+| E2B (m146−m119) | UD-Q2_K_XL | **−0.311** [−0.409,−0.213] | NO RESULT | −0.030 ns | NO RESULT | +0.047 ns | **−0.290** [−0.423,−0.157] | **−0.170** [−0.307,−0.033] |
+| E2B (m147−m148) | UD-Q4_K_XL | +0.006 ns | +0.034 ns | +0.006 ns | −0.020 ns | −0.021 ns | −0.040 ns | −0.020 ns |
+| E4B (m149−m121) | UD-Q2_K_XL | **−0.165** [−0.269,−0.061] | **−0.212** [−0.281,−0.142] | **−0.150** [−0.195,−0.105] | −0.110 ns | +0.060 ns | **−0.390** [−0.511,−0.269] | −0.060 ns |
+| E4B (m155−m156) | UD-Q4_K_XL | +0.037 ns | +0.056 ns | +0.013 ns | +0.030 ns | −0.014 ns | +0.050 ns | −0.050 ns |
+| 26B-A4B (m144−m145) | UD-Q4_K_XL | ⛔ BLOCKED-on-VRAM (native m145) | ⛔ | ⛔ | ⛔ | ⛔ | ⛔ | ⛔ |
+| 31B (m142−m143) | UD-Q4_K_XL | ⛔ BLOCKED-on-VRAM (both sides) | ⛔ | ⛔ | ⛔ | ⛔ | ⛔ | ⛔ |
+
+`ns` = CI spans 0. `NO RESULT` = harness non-measurement, never 0. `pending` = the pair is still
+draining (a delta needs both sides). `⛔ BLOCKED-on-VRAM` = non-measurement, never 0 (m142/m143
+31B and m145 26B-A4B native; `AXES_BLOCKED.md`). **Pair-level status 2026-10-14 03:05:** the
+**Final (2026-10-14 06:55):** the AXES campaign finished (`done=9 failed_stages=0`; the detached
+finisher exited `all 12 complete`). All five runnable axis-1.6 pairs are now 7/7 — **12B Q4**,
+**E2B Q2**, **E2B Q4**, **E4B Q2**, **E4B Q4**. The two Q4 pairs added here (E2B, E4B) are each
+null on all 7 cells while the QAT file is ~0.94–0.95 bpw smaller; the two Q2 pairs carry the
+significant losses. The 31B pair and the 26B-A4B native remain BLOCKED-on-VRAM (non-measurements).
+
+* **The "same nominal recipe" premise is false at the GGUF level.** Every QAT file in this batch
+  is stored `general.file_type=2` (Q4_0 lineage): `general.name` reads `Gemma-4 12B IT (smart
+  Q4_0, QAT-lossless)`, `Gemma-4 E2B IT (mobile wNa8o8 -> gguf)`, `Gemma-4 E4B IT (mobile wNa8o8
+  -> gguf, faithful)`, etc. The native partners are real K-/I-quants with a different
+  `general.file_type` (`Q2_K=10`, `Q3_K=13`, `Q4_K_M=15`, `IQ4_XS=30`; verified for every QAT
+  file in this batch). **Correction (2026-10-13):** every QAT GGUF being `file_type=2` (Q4_0
+  lineage) vs the native K-quant file_type means the "same nominal `UD-Q?_K_XL` recipe" premise
+  is false at the byte/scheme level. So each QAT-vs-native delta mixes a **scheme** change
+  (Q4_0-class vs K-quant) *and* the bpw change *and* the QAT change; it is not a one-factor test
+  (evidence: direct GGUF metadata read + `.wrapup/bpw_map.json` bpw).
+* **The Q4 pairs are null everywhere except 12B MMLU**: code, arithmetic, instruction-following
+  and truthfulness all sit inside one item-level SE of the native file, and **both E2B Q4
+  (m147−m148) and E4B Q4 (m155−m156) are null on all 7 cells** (largest |delta| +0.056) — while
+  the QAT file is 0.44–0.95 bpw cheaper.
+* **At Q4 QAT neither helps nor hurts measurably.** E2B Q4 spends 0.95 fewer bpw than its native
+  partner and all seven 95% CIs span 0; the only significant negative cells in the whole batch
+  are the sub-3-bit E2B Q2 ones below.
+* **The 12B MMLU cell is confounded and must not be read as "QAT destroys knowledge".** The
+  native 12B MMLU ladder is Q2 0.370 → Q3 0.418 → **Q4 0.644** (m93/m105/m141, same protocol,
+  n=912): the Q3→Q4 jump (+0.226) is ~28× the study's pooled `Q3→Q4` plateau (+0.008, F2) and is
+  unmatched on every other benchmark (native Q3 HumanEval+ 0.9146 ≈ QAT Q4 0.9085; native Q4
+  GSM8K 0.930 = Q3 0.930). The QAT Q4 MMLU (0.446) sits at the *native Q3* level. **Flag retained.**
+  Resolution attempt (2026-10-13, no GPU re-run): both 12B Q4 MMLU runs are clean — m141
+  `server.log` loads the correct `gemma-4-12b-it-UD-Q4_K_XL.gguf` checkpoint, m140/m141 share the
+  same protocol *and* the same `lm_eval` git `194c1059b`, the MMLU task file/dataset are identical,
+  and the two GGUF tokenizers are byte-identical (n_vocab 262144, same answer-letter ids). m141's
+  61-subject profile matches no other model's → **not a checkpoint/protocol/shim mixup** (a shim
+  failure would return `null`, not a number). It is a systematic **180/912-item** shift confined
+  to the one MMLU task — HumanEval+/MBPP+/GSM8K/IFEval/TruthfulQA all agree between m140 and m141,
+  and TruthfulQA (the other knowledge loglikelihood task) is *flat* across the whole 12B ladder
+  (Q2 0.501, Q3 0.499, QAT-Q4 0.529, native-Q4 0.504). A real Q4 knowledge jump would move it.
+  Verdict: **not a capability jump**; treat as a measurement-level outlier, and note the Q2/Q3
+  rungs were measured under an *older* lm_eval git, so the 12B MMLU ladder is not on one stable
+  harness. **TODO (flagged, not re-run here): re-measure the 12B MMLU ladder m93/m105/m140/m141 on
+  a single harness.**
+* **At sub-3-bit (E2B Q2, E4B Q2) QAT does not rescue the regime**: E2B Q2 loses −0.31 HumanEval+,
+  −0.29 GSM8K, −0.17 IFEval (0.36 fewer bpw); E4B Q2 is worse on 4 of 7 cells — HumanEval+ −0.165,
+  MBPP+ −0.212, MMLU −0.150, GSM8K −0.390 (0.55 fewer bpw). Consistent with the Q2 floor (F1/F3):
+  the loss tracks the bits given up, not a QAT-specific damage or benefit.
+* **Non-measurements (never 0).** m146 MBPP+ aborted (`AssertionError: Missing problems in
+  samples`, only 179 unique completions); `arc_challenge` is NO RESULT for the 12B and E2B-Q2
+  gemma cells in this batch (shim `continuation token ... absent ... refusing to guess`) — the
+  E2B-Q4 pair (m147/m148) did measure ARC-c (0.480 / 0.500), so the shim failure is cell-specific,
+  not model-wide.
+* The 31B pair (m142/m143) and the 26B-A4B native control (m145) are **BLOCKED-on-VRAM**
+  (co-resident foreign server on :8834; `AXES_BLOCKED.md`) — non-measurements, not 0.
+
+**Reading.** On the evidence available there is no QAT quality bonus at a fixed recipe: the only
+significant cells are negative and land at sub-3-bit (E2B Q2, E4B Q2), while all three Q4 pairs
+(12B, E2B, E4B) are null on every measurable cell even though the QAT file is 0.44–0.95 bpw
+smaller. QAT is worth using as a *size* option (same recipe label, fewer bytes), not as a quality
+upgrade. All runnable axis-1.6 pairs are complete; 26B-A4B and 31B stay BLOCKED-on-VRAM.
+
+### F13 — GSQ-RCO (GSQ-RCO 量化方案) vs the standard Qwen3.8-27B quant ladder — no scheme advantage at matched bpw
+
+Axis 1.5 holds the base model fixed (**Qwen3.8-27B**) and varies the **quantisation scheme
+(量化方案)**: the third-party **GSQ-RCO** quants vs unsloth's `UD-Q?_K_XL` ladder. There is no
+byte-matched partner, so each GSQ quant is compared (a) to the *nearest* native ladder point and
+(b) to the native score **linearly interpolated to the GSQ quant's own effective bpw**. Item-level
+SE = `sqrt(p(1-p)/n)`, 95% CI = delta ± 1.96·SE, delta = GSQ − native (positive favours GSQ-RCO).
+Every cell is the canonical 7-benchmark protocol (`.wrapup/axes_findings.py`); bpw is the true
+effective value from `.wrapup/bpw_map.json`.
+
+**Native ladder** (canonical cells, all complete):
+
+| native rung | bpw | HumanEval+ | MBPP+ | MMLU | ARC-c | TruthfulQA | GSM8K | IFEval |
+|---|---:|---|---|---|---|---|---|---|
+| UD-Q2_K_XL (m91) | 2.878 | 0.8963 | 0.7619 | 0.8037 | 0.6100 | 0.5210 | 0.9800 | 0.8300 |
+| UD-Q3_K_XL (m100) | 3.850 | 0.8354 | 0.7381 | 0.8366 | 0.5900 | 0.5693 | 0.9600 | 0.7500 |
+| UD-IQ4_XS (m152) | 4.173 | 0.8720 | 0.7593 | 0.8498 | 0.6000 | 0.5685 | 0.9800 | 0.7700 |
+
+**GSQ-RCO treatments** (both run to completion):
+
+| GSQ quant | bpw | HumanEval+ | MBPP+ | MMLU | ARC-c | TruthfulQA | GSM8K | IFEval |
+|---|---:|---|---|---|---|---|---|---|
+| GSQ-RCO IQ3_XXS (m150) | 3.058 | 0.8476 | 0.7540 | 0.8103 | 0.6100 | 0.5733 | 0.9400 | 0.8200 |
+| GSQ-RCO IQ3_S (m151) | 3.549 | 0.8963 | 0.7646 | 0.8279 | 0.6000 | 0.5499 | 0.9600 | 0.8500 |
+
+**(a) delta vs the nearest native ladder quant** (bpw printed per pair, n = treatment/control):
+
+`GSQ-RCO IQ3_XXS @3.058` vs `native UD-Q2_K_XL @2.878` (+0.180 bpw):
+
+| bench | GSQ | nearest native | delta (nearest) | 95% CI | n |
+|---|---:|---:|---:|---|---|
+| humaneval-plus | 0.8476 | 0.8963 | −0.0488 | [−0.1209, +0.0234] | 164/164 |
+| mbpp-plus | 0.7540 | 0.7619 | −0.0079 | [−0.0690, +0.0531] | 378/378 |
+| mmlu | 0.8103 | 0.8037 | +0.0066 | [−0.0296, +0.0428] | 912/912 |
+| arc_challenge | 0.6100 | 0.6100 | +0.0000 | [−0.1352, +0.1352] | 100/100 |
+| truthfulqa_mc2 | 0.5733 | 0.5210 | +0.0523 | [−0.0855, +0.1901] | 100/100 |
+| gsm8k | 0.9400 | 0.9800 | −0.0400 | [−0.0940, +0.0140] | 100/100 |
+| ifeval | 0.8200 | 0.8300 | −0.0100 | [−0.1153, +0.0953] | 100/100 |
+
+`GSQ-RCO IQ3_S @3.549` vs `native UD-Q3_K_XL @3.850` (−0.301 bpw):
+
+| bench | GSQ | nearest native | delta (nearest) | 95% CI | n |
+|---|---:|---:|---:|---|---|
+| humaneval-plus | 0.8963 | 0.8354 | +0.0610 | [−0.0125, +0.1344] | 164/164 |
+| mbpp-plus | 0.7646 | 0.7381 | +0.0265 | [−0.0351, +0.0881] | 378/378 |
+| mmlu | 0.8279 | 0.8366 | −0.0088 | [−0.0431, +0.0255] | 912/912 |
+| arc_challenge | 0.6000 | 0.5900 | +0.0100 | [−0.1261, +0.1461] | 100/100 |
+| truthfulqa_mc2 | 0.5499 | 0.5693 | −0.0194 | [−0.1570, +0.1182] | 100/100 |
+| gsm8k | 0.9600 | 0.9600 | +0.0000 | [−0.0543, +0.0543] | 100/100 |
+| ifeval | 0.8500 | 0.7500 | +0.1000 | [−0.0100, +0.2100] | 100/100 |
+
+**(b) delta vs the native score linearly interpolated to the GSQ quant's own bpw** (both GSQ
+quants sit in the Q2@2.878 ↔ Q3@3.850 bracket; `pred` = interpolated native score):
+
+`GSQ-RCO IQ3_XXS @3.058` (frac = (3.058−2.878)/(3.850−2.878) = 0.185):
+
+| bench | GSQ | native interp @3.058 | delta (interp) | 95% CI |
+|---|---:|---:|---:|---|
+| humaneval-plus | 0.8476 | 0.8851 | −0.0375 | [−0.1096, +0.0346] |
+| mbpp-plus | 0.7540 | 0.7575 | −0.0035 | [−0.0646, +0.0575] |
+| mmlu | 0.8103 | 0.8098 | +0.0005 | [−0.0357, +0.0367] |
+| arc_challenge | 0.6100 | 0.6063 | +0.0037 | [−0.1315, +0.1389] |
+| truthfulqa_mc2 | 0.5733 | 0.5299 | +0.0433 | [−0.0945, +0.1811] |
+| gsm8k | 0.9400 | 0.9763 | −0.0363 | [−0.0903, +0.0177] |
+| ifeval | 0.8200 | 0.8152 | +0.0048 | [−0.1005, +0.1101] |
+
+`GSQ-RCO IQ3_S @3.549` (frac = (3.549−2.878)/(3.850−2.878) = 0.690):
+
+| bench | GSQ | native interp @3.549 | delta (interp) | 95% CI |
+|---|---:|---:|---:|---|
+| humaneval-plus | 0.8963 | 0.8542 | +0.0421 | [−0.0314, +0.1156] |
+| mbpp-plus | 0.7646 | 0.7455 | +0.0191 | [−0.0425, +0.0807] |
+| mmlu | 0.8279 | 0.8264 | +0.0014 | [−0.0329, +0.0357] |
+| arc_challenge | 0.6000 | 0.5962 | +0.0038 | [−0.1322, +0.1399] |
+| truthfulqa_mc2 | 0.5499 | 0.5544 | −0.0045 | [−0.1420, +0.1331] |
+| gsm8k | 0.9600 | 0.9662 | −0.0062 | [−0.0605, +0.0481] |
+| ifeval | 0.8500 | 0.7748 | +0.0752 | [−0.0348, +0.1853] |
+
+**Reading.** On every benchmark and under *both* controls (nearest native quant and the
+bpw-interpolated native ladder) the GSQ-RCO quants are statistically indistinguishable from the
+native unsloth ladder: **all 28 deltas have 95% CIs that span 0**. The IQ3_XXS quant costs
++0.180 bpw over the nearest native Q2 and buys nothing measurable on any of the 7 benchmarks. The
+IQ3_S quant spends −0.301 bpw (fewer bytes than native Q3) and is likewise null everywhere except
+one near-significant positive cell — IFEval **+0.100 [−0.010, +0.210]** vs nearest native Q3
+(+0.075 [−0.035, +0.185] interpolated), which touches 0 and is a single 100-item task, so it is
+**not** a scheme win at 95%. On this base model the native ladder itself is non-monotone in a
+useful way — MMLU rises with bpw (Q2 0.8037 → Q3 0.8366 → IQ4_XS 0.8498) while code and GSM8K
+*fall* — so a single-label comparison would have mis-ranked the GSQ quants; the interpolated
+control is the load-bearing one, and it agrees with the nearest-native control. **Verdict:
+GSQ-RCO is a size/format option, not a quality upgrade, at matched effective bpw on
+Qwen3.8-27B.**
+
+The readout (`.wrapup/AXES_RESULTS.md`, refreshed by `.wrapup/axes_finisher.sh`) and
+`figures/fig5_axes.png` panel B carry the same deltas.
+
 ## 4. Practical answer for choosing a quant
 
 1. **Default to ≥ Q3.** It was never significantly worse than Q2 in 13 anchors × (code, tools,
@@ -406,6 +583,9 @@ the same story with too little signal to see it.
    the wrong way (F7).
 6. **Re-measure on your own protocol.** The same weights look better or worse under chat vs raw, and
    forced vs native tool calling (F8).
+7. **Do not expect QAT to recover quantisation loss** — at a fixed recipe the QAT GGUF is smaller
+   (lower bpw) and measures at or below its native partner; the only significant cells are negative
+   (F12).
 
 ---
 
@@ -449,5 +629,9 @@ ternary within-model scheme contrast is incomplete (`Ternary-Bonsai-Q2_0` fails 
 | B1a: newer llama.cpp build in a separate tree for `Q2_0`/`PQ2_0` ternary | unrun |
 | Tier 1A expert-wise / per-tensor MoE quantisation (`--tensor-type`) | designed, needs F16 source (~70 GB) |
 | Redundancy: 209 duplicate groups differing only in `spec_draft_n_max` (200 legitimate MTP) | documented in `reanalysis.py`; not artifact duplication |
+| Axis 1.5 GSQ-RCO (m150/m151 vs the native Qwen3.8-27B ladder) | **COMPLETE** — both GSQ quants measured; indistinguishable from the native ladder at matched bpw (nearest + bpw-interpolated), all 28 deltas' 95% CIs span 0 (F13, `.wrapup/AXES_RESULTS_SYNTHESIS.md`) |
+| 12B MMLU anomaly (m141 native 0.644 vs Q3 rung 0.418) | **flagged TODO** — clean run, not a checkpoint/protocol mixup; re-measure m93/m105/m140/m141 on one harness (F12) |
+| Axis 1.6 QAT remaining pairs (E2B Q4, E4B Q2/Q4, 26B-A4B) | queued; the 31B pair + 26B-A4B native are **BLOCKED-on-VRAM** (non-measurements) |
+| Axis 7 DiffusionGemma (`diffusiongemma-26B-A4B`) | **runtime-blocked**: no local llama.cpp accepts arch `diffusion-gemma` (gate-fail, no value) |
 
 Queue state and armed drivers live in `QUEUE.md`; harness/ops lessons in `OPERATIONS.md`.

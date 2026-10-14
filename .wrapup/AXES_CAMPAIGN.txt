@@ -1,0 +1,17 @@
+# AXES_CAMPAIGN.txt -- REORDERED per operator option B (front-load fast complete-pair models).
+# Format: <abs_gguf_path> <tag> <limit> <mmlu_limit>
+# Already complete (not relisted): m140, m144, m146.
+# BLOCKED-on-VRAM, no retry (operator option a): m142, m143, m145 -- see .wrapup/AXES_BLOCKED.md
+# Axis 1.6 12B native control
+/home/z/hf/gemma-4-12b-it-UD-Q4_K_XL.gguf          m141-native-gemma12b-q4     100 16
+# Axis 1.5 GSQ-RCO control + 2 treatments
+/home/z/hf/Qwen3.8-27B-UD-IQ4_XS.gguf              m152-qwen38-27b-iq4xs       100 16
+/home/z/hf/Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf    m150-qwen38-gsqrco-iq3xxs   100 16
+/home/z/hf/Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf      m151-qwen38-gsqrco-iq3s     100 16
+# Axis 1.6 E2B Q4 pair
+/home/z/hf/gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf      m147-qat-gemma-e2b-q4       100 16
+/home/z/hf/gemma-4-E2B-it-UD-Q4_K_XL.gguf          m148-native-gemma-e2b-q4    100 16
+# Axis 1.6 E4B Q2 treatment + E4B Q4 pair
+/home/z/hf/gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf      m149-qat-gemma-e4b-q2       100 16
+/home/z/hf/gemma-4-E4B-it-UD-Q4_K_XL.gguf          m156-native-gemma-e4b-q4    100 16
+/home/z/hf/gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf      m155-qat-gemma-e4b-q4       100 16

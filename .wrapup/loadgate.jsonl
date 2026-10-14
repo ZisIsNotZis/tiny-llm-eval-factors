@@ -12,3 +12,19 @@
 {"tag": "lfm25-8a1b-m55-q3base", "file": "LFM2.5-8B-A1B-m55-Q3_K_M.gguf", "load": "PASS"}
 {"tag": "lfm25-8a1b-m55-exq2", "file": "LFM2.5-8B-A1B-m55-exq2.gguf", "load": "PASS"}
 {"tag": "lfm25-8a1b-m55-exq4", "file": "LFM2.5-8B-A1B-m55-exq4.gguf", "load": "PASS"}
+{"tag": "m140-qat-gemma12b-q4", "file": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m142-qat-gemma31b-q4", "file": "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m144-qat-gemma26b-a4b-q4", "file": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m146-qat-gemma-e2b-q2", "file": "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf", "load": "PASS"}
+{"tag": "m147-qat-gemma-e2b-q4", "file": "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m149-qat-gemma-e4b-q2", "file": "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf", "load": "PASS"}
+{"tag": "m155-qat-gemma-e4b-q4", "file": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m150-qwen38-gsqrco-iq3xxs", "file": "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf", "load": "PASS"}
+{"tag": "m151-qwen38-gsqrco-iq3s", "file": "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf", "load": "PASS"}
+{"tag": "m152-qwen38-27b-iq4xs", "file": "Qwen3.8-27B-UD-IQ4_XS.gguf", "load": "PASS"}
+{"tag": "m154-diffusiongemma-26b-a4b-q4km", "file": "diffusiongemma-26B-A4B-it-Q4_K_M.gguf", "load": "FAIL", "runtime": "llama-diffusion-cli"}
+{"tag": "m148-native-gemma-e2b-q4", "file": "gemma-4-E2B-it-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m156-native-gemma-e4b-q4", "file": "gemma-4-E4B-it-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m141-native-gemma12b-q4", "file": "gemma-4-12b-it-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m145-native-gemma26b-a4b-q4", "file": "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf", "load": "PASS"}
+{"tag": "m143-native-gemma31b-q4", "file": "gemma-4-31B-it-UD-Q4_K_XL.gguf", "load": "PASS"}

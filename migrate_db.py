@@ -1172,6 +1172,57 @@ def ingest_campaign(con):
     return n
 
 
+# The three NEW research axes of this campaign, keyed by campaign tag -> canonical logical gguf
+# name.  Axis 1.6 (QAT) and axis 7 (DiffusionGemma) each pair a treatment file with a CONTROL
+# of the same size and the same UD-Q4_K_XL recipe; axis 1.5 (GSQ-RCO) pairs new ggml-type quants
+# with the standard Qwen3.8-27B quants already measured.  Every analysis keys on the logical
+# gguf name, so this is the one place that name is pinned.
+#
+# m141/m143/m145/m148/m156 are the native (non-QAT) controls downloaded for axis 1.6; m145
+# (gemma-4-26B-A4B native UD-Q4_K_XL) also serves as the autoregressive control for axis 7, so
+# it runs only once.  m150/m151 are the GSQ-RCO quants; m152 is the standard Qwen3.8-27B
+# UD-IQ4_XS control (the other two controls, UD-Q2_K_XL and UD-Q3_K_XL, were already measured
+# canonically as m91/m100 and are deliberately NOT re-run).  m154 is DiffusionGemma; it is
+# ingested only if it passes the gate with the diffusion runtime.
+AXES_TAG_MODELS = {
+    "m140-qat-gemma12b-q4":        "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+    "m141-native-gemma12b-q4":     "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+    "m142-qat-gemma31b-q4":        "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf",
+    "m143-native-gemma31b-q4":     "gemma-4-31B-it-UD-Q4_K_XL.gguf",
+    "m144-qat-gemma26b-a4b-q4":    "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+    "m145-native-gemma26b-a4b-q4": "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf",
+    "m146-qat-gemma-e2b-q2":       "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
+    "m147-qat-gemma-e2b-q4":       "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+    "m148-native-gemma-e2b-q4":    "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+    "m149-qat-gemma-e4b-q2":       "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
+    "m150-qwen38-gsqrco-iq3xxs":   "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf",
+    "m151-qwen38-gsqrco-iq3s":     "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf",
+    "m152-qwen38-27b-iq4xs":       "Qwen3.8-27B-UD-IQ4_XS.gguf",
+    "m154-diffusiongemma-26b-a4b-q4km": "diffusiongemma-26B-A4B-it-Q4_K_M.gguf",
+    "m155-qat-gemma-e4b-q4":       "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+    "m156-native-gemma-e4b-q4":    "gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+}
+
+
+def ingest_axes(con):
+    """Pin the AXES-campaign rows to their canonical logical model names (REFRESH).
+
+    The generic campaign ingest above already reads every .wrapup/mres/<tag>/ panel, so these
+    tags land without a dedicated parser.  What this block guarantees is the axis contract:
+    tag -> logical gguf name is fixed by `AXES_TAG_MODELS`, so a resolved path or blob-hash
+    name can never become an analysis key.  It does not invent rows: a tag with no results
+    yet is simply skipped.  Returns the number of names corrected (0 when already correct).
+    """
+    n = 0
+    for tag, name in AXES_TAG_MODELS.items():
+        want = norm_model(name)
+        cur = con.execute(
+            "UPDATE experiments SET model = ? WHERE run_tag = ? AND model <> ?",
+            (want, tag, want))
+        n += cur.rowcount
+    return n
+
+
 def ingest_spec(con):
     """Speculative-decoding panel: TIME and QUALITY side by side.
 
@@ -1343,6 +1394,7 @@ def main():
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),
         ("campaign", ingest_campaign),
+        ("axes", ingest_axes),
         ("spec", ingest_spec),
         ("variant", ingest_variant),
     ]
