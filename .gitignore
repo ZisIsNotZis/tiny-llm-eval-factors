@@ -15,6 +15,7 @@ __pycache__/
 .wrapup/evalpy/
 .wrapup/msenv/
 .wrapup/wres/
+.wrapup/lmenv/
 
 # DB backups
 experiments.sqlite.bak*
@@ -28,5 +29,11 @@ experiments.sqlite.bak*
 .wrapup/msenv/
 .wrapup/bfclenv/
 .wrapup/mplenv/
+
+# other regenerable state (download markers, generated corpora, run scratch)
+.wrapup/dl_ready/
+.wrapup/ppl_corpora/
+.wrapup/.keeper.lock
+.wrapup/javac.*.args
 
 figures/
