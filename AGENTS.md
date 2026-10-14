@@ -19,3 +19,5 @@
 5. Do not modify existing open source projects unless absolutely required.
 6. Prefer passing sampling parameters directly to llama-server/runtime instead of patching project code.
 7. Run evaluations in the background and check progress timely; avoid foreground waits that can stall indefinitely.
+
+Documentation SSOT: `docs/` (data SSOT: `experiments.sqlite`; `report.html` is generated, never hand-edited).

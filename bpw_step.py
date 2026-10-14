@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The Q2->Q3 step, measured on every standard benchmark at once.
 
-F1 in FINAL_REPORT.md originally rested on MultiPL-E alone.  The operator's requirement is
+F1 in docs/FINDINGS.md originally rested on MultiPL-E alone.  The operator's requirement is
 that a conclusion be tested on more than one benchmark, so this repeats the same step on all
 seven columns using one fixed bpw window for "Q2-ish" and "Q3-ish":
 

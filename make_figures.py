@@ -288,7 +288,7 @@ def fig3(data):
 def fig4():
     recipes = ["uniform Q3_K_M\nbaseline", "experts IQ2/Q2\nrest Q5_K_M", "experts Q4_K\nrest Q2_K"]
     bpw = [3.88, 2.92, 4.48]
-    # HumanEval+ / MBPP+ / MMLU / GSM8K  (table D in RESULTS_BY_COMPARISON.md)
+    # HumanEval+ / MBPP+ / MMLU / GSM8K  (docs/FINDINGS.md)
     data = {
         "HumanEval+": [0.3354, 0.2866, 0.1341],
         "MBPP+":      [0.4815, 0.3280, 0.2381],

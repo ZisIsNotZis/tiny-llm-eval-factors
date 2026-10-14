@@ -15,7 +15,7 @@ Two transports are used (protocol is recorded per task in cmd.txt):
                                         shim (this file) that reconstructs OpenAI
                                         `echo` prompt logprobs, which llama-server
                                         build 4399 no longer serves (it rejects/ignores
-                                        `echo`; see RESEARCH_METHOD.md notes).
+                                        `echo`; see docs/METHOD.md notes).
 
 The shim is exact: for every continuation token it asks llama-server for the
 next-token distribution (`/v1/completions`, max_tokens=1, logprobs=N, temperature 0)

@@ -46,7 +46,7 @@ cat > "$WR/AXES_CAMPAIGN.txt" <<'EOF'
 # AXES_CAMPAIGN.txt -- REORDERED per operator option B (front-load fast complete-pair models).
 # Format: <abs_gguf_path> <tag> <limit> <mmlu_limit>
 # Already complete (not relisted): m140, m144, m146.
-# BLOCKED-on-VRAM, no retry (operator option a): m142, m143, m145 -- see .wrapup/AXES_BLOCKED.md
+# BLOCKED-on-VRAM, no retry (operator option a): m142, m143, m145 -- see docs/BACKLOG.md
 # Axis 1.6 12B native control
 /home/z/hf/gemma-4-12b-it-UD-Q4_K_XL.gguf          m141-native-gemma12b-q4     100 16
 # Axis 1.5 GSQ-RCO control + 2 treatments

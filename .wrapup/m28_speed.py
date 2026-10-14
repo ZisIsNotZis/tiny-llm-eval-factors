@@ -20,9 +20,9 @@ import urllib.request
 
 PROMPTS = "/tmp/MultiPL-E/prompts"
 LONGCTX_FILES = [
-    "/home/z/hf/research/FINAL_REPORT.md",
-    "/home/z/hf/research/conclusions.md",
-    "/home/z/hf/research/RESEARCH_METHOD.md",
+    "/home/z/hf/research/docs/FINDINGS.md",
+    
+    
 ]
 PROSE = """The history of the printed book begins long before Gutenberg assembled his movable
 type, in the woodblock workshops of Tang dynasty China and in the paper mills that had

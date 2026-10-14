@@ -8,7 +8,7 @@ only authoritative source we have.
 
 Writes .wrapup/moe_structure.json and prints a text report.
 
-Protocol discipline (RESEARCH_METHOD.md §3):
+Protocol discipline (docs/METHOD.md §3):
   * one protocol only: multipl-e-raw-greedy-768
   * gemma-4 under *raw* completion is a verified harness failure (see
     t4_gemma_repair.log: all raw variants probe 0/40; completions are 2-5x

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate RESULTS_BY_COMPARISON.md from experiments.sqlite.
+"""Build the report structured tables from experiments.sqlite (data SSOT); writes no file.
 
 ONE TABLE PER RESEARCH VARIABLE.  The operator fixed this shape over six
 iterations -- treat the following as the contract, not a suggestion:
@@ -44,7 +44,6 @@ import sqlite3
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DB = os.path.join(ROOT, "experiments.sqlite")
-OUT = os.path.join(ROOT, "RESULTS_BY_COMPARISON.md")
 BPW_MAP_PATH = os.path.join(HERE, "bpw_map.json")
 CAMPAIGN_TXT = os.path.join(HERE, "CAMPAIGN.txt")
 

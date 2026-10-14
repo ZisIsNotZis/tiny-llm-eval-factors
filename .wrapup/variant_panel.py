@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """KV-cache and sampling panels on the STANDARD benchmarks.
 
-Tables E (KV) and F (sampling) in RESULTS_BY_COMPARISON.md were still backed only by the old
+Tables E (KV) and F (sampling) in report.html were still backed only by the old
 MultiPL-E panel, so they had one column of ten.  The SSOT plan says every variable must be
 measured on the full standard set; this panel does that.
 
