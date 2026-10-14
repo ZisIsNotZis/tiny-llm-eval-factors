@@ -1,5 +1,7 @@
 # 数据库：schema、备份、清洁规则
 
+> 层级：**L1 客观规范/事实**（数据库 schema 与规则）。
+
 ## 唯一数据源
 
 `experiments.sqlite` 是结果的**唯一真实来源**，一次运行一行。派生列以 `__` 开头（`__size`/`__quant`/`__quant_ratio`…）。

@@ -1,5 +1,7 @@
 # 写报告的规范（operator 已锁定，按此执行）
 
+> 层级：**L0 用户要求**（operator 已锁定，按此执行）。
+
 ## 唯一的报告 = 生成的 `report.html`
 
 - 报告由 `python3 make_report.py` 从 `experiments.sqlite` **直接生成**，禁止手改。

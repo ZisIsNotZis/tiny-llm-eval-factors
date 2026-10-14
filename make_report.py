@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""量化 × 基准分数：逐项报告。
+"""本地模型设置选择对基准分数的影响：逐项报告。
 
 结构：研究概述 → 每一项研究一节（定义 / 原始数据 / 原始数据图 / 分析）→ 结论与显著性总结。
 每张图独立成图、带图例；表头全中文。唯一数据源 = experiments.sqlite。
@@ -128,14 +128,15 @@ def line_charts(t, xfun, xlabel, prefix):
             series.setdefault(c1, []).append((x, cells[k][0]))
         if not series:
             continue
-        fig, ax = plt.subplots(figsize=(8.6, 4.7))
+        fig, ax = plt.subplots(figsize=(11, 4.7))
         for s, pts in sorted(series.items()):
             pts = sorted(pts)
             if len(pts) >= 1:
                 ax.plot([p[0] for p in pts], [p[1] for p in pts], "-o", ms=4.5, lw=1.5, label=s)
         ax.set_xlabel(xlabel); ax.set_ylabel("基准分数")
         ax.set_title(f"{LBL.get(k,k)}：基准分数 随 {xlabel} 的变化")
-        ax.legend(fontsize=8, loc="best", framealpha=.9); ax.grid(alpha=.25)
+        ax.legend(fontsize=7, loc="center left", bbox_to_anchor=(1.01, 0.5), framealpha=.9)
+        ax.grid(alpha=.25)
         out.append(save(fig, f"{prefix}_{k}"))
     return out
 
@@ -382,13 +383,13 @@ def section(H, title, definition, tables, figures, analysis_html):
 def main():
     T = {t["title"].split(".")[0].strip(): t for t in mktables.build_tables()}
     H = ['<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">',
-         '<title>量化 × 基准分数：逐项报告</title>', f'<style>{CSS}</style></head><body>']
-    H.append("<h1>量化 × 基准分数：逐项报告</h1>")
+         '<title>本地模型设置选择对基准分数的影响：逐项报告</title>', f'<style>{CSS}</style></head><body>']
+    H.append("<h1>本地模型设置选择对基准分数的影响：逐项报告</h1>")
 
     H.append("<h2>研究概述：这个项目是什么，要研究什么</h2>")
     H.append("<div class='lead'>"
-             "<b>这个项目在做什么。</b>把本地大模型量化（压到更低比特）之后，它在各项任务上的<b>实际分数</b>会掉多少？"
-             "这个“掉多少”又取决于什么？这是本项目的核心问题。<br><br>"
+             "<b>这个项目在做什么。</b>给本地部署的大模型换各种<b>设置</b>之后，它在基准上的实际跑分会怎么变？"
+             "这里的“设置”是一个很宽的集合，<b>量化只是其中一个子项</b>。每个设置就是一项研究。<br><br>"
              "<b>要研究哪些内容。</b>每个可能的影响因素被当作一个自变量 <b>X</b> 单独研究："
              "① 量化位宽（一个权重平均花几个比特）② 量化方案／厂商 ③ 模型规模 ④ MoE 各层比特分配 ⑤ KV 缓存精度 "
              "⑥ 采样参数 ⑦ 投机解码草稿深度 ⑧ 是否开思考 ⑨ 量化感知训练(QAT) ⑩ 第三方方案(GSQ-RCO) ⑪ 扩散式解码。<br><br>"
@@ -396,7 +397,7 @@ def main():
              "同一节内其它被固定的东西（模型、厂商、协议）构成各个<b>系列</b>，画成不同的线。<br><br>"
              "<b>为什么这样比。</b>所有比较都在<b>同一个模型家族内部</b>进行——同一套 base 权重，只换量化文件——"
              "这样架构和参数量天然固定，X 是唯一在变的东西。量化位宽一律用真实值 <b>有效位宽 = 8×文件字节数÷参数量</b>，"
-             "而不是 Q2/Q3 这类标称标签（它们实际跨度很大）。<br><br>"
+             "而不是厂商标称的档位名（同名档位在不同模型上实际跨度很大）。<br><br>"
              "<b>数据与基准。</b>全部数据来自 <code>experiments.sqlite</code>；7 个标准基准：代码（HumanEval+、MBPP+）、"
              "知识（MMLU）、科学（ARC-Challenge）、事实性（TruthfulQA）、推理（GSM8K）、指令（IFEval）。"
              "表格里每个分数后的括号是题目数；缺失写 <code>—</code>，绝不写 0。</div>")
@@ -406,11 +407,11 @@ def main():
          "X = 有效位宽（越大表示每个权重平均比特越多）；Y = 各基准分数；系列 = 模型家族（同家族 = 同一套 base 权重，只换量化文件）。",
          [T["A"]], line_charts(T["A"], lambda c2: float(c2.split()[0]), "有效位宽", "A"),
          "<ul>"
-         "<li>每条线是一个家族。多数家族在低比特一端分数很低，<b>Q2→Q3 之间出现明显抬升</b>，再往上（Q3→Q4、Q4→Q5）基本走平。</li>"
+         "<li>每条线是一个家族。多数家族在低比特一端分数很低，<b>在约 3–4 比特/权重之间出现明显抬升</b>，再往上（约 4 比特/权重以上）基本走平。</li>"
          "<li>抬升幅度在不同基准上差别很大：代码（HumanEval+/MBPP+）、推理（GSM8K）、指令（IFEval）抬升明显；"
          "知识（MMLU）、科学（ARC-c）、事实性（TruthfulQA）几乎不动。这就是“量化伤害取决于你测哪个基准”的来源。</li>"
          "<li>并非所有家族都这样：Qwen3.6-35B-A3B（大 MoE）在很低的比特上已经很高，抬升不明显——说明伤害大小取决于“低比特是否真的伤了这个模型”。</li>"
-         "<li>操作结论：<b>至少用 Q3；Q3 以上除非能测出具体收益，否则多花比特买不到分数</b>（花岗岩 granite 是个例外，Q3→Q4 仍有收益）。</li>"
+         "<li>操作结论：<b>量化位宽至少要到约 4 比特/权重；再往上除非能测出具体收益，否则多花比特买不到分数</b>（花岗岩 granite 是例外，继续加比特仍有收益）。</li>"
          "</ul>"),
         ("二、模型规模（参数量）",
          "X = 模型参数量（单位 B）；Y = 各基准分数；系列 = 家族 + 量化配方。",
@@ -483,7 +484,7 @@ def main():
          "<li>所有 4-bit 配对里，QAT 与原生在多数基准上基本重合，而 QAT 文件还小 0.44–0.95 比特/权重。</li>"
          "<li>只有 2-bit 配对里 QAT 明显更低（代码、算术、指令）。</li>"
          "<li>所以 QAT 应当被当成“同配方下体积更小”的选项，而不是质量升级。</li>"
-         "<li>一个必须说明的事实：这些 QAT 文件的量化类型是 Q4_0 血统，而原生对照是真 K-quant，"
+         "<li>一个必须说明的事实：这些 QAT 文件用的是另一种量化格式（Q4_0 系列，ggml 类型 2），而原生对照是 K 系列格式，"
          "所以这个差值里还混了“方案”这一个因素，不能纯归给 QAT。</li>"
          "</ul>"),
         ("十一、第三方量化方案（GSQ-RCO）",
@@ -508,7 +509,7 @@ def main():
     H.append("<p class='def'>显著 = 95% 置信区间不跨 0；测不出 = 区间跨 0（在当前题目数下无法区分，<b>不等于相等</b>）；"
              "未测 = 显存/运行时等原因没有数据。</p>")
     H.append("<table class='recap'><tr><th>研究项</th><th>显著</th><th>测不出</th><th>未测</th></tr>"
-             "<tr><td>量化位宽</td><td class='sig'>Q2→Q3 多数家族明显抬升；代码/推理幅度最大、知识/事实性最小</td><td>Q3 以上（Q3≈Q4≈Q5）</td><td>—</td></tr>"
+             "<tr><td>量化位宽</td><td class='sig'>从低比特到约 4 比特/权重之间多数家族明显抬升；代码/推理幅度最大、知识/事实性最小</td><td>约 4 比特/权重以上基本走平</td><td>—</td></tr>"
              "<tr><td>模型规模</td><td class='sig'>2B 在低比特困难任务整体触底</td><td>大模型/MoE 在低比特已近上限</td><td>激活参数（无受控样本）</td></tr>"
              "<tr><td>量化方案/厂商</td><td class='sig'>同大小下方案有差</td><td>厂商标签</td><td>APEX 无产物</td></tr>"
              "<tr><td>MoE 各层比特分配</td><td class='sig'>牺牲非专家层大幅掉分</td><td>—</td><td>—</td></tr>"
@@ -521,7 +522,7 @@ def main():
              "<tr><td>GSQ-RCO 方案</td><td>—</td><td class='sig'>全部差值都测不出</td><td>—</td></tr>"
              "<tr><td>扩散式解码</td><td>—</td><td>—</td><td class='nr'>运行时缺失</td></tr></table>")
     H.append("<p class='def'><b>一句话总结：</b>量化损失在代码、推理、指令上明显，在选择题知识与事实性上很小；"
-             "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>至少用 Q3，Q3 以上除非能测出收益，否则不必多花比特</b>。</p>")
+             "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>量化位宽至少约 4 比特/权重，再往上除非能测出收益否则不必多花比特</b>。</p>")
     H.append("</body></html>")
     open("report.html", "w").write("\n".join(H))
     print("wrote report.html", sum(len(x) for x in H), "bytes; figures:", len([1 for _ in os.listdir(FIGDIR)]))
