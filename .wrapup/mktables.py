@@ -306,7 +306,7 @@ def axis_a(std):
         by_fam[family_of(model)].append((model, cells))
     for fam in sorted(by_fam):
         for model, cells in by_fam[fam]:
-            rows.append((fam, "%.2f bpw" % BPW[model], cells))
+            rows.append((fam, "%.2f" % BPW[model], cells))
     return rows, missing
 
 
@@ -361,7 +361,7 @@ def axis_c(std):
 
 def _bpw_tag(model):
     b = BPW.get(model)
-    return "" if b is None else "@%.2fbpw" % b
+    return "" if b is None else "@%.2f" % b
 
 
 def m55_rank(label):
@@ -393,7 +393,7 @@ def axis_moe(o):
         "same base weights, so any difference is purely the bit allocation.  Columns come "
         "from two panels of the same files: the original MultiPL-E run and the later "
         "standard-benchmark run.",
-        "model (all else equal)", "expert / non-expert recipe", BENCH_KEYS,
+        "模型（其余固定）", "配方（专家层 / 其余层）", BENCH_KEYS,
         BENCH_LABELS, rows, sort_key=m55_rank,
         waiting="m55 standard-benchmark rows (none yet).")
 
@@ -443,7 +443,7 @@ def axis_kv(o):
         "cache_type_k/v and cover the four standard columns.  Narrow context is the caveat: "
         "these prompts are ~1k tokens, and quantising the KV cache can only bite as context "
         "grows, so this bounds the effect at short-to-moderate context, not at 100k.",
-        "model @bpw · ctx (all else equal)", "KV type K/V", BENCH_KEYS,
+        "模型（其余固定）", "KV 精度（K/V）", BENCH_KEYS,
         BENCH_LABELS, rows, sort_key=lambda s: order.index(s) if s in order else 99,
         sort1=lambda s: int(re.search(r"ctx(\d+)", s).group(1)),
         waiting="standard-benchmark KV runs (none yet).")
@@ -489,7 +489,7 @@ def axis_sampling(o):
         "decoding parameter named in column 1 (m31 = top_k; m27 = temperature; "
         "top_p is pinned at 0.95 and is not a variable).  Greedy floor is "
         "K=1 / T=0.  Only MultiPL-E cpp+py are measured.",
-        "model · varied axis (all else equal)", "value", BENCH_KEYS, BENCH_LABELS,
+        "模型 · 变化轴", "取值", BENCH_KEYS, BENCH_LABELS,
         rows, sort_key=rank,
         waiting="standard-benchmark re-runs of m31/m27 (rows now: MultiPL-E cpp+py only).")
 
@@ -541,7 +541,7 @@ def axis_spec(o):
         "campaign's fixed 256-token greedy generation.  NOTE: only the `-MTP-GGUF` repos "
         "carry MTP layers -- the plain Qwen3.5 gguf fails with 'model doesn't contain MTP "
         "layers', which is why this axis uses separate model files.",
-        "model · ctx (all else equal)", "spec_draft_n_max",
+        "模型 · 上下文", "草稿深度",
         [k for k, _ in SCEN], [l for _, l in SCEN], tok_rows,
         sort_key=lambda s: int(s), unit="tok_s",
         waiting="no panel with a tok/s measurement yet.")
@@ -552,7 +552,7 @@ def axis_spec(o):
         "log-likelihood, which does not go through the draft path at all -- so it must be "
         "bit-identical across draft depths, and it is (0.5241/0.6250 at every depth).  The "
         "generative columns and humaneval are the ones that can actually move.",
-        "model · ctx (all else equal)", "spec_draft_n_max", BENCH_KEYS,
+        "模型 · 上下文", "草稿深度", BENCH_KEYS,
         BENCH_LABELS, sc_rows, sort_key=lambda s: int(s),
         waiting="no scored speculative-decoding run yet.")
     return n1, n2
@@ -606,7 +606,7 @@ def axis_thinking(o):
         "Held constant: model file.  Varied: `reasoning` on/off at the server "
         "level.  The thinking-on runs re-measure ONLY gsm8k and ifeval, so the "
         "off row carries the full column set and the on row only those two.",
-        "model (all else equal)", "thinking", BENCH_KEYS, BENCH_LABELS, rows,
+        "模型（其余固定）", "思考", BENCH_KEYS, BENCH_LABELS, rows,
         sort_key=lambda s: 0 if "off" in s else 1,
         waiting="thinking-on run tags %s (0 rows yet; the matched off rows are "
                 "in the DB but a group needs both to compare)." % ", ".join(exp))
