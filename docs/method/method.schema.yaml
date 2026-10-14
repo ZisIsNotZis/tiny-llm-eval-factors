@@ -1,0 +1,20 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "research method layer"
+description: >
+  Refines docs@1 for docs/method/method.yaml. Method is cut by topic, so each
+  fact carries domain.topic from that closed set.
+allOf:
+  - $ref: "docs@1"
+  - type: object
+    additionalProperties:
+      $ref: "#/$defs/fact"
+$defs:
+  fact:
+    properties:
+      domain:
+        type: object
+        required: [topic]
+        properties:
+          topic:
+            enum: [conventions, method, measurement, protocol, naming, operations]
+        unevaluatedProperties: false

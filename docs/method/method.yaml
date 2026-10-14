@@ -1,0 +1,379 @@
+m1:
+  _text: "SSOT：测量数字只属于 `experiments.sqlite`；文字知识只属于 `docs/`；报告是派生视图，不得引入 docs 里没有的论断；同一事实不得两处各说一套。"
+  author: user
+  origin: ".scratch/originals/README.md SSOT 表; .scratch/originals/L0-要求.md item 13; AGENTS.md Documentation SSOT"
+  scope: general
+  status: current
+  domain:
+    topic: conventions
+m2:
+  _text: "一致性纪律：文档之间、以及报告与文档之间不得冲突；发现冲突时先改「家」，再让派生物跟上。"
+  author: user
+  origin: ".scratch/originals/README.md 一致性规则"
+  scope: general
+  status: current
+  domain:
+    topic: conventions
+m3:
+  _text: "文档必须按来源分层，不同层不得混写：L0 用户要求、L1 客观规范/事实、L2 客观实验结论、L3 agent 派生结论，另有规划层。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md item 12; .scratch/originals/README.md 文档分层"
+  scope: general
+  status: current
+  domain:
+    topic: conventions
+m4:
+  _text: "数据信任顺序：先信非 `_analysis` 的 json/jsonl，其次是非 `_analysis` 的 txt（计时/辅助日志），`_analysis` 内容只作回退/上下文。"
+  author: agent
+  origin: "AGENTS.md Data trust 1-3"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m5:
+  _text: "禁止盲目网格/随机搜索；始终做「最弱点优先」的定向实验。"
+  author: agent
+  origin: "AGENTS.md Research execution 1-2"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m6:
+  _text: "在分析与设计推进的同时，让 GPU 一直被最高价值的运行占着；除非有硬性外部阻塞，问题/假设没澄清完就不停下。"
+  author: agent
+  origin: "AGENTS.md Research execution 3-4"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m7:
+  _text: "除非绝对必要，不修改既有开源项目（llama.cpp / BFCL / EvalPlus 等）；需要新特性就另建目录。"
+  author: agent
+  origin: "AGENTS.md Research execution 5; .scratch/originals/METHOD.md §5.7"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m8:
+  _text: "优先把采样参数直接传给 llama-server/运行时，而不是去改项目代码。"
+  author: agent
+  origin: "AGENTS.md Research execution 6"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m9:
+  _text: "评测放到后台跑并及时查看进度（`setsid nohup … &`），避免能在前台无限等待的阻塞。"
+  author: agent
+  origin: "AGENTS.md Research execution 7; .scratch/originals/METHOD.md §7"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m10:
+  _text: "控制变量原则：一个研究里只有一个变量，其余一切（provider、量化方案、解码协议等）必须固定一致。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md item 4"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m11:
+  _text: "量化位宽研究：变量是 bpw，因此 provider 与量化方案必须一致（要么都用同一提供方/同一方案），否则方案/来源会成为隐藏变量。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md item 5"
+  scope: specific
+  status: current
+  domain:
+    topic: method
+m12:
+  _text: "研究问题：量化如何映射到实测任务分数——跨模型规模、dense/MoE、架构、任务类型与解码方式，在受控协议下。"
+  author: user
+  origin: ".scratch/originals/METHOD.md §1"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m13:
+  _text: "结果是一个带不确定性的差异，不是点估计。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §2"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m14:
+  _text: "显著性按题目级算：一道题是一次伯努利试验，`SE = √(p(1−p)/n + p'(1−p')/n')`；按语言/类别算的 CI（n=2–5）会窄约 10 倍，已因此产生过两个假结论。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §2"
+  scope: general
+  status: current
+  domain:
+    topic: measurement
+m15:
+  _text: "复算口径：`SE = √(p(1−p)/n)`、`SE_diff = √(SE₁²+SE₂²)`、95% CI = 差值 ± 1.96·SE_diff。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 复算口径"
+  scope: general
+  status: current
+  domain:
+    topic: measurement
+m16:
+  _text: "同时报告该轴的噪声地板：同一配置跑两次即噪声（agentic ≈ ±0.015；贪心代码 = 0）；低于地板的差异是噪声。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §2"
+  scope: general
+  status: current
+  evidence: "agentic ≈ ±0.015; greedy code = 0"
+  domain:
+    topic: measurement
+m17:
+  _text: "负结果与 null 是一等结果；CI 很窄的 null 就是发现。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §2"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m18:
+  _text: "数据契约：只记录发生了什么、不做解释——harness 产出分数就原样写（0.0 是一个值不是错误），没产出就写 `无结果`。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §2b"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m19:
+  _text: "禁止 agent 发明的判定：字节相同即判失败、输出格式检查、类别互相矛盾即判失败、截断启发式；pass/fail 一律按 harness 的判定。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §2b"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m20:
+  _text: "任何结论不能只建立在一类任务上：每条存活结论必须在至少两个基准家族上测过——代码 _和_ 知识/推理 _和_ 指令遵循。"
+  author: user
+  origin: ".scratch/originals/METHOD.md §3"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m21:
+  _text: "基准套件表（家族 / 基准 / 题数 / 工具）：代码 HumanEval+164、MBPP+378、MultiPL-E 每语言 ~160；知识/推理 MMLU 14042、GSM8K 1319、IFEval 541、ARC-Challenge 1172、TruthfulQA(mc2) 817。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §3"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m22:
+  _text: "测量协议表：llama-server build 4399（commit 4bc272fd72）；`-c 8192 -np 1`；贪心 `max_gen_toks=1024`、聊天模板、5-shot、`fewshot_as_multiturn=True`；gsm8k 用 `exact_match,flexible-extract`（strict 存为独立列 `gsm8k-strict`）；思考一律 OFF；对数似然走精确回显 shim；`HF_HUB_OFFLINE=1`；EvalPlus 0.3.1 全 164/378；`--limit 100`、MMLU `--limit 16`（每科）。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §4"
+  scope: general
+  status: current
+  domain:
+    topic: protocol
+m23:
+  _text: "协议纪律 1–6：每条结论必须写明生成协议；绝不混协议（协议本身会翻转量化结论的符号）；判分方言必须匹配模型的工具调用方言；按观测到的提示长度设每槽上下文；除非采样就是变量否则用贪心并记录 temp/top_p/top_k/min_p/penalty；同一时刻只有一个 GPU 任务。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §5"
+  scope: general
+  status: current
+  domain:
+    topic: protocol
+m24:
+  _text: "选择下一个实验：`价值 = (对存活问题不确定性的降低) × (触达的待解问题数) / (GPU 秒 × 新风险)`；优先级 = 先解决矛盾/可疑数字，再跨未跨过的边界，再缩小头条结论的 CI，再补来源洞；并且明确列出降级项。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §6"
+  scope: general
+  status: current
+  domain:
+    topic: method
+m25:
+  _text: "委派与防空转：一个 GPU 任务串行；worker 绝不阻塞在 GPU 锁上，而是排到当前持有者之后、`setsid nohup … &` 启动、短暂轮询、写状态行后结束本轮；队列状态落在 `QUEUE` 文件而不是 session；批量结束前确认后继已 armed。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §7"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m26:
+  _text: "绝不用文本存活门：用脚本名去匹配进程（如 `pgrep -f <脚本名>`）会匹配任何命令行提到该名字的进程，也会匹配别的项目的进程，已造成三次误判。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §7; .scratch/originals/OPERATIONS.md GPU 独占与锁"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m27:
+  _text: "GPU 存活只由 `flock -n /tmp/llama_gpu.lock` 或日志中的完成横幅判定。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §7; .scratch/originals/OPERATIONS.md"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m28:
+  _text: "同一时刻只有一个 GPU 任务，用 `flock /tmp/llama_gpu.lock`（`.wrapup/gpu_locked.sh`）串行；面板不得遗留自己的 server。"
+  author: agent
+  origin: ".scratch/originals/METHOD.md §5.6; .scratch/originals/OPERATIONS.md"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m29:
+  _text: "孤儿 `llama-server` 会继承锁：面板父进程退出但 server 子进程仍持有锁，会让下一个面板一直等；用 `fuser -v /tmp/llama_gpu.lock` 找持有者，只杀孤儿的锁持有子进程。"
+  author: agent
+  origin: ".scratch/originals/OPERATIONS.md GPU 独占与锁"
+  scope: specific
+  status: current
+  domain:
+    topic: operations
+m30:
+  _text: "面板脚本必须有 `trap cleanup EXIT`，退出时关掉自己的 server；启动前检查端口，若是别人的 server 占用则中止，若是我们自己的陈旧 server 则先杀——否则会把错误模型当成新 tag 打分。"
+  author: agent
+  origin: ".scratch/originals/OPERATIONS.md GPU 独占与锁"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m31:
+  _text: "加载门控：跑任何面板前先用 CPU 载入一次（`llama-cli -ngl 0` 或 `.wrapup/loadgate_cpu.sh`）确认能加载，写 `.wrapup/loadgate.jsonl`；加载失败记 `FAIL` 并排除，绝不产出 null。"
+  author: agent
+  origin: ".scratch/originals/OPERATIONS.md 加载门控"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m32:
+  _text: "已知 GGUF 类型限制：build 4399 支持 type 42(`Q2_0`) 定义但混合 SSM 架构可能仍失败；type 142(`PQ2_0`)/143(`PTQ1_0`) 超出 `GGML_TYPE_COUNT=43`，需要另建更新的 llama.cpp；`diffusion-gemma` 架构本机任何构建都不认。"
+  author: agent
+  origin: ".scratch/originals/OPERATIONS.md 加载门控"
+  scope: specific
+  status: current
+  domain:
+    topic: operations
+m33:
+  _text: "入库：`migrate_db.py` 是唯一入库路径；每个面板注册一行 `ONCE` 或 `REFRESH`（先按 run_tag 删除再插）；summary 文件是 refresh 的唯一来源，清空 summary 等于删掉该细胞。"
+  author: agent
+  origin: ".scratch/originals/OPERATIONS.md 入库; .scratch/originals/DATABASE.md"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m34:
+  _text: "`migrate_db.py` 对逐语言 MultiPL-E 路径非幂等：定时反复跑会累积完全相同的行，所以不要按时间表跑。"
+  author: agent
+  origin: ".scratch/originals/DATABASE.md 去重事件; .scratch/originals/OPERATIONS.md"
+  scope: specific
+  status: current
+  evidence: "2026-10-14 dedup: 12871 rows → 3307 unique"
+  domain:
+    topic: operations
+m35:
+  _text: "备份与入库规则：任何改动前先做编号备份 `experiments.sqlite.bakN`；每次入库只跑一次 `migrate_db.py` 并校验「总行数 == distinct 行数」；确需重复入库时先把逐语言入库改成 `DELETE … WHERE run_tag=?` 再插（`ingest_m22` 已是此模式）。"
+  author: agent
+  origin: ".scratch/originals/DATABASE.md 备份规则; AGENTS.md Database safety 1"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m36:
+  _text: "`0.00` 先怀疑 harness、再怀疑能力：检查每槽上下文、是否用了原生 FC handler、是否在重算陈旧结果文件；真实地板也可能存在（如 granite Q2_K 在正确 handler 下仍 0.00）。"
+  author: agent
+  origin: ".scratch/originals/OPERATIONS.md 0.00 的处理"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m37:
+  _text: "环境：HF 官方域名在本机解析到被投毒地址、`hf-mirror` 会挂起 → 用项目既有的 ModelScope 通道；对数似然任务需要本仓库的精确回显 shim（`.wrapup/lmeval_run.py`，stock `lm_eval --model gguf` 会 KeyError）；离线环境变量 `HF_HUB_OFFLINE=1` 等必须设。"
+  author: agent
+  origin: ".scratch/originals/OPERATIONS.md 环境; .scratch/originals/METHOD.md §4"
+  scope: general
+  status: current
+  domain:
+    topic: operations
+m38:
+  _text: "有效位宽 = `8 × GGUF 文件字节数 ÷ 参数量`；来源文件 `.wrapup/bpw_map.json`，由 `.wrapup/gguf_params.py` 生成。"
+  producer: "gguf_params.py"
+  author: agent
+  origin: ".scratch/originals/NAMING.md 有效位宽"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m39:
+  _text: "绝不用标称标签（`Q2`/`Q3` 等）当量化横轴：同名标签在不同模型上实际跨度 2.76–5.04 比特/权重，会让不同家族不可比；凡横轴是量化处一律用有效位宽、保留两位小数。"
+  author: user
+  origin: ".scratch/originals/NAMING.md; .scratch/originals/L0-要求.md item 6; .scratch/originals/README.md"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m40:
+  _text: "模型文件命名 = `家族-版本[-类型]-<量化后缀>.gguf`；家族（family）= 去掉量化后缀后的名字，同一个家族 = 同一套 base 权重，这是家族内对照的基础。"
+  author: agent
+  origin: ".scratch/originals/NAMING.md 模型文件命名与家族"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m41:
+  _text: "量化后缀例：`UD-Q2_K_XL`（unsloth dynamic K）、`UD-IQ3_XXS`（imatrix/IQ）、`UD-TQ1_0`（三元）、`Q2_0_g64`（Bonsai 三元）、`Q1_0`。"
+  author: agent
+  origin: ".scratch/originals/NAMING.md 量化后缀"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m42:
+  _text: "MoE 模型的家族名里带 `A<激活参数>`，如 `Qwen3.6-35B-A3B`（35B 总参、3B 激活）。"
+  author: agent
+  origin: ".scratch/originals/NAMING.md MoE 模型"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m43:
+  _text: "基准列名表（DB `_bench` → 报告列名 → 任务类型 → 工具）：humaneval/humaneval-plus→HumanEval(+)、mbpp/mbpp-plus→MBPP(+)、humaneval-<lang>→多语言代码(MultiPL-E)、mmlu→知识、arc_challenge→ARC-Challenge、truthfulqa_mc2→TruthfulQA、gsm8k→GSM8K、ifeval→IFEval；列序固定、永不删列。"
+  author: agent
+  origin: ".scratch/originals/NAMING.md 基准列; .scratch/originals/METHOD.md §3"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m44:
+  _text: "协议名表（`protocol` 列，每条必须能唯一定位一次测量）：multipl-e-raw-greedy-768；mpl-chat-nothink-greedy-768；evalplus-0.3.1-openai-chat-greedy-plus；lmeval-0.4.13-gguf-shim-reasoning-off；lmeval-0.4.13-chat-reasoning-off；bfcl-native-tools-nothink-greedy；bfcl-prompt-nothink-greedy（已被取代，历史保留）；mpl-raw-t<temp>-768。"
+  author: agent
+  origin: ".scratch/originals/NAMING.md 协议名"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m45:
+  _text: "每次测量必须带 `run_tag`（形如 `m<编号>-<描述>`，如 `m140-qat-gemma12b-q4`）；没有 run_tag 的数字视为无效。"
+  author: user
+  origin: ".scratch/originals/NAMING.md run_tag; .scratch/originals/METHOD.md §2"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m46:
+  _text: "特殊状态词 `无结果` / `NO RESULT`（harness 没产出分数）、`BLOCKED-on-VRAM`（显存不足）、`GATE-FAIL`（本机加载不了）都是显式非测量，绝不是 0 分。"
+  author: agent
+  origin: ".scratch/originals/NAMING.md 特殊状态词; .scratch/originals/METHOD.md §2b; .scratch/originals/REPORTING.md"
+  scope: general
+  status: current
+  domain:
+    topic: naming
+m47:
+  _text: "复现命令（现有）：`python3 make_report.py`（从数据库生成 report.html）、`python3 .wrapup/mktables.py`（打印结构化表行数与覆盖）、`python3 migrate_db.py`（唯一入库路径）。"
+  author: agent
+  origin: ".scratch/originals/README.md 如何复现"
+  scope: general
+  status: current
+  domain:
+    topic: operations

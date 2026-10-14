@@ -1,0 +1,122 @@
+prod1:
+  _text: "项目定位：研究对象是本地模型的各种设置/超参数选择对基准实际跑分的影响；把整个项目说成「量化研究」是错的，量化只是其中一个子项。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md items 1-2; .scratch/originals/README.md 项目定位"
+  scope: general
+  status: current
+  domain:
+    kind: scope
+prod2:
+  _text: "每一项设置单列一项研究：该设置为自变量 X，基准分数为因变量 Y，其余被固定的量构成系列（series）。"
+  from: "product.prod1"
+  author: user
+  origin: ".scratch/originals/L0-要求.md item 3"
+  scope: general
+  status: current
+  domain:
+    kind: scope
+prod3:
+  _text: "研究问题与范围：量化如何映射到实测任务分数；非目标 = 排行榜、产品推荐、自我训练、以 PPL 为目标（PPL 只作参考）。"
+  author: user
+  origin: ".scratch/originals/METHOD.md §1"
+  scope: general
+  status: current
+  domain:
+    kind: non_goal
+prod4:
+  _text: "报告结构：总 — 分 — 总。开头总述（项目是什么、研究什么、X/Y 是什么），中间每一项一节，结尾总结。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md item 7; .scratch/originals/REPORTING.md 报告结构"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod5:
+  _text: "每个「分」里至少包含：原始数据表 → 由该表画出的图 → 分析/结论；且图必须能看懂（有图例、坐标轴、标题）。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md items 8-9"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod6:
+  _text: "结论可以有、可以配图，但不得用结论替代底层原始数据与图。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md item 10"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod7:
+  _text: "文字用中文人话、不用翻译腔；表格专业可读；排版像论文，不能糊成一团。"
+  author: user
+  origin: ".scratch/originals/L0-要求.md item 11; .scratch/originals/REPORTING.md 语言与命名"
+  scope: general
+  status: current
+  domain:
+    kind: quality_bar
+prod8:
+  _text: "唯一的报告 = 由 `make_report.py` 从数据库直接生成的 `report.html`；禁止手改，禁止解析 markdown 当数据源，禁止维护同一份数据的第二种格式。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 唯一的报告"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod9:
+  _text: "表格形状：一个变量一张表；第 1 列 = 被固定的 series，第 2 列 = 变化的变量 X，其余列 = 每个基准一列。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 表格形状 1-2"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod10:
+  _text: "列永不筛选（某基准全空也保留该列）；行只按两条过滤：整行没有任何基准值则删、某 series 里 X 不足 2 个取值则删。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 表格形状 3-4"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod11:
+  _text: "单元格写作 `分数 (n)`（括号里是题目数）；缺失写 `—` 或 `无结果`，绝不写 0。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 表格形状 5"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod12:
+  _text: "结尾是一张显著性回顾表，把每项归成「显著 / 测不出（不显著）/ 未测」。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 报告结构 3"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod13:
+  _text: "显著性呈现：红色 = 该 95% 置信区间不跨 0。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 语言与命名"
+  scope: general
+  status: current
+  domain:
+    kind: report_shape
+prod14:
+  _text: "每项研究都有自己的图，由 `make_report.py` 从数据库现画到 `figures/report/`；中文需注册 CJK 字体（Noto Sans CJK），图要满宽。"
+  producer: "make_report.py"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 图"
+  scope: general
+  status: current
+  domain:
+    kind: quality_bar
+prod15:
+  _text: "正文必须出现「量化」二字；基准专有名词（MMLU、HumanEval 等）保留，但列名用中文（如「知识 MMLU」）。"
+  author: user
+  origin: ".scratch/originals/REPORTING.md 语言与命名"
+  scope: general
+  status: current
+  domain:
+    kind: quality_bar

@@ -1,0 +1,21 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "research product layer"
+description: >
+  Refines docs@1 for docs/product/product.yaml. Product is cut by
+  artefact / quality bar / non-goal, so each fact carries domain.kind from that
+  closed set.
+allOf:
+  - $ref: "docs@1"
+  - type: object
+    additionalProperties:
+      $ref: "#/$defs/fact"
+$defs:
+  fact:
+    properties:
+      domain:
+        type: object
+        required: [kind]
+        properties:
+          kind:
+            enum: [scope, non_goal, report_shape, quality_bar]
+        unevaluatedProperties: false

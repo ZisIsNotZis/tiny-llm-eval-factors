@@ -1,0 +1,21 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "research need layer"
+description: >
+  Refines docs@1 for docs/need/need.yaml. A need states what must become true,
+  so each fact carries domain.must_become_true and project is closed.
+allOf:
+  - $ref: "docs@1"
+  - type: object
+    additionalProperties:
+      $ref: "#/$defs/fact"
+$defs:
+  fact:
+    properties:
+      domain:
+        type: object
+        required: [must_become_true]
+        properties:
+          must_become_true:
+            type: string
+            minLength: 1
+        unevaluatedProperties: false

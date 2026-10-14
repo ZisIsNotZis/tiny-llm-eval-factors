@@ -9,7 +9,8 @@ __pycache__/
 .cache/
 *.sqlite-wal
 *.sqlite-shm
-.scratch/
+.scratch/*
+!.scratch/originals/
 
 # wrap-up working dirs (keep the scripts + summaries, ignore venvs/results)
 .wrapup/evalpy/

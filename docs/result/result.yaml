@@ -1,0 +1,191 @@
+res1:
+  _text: "权重量化位宽：同一模型家族内，从较低比特档到下一档（各家族实际跨度不同，典型约 0.8–1.7 比特/权重），7 个标准基准上的分数普遍上升。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 权重量化位宽; 报告「量化位宽」节的表与图"
+  scope: general
+  status: current
+  evidence: "各家族量化阶梯表/图"
+  domain:
+    kind: measured
+res2:
+  _text: "按基准汇总的位宽步长中位数（越大 = 该基准对位宽越敏感）：GSM8K +0.460、HumanEval+ +0.409、IFEval +0.250、MBPP+ +0.235、MMLU +0.146、ARC-c +0.100、TruthfulQA +0.005。"
+  from: "result.res1"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md"
+  scope: general
+  status: current
+  producer: "查询 experiments.sqlite 的量化阶梯表"
+  domain:
+    kind: measured
+res3:
+  _text: "每个基准「每 +1 比特/权重 的分数变化」中位数：GSM8K +0.156、IFEval +0.117、HumanEval+ +0.104、MBPP+ +0.065、MMLU +0.054、ARC-c +0.026、TruthfulQA +0.014（约 11 倍跨度）。"
+  from: "result.res1"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md"
+  scope: general
+  status: current
+  producer: "查询 experiments.sqlite 的量化阶梯表"
+  domain:
+    kind: measured
+res4:
+  _text: "家族内配对差（能力型：代码+指令+推理）−（知识型：MMLU+ARC+TruthfulQA）= +0.12 / 比特，95% CI [+0.04, +0.20]，多数家族同向。"
+  from: "result.res2, result.res3"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res5:
+  _text: "Qwen3.5-2B 多语言代码（有效位宽 → 分数）：3.27→0.0062、3.66→0.1387、3.96→0.1894、4.11→0.0920、4.93→0.2184、5.70→0.2836、6.24→0.2774。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 权重量化位宽; 报告表 A"
+  scope: specific
+  status: current
+  evidence: "报告表 A（来自数据库）"
+  domain:
+    kind: measured
+res6:
+  _text: "模型规模：同一量化配方下，参数量越大分数越高；小模型之间的差距通常大于大模型之间。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 模型规模"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res7:
+  _text: "量化方案/厂商：文件字节接近时，换方案（IQ 系列 vs K 系列）分数有差，合并约 +0.056（95% CI [+0.008, +0.104]）；换厂商标签（同一模型、大小差 <1%）测不出差异（约 +0.009，95% CI [−0.058, +0.077]）。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 量化方案/厂商; 报告表 C/图"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res8:
+  _text: "MoE 各层比特分配（同一套 base 权重，只改哪些层拿低比特）：均匀 3.88 比特/权重 → HumanEval+ 0.335 / MMLU 0.447；专家层压到 IQ2/Q2、其余层高位（2.92）→ 0.287 / 0.427；专家层用 Q4_K、其余层压到 Q2_K（4.48，比特最多）→ 0.134 / 0.287（最差）。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md MoE 各层比特分配"
+  scope: specific
+  status: current
+  domain:
+    kind: measured
+res9:
+  _text: "KV 缓存精度：f16 / q8_0 / q4_0 三种 KV 精度在短上下文（约 1–2k tokens）下分数无可测差异；长上下文未覆盖。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md KV 缓存精度"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res10:
+  _text: "采样/解码参数：温度从 0 升到 0.3/0.7 会压低代码通过率；温度 0 时 top_k 无影响；MMLU 对采样完全无反应（走对数似然）。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 采样/解码参数"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res11:
+  _text: "投机解码：草稿深度越大速度越快（0.8B 约 +36%、9B 约 +93%）；分数随深度几乎不变，MMLU 在每个深度逐位相同。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 思考开关/投机解码"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res12:
+  _text: "QAT：同标称配方下文件小 0.36–0.95 比特/权重；所有 4-bit 档配对里 QAT 与原生在多数基准测不出差异，12B 配对的 MMLU 例外——差值 −0.197（95% CI [−0.242, −0.153]，显著为负），且该原生档位本身存疑；低位宽（约 2-bit）档配对里 QAT 明显更低。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 量化感知训练（QAT）"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res13:
+  _text: "第三方方案 GSQ-RCO：固定 Qwen3.8-27B，其两个档（3.058 / 3.549 比特/权重）对原生阶梯（2.878 / 3.850 / 4.173），与「最近原生档」或「按位宽插值后的原生」比较，所有差值的 95% CI 都跨 0。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 第三方方案（GSQ-RCO）"
+  scope: specific
+  status: current
+  domain:
+    kind: measured
+res14:
+  _text: "非测量（不是 0）：gemma-4-31B 的 QAT / 原生档显存不足未测；gemma-4-26B-A4B 原生档显存不足未测；扩散式解码 DiffusionGemma 本机运行时加载不了该架构、未测。"
+  author: measurement
+  origin: ".scratch/originals/L2-结果.md 非测量"
+  scope: general
+  status: current
+  domain:
+    kind: measured
+res15:
+  _text: "当前规模：`experiments.sqlite` 约 3300 行（已去重）、208 个模型文件、59 种协议。"
+  producer: "SELECT count(*) FROM experiments"
+  author: measurement
+  origin: ".scratch/originals/README.md 当前规模; LEDGER R16"
+  scope: specific
+  status: current
+  domain:
+    kind: citation
+an1:
+  _text: "量化位宽该选多大，取决于该家族自己的曲线拐点：多数家族的主要抬升出现在有效位宽约 4–5 比特/权重之间，granite-4.1-3b 更早（3.22→0.048、4.06→0.391）；应选「分数曲线开始走平」的位宽，没有统一的某档结论。"
+  from: "result.res1, result.res5"
+  author: agent
+  origin: ".scratch/originals/L3-分析.md 1"
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis
+an2:
+  _text: "判断量化够不够，看代码 / 推理 / 指令，不要看知识类基准：知识（MMLU）与事实性（TruthfulQA）在很宽的位宽范围内几乎不动，用它们判断会低估损失。"
+  from: "result.res2, result.res3"
+  author: agent
+  origin: ".scratch/originals/L3-分析.md 2"
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis
+an3:
+  _text: "小模型做困难、多步任务需要更多位宽：2B 在低比特时困难 agentic 任务整体触底。"
+  from: "result.res1"
+  author: agent
+  origin: ".scratch/originals/L3-分析.md 3"
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis
+an4:
+  _text: "同文件大小下，比较「方案/字节」比「厂商标签」更重要：IQ 系列与 K 系列有可测差异，厂商标签测不出差异。"
+  from: "result.res7"
+  author: agent
+  origin: ".scratch/originals/L3-分析.md 4"
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis
+an5:
+  _text: "不要用 PPL 做决策：PPL 与任务分约 30% 情况方向相反。"
+  from: "product.prod3"
+  author: agent
+  origin: ".scratch/originals/L3-分析.md 5; .scratch/originals/METHOD.md §1"
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis
+an6:
+  _text: "不要指望 QAT 挽回量化损失：它更像「同配方下体积更小」的选项。"
+  from: "result.res12"
+  author: agent
+  origin: ".scratch/originals/L3-分析.md 6"
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis
+an7:
+  _text: "换生成协议后必须重测：协议本身会改变量化结论的符号。"
+  from: "method.m23"
+  author: agent
+  origin: ".scratch/originals/L3-分析.md 7"
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis

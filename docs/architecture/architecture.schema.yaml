@@ -1,0 +1,20 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "research architecture layer"
+description: >
+  Refines docs@1 for docs/architecture/architecture.yaml. Architecture is cut by
+  module / boundary, so each fact carries domain.module from that closed set.
+allOf:
+  - $ref: "docs@1"
+  - type: object
+    additionalProperties:
+      $ref: "#/$defs/fact"
+$defs:
+  fact:
+    properties:
+      domain:
+        type: object
+        required: [module]
+        properties:
+          module:
+            enum: [database, render]
+        unevaluatedProperties: false

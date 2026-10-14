@@ -1,0 +1,59 @@
+arch1:
+  _text: "`experiments.sqlite` 是结果的唯一真实来源（数据 SSOT），一次运行一行；派生列以 `__` 开头；分析脚本只读（`mode=ro`）。"
+  author: user
+  origin: ".scratch/originals/DATABASE.md 唯一数据源; .scratch/originals/README.md SSOT 表"
+  scope: general
+  status: current
+  domain:
+    module: database
+arch2:
+  _text: "每次入库后的清洁检查：`integrity_check` = ok、`foreign_key_check` 为空、必填字段（model/_bench）无 null、`_score` ∈ [0,1]（speed 家族 15 行例外，存 `_tok_s`）、总行数 == 按全部列 distinct 的行数。"
+  author: agent
+  origin: ".scratch/originals/DATABASE.md 清洁检查; AGENTS.md Database safety 2-3"
+  scope: general
+  status: current
+  domain:
+    module: database
+arch3:
+  _text: "schema 缺口（不可审计的历史）：早期约 1881 行 legacy 记录的 ctx_size/parallel_slots/seed/protocol 等列为空，因此任何 `ctx=`/`parallel=` 作用域都不可审计。"
+  author: agent
+  origin: ".scratch/originals/DATABASE.md schema 缺口"
+  scope: specific
+  status: current
+  evidence: "~1881 legacy rows, SELECT count(*) WHERE protocol IS NULL"
+  domain:
+    module: database
+arch4:
+  _text: "`__` 开头的派生列（`__size`/`__quant`/`__quant_ratio`/`__score_fix`/`__mtp` …）由 `exp.py`/`migrate_db.py` 计算后存进表；正确做法是生成（视图）而不是存储。"
+  producer: "exp.py / migrate_db.py（应改为视图）"
+  author: agent
+  origin: ".scratch/originals/DATABASE.md 唯一数据源; LEDGER R112"
+  scope: general
+  status: provisional
+  domain:
+    module: database
+arch5:
+  _text: "数据库 schema 带 CHECK 约束：分数范围、`cache_*_draft = cache_*`、量化比率恒等式。"
+  author: agent
+  origin: "experiments.sqlite schema; LEDGER R113"
+  scope: general
+  status: current
+  domain:
+    module: database
+arch6:
+  _text: "`report.html` 是派生视图：它的数字只能来自数据库，措辞必须服从 `docs/`，且不得引入文档里没有的新论断。"
+  author: user
+  origin: ".scratch/originals/README.md 派生物不定知识; .scratch/originals/L0-要求.md item 13"
+  scope: general
+  status: current
+  domain:
+    module: render
+arch7:
+  _text: "`report.html` 与 `figures/report/*.png` 由 `make_report.py` 只读数据库生成——渲染产物不携带自己新增的事实。"
+  producer: "make_report.py"
+  author: agent
+  origin: ".scratch/originals/README.md 如何复现; LEDGER R114/R115/R119"
+  scope: general
+  status: current
+  domain:
+    module: render

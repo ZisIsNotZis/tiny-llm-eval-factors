@@ -1,0 +1,9 @@
+n1:
+  _text: "必须能知道：给本地部署的大模型换一个设置之后，它在本机基准上的实际跑分会怎么变——这条是项目存在的理由，其余一切都从它派生。"
+  from: "product.prod1"
+  author: agent
+  origin: "派生自 .scratch/originals/L0-要求.md items 1-2（LEDGER 未填 need 层）"
+  scope: general
+  status: current
+  domain:
+    must_become_true: "设置 → 基准分数 的因果关系可知、可复算"

@@ -1,0 +1,21 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "research result layer"
+description: >
+  Refines docs@1 for docs/result/result.yaml. Result is cut by status, so each
+  fact carries domain.kind from measured / citation / analysis. A citation names
+  the query that owns the value; an analysis is derived and names its from.
+allOf:
+  - $ref: "docs@1"
+  - type: object
+    additionalProperties:
+      $ref: "#/$defs/fact"
+$defs:
+  fact:
+    properties:
+      domain:
+        type: object
+        required: [kind]
+        properties:
+          kind:
+            enum: [measured, citation, analysis]
+        unevaluatedProperties: false

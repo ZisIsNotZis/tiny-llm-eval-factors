@@ -1,0 +1,20 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "research plan layer"
+description: >
+  Refines docs@1 for docs/plan/plan.yaml. A plan node is a work package not yet
+  run, so each fact carries domain.kind from that closed set.
+allOf:
+  - $ref: "docs@1"
+  - type: object
+    additionalProperties:
+      $ref: "#/$defs/fact"
+$defs:
+  fact:
+    properties:
+      domain:
+        type: object
+        required: [kind]
+        properties:
+          kind:
+            enum: [block, hypothesis, open_question]
+        unevaluatedProperties: false

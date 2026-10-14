@@ -1,0 +1,22 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "research pain layer"
+description: >
+  Refines docs@1 for docs/pain/pain.yaml. The pain layer is cut by sufferer, so
+  each fact carries domain.sufferer and project is closed. Refine only: the
+  standard's fact shape and _text floor are inherited unchanged.
+allOf:
+  - $ref: "docs@1"
+  - type: object
+    additionalProperties:
+      $ref: "#/$defs/fact"
+$defs:
+  fact:
+    properties:
+      domain:
+        type: object
+        required: [sufferer]
+        properties:
+          sufferer:
+            type: string
+            minLength: 1
+        unevaluatedProperties: false
