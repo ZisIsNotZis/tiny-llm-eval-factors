@@ -15,4 +15,4 @@ Unknown, blocked, or unmeasured results must remain distinct from zero or a nega
 
 ## License
 
-Original code and documentation are licensed under the GNU Affero General Public License v3.0-only; see `LICENSE`. Model weights, benchmark datasets, and other third-party materials keep their own licenses and are not relicensed by this notice.
+Original code and documentation retain the repository's existing MIT license; see `LICENSE`. Model weights, benchmark datasets, and other third-party materials keep their own licenses and are not relicensed by this notice.
