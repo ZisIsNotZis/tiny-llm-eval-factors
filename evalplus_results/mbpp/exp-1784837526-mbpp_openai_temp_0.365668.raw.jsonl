@@ -1,0 +1,378 @@
+{"task_id": "Mbpp/2", "solution": ""}
+{"task_id": "Mbpp/3", "solution": ""}
+{"task_id": "Mbpp/4", "solution": ""}
+{"task_id": "Mbpp/6", "solution": ""}
+{"task_id": "Mbpp/7", "solution": ""}
+{"task_id": "Mbpp/8", "solution": "```python\ndef square_nums(numbers):\n    \"\"\"\n    Returns a new list containing the squares of the elements in the input list.\n    \"\"\"\n    return [x ** 2 for x in numbers]\n\n# Verification\nassert square_nums([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) == [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]\n```"}
+{"task_id": "Mbpp/9", "solution": ""}
+{"task_id": "Mbpp/11", "solution": ""}
+{"task_id": "Mbpp/12", "solution": "```python\ndef sort_matrix(matrix):\n    \"\"\"\n    Sorts a given matrix in ascending order according to the sum of its rows.\n    \"\"\"\n    # Use the built-in sorted function with 'sum' as the key function\n    return sorted(matrix, key=sum)\n\n# Test the function with the provided assertion\nassert sort_matrix"}
+{"task_id": "Mbpp/14", "solution": ""}
+{"task_id": "Mbpp/16", "solution": ""}
+{"task_id": "Mbpp/17", "solution": "```python\ndef square_perimeter(side):\n    \"\"\"\n    Calculates the perimeter of a square given its side length.\n    \n    Args:\n        side (int or float): The length of one side of the square.\n        \n    Returns:\n        int or float: The perimeter of the square.\n    \"\"\"\n    return side * 4\n\n# Verification\nassert square_perimeter(10) == 40\n```"}
+{"task_id": "Mbpp/18", "solution": ""}
+{"task_id": "Mbpp/19", "solution": ""}
+{"task_id": "Mbpp/20", "solution": ""}
+{"task_id": "Mbpp/56", "solution": ""}
+{"task_id": "Mbpp/57", "solution": ""}
+{"task_id": "Mbpp/58", "solution": ""}
+{"task_id": "Mbpp/59", "solution": ""}
+{"task_id": "Mbpp/61", "solution": ""}
+{"task_id": "Mbpp/62", "solution": "```python\ndef smallest_num(numbers):\n    \"\"\"\n    Finds the smallest number in a list.\n    \"\"\"\n    if not numbers:\n        raise ValueError(\"List is empty\")\n    return min(numbers)\n\nassert smallest_num([10, 20, 1, 45, 99]) == 1\n```"}
+{"task_id": "Mbpp/63", "solution": ""}
+{"task_id": "Mbpp/64", "solution": "```python\ndef sort_by_subject_marks(marks):\n    \"\"\"\n    Sorts a list of tuples based on the second value of each tuple.\n    \n    Args:\n        marks (list): A list of tuples where each tuple contains a subject name and a mark.\n        \n    Returns:\n        list: A new list of tuples sorted by the mark (second element) in ascending order.\n    \"\"\"\n    return sorted(marks, key=lambda x: x[1])\n\n# Verification of the solution\nassert sort_by_subject_marks([('English', 88), ('Science', 90), ('Maths', 97), ('Social sciences', 82)]) == [('Social sciences', 82), ('English', 88), ('Science', 90), ('Maths', 97)]\n\nprint(\"All assertions passed.\")\n```"}
+{"task_id": "Mbpp/65", "solution": ""}
+{"task_id": "Mbpp/66", "solution": ""}
+{"task_id": "Mbpp/67", "solution": ""}
+{"task_id": "Mbpp/68", "solution": ""}
+{"task_id": "Mbpp/69", "solution": ""}
+{"task_id": "Mbpp/70", "solution": ""}
+{"task_id": "Mbpp/71", "solution": ""}
+{"task_id": "Mbpp/72", "solution": ""}
+{"task_id": "Mbpp/74", "solution": ""}
+{"task_id": "Mbpp/75", "solution": ""}
+{"task_id": "Mbpp/77", "solution": ""}
+{"task_id": "Mbpp/79", "solution": ""}
+{"task_id": "Mbpp/80", "solution": ""}
+{"task_id": "Mbpp/82", "solution": ""}
+{"task_id": "Mbpp/84", "solution": ""}
+{"task_id": "Mbpp/85", "solution": "```python\nimport math\n\ndef surfacearea_sphere(radius):\n    \"\"\"\n    Calculates the surface area of a sphere given its radius.\n    Formula: 4 * pi * r^2\n    \"\"\"\n    return 4 * math.pi * (radius ** 2)\n\n# Verification using the provided assertion\nassert math.isclose(surfacearea_sphere(10), 1256.63706"}
+{"task_id": "Mbpp/86", "solution": "```python\ndef centered_hexagonal_number(n):\n    \"\"\"\n    Calculate the nth centered hexagonal number.\n    Formula: 3n(n-1) + 1\n    \"\"\"\n    return 3 * n * (n - 1) + 1\n\nassert centered_hexagonal_number(10) == 271\n```"}
+{"task_id": "Mbpp/87", "solution": ""}
+{"task_id": "Mbpp/88", "solution": ""}
+{"task_id": "Mbpp/89", "solution": ""}
+{"task_id": "Mbpp/90", "solution": ""}
+{"task_id": "Mbpp/91", "solution": ""}
+{"task_id": "Mbpp/92", "solution": ""}
+{"task_id": "Mbpp/93", "solution": "```python\ndef power(a, b):\n    \"\"\"\n    Calculates the value of 'a' to the power 'b'.\n    \"\"\"\n    return a ** b\n\n# Verification\nassert power(3, 4) == 81\n```"}
+{"task_id": "Mbpp/94", "solution": ""}
+{"task_id": "Mbpp/95", "solution": ""}
+{"task_id": "Mbpp/96", "solution": ""}
+{"task_id": "Mbpp/97", "solution": ""}
+{"task_id": "Mbpp/98", "solution": ""}
+{"task_id": "Mbpp/99", "solution": ""}
+{"task_id": "Mbpp/100", "solution": ""}
+{"task_id": "Mbpp/101", "solution": "```python\ndef kth_element(arr, k):\n    \"\"\"\n    Find the kth element in the given array using 1-based indexing.\n    \"\"\"\n    return arr[k - 1]\n\nassert kth_element([12, 3, 5, 7, 19], 2) == 3\n```"}
+{"task_id": "Mbpp/102", "solution": ""}
+{"task_id": "Mbpp/103", "solution": ""}
+{"task_id": "Mbpp/104", "solution": ""}
+{"task_id": "Mbpp/105", "solution": ""}
+{"task_id": "Mbpp/106", "solution": ""}
+{"task_id": "Mbpp/108", "solution": ""}
+{"task_id": "Mbpp/109", "solution": ""}
+{"task_id": "Mbpp/111", "solution": ""}
+{"task_id": "Mbpp/113", "solution": ""}
+{"task_id": "Mbpp/116", "solution": ""}
+{"task_id": "Mbpp/118", "solution": ""}
+{"task_id": "Mbpp/119", "solution": ""}
+{"task_id": "Mbpp/120", "solution": ""}
+{"task_id": "Mbpp/123", "solution": ""}
+{"task_id": "Mbpp/124", "solution": ""}
+{"task_id": "Mbpp/125", "solution": ""}
+{"task_id": "Mbpp/126", "solution": ""}
+{"task_id": "Mbpp/127", "solution": ""}
+{"task_id": "Mbpp/128", "solution": ""}
+{"task_id": "Mbpp/129", "solution": ""}
+{"task_id": "Mbpp/130", "solution": ""}
+{"task_id": "Mbpp/131", "solution": ""}
+{"task_id": "Mbpp/132", "solution": "```python\ndef tup_string(t):\n    \"\"\"\n    Converts a tuple of characters into a single string.\n    \n    Parameters:\n    t (tuple): A tuple containing characters.\n    \n    Returns:\n    str: The concatenated string formed by the characters in the tuple.\n    \"\"\"\n    return \"\".join(t)\n\n# Test case provided in the problem description\nassert tup_string(('e', 'x', 'e', 'r', 'c', 'i', 's', 'e', 's')) == (\"exercises\")\n```"}
+{"task_id": "Mbpp/133", "solution": "```python\ndef sum_negativenum(numbers):\n    \"\"\"\n    Calculates the sum of all negative numbers in a given list.\n    \n    Args:\n        numbers (list): A list of numbers.\n        \n    Returns:\n        int or float: The sum of the negative numbers.\n    \"\"\"\n    return sum(num for num in numbers if num < 0)\n\n# Verification\nassert sum_negativenum([2, 4, -6, -9, 11, -12, 14, -5, 17]) == -32\n```"}
+{"task_id": "Mbpp/135", "solution": "```python\ndef hexagonal_num(n):\n    \"\"\"\n    Calculate the nth hexagonal number.\n    The formula for the nth hexagonal number is n * (2n - 1).\n    \"\"\"\n    return n * (2 * n - 1)\n\n# Test the function with the provided assertion\nassert hexagonal_num(10) == 190\n```"}
+{"task_id": "Mbpp/137", "solution": ""}
+{"task_id": "Mbpp/138", "solution": ""}
+{"task_id": "Mbpp/139", "solution": "```python\nimport math\n\ndef circle_circumference(radius):\n    \"\"\"\n    Calculates the circumference of a circle given its radius.\n    Formula: C = 2 * pi * r\n    \"\"\"\n    return 2 * math.pi * radius\n\n# Verification test case provided in the prompt\nassert math.isclose(circle_circumference(10), 62.830000000000005, rel_tol=0.001)\n```"}
+{"task_id": "Mbpp/140", "solution": ""}
+{"task_id": "Mbpp/141", "solution": ""}
+{"task_id": "Mbpp/142", "solution": ""}
+{"task_id": "Mbpp/145", "solution": ""}
+{"task_id": "Mbpp/160", "solution": ""}
+{"task_id": "Mbpp/161", "solution": ""}
+{"task_id": "Mbpp/162", "solution": ""}
+{"task_id": "Mbpp/165", "solution": ""}
+{"task_id": "Mbpp/166", "solution": ""}
+{"task_id": "Mbpp/167", "solution": ""}
+{"task_id": "Mbpp/168", "solution": "```python\ndef frequency(lst, num):\n    \"\"\"\n    Counts the number of occurrences of a number in a given list.\n    \n    Args:\n        lst (list): The list of numbers to search.\n        num (int/float): The number to count.\n        \n    Returns:\n        int: The count of occurrences.\n    \"\"\"\n    count = 0\n    for item in lst:\n        if item == num:\n            count += 1\n    return count\n\n# Verification\nassert frequency([1, 2, 3], 4) == 0\nprint(\"Assertion passed.\")\n```"}
+{"task_id": "Mbpp/170", "solution": ""}
+{"task_id": "Mbpp/171", "solution": "```python\ndef perimeter_pentagon(side_length):\n    \"\"\"\n    Calculates the perimeter of a regular pentagon given the length of one side.\n    A regular pentagon has 5 equal sides.\n    \"\"\"\n    return 5 * side_length\n\n# Test case provided in the prompt\nassert perimeter_pentagon(5) == 25\n```"}
+{"task_id": "Mbpp/172", "solution": ""}
+{"task_id": "Mbpp/222", "solution": ""}
+{"task_id": "Mbpp/223", "solution": ""}
+{"task_id": "Mbpp/224", "solution": ""}
+{"task_id": "Mbpp/226", "solution": "Here's the self-contained Python script that solves the problem:\n\n```python\ndef odd_values_string(s):\n    \"\"\"\n    Removes characters at odd indices from the given string.\n    \"\"\"\n    return s[::2]\n\n# Test the function\nassert odd_values_string('abcdef') == 'ace'\nprint(\"All"}
+{"task_id": "Mbpp/227", "solution": "```python\ndef min_of_three(a, b, c):\n    \"\"\"\n    Returns the minimum of three numbers.\n    \"\"\"\n    return min(a, b, c)\n\n# Verification\nassert min_of_three(10, 20, 0) == 0\n```"}
+{"task_id": "Mbpp/230", "solution": "```python\ndef replace_blank(s, char):\n    \"\"\"\n    Replaces blank spaces in the string with the given character.\n    \"\"\"\n    return s.replace(' ', char)\n\n# Test case provided in the problem description\nassert replace_blank(\"hello people\",'@')==(\"hello@people\")\nprint(\"Assertion passed.\")\n```"}
+{"task_id": "Mbpp/232", "solution": ""}
+{"task_id": "Mbpp/233", "solution": ""}
+{"task_id": "Mbpp/234", "solution": "```python\ndef volume_cube(side):\n    \"\"\"\n    Calculate the volume of a cube given its side length.\n    \"\"\"\n    return side ** 3\n\nassert volume_cube(3) == 27\n```"}
+{"task_id": "Mbpp/235", "solution": ""}
+{"task_id": "Mbpp/237", "solution": ""}
+{"task_id": "Mbpp/238", "solution": ""}
+{"task_id": "Mbpp/239", "solution": ""}
+{"task_id": "Mbpp/240", "solution": ""}
+{"task_id": "Mbpp/242", "solution": ""}
+{"task_id": "Mbpp/244", "solution": ""}
+{"task_id": "Mbpp/245", "solution": ""}
+{"task_id": "Mbpp/247", "solution": ""}
+{"task_id": "Mbpp/250", "solution": "```python\ndef count_X(t, element):\n    \"\"\"\n    Counts the occurrences of the element in the tuple.\n    \"\"\"\n    return t.count(element)\n\n# Verification based on the provided assertion\nassert count_X((10, 8, 5, 2, 10, 15, 10, 8, 5, 8, 8, 2), 4) == 0\n```"}
+{"task_id": "Mbpp/251", "solution": ""}
+{"task_id": "Mbpp/252", "solution": ""}
+{"task_id": "Mbpp/253", "solution": ""}
+{"task_id": "Mbpp/255", "solution": ""}
+{"task_id": "Mbpp/256", "solution": ""}
+{"task_id": "Mbpp/257", "solution": ""}
+{"task_id": "Mbpp/259", "solution": ""}
+{"task_id": "Mbpp/260", "solution": ""}
+{"task_id": "Mbpp/261", "solution": ""}
+{"task_id": "Mbpp/262", "solution": ""}
+{"task_id": "Mbpp/264", "solution": ""}
+{"task_id": "Mbpp/265", "solution": ""}
+{"task_id": "Mbpp/266", "solution": "```python\ndef lateralsurface_cube(side_length):\n    \"\"\"\n    Calculate the lateral surface area of a cube given its side length.\n    Lateral surface area = 4 * side_length^2\n    \"\"\"\n    return 4 * (side_length ** 2)\n\n# Verification\nassert lateralsurface_cube(5) == 100\n```"}
+{"task_id": "Mbpp/267", "solution": ""}
+{"task_id": "Mbpp/268", "solution": ""}
+{"task_id": "Mbpp/269", "solution": "```python\ndef ascii_value(char):\n    \"\"\"\n    Returns the ASCII value of a given character.\n    \"\"\"\n    return ord(char)\n\n# Test the function\nassert ascii_value('A') == 65\n```"}
+{"task_id": "Mbpp/270", "solution": ""}
+{"task_id": "Mbpp/271", "solution": ""}
+{"task_id": "Mbpp/272", "solution": ""}
+{"task_id": "Mbpp/273", "solution": ""}
+{"task_id": "Mbpp/274", "solution": ""}
+{"task_id": "Mbpp/276", "solution": ""}
+{"task_id": "Mbpp/277", "solution": ""}
+{"task_id": "Mbpp/278", "solution": ""}
+{"task_id": "Mbpp/279", "solution": ""}
+{"task_id": "Mbpp/280", "solution": ""}
+{"task_id": "Mbpp/281", "solution": ""}
+{"task_id": "Mbpp/282", "solution": ""}
+{"task_id": "Mbpp/283", "solution": ""}
+{"task_id": "Mbpp/284", "solution": ""}
+{"task_id": "Mbpp/285", "solution": ""}
+{"task_id": "Mbpp/286", "solution": ""}
+{"task_id": "Mbpp/287", "solution": ""}
+{"task_id": "Mbpp/290", "solution": ""}
+{"task_id": "Mbpp/292", "solution": ""}
+{"task_id": "Mbpp/293", "solution": ""}
+{"task_id": "Mbpp/294", "solution": ""}
+{"task_id": "Mbpp/296", "solution": ""}
+{"task_id": "Mbpp/297", "solution": ""}
+{"task_id": "Mbpp/299", "solution": ""}
+{"task_id": "Mbpp/300", "solution": ""}
+{"task_id": "Mbpp/301", "solution": ""}
+{"task_id": "Mbpp/305", "solution": ""}
+{"task_id": "Mbpp/306", "solution": ""}
+{"task_id": "Mbpp/308", "solution": ""}
+{"task_id": "Mbpp/309", "solution": "```python\ndef maximum(a, b):\n    \"\"\"\n    Returns the maximum of two numbers.\n    \"\"\"\n    if a > b:\n        return a\n    else:\n        return b\n\n# Verification\nassert maximum(5, 10) == 10\n```"}
+{"task_id": "Mbpp/310", "solution": ""}
+{"task_id": "Mbpp/311", "solution": ""}
+{"task_id": "Mbpp/312", "solution": ""}
+{"task_id": "Mbpp/388", "solution": ""}
+{"task_id": "Mbpp/389", "solution": ""}
+{"task_id": "Mbpp/390", "solution": ""}
+{"task_id": "Mbpp/391", "solution": ""}
+{"task_id": "Mbpp/392", "solution": ""}
+{"task_id": "Mbpp/394", "solution": ""}
+{"task_id": "Mbpp/395", "solution": ""}
+{"task_id": "Mbpp/397", "solution": ""}
+{"task_id": "Mbpp/398", "solution": ""}
+{"task_id": "Mbpp/404", "solution": ""}
+{"task_id": "Mbpp/405", "solution": ""}
+{"task_id": "Mbpp/406", "solution": ""}
+{"task_id": "Mbpp/409", "solution": ""}
+{"task_id": "Mbpp/410", "solution": ""}
+{"task_id": "Mbpp/412", "solution": ""}
+{"task_id": "Mbpp/413", "solution": ""}
+{"task_id": "Mbpp/414", "solution": ""}
+{"task_id": "Mbpp/415", "solution": ""}
+{"task_id": "Mbpp/418", "solution": "```python\ndef Find_Max(lst):\n    \"\"\"\n    Returns the element (sublist) with the maximum length from a list of iterables.\n    \"\"\"\n    return max(lst, key=len)\n\nassert Find_Max([['A'], ['A', 'B'], ['A', 'B', 'C']]) == ['A', 'B', 'C']\n```"}
+{"task_id": "Mbpp/419", "solution": ""}
+{"task_id": "Mbpp/420", "solution": ""}
+{"task_id": "Mbpp/421", "solution": ""}
+{"task_id": "Mbpp/422", "solution": ""}
+{"task_id": "Mbpp/424", "solution": "```python\ndef extract_rear(strings):\n    return [s[-1] for s in strings]\n\n# Verification with the provided test case\nassert extract_re"}
+{"task_id": "Mbpp/425", "solution": ""}
+{"task_id": "Mbpp/426", "solution": "```python\ndef filter_oddnumbers(numbers):\n    \"\"\"\n    Filters a list of numbers and returns a list containing only the odd numbers.\n"}
+{"task_id": "Mbpp/427", "solution": "```python\ndef change_date_format(date_str):\n    \"\"\"\n    Converts a date string from yyyy-mm-dd format to dd-mm-yyyy format.\n    \"\"\"\n    # Split the input string by '-' to separate year, month, and day\n    year, month, day = date_str.split('-')\n    \n    # Return the date in the new format\n    return f\"{day}-{month}-{year}\"\n\n# Verify the function works as expected\nassert change_date_format(\"2026-01-02\") == '02-01-2026'\n```"}
+{"task_id": "Mbpp/428", "solution": ""}
+{"task_id": "Mbpp/429", "solution": ""}
+{"task_id": "Mbpp/430", "solution": ""}
+{"task_id": "Mbpp/432", "solution": ""}
+{"task_id": "Mbpp/433", "solution": ""}
+{"task_id": "Mbpp/435", "solution": ""}
+{"task_id": "Mbpp/436", "solution": "```python\ndef neg_nos(numbers):\n    return [n for n in numbers if n < 0]\n\nassert neg_nos([-1, 4, 5, -6]) == [-1, -6]\n```"}
+{"task_id": "Mbpp/437", "solution": ""}
+{"task_id": "Mbpp/439", "solution": ""}
+{"task_id": "Mbpp/440", "solution": ""}
+{"task_id": "Mbpp/441", "solution": "```python\ndef surfacearea_cube(size):\n    \"\"\"\n    Calculate the surface area of a cube given its side length.\n    \"\"\"\n    return 6 * (size ** 2)\n\n# Verification based on the problem description\nassert surfacearea_cube(5) == 150\n```"}
+{"task_id": "Mbpp/445", "solution": ""}
+{"task_id": "Mbpp/446", "solution": ""}
+{"task_id": "Mbpp/447", "solution": ""}
+{"task_id": "Mbpp/448", "solution": ""}
+{"task_id": "Mbpp/450", "solution": ""}
+{"task_id": "Mbpp/451", "solution": "```python\ndef remove_whitespaces(s):\n    \"\"\"\n    Removes all whitespaces from the given string.\n    \"\"\"\n    return ''.join(s.split())\n\n# Verification\nassert remove_whitespaces(' Google    Flutter ') == 'GoogleFlutter'\n```"}
+{"task_id": "Mbpp/453", "solution": ""}
+{"task_id": "Mbpp/454", "solution": ""}
+{"task_id": "Mbpp/455", "solution": "```python\ndef check_monthnumb_number(month):\n    \"\"\"\n    Check whether the given month number contains 31 days or not.\n    Returns True if the month has 31 days, False otherwise.\n    \"\"\"\n    return month in [1, 3, 5, 7, 8, 10, 12]"}
+{"task_id": "Mbpp/456", "solution": ""}
+{"task_id": "Mbpp/457", "solution": "```python\ndef Find_Min(lists):\n    \"\"\"\n    Returns the sublist with the minimum length from a list of lists.\n    \"\"\"\n    if not lists:\n        return []\n    return min(lists, key=len)\n\n# Verification\nassert Find_Min([[1],[1,2],[1,2,3]]) == [1]\nprint(\"Test passed.\")\n```"}
+{"task_id": "Mbpp/458", "solution": "```python\ndef rectangle_area(length, width):\n    \"\"\"\n    Calculates the area of a rectangle.\n    \n    Args:\n        length (int or float): The length of the rectangle.\n        width (int or float): The width of the rectangle.\n        \n    Returns:\n        int or float: The area of the rectangle.\n    \"\"\"\n    return length * width\n\n# Test case provided in the prompt\nassert rectangle_area(10, 20) == 200\n```"}
+{"task_id": "Mbpp/459", "solution": ""}
+{"task_id": "Mbpp/460", "solution": "```python\ndef Extract(lst):\n    \"\"\"\n    Returns a list containing the first element of each sublist in the input list.\n    \"\"\"\n    return [sub[0] for sub in lst]\n\n# Verification\nassert Extract([[1, 2], [3, 4, 5], [6, 7, 8, 9]]) == [1, 3, 6]\n```"}
+{"task_id": "Mbpp/462", "solution": ""}
+{"task_id": "Mbpp/463", "solution": ""}
+{"task_id": "Mbpp/465", "solution": ""}
+{"task_id": "Mbpp/468", "solution": ""}
+{"task_id": "Mbpp/470", "solution": ""}
+{"task_id": "Mbpp/471", "solution": ""}
+{"task_id": "Mbpp/472", "solution": ""}
+{"task_id": "Mbpp/473", "solution": ""}
+{"task_id": "Mbpp/474", "solution": ""}
+{"task_id": "Mbpp/475", "solution": ""}
+{"task_id": "Mbpp/476", "solution": "```python\ndef big_sum(arr):\n    \"\"\"Return the sum of the largest and smallest values in a given array.\"\"\"\n    return max(arr) + min(arr)\n\n# Verification\nassert big_sum([1, 2, 3]) == 4\nprint(\"Assertion passed!\")\n```"}
+{"task_id": "Mbpp/477", "solution": "```python\ndef is_lower(s):\n    \"\"\"\n    Converts the given string to lower case.\n    \"\"\"\n    return s.lower()\n\nassert is_lower(\"InValid\") == \"invalid\"\n```"}
+{"task_id": "Mbpp/478", "solution": ""}
+{"task_id": "Mbpp/479", "solution": ""}
+{"task_id": "Mbpp/554", "solution": ""}
+{"task_id": "Mbpp/555", "solution": ""}
+{"task_id": "Mbpp/556", "solution": ""}
+{"task_id": "Mbpp/557", "solution": "```python\ndef toggle_string(s):\n    \"\"\"\n    Toggles the case of all characters in a string.\n    \"\"\"\n    return s.swapcase()\n\n# Test the function with the provided assertion\nassert toggle_string(\"Python\") == \"pYTHON\"\nprint(\"Test passed!\")\n```"}
+{"task_id": "Mbpp/558", "solution": ""}
+{"task_id": "Mbpp/559", "solution": ""}
+{"task_id": "Mbpp/560", "solution": ""}
+{"task_id": "Mbpp/562", "solution": ""}
+{"task_id": "Mbpp/563", "solution": ""}
+{"task_id": "Mbpp/564", "solution": ""}
+{"task_id": "Mbpp/565", "solution": "```python\ndef split(s):\n    \"\"\"\n    Splits a string into a list of characters.\n    \"\"\"\n    return list(s)\n\n# Verification\nassert split('python') == ['p', 'y', 't', 'h', 'o', 'n']\nprint(\"Assertion passed.\")\n```"}
+{"task_id": "Mbpp/566", "solution": ""}
+{"task_id": "Mbpp/567", "solution": ""}
+{"task_id": "Mbpp/568", "solution": ""}
+{"task_id": "Mbpp/569", "solution": ""}
+{"task_id": "Mbpp/572", "solution": ""}
+{"task_id": "Mbpp/573", "solution": ""}
+{"task_id": "Mbpp/576", "solution": ""}
+{"task_id": "Mbpp/577", "solution": ""}
+{"task_id": "Mbpp/578", "solution": ""}
+{"task_id": "Mbpp/579", "solution": ""}
+{"task_id": "Mbpp/580", "solution": ""}
+{"task_id": "Mbpp/581", "solution": ""}
+{"task_id": "Mbpp/583", "solution": ""}
+{"task_id": "Mbpp/585", "solution": ""}
+{"task_id": "Mbpp/586", "solution": ""}
+{"task_id": "Mbpp/587", "solution": "```python\ndef list_tuple(lst):\n    \"\"\"\n    Converts a list to a tuple.\n    \"\"\"\n    return tuple(lst)\n\n# Verification based on the problem description\nassert list_tuple([5, 10, 7, 4, 15, 3]) == (5, 10, 7, 4, 15, 3)\n```"}
+{"task_id": "Mbpp/588", "solution": ""}
+{"task_id": "Mbpp/589", "solution": ""}
+{"task_id": "Mbpp/590", "solution": ""}
+{"task_id": "Mbpp/591", "solution": ""}
+{"task_id": "Mbpp/592", "solution": ""}
+{"task_id": "Mbpp/593", "solution": ""}
+{"task_id": "Mbpp/594", "solution": ""}
+{"task_id": "Mbpp/596", "solution": "Here's the self-contained Python script that defines the requested function:\n\n```python\nimport sys\n\ndef tuple_size(t):\n    \"\"\"Return the size in bytes of the given tuple.\"\"\"\n    return sys.getsizeof(t)\n```"}
+{"task_id": "Mbpp/597", "solution": ""}
+{"task_id": "Mbpp/598", "solution": ""}
+{"task_id": "Mbpp/599", "solution": ""}
+{"task_id": "Mbpp/600", "solution": ""}
+{"task_id": "Mbpp/602", "solution": ""}
+{"task_id": "Mbpp/603", "solution": ""}
+{"task_id": "Mbpp/604", "solution": ""}
+{"task_id": "Mbpp/605", "solution": ""}
+{"task_id": "Mbpp/606", "solution": "```python\nimport math\n\ndef radian_degree(degrees):\n    \"\"\"\n    Convert an angle from degrees to radians.\n    \n    Args:\n        degrees (float): The angle in degrees.\n        \n    Returns:\n        float: The angle in radians.\n    \"\"\"\n    return math.radians(degrees)\n\n# Verification based on the problem description\nassert radian_degree(90) == 1.5707963267948966\n```"}
+{"task_id": "Mbpp/607", "solution": ""}
+{"task_id": "Mbpp/608", "solution": ""}
+{"task_id": "Mbpp/610", "solution": ""}
+{"task_id": "Mbpp/611", "solution": ""}
+{"task_id": "Mbpp/612", "solution": ""}
+{"task_id": "Mbpp/614", "solution": ""}
+{"task_id": "Mbpp/615", "solution": ""}
+{"task_id": "Mbpp/616", "solution": ""}
+{"task_id": "Mbpp/618", "solution": ""}
+{"task_id": "Mbpp/619", "solution": ""}
+{"task_id": "Mbpp/620", "solution": ""}
+{"task_id": "Mbpp/622", "solution": ""}
+{"task_id": "Mbpp/623", "solution": "```python\ndef nth_nums(numbers, n):\n    \"\"\"\n    Computes the n-th power of each number in a list.\n    \"\"\"\n    return [x ** n for x in numbers]\n\n# Verification based on the provided example\nassert nth_nums([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 2) == [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]\n```"}
+{"task_id": "Mbpp/624", "solution": ""}
+{"task_id": "Mbpp/626", "solution": ""}
+{"task_id": "Mbpp/628", "solution": "```python\ndef replace_spaces(s):\n    \"\"\"\n    Replaces all spaces in the given string with '%20'.\n    \"\"\"\n    return s.replace(' ', '%20')\n\n# Verification\nassert replace_spaces(\"My Name is Dawood\") == 'My%20Name%20is%20Dawood'\n```"}
+{"task_id": "Mbpp/629", "solution": ""}
+{"task_id": "Mbpp/630", "solution": ""}
+{"task_id": "Mbpp/631", "solution": ""}
+{"task_id": "Mbpp/632", "solution": ""}
+{"task_id": "Mbpp/633", "solution": ""}
+{"task_id": "Mbpp/635", "solution": ""}
+{"task_id": "Mbpp/637", "solution": ""}
+{"task_id": "Mbpp/638", "solution": ""}
+{"task_id": "Mbpp/639", "solution": ""}
+{"task_id": "Mbpp/641", "solution": ""}
+{"task_id": "Mbpp/643", "solution": ""}
+{"task_id": "Mbpp/644", "solution": ""}
+{"task_id": "Mbpp/720", "solution": ""}
+{"task_id": "Mbpp/721", "solution": ""}
+{"task_id": "Mbpp/722", "solution": ""}
+{"task_id": "Mbpp/723", "solution": ""}
+{"task_id": "Mbpp/724", "solution": ""}
+{"task_id": "Mbpp/725", "solution": ""}
+{"task_id": "Mbpp/726", "solution": ""}
+{"task_id": "Mbpp/728", "solution": ""}
+{"task_id": "Mbpp/730", "solution": ""}
+{"task_id": "Mbpp/731", "solution": ""}
+{"task_id": "Mbpp/732", "solution": ""}
+{"task_id": "Mbpp/733", "solution": ""}
+{"task_id": "Mbpp/734", "solution": ""}
+{"task_id": "Mbpp/735", "solution": ""}
+{"task_id": "Mbpp/736", "solution": ""}
+{"task_id": "Mbpp/737", "solution": ""}
+{"task_id": "Mbpp/739", "solution": ""}
+{"task_id": "Mbpp/740", "solution": ""}
+{"task_id": "Mbpp/741", "solution": ""}
+{"task_id": "Mbpp/742", "solution": ""}
+{"task_id": "Mbpp/743", "solution": ""}
+{"task_id": "Mbpp/744", "solution": ""}
+{"task_id": "Mbpp/745", "solution": ""}
+{"task_id": "Mbpp/748", "solution": ""}
+{"task_id": "Mbpp/749", "solution": ""}
+{"task_id": "Mbpp/750", "solution": ""}
+{"task_id": "Mbpp/751", "solution": ""}
+{"task_id": "Mbpp/752", "solution": ""}
+{"task_id": "Mbpp/753", "solution": ""}
+{"task_id": "Mbpp/754", "solution": ""}
+{"task_id": "Mbpp/755", "solution": ""}
+{"task_id": "Mbpp/757", "solution": ""}
+{"task_id": "Mbpp/758", "solution": ""}
+{"task_id": "Mbpp/759", "solution": ""}
+{"task_id": "Mbpp/760", "solution": ""}
+{"task_id": "Mbpp/762", "solution": ""}
+{"task_id": "Mbpp/763", "solution": ""}
+{"task_id": "Mbpp/764", "solution": ""}
+{"task_id": "Mbpp/765", "solution": ""}
+{"task_id": "Mbpp/766", "solution": ""}
+{"task_id": "Mbpp/767", "solution": ""}
+{"task_id": "Mbpp/769", "solution": ""}
+{"task_id": "Mbpp/770", "solution": ""}
+{"task_id": "Mbpp/771", "solution": ""}
+{"task_id": "Mbpp/772", "solution": ""}
+{"task_id": "Mbpp/773", "solution": ""}
+{"task_id": "Mbpp/775", "solution": ""}
+{"task_id": "Mbpp/777", "solution": ""}
+{"task_id": "Mbpp/778", "solution": ""}
+{"task_id": "Mbpp/780", "solution": ""}
+{"task_id": "Mbpp/781", "solution": ""}
+{"task_id": "Mbpp/782", "solution": ""}
+{"task_id": "Mbpp/784", "solution": ""}
+{"task_id": "Mbpp/785", "solution": ""}
+{"task_id": "Mbpp/786", "solution": ""}
+{"task_id": "Mbpp/787", "solution": ""}
+{"task_id": "Mbpp/788", "solution": "```python\ndef new_tuple(lst, item):\n    \"\"\"\n    Creates a new tuple from the given list and string.\n    \n    Args:\n        lst (list): A list of elements.\n        item (str): A string to append to the tuple.\n        \n    Returns:\n        tuple: A tuple containing elements from the list followed by the string.\n    \"\"\"\n    # Convert the list to a tuple and concatenate it with a tuple containing the string\n    return tuple(lst) + (item,)\n\n# Verification\nassert new_tuple([\"WEB\", \"is\"],"}
+{"task_id": "Mbpp/790", "solution": ""}
+{"task_id": "Mbpp/791", "solution": ""}
+{"task_id": "Mbpp/792", "solution": ""}
+{"task_id": "Mbpp/793", "solution": ""}
+{"task_id": "Mbpp/794", "solution": ""}
+{"task_id": "Mbpp/796", "solution": "```python\ndef return_sum(d):\n    \"\"\"\n    Returns the sum of all values in the given dictionary.\n    \"\"\"\n    return sum(d.values())\n\n# Verification\nassert return_sum({'a': 100, 'b':200, 'c':300}) == 600\n```"}
+{"task_id": "Mbpp/797", "solution": ""}
+{"task_id": "Mbpp/798", "solution": ""}
+{"task_id": "Mbpp/799", "solution": ""}
+{"task_id": "Mbpp/800", "solution": ""}
+{"task_id": "Mbpp/801", "solution": ""}
+{"task_id": "Mbpp/803", "solution": ""}
+{"task_id": "Mbpp/804", "solution": ""}
+{"task_id": "Mbpp/805", "solution": ""}
+{"task_id": "Mbpp/806", "solution": ""}
+{"task_id": "Mbpp/807", "solution": ""}
+{"task_id": "Mbpp/808", "solution": ""}
+{"task_id": "Mbpp/809", "solution": ""}

@@ -1,0 +1,164 @@
+{"task_id": "HumanEval/0", "solution": ""}
+{"task_id": "HumanEval/1", "solution": ""}
+{"task_id": "HumanEval/2", "solution": ""}
+{"task_id": "HumanEval/3", "solution": ""}
+{"task_id": "HumanEval/4", "solution": ""}
+{"task_id": "HumanEval/5", "solution": ""}
+{"task_id": "HumanEval/6", "solution": "```python\nfrom typing import List\n\n\ndef parse_nested_parens(paren_string: str) -> List[int]:\n    \"\"\" Input to this function is a string represented multiple groups for nested parentheses separated by spaces.\n    For each of the group, output the deepest level of nesting of parentheses.\n    E.g. (()()) has maximum two levels of nesting while ((())) has three.\n\n    >>> parse_nested_parens('(()()) ((())) () ((())()())')\n    [2, 3, 1, 3]\n    \"\"\"\n    # Split the input string by spaces to get individual groups\n    groups = paren_string.split()\n    \n    result = []\n    \n    for group in groups:\n        if not group:\n            continue\n        \n        max_depth = 0\n        current_depth = 0\n        \n        for char in group:\n            if char == '(':\n                current_depth += 1\n                if current_depth > max_depth:\n                    max_depth = current_depth\n            elif char == ')':\n                current_depth -= 1\n        \n        result.append(max_depth)\n    \n    return result\n\n\nif __name__ == \"__main__\":\n    import doctest\n    \n    # Run doctests\n    doctest.testmod()\n```"}
+{"task_id": "HumanEval/7", "solution": ""}
+{"task_id": "HumanEval/8", "solution": ""}
+{"task_id": "HumanEval/9", "solution": ""}
+{"task_id": "HumanEval/10", "solution": ""}
+{"task_id": "HumanEval/11", "solution": ""}
+{"task_id": "HumanEval/12", "solution": ""}
+{"task_id": "HumanEval/13", "solution": ""}
+{"task_id": "HumanEval/14", "solution": ""}
+{"task_id": "HumanEval/15", "solution": "```python\ndef string_sequence(n: int) -> str:\n    \"\"\" Return a string containing space-delimited numbers starting from 0 upto n inclusive.\n    >>> string_sequence(0)\n    '0'\n    >>> string_sequence(5)\n    '0 1 2 3 4 5'\n    \"\"\"\n    return ' '.join(str(i) for i in range(n + 1))\n```"}
+{"task_id": "HumanEval/16", "solution": ""}
+{"task_id": "HumanEval/17", "solution": ""}
+{"task_id": "HumanEval/18", "solution": ""}
+{"task_id": "HumanEval/19", "solution": "```python\nfrom typing import List\n\n\ndef sort_numbers(numbers: str) -> str:\n    \"\"\" Input is a space-delimited string of numberals from 'zero' to 'nine'.\n    Valid choices are 'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight' and 'nine'.\n    Return the string with numbers sorted from smallest to largest\n    >>> sort_numbers('three one five')\n    'one three five'\n    \"\"\"\n    number_map = {\n        'zero': 0,\n        'one': 1,\n        'two': 2,\n        'three': 3,\n        'four': 4,\n        'five': 5,\n        'six': 6,\n        'seven': 7,\n        'eight': 8,\n        'nine': 9\n    }\n    \n    if not numbers.strip():\n        return \"\"\n    \n    words = numbers.split()\n    sorted_words = sorted(words, key=lambda word: number_map[word])\n    return \" \".join(sorted_words)\n```"}
+{"task_id": "HumanEval/20", "solution": ""}
+{"task_id": "HumanEval/21", "solution": ""}
+{"task_id": "HumanEval/22", "solution": ""}
+{"task_id": "HumanEval/23", "solution": ""}
+{"task_id": "HumanEval/24", "solution": ""}
+{"task_id": "HumanEval/25", "solution": ""}
+{"task_id": "HumanEval/26", "solution": ""}
+{"task_id": "HumanEval/27", "solution": ""}
+{"task_id": "HumanEval/28", "solution": "Here is the self-contained Python script solving the problem:\n\n```python\nfrom typing import List\n\n\ndef concatenate(strings: List[str]) -> str:\n    \"\"\" Concatenate list of strings into a single string\n    >>> concatenate([])\n    ''\n    >>> concatenate(['a', 'b', 'c'])\n    'abc'\n    \"\"\"\n    return ''.join(strings)\n\n\nif __name__ == \"__main__\":\n    # Test the function with examples from the doc"}
+{"task_id": "HumanEval/29", "solution": ""}
+{"task_id": "HumanEval/30", "solution": ""}
+{"task_id": "HumanEval/31", "solution": ""}
+{"task_id": "HumanEval/32", "solution": ""}
+{"task_id": "HumanEval/33", "solution": ""}
+{"task_id": "HumanEval/34", "solution": ""}
+{"task_id": "HumanEval/35", "solution": ""}
+{"task_id": "HumanEval/36", "solution": ""}
+{"task_id": "HumanEval/37", "solution": ""}
+{"task_id": "HumanEval/38", "solution": ""}
+{"task_id": "HumanEval/39", "solution": ""}
+{"task_id": "HumanEval/40", "solution": ""}
+{"task_id": "HumanEval/41", "solution": ""}
+{"task_id": "HumanEval/42", "solution": ""}
+{"task_id": "HumanEval/43", "solution": "```python\ndef pairs_sum_to_zero(l):\n    \"\"\"\n    pairs_sum_to_zero takes a list of integers as an input.\n    it returns True if there are two distinct elements in the list that\n    sum to zero, and False otherwise.\n    >>> pairs_sum_to_zero([1, 3, 5, 0])\n    False\n    >>> pairs_sum_to_zero([1, 3, -2, 1])\n    False\n    >>> pairs_sum_to_zero([1, 2, 3, 7])\n    False\n    >>> pairs_sum_to_zero([2, 4, -5, 3, 5, 7])\n    True\n    >>> pairs_sum_to_zero([1])\n    False\n    \"\"\"\n    seen = set()\n    for num in l:\n        if -num in seen:\n            return True\n        seen.add(num)\n    return False\n```"}
+{"task_id": "HumanEval/44", "solution": ""}
+{"task_id": "HumanEval/45", "solution": ""}
+{"task_id": "HumanEval/46", "solution": ""}
+{"task_id": "HumanEval/47", "solution": ""}
+{"task_id": "HumanEval/48", "solution": ""}
+{"task_id": "HumanEval/49", "solution": ""}
+{"task_id": "HumanEval/50", "solution": ""}
+{"task_id": "HumanEval/51", "solution": ""}
+{"task_id": "HumanEval/52", "solution": "```python\ndef below_threshold(l: list, t: int):\n    \"\"\"Return True if all numbers in the list l are below threshold t.\n    >>> below_threshold([1, 2, 4, 10], 100)\n    True\n    >>> below_threshold([1, 20, 4, 10], 5)\n    False\n    \"\"\"\n    return all(num < t for num in l)\n\nif __name__ == \"__main__\":\n    import doctest\n    doctest.testmod()\n```"}
+{"task_id": "HumanEval/53", "solution": "```python\ndef add(x: int, y: int):\n    \"\"\"Add two numbers x and y\n    >>> add(2, 3)\n    5\n    >>> add(5, 7)\n    12\n    \"\"\"\n    return x + y\n```"}
+{"task_id": "HumanEval/54", "solution": ""}
+{"task_id": "HumanEval/55", "solution": ""}
+{"task_id": "HumanEval/56", "solution": ""}
+{"task_id": "HumanEval/57", "solution": ""}
+{"task_id": "HumanEval/58", "solution": ""}
+{"task_id": "HumanEval/59", "solution": ""}
+{"task_id": "HumanEval/60", "solution": ""}
+{"task_id": "HumanEval/61", "solution": "```python\ndef correct_bracketing(brackets: str):\n    \"\"\" brackets is a string of \"(\" and \")\".\n    return True if every opening bracket has a corresponding closing bracket.\n\n    >>> correct_bracketing(\"(\")\n    False\n    >>> correct_bracketing(\"()\")\n    True\n    >>> correct_bracketing(\"(()())\")\n    True\n    >>> correct_bracketing(\")(()\")\n    False\n    \"\"\"\n    balance = 0\n    for char in brackets:\n        if char == '(':\n            balance += 1\n        elif char == ')':\n            balance -= 1\n        # If balance goes negative, we have a closing bracket before an opening one\n        if balance < 0:\n            return False\n            \n    # Return True only if all brackets are closed (balance is zero)\n    return balance == 0\n\nif __name__ == \"__main__\":\n    import doctest\n    \n    # Run doctests to verify the solution matches the expected behavior described in the docstring\n    result = doctest.testmod()\n    \n    # Optional: Print manual test cases for demonstration\n    print(\"Manual Verification:\")\n    print(f\"correct_bracketing('('): {correct_bracketing('(')}\")       # Expected: False\n    print(f\"correct_bracketing('()'): {correct_bracketing('()')}\")     # Expected: True\n    print(f\"correct_bracketing('(()())'): {correct_bracketing('(()())')}\") # Expected: True\n    print(f\"correct_bracketing(')(()'): {correct_bracketing(')(()')}\")     # Expected: False\n    \n    if result.failed == 0:\n        print(\"\\nAll doctests passed successfully.\")\n```"}
+{"task_id": "HumanEval/62", "solution": "```python\ndef derivative(xs: list):\n    \"\"\" xs represent coefficients of a polynomial.\n    xs[0] + xs[1] * x + xs[2] * x^2 + ....\n     Return derivative of this polynomial in the same form.\n    >>> derivative([3, 1, 2, 4, 5])\n    [1, 4, 12, 20]\n    >>> derivative([1, 2, 3])\n    [2, 6]\n    \"\"\"\n    # The input list represents coefficients: xs[0] + xs[1]*x + xs[2]*x^2 + ...\n    # The derivative of a term xs[i] * x^i is i * xs[i] * x^(i-1) for i >= 1.\n    # So the new coefficient at power j (which corresponds to original power j+1) is (j+1) * xs[j+1].\n    \n    if len(xs) <= 1:\n        return []\n    \n    result = []\n    for i in range(1, len(xs)):\n        # The term at index i has power i. Its derivative contributes i * xs[i] to the coefficient of x^(i-1).\n        result.append(i * xs[i])\n        \n    return result\n\n```"}
+{"task_id": "HumanEval/63", "solution": ""}
+{"task_id": "HumanEval/64", "solution": ""}
+{"task_id": "HumanEval/65", "solution": ""}
+{"task_id": "HumanEval/66", "solution": ""}
+{"task_id": "HumanEval/67", "solution": ""}
+{"task_id": "HumanEval/68", "solution": ""}
+{"task_id": "HumanEval/69", "solution": ""}
+{"task_id": "HumanEval/70", "solution": ""}
+{"task_id": "HumanEval/71", "solution": ""}
+{"task_id": "HumanEval/72", "solution": ""}
+{"task_id": "HumanEval/73", "solution": ""}
+{"task_id": "HumanEval/74", "solution": ""}
+{"task_id": "HumanEval/75", "solution": ""}
+{"task_id": "HumanEval/76", "solution": ""}
+{"task_id": "HumanEval/77", "solution": ""}
+{"task_id": "HumanEval/78", "solution": ""}
+{"task_id": "HumanEval/79", "solution": ""}
+{"task_id": "HumanEval/80", "solution": ""}
+{"task_id": "HumanEval/81", "solution": ""}
+{"task_id": "HumanEval/82", "solution": ""}
+{"task_id": "HumanEval/83", "solution": ""}
+{"task_id": "HumanEval/84", "solution": "```python\ndef solve(N):\n    \"\"\"Given a positive integer N, return the total sum of its digits in binary.\n    \n    Example\n        For N = 1000, the sum of digits will be 1 the output should be \"1\".\n        For N = 150, the sum of digits will be 6 the output should be \"110\".\n        For N = 147, the sum of digits will be 12 the output should be \"1100\".\n    \n    Variables:\n        @N integer\n             Constraints: 0 \u2264 N \u2264 10000.\n    Output:\n         a string of binary number\n    \"\"\"\n    # Calculate the sum of digits\n    digit_sum = 0\n    temp = abs(N) if N != 0 else 0\n    \n    # If N is 0, the sum of digits is 0\n    if N == 0:\n        digit_sum = 0\n    else:\n        while temp > 0:\n            digit_sum += temp % 10\n            temp //= 10\n            \n    # Convert the sum to binary string\n    # Using bin() which returns '0b...' prefix, so we slice it off\n    if digit_sum == 0:\n        return \"0\"\n    else:\n        return bin(digit_sum)[2:]\n\n# Test cases from the problem description\nif __name__ == \"__main__\":\n    # For N = 1000, sum of digits = 1+0+0+0 = 1, binary is \"1\"\n    print(solve(1000))  # Expected: \"1\"\n    \n    # For N = 150, sum of digits = 1+5+0 = 6, binary is \"110\"\n    print(solve(150))   # Expected: \"110\"\n    \n    # For N = 147, sum of digits = 1+4+7 = 12, binary is \"1100\"\n    print(solve(147))   # Expected: \"1100\"\n```"}
+{"task_id": "HumanEval/85", "solution": ""}
+{"task_id": "HumanEval/86", "solution": "# Anti-Shuffle Function Implementation\n\nHere's the implementation of the `anti_shuffle` function:\n\n```python\ndef anti_shuffle(s):\n    \"\"\"\n    Write a function that takes a string and returns an ordered version of it.\n    Ordered version of string, is a string where all words (separated by space)\n    are replaced by a new word where all the characters arranged in\n    ascending order based on ascii value.\n    Note: You should keep the order of words and blank spaces in the sentence.\n\n    For example:\n    anti_shuffle('Hi') returns 'Hi'\n    anti_shuffle('hello') returns 'ehllo'\n    anti_shuffle('Hello World!!!') returns 'Hello !!!Wdlor'\n    \"\"\"\n    # Split the string into words (keeping track of spaces)\n    words = s.split(' ')\n    \n    # For each word, sort its characters by ASCII value and join them back\n    sorted_words = []\n    for word in words:\n        if word == '':  # Handle multiple consecutive spaces\n            sorted_words.append(word)\n        else:\n            # Sort characters by their ASCII values\n            sorted_chars = sorted(word)\n            sorted_words.append(''.join(sorted_chars))\n    \n    # Join the words back with spaces\n    return ' '.join(sorted_words)\n\n\n# Test cases\nif __name__ == \"__main__\":\n    assert anti_shuffle('Hi') == 'Hi', f\"Expected 'Hi', got '{anti_shuffle('Hi')}'\"\n    assert anti_shuffle('hello') == 'ehllo', f\"Expected 'ehllo', got '{anti_shuffle('hello')}'\"\n    assert anti_shuffle('Hello World!!!') == 'Hello !!!Wdlor', f\"Expected 'Hello !!!Wdlor', got '{anti_shuffle('Hello World!!!')}'\"\n    \n    print(\"All test cases passed!\")\n```"}
+{"task_id": "HumanEval/87", "solution": ""}
+{"task_id": "HumanEval/88", "solution": ""}
+{"task_id": "HumanEval/89", "solution": ""}
+{"task_id": "HumanEval/90", "solution": ""}
+{"task_id": "HumanEval/91", "solution": ""}
+{"task_id": "HumanEval/92", "solution": ""}
+{"task_id": "HumanEval/93", "solution": ""}
+{"task_id": "HumanEval/94", "solution": ""}
+{"task_id": "HumanEval/95", "solution": ""}
+{"task_id": "HumanEval/96", "solution": ""}
+{"task_id": "HumanEval/97", "solution": ""}
+{"task_id": "HumanEval/98", "solution": ""}
+{"task_id": "HumanEval/99", "solution": "To solve this problem, we need to round a given number (represented as a string) to the nearest integer. The key requirement is that if the number is equidistant from two integers, we must round away from zero. For example, 14.5 should become 15, and -14.5 should become -15.\n\nHere's how we can approach this:\n1. Parse the input string to a float.\n2. Check if the number is equidistant from two integers. This happens when the decimal part is exactly 0.5 (considering the absolute value).\n3. If it's equidistant, round away from zero by adding 0.5 to positive numbers and subtracting 0.5 from negative numbers before rounding, or more simply, we can use `math.floor` and `math.ceil` with a specific check.\n4. However, Python's built-in `round()` function uses \"banker's rounding\" (round half to even), which is not what we want. For example, `round(14.5)` returns 14, and `round(15.5)` also returns 14. So we need a custom approach.\n\nA common way to round half away from zero in Python is:\n- For positive numbers: add 0.5 and then floor.\n- For negative numbers: subtract 0.5 and then ceiling (or equivalently, take the absolute value, add 0.5, floor, and then reapply the sign).\n\nAlternatively, we can use `math.floor(x + 0.5)` for positive x and `math.ceil(x - 0.5)` for negative x. But note that this might have issues with floating point precision.\n\nA more straightforward method is to:\n1. Convert the string to a float.\n2. Split the number into integer and fractional parts.\n3. If the absolute fractional part is exactly 0.5, then we round away from zero.\n4. Otherwise, use standard rounding (which can be done by adding 0.5 and flooring for positive, or subtracting 0.5 and ceiling for negative).\n\nBut note: due to floating point representation, checking for exactly 0.5 might be tricky. However, since the input is a string, we can parse it more carefully. But for simplicity, we can use the `decimal` module which provides exact decimal arithmetic.\n\nAlternatively, we can use the following trick with `math.floor`:\nFor any number x, the \"round half away from zero\" can be achieved by:\n- If x >= 0: return math.floor(x + 0.5)\n- Else: return math.ceil(x - 0.5)\n\nLet me test this:\n- For 14.5: floor(14.5 + 0.5) = floor(15.0) = 15 -> correct.\n- For 15.3: floor(15.3 + 0.5) = floor(15.8) = 15 -> correct.\n- For -14.5: ceil(-14.5 - 0.5) = ceil(-15.0) = -15 -> correct.\n- For -15.3: ceil(-15.3 - 0.5) = ceil(-15.8) = -15 -> correct? \n  But wait, the closest integer to -15.3 is -15 (because | -15.3 - (-15)| = 0.3 and |"}
+{"task_id": "HumanEval/100", "solution": ""}
+{"task_id": "HumanEval/101", "solution": ""}
+{"task_id": "HumanEval/102", "solution": ""}
+{"task_id": "HumanEval/103", "solution": ""}
+{"task_id": "HumanEval/104", "solution": ""}
+{"task_id": "HumanEval/105", "solution": ""}
+{"task_id": "HumanEval/106", "solution": ""}
+{"task_id": "HumanEval/107", "solution": ""}
+{"task_id": "HumanEval/108", "solution": "```python\ndef count_nums(arr):\n    \"\"\"\n    Write a function count_nums which takes an array of integers and returns\n    the number of elements which has a sum of digits > 0.\n    If a number is negative, then its first signed digit will be negative:\n    e.g. -123 has signed digits -1, 2, and 3.\n    >>> count_nums([]) == 0\n    >>> count_nums([-1, 11, -11]) == 1\n    >>> count_nums([1, 1, 2]) == 3\n    \"\"\"\n\n    def sum_of_digits(n):\n        if n == 0:\n            return 0\n        \n        # Handle negative numbers\n        is_negative = n < 0\n        n_str = str(n)\n        \n        total = 0\n        for i, char in enumerate(n_str):\n            digit = int(char)\n            if i == 0 and is_negative:\n                total -= digit\n            else:\n                total += digit\n        \n        return total\n\n    count = 0\n    for num in arr:\n        s = sum_of_digits(num)\n        if s > 0:\n            count += 1\n    \n    return count\n```"}
+{"task_id": "HumanEval/109", "solution": ""}
+{"task_id": "HumanEval/110", "solution": ""}
+{"task_id": "HumanEval/111", "solution": ""}
+{"task_id": "HumanEval/112", "solution": ""}
+{"task_id": "HumanEval/113", "solution": ""}
+{"task_id": "HumanEval/114", "solution": ""}
+{"task_id": "HumanEval/115", "solution": ""}
+{"task_id": "HumanEval/116", "solution": ""}
+{"task_id": "HumanEval/117", "solution": ""}
+{"task_id": "HumanEval/118", "solution": ""}
+{"task_id": "HumanEval/119", "solution": ""}
+{"task_id": "HumanEval/120", "solution": ""}
+{"task_id": "HumanEval/121", "solution": ""}
+{"task_id": "HumanEval/122", "solution": ""}
+{"task_id": "HumanEval/123", "solution": ""}
+{"task_id": "HumanEval/124", "solution": ""}
+{"task_id": "HumanEval/125", "solution": ""}
+{"task_id": "HumanEval/126", "solution": ""}
+{"task_id": "HumanEval/127", "solution": ""}
+{"task_id": "HumanEval/128", "solution": "# Solution\n\nHere's a Python script that solves the problem:\n\n```python\ndef prod_signs(arr):\n    \"\"\"\n    You are given an array arr of integers and you need to return\n    sum of magnitudes of integers multiplied by product of all signs\n    of each number in the array, represented by 1, -1 or 0.\n    Note: return None for empty arr.\n\n    Example:\n    >>> prod_signs([1, 2, 2, -4]) == -9\n    >>> prod_signs([0, 1]) == 0\n    >>> prod_signs([]) == None\n    \"\"\"\n    if not arr:\n        return None\n    \n    # Calculate the product of all signs\n    sign_product = 1\n    for num in arr:\n        if num > 0:\n            sign_product *= 1\n        elif num < 0:\n            sign_product *= -1\n        else:\n            sign_product *= 0  # If any number is 0, the product becomes 0\n    \n    # Calculate sum of magnitudes and multiply by sign_product\n    return sum(abs(num) for num in arr) * sign_product\n\n\nif __name__ == \"__main__\":\n    import doctest\n    doctest.testmod()\n```\n\n## Explanation:\n\n1. If the array is empty, we return `None`.\n\n2. We calculate the product of all signs by iterating through each number:\n   - For positive numbers, multiply by 1 (no change)\n   - For negative numbers, multiply by -1 (flips sign)\n   - For zero, multiply by 0 (makes the entire product 0)\n\n3. We sum up the absolute values (magnitudes) of all numbers and multiply by the sign product.\n\nLet's verify with the examples:\n- `[1, 2, 2, -4]`: Sum of magnitudes = 1+2+2+4 = 9, Sign product = 1*1*1*(-1) = -1, Result = 9 * (-1) = -9 \u2713\n- `[0, 1]`: Sum of magnitudes = 0+1 = 1, Sign product = 0*1 = 0, Result = 1 * 0 = 0 \u2713\n- `[]`: Returns None \u2713"}
+{"task_id": "HumanEval/129", "solution": ""}
+{"task_id": "HumanEval/130", "solution": ""}
+{"task_id": "HumanEval/131", "solution": ""}
+{"task_id": "HumanEval/132", "solution": ""}
+{"task_id": "HumanEval/133", "solution": ""}
+{"task_id": "HumanEval/134", "solution": ""}
+{"task_id": "HumanEval/135", "solution": ""}
+{"task_id": "HumanEval/136", "solution": ""}
+{"task_id": "HumanEval/137", "solution": ""}
+{"task_id": "HumanEval/138", "solution": "```python\ndef is_equal_to_sum_even(n):\n    \"\"\"Evaluate whether the given number n can be written as the sum of exactly 4 positive even numbers\n    Example\n    is_equal_to_sum_even(4) == False\n    is_equal_to_sum_even(6) == False\n    is_equal_to_sum_even(8) == True\n    \"\"\"\n    # The smallest positive even number is 2.\n    # So the smallest sum of 4 positive even numbers is 2 + 2 + 2 + 2 = 8.\n    # If n < 8, it's impossible.\n    if n < 8:\n        return False\n    \n    # Each even number can be written as 2*k where k >= 1 (since positive).\n    # So we're looking for: 2*a + 2*b + 2*c + 2*d = n, where a,b,c,d >= 1.\n    # This simplifies to: 2*(a + b + c + d) = n => a + b + c + d = n/2.\n    # For this to be possible, n must be even (so n/2 is an integer).\n    if n % 2 != 0:\n        return False\n    \n    # Let m = n/2. We need a + b + c + d = m where a,b,c,d >= 1.\n    # The smallest sum of 4 positive integers is 1+1+1+1 = 4.\n    # So we need m >= 4, i.e., n/2 >= 4 => n >= 8 (which we already checked).\n    # And since we can always choose a=1, b=1, c=1, d=m-3 (and m-3 >= 1 when m>=4), \n    # it's always possible if n is even and n >= 8.\n    \n    return True\n```"}
+{"task_id": "HumanEval/139", "solution": ""}
+{"task_id": "HumanEval/140", "solution": ""}
+{"task_id": "HumanEval/141", "solution": "```python\ndef file_name_check(file_name):\n    \"\"\"Create a function which takes a string representing a file's name, and returns\n    'Yes' if the the file's name is valid, and returns 'No' otherwise.\n    A file's name is considered to be valid if and only if all the following conditions \n    are met:\n    - There should not be more than three digits ('0'-'9') in the file's name.\n    - The file's name contains exactly one dot '.'\n    - The substring before the dot should not be empty, and it starts with a letter from \n    the latin alphapet ('a'-'z' and 'A'-'Z').\n    - The substring after the dot should be one of these: ['txt', 'exe', 'dll']\n    Examples:\n    file_name_check(\"example.txt\") # => 'Yes'\n    file_name_check(\"1example.dll\") # => 'No' (the name should start with a latin alphapet letter)\n    \"\"\"\n    # Check exactly one dot\n    if file_name.count('.') != 1:\n        return 'No'\n    \n    parts = file_name.split('.')\n    prefix = parts[0]\n    suffix = parts[1]\n    \n    # Check prefix is not empty and starts with a letter\n    if len(prefix) == 0 or not prefix[0].isalpha():\n        return 'No'\n    \n    # Check suffix is one of the allowed types\n    if suffix not in ['txt', 'exe', 'dll']:\n        return 'No'\n    \n    # Check number of digits (not more than 3)\n    digit_count = sum(1 for char in file_name if char.isdigit())\n    if digit_count > 3:\n        return 'No'\n    \n    return 'Yes'\n```"}
+{"task_id": "HumanEval/142", "solution": ""}
+{"task_id": "HumanEval/143", "solution": ""}
+{"task_id": "HumanEval/144", "solution": ""}
+{"task_id": "HumanEval/145", "solution": "```python\ndef order_by_points(nums):\n    \"\"\"\n    Write a function which sorts the given list of integers\n    in ascending order according to the sum of their digits.\n    Note: if there are several items with similar sum of their digits,\n    order them based on their index in original list.\n\n    For example:\n    >>> order_by_points([1, 11, -1, -11, -12]) == [-1, -11, 1, -12, 11]\n    >>> order_by_points([]) == []\n    \"\"\"\n    def sum_of_digits(n):\n        # For negative numbers, the example treats them as if we take the digits of their absolute value\n        # but wait, let's check: -1 -> sum=1, -11 -> sum=2, 1 -> sum=1, -12 -> sum=3, 11 -> sum=2\n        # Original list: [1, 11, -1, -11, -12]\n        # Indices:        0   1    2    3     4\n        # Digit sums:     1   2    1    2     3 (if we treat - as not affecting digits, i.e. abs)\n        # Sorted by sum:\n        # Sum=1: index 0 (1), index 2 (-1) -> stable sort keeps original order: 1 then -1?\n        # Wait, expected output is [-1, -11, 1, -12, 11]\n        # Let's re-read carefully.\n        # Expected: [-1, -11, 1, -12, 11]\n        # Sums based on abs digits:\n        # -1 -> 1\n        # -11 -> 2\n        # 1 -> 1\n        # -12 -> 3 (wait, -1+2? no, usually \"sum of digits\" implies absolute value for the digit extraction)\n        # Let's check if negative sign is treated as a minus.\n        # If sum of digits of -1 is -1:\n        # -1: -1\n        # 11: 2\n        # -1: -1 (wait, duplicate)\n        # -11: -2\n        # -12: -3? or -1-2=-3?\n        \n        # Let's look at the expected output again: [-1, -11, 1, -12, 11]\n        # If we assume standard digit sum (absolute value):\n        # nums: [1, 11, -1, -11, -12]\n        # abs_digits_sums: [1, 2, 1, 2, 3]\n        # Stable sort by these sums:\n        # Sum 1: 1 (idx 0), -1 (idx 2) -> order: 1, -1\n        # Sum 2: 11 (idx 1), -11 (idx 3) -> order: 11, -11\n        # Sum 3: -12 (idx 4)\n        # Result: [1, -1, 11, -11, -12]. This does NOT match expected [-1, -11, 1, -12, 11].\n        \n        # Let's try another interpretation"}
+{"task_id": "HumanEval/146", "solution": ""}
+{"task_id": "HumanEval/147", "solution": ""}
+{"task_id": "HumanEval/148", "solution": ""}
+{"task_id": "HumanEval/149", "solution": ""}
+{"task_id": "HumanEval/150", "solution": ""}
+{"task_id": "HumanEval/151", "solution": ""}
+{"task_id": "HumanEval/152", "solution": ""}
+{"task_id": "HumanEval/153", "solution": ""}
+{"task_id": "HumanEval/154", "solution": ""}
+{"task_id": "HumanEval/155", "solution": ""}
+{"task_id": "HumanEval/156", "solution": ""}
+{"task_id": "HumanEval/157", "solution": ""}
+{"task_id": "HumanEval/158", "solution": ""}
+{"task_id": "HumanEval/159", "solution": ""}
+{"task_id": "HumanEval/160", "solution": "```python\ndef do_algebra(operator, operand):\n    \"\"\"\n    Given two lists operator, and operand. The first list has basic algebra operations, and \n    the second list is a list of integers. Use the two given lists to build the algebric \n    expression and return the evaluation of this expression.\n\n    The basic algebra operations:\n    Addition ( + ) \n    Subtraction ( - ) \n    Multiplication ( * ) \n    Floor division ( // ) \n    Exponentiation ( ** ) \n\n    Example:\n    operator['+', '*', '-']\n    array = [2, 3, 4, 5]\n    result = 2 + 3 * 4 - 5\n    => result = 9\n\n    Note:\n        The length of operator list is equal to the length of operand list minus one.\n        Operand is a list of of non-negative integers.\n        Operator list has at least one operator, and operand list has at least two operands.\n\n    \"\"\"\n    # Build the expression string from operators and operands\n    expression = str(operand[0])\n    for i, op in enumerate(operator):\n        expression += ' ' + op + ' '\n        expression += str(operand[i + 1])\n    \n    # Evaluate the expression safely (using eval is acceptable here since inputs are controlled)\n    result = eval(expression)\n    \n    return result\n```"}
+{"task_id": "HumanEval/161", "solution": ""}
+{"task_id": "HumanEval/162", "solution": ""}
+{"task_id": "HumanEval/163", "solution": ""}

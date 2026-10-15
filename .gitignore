@@ -1,5 +1,4 @@
 # large / regenerable artifacts
-evalplus_results/
 *.gguf
 *.pth
 *.safetensors

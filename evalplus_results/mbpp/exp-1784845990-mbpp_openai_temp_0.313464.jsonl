@@ -1,0 +1,128 @@
+{"task_id": "Mbpp/2", "solution": ""}
+{"task_id": "Mbpp/3", "solution": ""}
+{"task_id": "Mbpp/4", "solution": ""}
+{"task_id": "Mbpp/6", "solution": ""}
+{"task_id": "Mbpp/7", "solution": ""}
+{"task_id": "Mbpp/8", "solution": ""}
+{"task_id": "Mbpp/9", "solution": ""}
+{"task_id": "Mbpp/11", "solution": ""}
+{"task_id": "Mbpp/12", "solution": ""}
+{"task_id": "Mbpp/14", "solution": ""}
+{"task_id": "Mbpp/16", "solution": ""}
+{"task_id": "Mbpp/17", "solution": ""}
+{"task_id": "Mbpp/18", "solution": ""}
+{"task_id": "Mbpp/19", "solution": ""}
+{"task_id": "Mbpp/20", "solution": ""}
+{"task_id": "Mbpp/56", "solution": ""}
+{"task_id": "Mbpp/57", "solution": ""}
+{"task_id": "Mbpp/58", "solution": ""}
+{"task_id": "Mbpp/59", "solution": ""}
+{"task_id": "Mbpp/61", "solution": ""}
+{"task_id": "Mbpp/62", "solution": ""}
+{"task_id": "Mbpp/63", "solution": ""}
+{"task_id": "Mbpp/64", "solution": "def subject_marks(subjects):\n    \"\"\"Sort a list of tuples based on the second value of each tuple.\"\"\"\n    return sorted(subjects, key=lambda x: x[1])"}
+{"task_id": "Mbpp/65", "solution": ""}
+{"task_id": "Mbpp/66", "solution": "def pos_count(numbers):\n    \"\"\"\n    Count the number of positive numbers in a list.\n    \n    Args:\n        numbers (list): A list of integers or floats.\n        \n    Returns:\n        int: The count of positive numbers.\n    \"\"\"\n    return sum(1 for num in numbers if num > 0)"}
+{"task_id": "Mbpp/67", "solution": ""}
+{"task_id": "Mbpp/68", "solution": ""}
+{"task_id": "Mbpp/69", "solution": ""}
+{"task_id": "Mbpp/70", "solution": ""}
+{"task_id": "Mbpp/71", "solution": ""}
+{"task_id": "Mbpp/72", "solution": ""}
+{"task_id": "Mbpp/74", "solution": ""}
+{"task_id": "Mbpp/75", "solution": ""}
+{"task_id": "Mbpp/77", "solution": ""}
+{"task_id": "Mbpp/79", "solution": ""}
+{"task_id": "Mbpp/80", "solution": "def tetrahedral_number(n):\n    \"\"\"\n    Calculates the nth tetrahedral number using the formula n(n+1)(n+2)/6.\n    \"\"\"\n    return n * (n + 1) * (n + 2) // 6"}
+{"task_id": "Mbpp/82", "solution": "import math\ndef volume_sphere(radius):\n    \"\"\"\n    Calculates the volume of a sphere given its radius.\n    \n    Formula: V = (4/3) * pi * r^3\n    \"\"\"\n    return (4 / 3) * math.pi * (radius ** 3)"}
+{"task_id": "Mbpp/84", "solution": ""}
+{"task_id": "Mbpp/85", "solution": "import math\ndef surfacearea_sphere(radius):\n    \"\"\"\n    Calculates the surface area of a sphere given its radius.\n    \n    Formula: A = 4 * \u03c0 * r^2\n    \n    Args:\n        radius (float): The radius of the sphere.\n        \n    Returns:\n        float: The surface area of the sphere.\n    \"\"\"\n    return 4 * math.pi * (radius ** 2)"}
+{"task_id": "Mbpp/86", "solution": ""}
+{"task_id": "Mbpp/87", "solution": ""}
+{"task_id": "Mbpp/88", "solution": "def freq_count(lst):\n    \"\"\"\n    Returns a dictionary containing the frequency of each element in the list.\n    \"\"\"\n    counts = {}\n    for item in lst:\n        if item in counts:\n            counts[item] += 1\n        else:\n            counts[item] = 1\n    return counts"}
+{"task_id": "Mbpp/89", "solution": ""}
+{"task_id": "Mbpp/90", "solution": "def len_log(words):\n    \"\"\"\n    Finds the length of the longest word in a list of strings.\n    \n    Args:\n        words (list): A list of strings.\n        \n    Returns:\n        int: The length of the longest word, or 0 if the list is empty.\n    \"\"\"\n    if not words:\n        return 0\n    \n    max_length = 0\n    for word in words:\n        current_length = len(word)\n        if current_length > max_length:\n            max_length = current_length\n            \n    return max_length"}
+{"task_id": "Mbpp/91", "solution": ""}
+{"task_id": "Mbpp/92", "solution": ""}
+{"task_id": "Mbpp/93", "solution": ""}
+{"task_id": "Mbpp/94", "solution": ""}
+{"task_id": "Mbpp/95", "solution": ""}
+{"task_id": "Mbpp/96", "solution": ""}
+{"task_id": "Mbpp/97", "solution": ""}
+{"task_id": "Mbpp/98", "solution": ""}
+{"task_id": "Mbpp/99", "solution": ""}
+{"task_id": "Mbpp/100", "solution": ""}
+{"task_id": "Mbpp/101", "solution": ""}
+{"task_id": "Mbpp/102", "solution": "def snake_to_camel(snake_str):\n    \"\"\"\n    Converts a snake_case string to PascalCase (UpperCamelCase).\n    \n    Args:\n        snake_str (str): The input string in snake_case format.\n        \n    Returns:\n        str: The converted string in PascalCase format.\n    \"\"\"\n    # Split the string by underscores, capitalize the first letter of each part, \n    # and join them back together without separators.\n    return ''.join(word.capitalize() for word in snake_str.split('_'))"}
+{"task_id": "Mbpp/103", "solution": ""}
+{"task_id": "Mbpp/104", "solution": ""}
+{"task_id": "Mbpp/105", "solution": ""}
+{"task_id": "Mbpp/106", "solution": "def add_lists(lst, tup):\n    \"\"\"\n    Appends the given list to the given tuple.\n    \n    Args:\n        lst (list): The list of elements to append.\n        tup (tuple): The original tuple.\n        \n    Returns:\n        tuple: A new tuple containing the original tuple's elements followed by the list's elements.\n    \"\"\"\n    return tup + tuple(lst)"}
+{"task_id": "Mbpp/108", "solution": "```python"}
+{"task_id": "Mbpp/109", "solution": ""}
+{"task_id": "Mbpp/111", "solution": ""}
+{"task_id": "Mbpp/113", "solution": ""}
+{"task_id": "Mbpp/116", "solution": ""}
+{"task_id": "Mbpp/118", "solution": ""}
+{"task_id": "Mbpp/119", "solution": ""}
+{"task_id": "Mbpp/120", "solution": ""}
+{"task_id": "Mbpp/123", "solution": ""}
+{"task_id": "Mbpp/124", "solution": ""}
+{"task_id": "Mbpp/125", "solution": ""}
+{"task_id": "Mbpp/126", "solution": ""}
+{"task_id": "Mbpp/127", "solution": "def multiply_int(a, b):\n    \"\"\"Multiply two integers and return the result.\"\"\"\n    return a * b"}
+{"task_id": "Mbpp/128", "solution": ""}
+{"task_id": "Mbpp/129", "solution": ""}
+{"task_id": "Mbpp/130", "solution": ""}
+{"task_id": "Mbpp/131", "solution": ""}
+{"task_id": "Mbpp/132", "solution": "def tup_string(t):\n    \"\"\"\n    Converts a tuple of characters into a single string.\n    \n    Args:\n        t (tuple): A tuple containing character strings.\n        \n    Returns:\n        str: The joined string from the tuple elements.\n    \"\"\"\n    return \"\".join(t)"}
+{"task_id": "Mbpp/133", "solution": "def sum_negativenum(numbers):\n    \"\"\"Calculate the sum of all negative numbers in a given list.\"\"\"\n    return sum(num for num in numbers if num < 0)"}
+{"task_id": "Mbpp/135", "solution": "def hexagonal_num(n):\n    \"\"\"\n    Calculate the nth hexagonal number.\n    \n    The formula for the nth hexagonal number is n * (2n - 1).\n    \"\"\"\n    return n * (2 * n - 1)"}
+{"task_id": "Mbpp/137", "solution": ""}
+{"task_id": "Mbpp/138", "solution": ""}
+{"task_id": "Mbpp/139", "solution": "import math\ndef circle_circumference(radius):\n    \"\"\"\n    Calculates the circumference of a circle given its radius.\n    \n    Args:\n        radius (float): The radius of the circle.\n        \n    Returns:\n        float: The circumference of the circle.\n    \"\"\"\n    return 2 * math.pi * radius"}
+{"task_id": "Mbpp/140", "solution": ""}
+{"task_id": "Mbpp/141", "solution": ""}
+{"task_id": "Mbpp/142", "solution": ""}
+{"task_id": "Mbpp/145", "solution": ""}
+{"task_id": "Mbpp/160", "solution": ""}
+{"task_id": "Mbpp/161", "solution": ""}
+{"task_id": "Mbpp/162", "solution": ""}
+{"task_id": "Mbpp/165", "solution": ""}
+{"task_id": "Mbpp/166", "solution": ""}
+{"task_id": "Mbpp/167", "solution": ""}
+{"task_id": "Mbpp/168", "solution": ""}
+{"task_id": "Mbpp/170", "solution": ""}
+{"task_id": "Mbpp/171", "solution": "def perimeter_pentagon(side_length):\n    \"\"\"\n    Write a function to find the perimeter of a regular pentagon from the length of its sides.\n    assert perimeter_pentagon(5) == 25\n    \"\"\"\n    # A regular pentagon has 5 equal sides.\n    return side_length * 5"}
+{"task_id": "Mbpp/172", "solution": ""}
+{"task_id": "Mbpp/222", "solution": ""}
+{"task_id": "Mbpp/223", "solution": ""}
+{"task_id": "Mbpp/224", "solution": ""}
+{"task_id": "Mbpp/226", "solution": ""}
+{"task_id": "Mbpp/227", "solution": "def min_of_three(a, b, c):\n    \"\"\"Return the minimum of three numbers.\"\"\"\n    return min(a, b, c)"}
+{"task_id": "Mbpp/230", "solution": ""}
+{"task_id": "Mbpp/232", "solution": ""}
+{"task_id": "Mbpp/233", "solution": ""}
+{"task_id": "Mbpp/234", "solution": "def volume_cube(side):\n    \"\"\"\n    Calculates the volume of a cube given its side length.\n    \n    Args:\n        side (int or float): The length of one side of the cube.\n        \n    Returns:\n        int or float: The volume of the cube.\n    \"\"\"\n    return side ** 3"}
+{"task_id": "Mbpp/235", "solution": ""}
+{"task_id": "Mbpp/237", "solution": ""}
+{"task_id": "Mbpp/238", "solution": "```python"}
+{"task_id": "Mbpp/239", "solution": ""}
+{"task_id": "Mbpp/240", "solution": ""}
+{"task_id": "Mbpp/242", "solution": "def count_charac(s):\n    return len(s)"}
+{"task_id": "Mbpp/244", "solution": ""}
+{"task_id": "Mbpp/245", "solution": ""}
+{"task_id": "Mbpp/247", "solution": ""}
+{"task_id": "Mbpp/250", "solution": "def count_X(t, x):\n    \"\"\"\n    Takes a tuple t and an element x, and returns the number of occurrences \n    of x in t.\n    \"\"\"\n    return t.count(x)"}
+{"task_id": "Mbpp/251", "solution": ""}
+{"task_id": "Mbpp/252", "solution": ""}
+{"task_id": "Mbpp/253", "solution": ""}
+{"task_id": "Mbpp/255", "solution": ""}
+{"task_id": "Mbpp/256", "solution": ""}
+{"task_id": "Mbpp/257", "solution": "def swap_numbers(a, b):\n    \"\"\"Takes two numbers and returns a tuple with the second number followed by the first.\"\"\"\n    return (b, a)"}
+{"task_id": "Mbpp/259", "solution": ""}
+{"task_id": "Mbpp/260", "solution": ""}
+{"task_id": "Mbpp/261", "solution": ""}
+{"task_id": "Mbpp/262", "solution": "def split_two_parts(lst, L):\n    return lst[:L], lst[L:]"}
+{"task_id": "Mbpp/264", "solution": ""}
+{"task_id": "Mbpp/265", "solution": ""}

@@ -1,0 +1,378 @@
+{"task_id": "Mbpp/2", "solution": ""}
+{"task_id": "Mbpp/3", "solution": ""}
+{"task_id": "Mbpp/4", "solution": ""}
+{"task_id": "Mbpp/6", "solution": ""}
+{"task_id": "Mbpp/7", "solution": ""}
+{"task_id": "Mbpp/8", "solution": "```python\ndef square_nums(numbers):\n    \"\"\"\n    Write a function to find squares of individual elements in a list.\n    assert square_nums([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])==[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]\n    \"\"\"\n    return [num ** 2 for num in numbers]\n\nif __name__ == \"__main__\":\n    # Test the function with the provided example\n    input_list = [1, 2, 3, 4, 5, 6"}
+{"task_id": "Mbpp/9", "solution": ""}
+{"task_id": "Mbpp/11", "solution": ""}
+{"task_id": "Mbpp/12", "solution": ""}
+{"task_id": "Mbpp/14", "solution": "```python\ndef find_Volume(base, height, length):\n    \"\"\"\n    Calculates the volume of a triangular prism.\n    \n    The formula for the volume of a triangular prism is:\n    V = (1/2 * base * height) * length\n    \n    :param base: The length of the base of the triangular face (int or float)\n    :param height: The height of the triangular face (int or float)\n    :param length: The length of the prism (int or float)\n   "}
+{"task_id": "Mbpp/16", "solution": ""}
+{"task_id": "Mbpp/17", "solution": "```python\ndef square_perimeter(side_length):\n    \"\"\"\n    Calculate the perimeter of a square given its side length.\n\n    Args:\n        side_length (int or float): The length of one side of the square.\n\n    Returns:\n        int or float: The perimeter of the square.\n    \"\"\"\n    return 4 * side_length\n\n# Test case\nif __name__ == \"__main__\":\n    assert square_perimeter(10) == 40, \"Perimeter calculation failed\"\n```"}
+{"task_id": "Mbpp/18", "solution": ""}
+{"task_id": "Mbpp/19", "solution": ""}
+{"task_id": "Mbpp/20", "solution": ""}
+{"task_id": "Mbpp/56", "solution": ""}
+{"task_id": "Mbpp/57", "solution": ""}
+{"task_id": "Mbpp/58", "solution": "```python\ndef opposite_Signs(a, b):\n    \"\"\"\n    Checks whether the given two integers have opposite signs or not.\n\n    Args:\n        a (int): First integer.\n        b (int): Second integer.\n\n    Returns:\n        bool: True if one number is positive and the other is negative,\n              False otherwise.\n    \"\"\"\n    # The product of two numbers with opposite signs will always be negative.\n    return (a * b) < 0\n\n# Test cases\nif __name__ == \"__main__\":\n    # Provided test case\n    assert opposite_Signs(1, -2) == True\n    \n    # Additional test cases for edge scenarios\n    assert opposite_Signs(-5, 3) == True   # Negative and Positive\n    assert opposite_Signs(-4, -6) == False # Both Negative\n    assert opposite_Signs(0, 10) == False  # Zero is neither positive nor negative\n    \n    print(\"All tests passed.\")\n```"}
+{"task_id": "Mbpp/59", "solution": ""}
+{"task_id": "Mbpp/61", "solution": ""}
+{"task_id": "Mbpp/62", "solution": "```python\ndef smallest_num(lst):\n    \"\"\"\n    Finds and returns the smallest number in a list.\n    \"\"\"\n    # We use Python's built-in min() function which is efficient and readable.\n    return min(lst)\n\n# Test case provided in the problem statement\nassert smallest_num([10, 20, 1, 45, 99]) == 1\n\nprint(\"Test passed!\")\n```"}
+{"task_id": "Mbpp/63", "solution": ""}
+{"task_id": "Mbpp/64", "solution": "```python\ndef subject_marks(subject_list):\n    \"\"\"\n    Sorts a list of tuples based on the second element (marks) in ascending order.\n    \"\"\"\n    # Use sorted() with a lambda function as the key to sort by index 1\n    return sorted(subject_list, key=lambda x: x[1"}
+{"task_id": "Mbpp/65", "solution": "```python\ndef recursive_list_sum(nested_list):\n    \"\"\"\n    Flattens a nested list and returns the sum of all elements.\n\n    Args:\n        nested_list: A list that may contain integers, floats, or other lists.\n\n    Returns:\n        The sum of all integer/float values in the nested structure.\n    \"\"\"\n    total = 0\n    for element in nested_list:\n        if isinstance(element, list):\n            # If the element is a list, recursively call the function to flatten it\n            total += recursive_list_sum(element)\n        else:\n            # Otherwise, add the number to the total\n            total += element\n    return total\n\n# Example usage and test case from the prompt\nif __name__ == \"__main__\":\n    result = recursive_list_sum([1, 2, [3,4],[5,6]])\n    print(f\"Sum of nested list: {result}\")\n    \n    # Assertion provided in the problem statement\n   "}
+{"task_id": "Mbpp/66", "solution": "```python\ndef pos_count(numbers):\n    \"\"\"\n    Write a python function to count the number of positive numbers in a list.\n    assert pos_count([1,-2,3,-4]) == 2\n    \"\"\"\n    count = 0\n    for num in numbers:\n        if num > 0:\n            count += 1\n    return count\n\nif __name__ == \"__main__\":\n    # Provided test case\n    assert pos_count([1"}
+{"task_id": "Mbpp/67", "solution": ""}
+{"task_id": "Mbpp/68", "solution": ""}
+{"task_id": "Mbpp/69", "solution": ""}
+{"task_id": "Mbpp/70", "solution": ""}
+{"task_id": "Mbpp/71", "solution": ""}
+{"task_id": "Mbpp/72", "solution": ""}
+{"task_id": "Mbpp/74", "solution": ""}
+{"task_id": "Mbpp/75", "solution": ""}
+{"task_id": "Mbpp/77", "solution": ""}
+{"task_id": "Mbpp/79", "solution": "```python\ndef word_len(word):\n    \"\"\"\n    Checks whether the length of the given word is odd.\n    \n    Args:\n        word (str): The input string to check.\n        \n    Returns:\n        bool: True if the length is odd, False otherwise.\n    \"\"\"\n    return len(word) % 2 == 1\n\n# Test case provided in the prompt\nassert word_len(\"Hadoop\") == False\n```"}
+{"task_id": "Mbpp/80", "solution": "```python\ndef tetrahedral_number(n):\n    \"\"\"\n    Calculates the nth tetrahedral number.\n\n    The formula for the nth tetrahedral number is:\n    T_n = n * (n + 1) * (n + 2) / 6\n\n    Args:\n        n (int): The position in the tetrahedral sequence.\n\n    Returns:\n        int: The calculated tetrahedral number.\n    \"\"\"\n    return n * (n + 1) * (n + 2) // 6\n\n\n# Test case from"}
+{"task_id": "Mbpp/82", "solution": "```python\nimport math"}
+{"task_id": "Mbpp/84", "solution": ""}
+{"task_id": "Mbpp/85", "solution": "```python\nimport math\n\ndef surfacearea_sphere(radius):\n    \"\"\"\n    Calculates the surface area of a sphere given its radius.\n    \n    Formula: 4 * pi * r^2\n    \"\"\"\n    return 4 * math.pi * (radius ** 2)\n\n# Assertion to verify correctness based on the prompt requirements\nassert math.isclose(surfacearea_sphere(10), 1256.6370614359173, rel_tol=0.001)\n```"}
+{"task_id": "Mbpp/86", "solution": ""}
+{"task_id": "Mbpp/87", "solution": "```python\n\"\"\"\nWrite a function to merge three dictionaries into a single dictionary.\n\"\"\"\n\ndef merge_dictionaries_three(dict1, dict2, dict3):\n    \"\"\"\n    Merges three dictionaries into one.\n    \n    In case of conflicting keys, the value from the last dictionary \n    in the argument list will overwrite previous values.\n    \n    :param dict1: First dictionary\n"}
+{"task_id": "Mbpp/88", "solution": ""}
+{"task_id": "Mbpp/89", "solution": "```python\ndef closest_num(n):\n    \"\"\"\n    Finds the largest number strictly smaller than n.\n\n    Args:\n        n (int): The input integer.\n\n    Returns:\n        int: The closest smaller integer.\n    \"\"\"\n    return n - 1\n\n\n# Verification of the provided assertion\nif __name__ == \"__main__\":\n    assert closest_num(11) == 10\n    print(\"Test passed: closest_num(11) == 10\")\n```"}
+{"task_id": "Mbpp/90", "solution": ""}
+{"task_id": "Mbpp/91", "solution": "```python\ndef find_substring(string_list, target_substring):\n    \"\"\"\n    Checks if a target substring exists within any string of the provided list.\n    \"\"\"\n    return any(target_substring in s for s in string_list)\n\nif __name__ == \"__main__\":\n    # Test case provided in the prompt\n    result = find_substring([\"red\", \"black\", \"white\", \""}
+{"task_id": "Mbpp/92", "solution": ""}
+{"task_id": "Mbpp/93", "solution": "```python\n\"\"\"\nWrite a function to calculate the value of 'a' to the power 'b'.\nassert power(3,4) == 81\n\"\"\"\n\ndef power(a, b):\n    \"\"\"\n    Calculates a raised to the power of b.\n    \n    Parameters:\n    a (int/float): The base number.\n    b (int): The exponent (power).\n    \n    Returns:\n    int/float: The result of a^b\n    \"\"\"\n    return a ** b\n\n# Testing the function\nif __name__ == \"__main__\":\n    assert power(3, 4) == 81\n    print(\"Success! power(3, 4) =\", power(3, 4))\n```"}
+{"task_id": "Mbpp/94", "solution": "```python\ndef index_minimum(data):\n    \"\"\"\n    Returns the first value of the tuple with the smallest second value.\n\n    Args:\n        data (list of tuples): A list where each tuple has at least two elements.\n\n    Returns:\n        The first element (index 0) of the tuple containing the smallest second element.\n    \"\"\"\n    # Use Python's built-in min() function with a key"}
+{"task_id": "Mbpp/95", "solution": ""}
+{"task_id": "Mbpp/96", "solution": ""}
+{"task_id": "Mbpp/97", "solution": ""}
+{"task_id": "Mbpp/98", "solution": ""}
+{"task_id": "Mbpp/99", "solution": ""}
+{"task_id": "Mbpp/100", "solution": ""}
+{"task_id": "Mbpp/101", "solution": "```python\ndef kth_element(arr, k):\n    \"\"\"\n    Finds the kth element in the given array using 1-based indexing.\n\n    Args:\n        arr (list): A list of elements.\n        k (int): The position to retrieve (1-based index).\n\n    Returns:\n        The element at the kth position.\n    \"\"\"\n    # In Python, lists are 0-based. To use 1-based indexing,\n    # we subtract 1 from k.\n    return arr[k - 1]\n\n\n# Test case provided in the prompt\nassert kth_element([12, 3, 5, 7, 19], 2) == 3\n\nprint(\"The function works as expected.\")\n```"}
+{"task_id": "Mbpp/102", "solution": ""}
+{"task_id": "Mbpp/103", "solution": ""}
+{"task_id": "Mbpp/104", "solution": ""}
+{"task_id": "Mbpp/105", "solution": "```python\n\"\"\"\nWrite a python function to count true booleans in the given list.\nassert count([True"}
+{"task_id": "Mbpp/106", "solution": ""}
+{"task_id": "Mbpp/108", "solution": ""}
+{"task_id": "Mbpp/109", "solution": ""}
+{"task_id": "Mbpp/111", "solution": ""}
+{"task_id": "Mbpp/113", "solution": ""}
+{"task_id": "Mbpp/116", "solution": ""}
+{"task_id": "Mbpp/118", "solution": ""}
+{"task_id": "Mbpp/119", "solution": ""}
+{"task_id": "Mbpp/120", "solution": ""}
+{"task_id": "Mbpp/123", "solution": ""}
+{"task_id": "Mbpp/124", "solution": ""}
+{"task_id": "Mbpp/125", "solution": ""}
+{"task_id": "Mbpp/126", "solution": ""}
+{"task_id": "Mbpp/127", "solution": "```python\ndef multiply_int(a, b):\n    \"\"\"\n    Function to multiply two integers.\n    \"\"\"\n    return a * b\n\n# Run the provided assertion\nassert multiply_int(10, 20) == 200\n\nprint(\"Test successful!\")\n```"}
+{"task_id": "Mbpp/128", "solution": "```python\ndef long_words(n, words):\n    \"\"\"\n    Finds words in a list that are longer than n characters.\n    \n    Args:\n        n (int): The minimum length threshold.\n        words (list): A list of strings to filter.\n        \n    Returns:\n        list: A list containing only the words longer"}
+{"task_id": "Mbpp/129", "solution": ""}
+{"task_id": "Mbpp/130", "solution": ""}
+{"task_id": "Mbpp/131", "solution": ""}
+{"task_id": "Mbpp/132", "solution": "```python\ndef tup_string(t):\n    \"\"\"\n    Write a function to convert a tuple to a string.\n    assert tup_string(('e', 'x', 'e', 'r', 'c', 'i', 's', 'e', 's'))==(\"exercises\")\n    \"\"\"\n    # Use the join method to concatenate all elements in the tuple\n    return \"\".join(t)\n\n# Test the function\nif __name__ == \"__main__\":\n    test_tuple = ('e', 'x', 'e', 'r', 'c', 'i', 's', 'e', 's')\n    assert tup_string(test_tuple) == \"exercises\"\n    print(\"Function works correctly!\")\n```"}
+{"task_id": "Mbpp/133", "solution": ""}
+{"task_id": "Mbpp/135", "solution": ""}
+{"task_id": "Mbpp/137", "solution": ""}
+{"task_id": "Mbpp/138", "solution": ""}
+{"task_id": "Mbpp/139", "solution": ""}
+{"task_id": "Mbpp/140", "solution": ""}
+{"task_id": "Mbpp/141", "solution": ""}
+{"task_id": "Mbpp/142", "solution": ""}
+{"task_id": "Mbpp/145", "solution": ""}
+{"task_id": "Mbpp/160", "solution": ""}
+{"task_id": "Mbpp/161", "solution": ""}
+{"task_id": "Mbpp/162", "solution": ""}
+{"task_id": "Mbpp/165", "solution": ""}
+{"task_id": "Mbpp/166", "solution": ""}
+{"task_id": "Mbpp/167", "solution": ""}
+{"task_id": "Mbpp/168", "solution": "```python\ndef frequency(lst, num):\n    \"\"\"\n    Counts and returns the number of occurrences of a specific number \n    within a provided list.\n    \n    Args:\n        lst (list): The input list to search through.\n        num: The number to be counted.\n        \n    Returns:\n        int: The count of how many times `num` appears in `lst`.\n    \"\"\"\n    # Using the built-in .count() method is the most efficient and concise way\n    return lst.count(num)\n\n# Test cases\nif __name__ == \"__main__\":\n    assert frequency([1, 2, 3], 4) == 0\n    assert frequency([1, 2, 2, 3, 2], 2) == 3\n    assert frequency([], 5) =="}
+{"task_id": "Mbpp/170", "solution": ""}
+{"task_id": "Mbpp/171", "solution": "```python\ndef perimeter_pentagon(side_length):\n    \"\"\"\n    Calculates the perimeter of a regular pentagon.\n    \n    A regular pentagon has 5 equal sides, so the perimeter is \n    simply 5 times the length of one side.\n    \"\"\"\n    return 5 *"}
+{"task_id": "Mbpp/172", "solution": ""}
+{"task_id": "Mbpp/222", "solution": "```python\ndef check_type(t):\n    \"\"\"\n    Checks if all elements in a tuple have the same data type.\n"}
+{"task_id": "Mbpp/223", "solution": ""}
+{"task_id": "Mbpp/224", "solution": ""}
+{"task_id": "Mbpp/226", "solution": "```python\ndef odd_values_string(input_string):\n    \"\"\"\n    Removes characters which have odd index values from a given string.\n    \n    Args:\n        input_string (str): The string to process.\n\n    Returns:\n        str: A new string containing only characters at even indices (0, 2, 4...).\n    \"\"\"\n    # Using slicing with step=2 effectively grabs every second character \n    # starting from index 0, skipping the odd indices (1"}
+{"task_id": "Mbpp/227", "solution": "```python\ndef min_of_three(a, b, c):\n    \"\"\"\n    Returns the smallest of three numbers.\n    \"\"\"\n    # Python's built-in min function handles the comparison easily.\n    return min(a, b, c)\n\n# Test case provided in the prompt\nif __name__ == \"__main__\":\n    assert min_of_three(10, 20, 0) == 0\n    print(\"All tests passed.\")\n```"}
+{"task_id": "Mbpp/230", "solution": "```python\ndef replace_blank(s, char):\n    \"\"\"\n    Takes in a string and character, replaces blank spaces \n    in"}
+{"task_id": "Mbpp/232", "solution": ""}
+{"task_id": "Mbpp/233", "solution": "```python\nimport math\n\ndef lateralsuface_cylinder(radius: float, height: float) -> float:\n    \"\"\"\n    Calculates the lateral surface area of a cylinder.\n    \n    The formula for the lateral surface area is given by:\n    Lateral Surface Area = 2 * pi * radius * height\n    \n    Args:\n        radius (float): The radius of the cylinder's base.\n        height (float): The height of the cylinder.\n    \n    Returns:\n        float: The lateral surface"}
+{"task_id": "Mbpp/234", "solution": "```python\ndef volume_cube(side_length):\n    \"\"\"\n    Calculates the volume of a cube based on its side length.\n    \n    The formula for the volume of a cube is: V = s^3\n    where 's' is the side length.\n    \n    Args:\n        side_length (int or float): The length of one side of the cube.\n\n    Returns:\n        int or float: The volume of the cube.\n    \"\"\"\n    return side_length ** 3\n\n# Test case provided in the prompt\nif __name__ == \"__main__\":\n    assert volume_cube(3) == 27, \"Test failed for side length 3\"\n    print(\"Volume calculation test passed.\")\n```"}
+{"task_id": "Mbpp/235", "solution": ""}
+{"task_id": "Mbpp/237", "solution": ""}
+{"task_id": "Mbpp/238", "solution": ""}
+{"task_id": "Mbpp/239", "solution": ""}
+{"task_id": "Mbpp/240", "solution": ""}
+{"task_id": "Mbpp/242", "solution": ""}
+{"task_id": "Mbpp/244", "solution": ""}
+{"task_id": "Mbpp/245", "solution": ""}
+{"task_id": "Mbpp/247", "solution": ""}
+{"task_id": "Mbpp/250", "solution": ""}
+{"task_id": "Mbpp/251", "solution": ""}
+{"task_id": "Mbpp/252", "solution": ""}
+{"task_id": "Mbpp/253", "solution": ""}
+{"task_id": "Mbpp/255", "solution": ""}
+{"task_id": "Mbpp/256", "solution": ""}
+{"task_id": "Mbpp/257", "solution": "```python\ndef swap_numbers(num1, num2):\n    \"\"\"\n    A function that takes in two numbers and returns a tuple with the second number and then the first number.\n    \"\"\"\n    return (num2, num1)\n\n# Test case\nassert swap_numbers(10, 20) == (20, 10)\n```"}
+{"task_id": "Mbpp/259", "solution": ""}
+{"task_id": "Mbpp/260", "solution": ""}
+{"task_id": "Mbpp/261", "solution": ""}
+{"task_id": "Mbpp/262", "solution": ""}
+{"task_id": "Mbpp/264", "solution": ""}
+{"task_id": "Mbpp/265", "solution": ""}
+{"task_id": "Mbpp/266", "solution": "```python\n\"\"\"\nWrite a function to find the lateral surface area of a cube given its side length.\nassert lateralsurface_cube(5)==100\n\"\"\"\n\ndef lateralsurface_cube(side_length):\n    \"\"\"\n    Calculates the lateral surface area of a cube.\n\n    A cube has 6 faces. The lateral surface area consists of the 4 vertical \n    faces (excluding the top and bottom).\n    Formula: Lateral Surface Area = 4 * side^2\n    \"\"\"\n    return 4 * (side_length ** 2)\n\n# Test the function using the provided assertion\nassert lateralsurface_cube(5) == 100\n\nprint(\"Assertion passed. Lateral surface area is calculated correctly.\")\n```"}
+{"task_id": "Mbpp/267", "solution": ""}
+{"task_id": "Mbpp/268", "solution": ""}
+{"task_id": "Mbpp/269", "solution": "```python\ndef ascii_value(char):\n    \"\"\"\n    Finds the ASCII value"}
+{"task_id": "Mbpp/270", "solution": ""}
+{"task_id": "Mbpp/271", "solution": ""}
+{"task_id": "Mbpp/272", "solution": "```python\ndef rear_extract(tuple_list):\n    \"\"\"\n    Write a function that takes in a list of tuples and returns a list containing the rear element of each tuple.\n    \"\"\"\n    # Using negative indexing [-1] to access the last element of each tuple\n    return [t[-1] for t in tuple_list]\n\n# Test case provided in the prompt\nassert rear_extract([(1, 'Rash', 21), (2, 'Varsha', 20), (3, 'Kil', 19)]) == [21, 20, 19]\n```"}
+{"task_id": "Mbpp/273", "solution": ""}
+{"task_id": "Mbpp/274", "solution": ""}
+{"task_id": "Mbpp/276", "solution": ""}
+{"task_id": "Mbpp/277", "solution": "```python\ndef dict_filter(input_dict, n):\n    \"\"\"\n    Filters a dictionary to only include entries with values greater than or equal to n.\n    \n    Args:\n        input_dict (dict): The dictionary to filter.\n        n (int): The threshold value.\n        \n    Returns:\n        dict: A new"}
+{"task_id": "Mbpp/278", "solution": ""}
+{"task_id": "Mbpp/279", "solution": ""}
+{"task_id": "Mbpp/280", "solution": ""}
+{"task_id": "Mbpp/281", "solution": ""}
+{"task_id": "Mbpp/282", "solution": "```python\ndef sub_list(list1, list2):\n    \"\"\"\n    Subtracts two lists element-wise.\n\n    Args:\n        list1 (list): The first list of numbers.\n        list2 (list): The second list of numbers.\n\n    Returns:\n        list: A new list containing the element-wise difference.\n    \"\"\"\n    # Using a list comprehension with zip to iterate over both lists simultaneously\n    return [a - b for a, b in zip(list1, list2)]\n\n# Example usage as provided in the prompt\nif __name__ == \"__main__\":\n    result = sub_list([1, 2, 3], [4, 5, 6])\n    assert result == [-3, -3, -3]\n    \n    # Additional test cases to verify robustness\n    print(sub_list([10, 20, 30], [5, 5, 5]))  # Output: [5, 15, 25]\n    print(sub_list([1, 2], [3, 4, 5]))       # Output: [-2, -2] (stops at shortest list)\n```"}
+{"task_id": "Mbpp/283", "solution": ""}
+{"task_id": "Mbpp/284", "solution": "```python\ndef check_element(lst, element):\n    \"\"\"\n    Takes in a list and an element and checks whether all items \n    in the list are equal to the given element.\n    \n    Args:\n        lst (list):"}
+{"task_id": "Mbpp/285", "solution": ""}
+{"task_id": "Mbpp/286", "solution": ""}
+{"task_id": "Mbpp/287", "solution": ""}
+{"task_id": "Mbpp/290", "solution": ""}
+{"task_id": "Mbpp/292", "solution": "```python\ndef find(dividend, divisor):\n    \"\"\"\n    Calculates the quotient of two numbers rounded down to the nearest integer.\n\n    This function uses floor division (//)"}
+{"task_id": "Mbpp/293", "solution": ""}
+{"task_id": "Mbpp/294", "solution": ""}
+{"task_id": "Mbpp/296", "solution": ""}
+{"task_id": "Mbpp/297", "solution": ""}
+{"task_id": "Mbpp/299", "solution": ""}
+{"task_id": "Mbpp/300", "solution": ""}
+{"task_id": "Mbpp/301", "solution": ""}
+{"task_id": "Mbpp/305", "solution": ""}
+{"task_id": "Mbpp/306", "solution": ""}
+{"task_id": "Mbpp/308", "solution": ""}
+{"task_id": "Mbpp/309", "solution": ""}
+{"task_id": "Mbpp/310", "solution": ""}
+{"task_id": "Mbpp/311", "solution": ""}
+{"task_id": "Mbpp/312", "solution": ""}
+{"task_id": "Mbpp/388", "solution": ""}
+{"task_id": "Mbpp/389", "solution": ""}
+{"task_id": "Mbpp/390", "solution": ""}
+{"task_id": "Mbpp/391", "solution": ""}
+{"task_id": "Mbpp/392", "solution": ""}
+{"task_id": "Mbpp/394", "solution": "```python\n\"\"\"\nScript to check if a given tuple contains no duplicate elements.\n\"\"\"\n\ndef check_distinct(input_tuple):\n    \"\"\"\n    Checks if the input tuple has any duplicate elements.\n\n    Args:\n        input_tuple (tuple): The tuple to be checked.\n\n    Returns:\n        bool: True if there are no duplicates, False otherwise.\n    \"\"\"\n    # Convert the tuple to a set. A set automatically removes duplicates.\n    # Compare the length of the original tuple with the new set.\n    # If they are equal, all elements were"}
+{"task_id": "Mbpp/395", "solution": ""}
+{"task_id": "Mbpp/397", "solution": ""}
+{"task_id": "Mbpp/398", "solution": ""}
+{"task_id": "Mbpp/404", "solution": "```python\ndef minimum(a, b):\n    \"\"\"\n    Finds and returns the smaller of two numbers.\n\n    :param a: The first number.\n    :param b: The second number.\n    :return: The minimum value between 'a' and 'b'.\n    \"\"\"\n    return a if a < b else b\n\n# Test cases\nassert minimum(1, 2) == 1\nassert minimum(5, 3) == 3\nassert minimum(-1, -4) == -4\nassert minimum(10.5, 2.1) == 2.1\n\nprint(\"All tests passed.\")\n```"}
+{"task_id": "Mbpp/405", "solution": "```python\n\"\"\"\nWrite a function to check whether an element exists within a tuple.\nassert check_tuplex((\"w\", 3, \"r\", \"e\", \"s\", \"o\", \"u\", \"r\", \"c\", \"e\"),'r')==True\n\"\"\"\n\ndef check_tuplex(tuplex, element):\n    \"\"\"\n    Checks if the specified element exists within the given tuple.\n    \n    Args:\n        tuplex (tuple): The tuple to search within.\n        element: The element to"}
+{"task_id": "Mbpp/406", "solution": "```python\ndef find_Parity(n):\n    \"\"\"\n    Determines if a number is odd or even.\n    \n    Parameters:\n    n (int): The number to check.\n    \n    Returns:\n    bool: True if the number is odd, False otherwise.\n    \"\"\"\n    return n % 2 != 0\n\n# Test cases\nif __name__ == \"__main__\":\n    # Provided test case\n    assert find_Parity(12) == False\n    \n    # Additional tests for verification\n    assert find_Parity(3) == True\n    assert find_Parity(-5) == True\n```"}
+{"task_id": "Mbpp/409", "solution": ""}
+{"task_id": "Mbpp/410", "solution": ""}
+{"task_id": "Mbpp/412", "solution": "```python\ndef remove_odd(numbers):\n    \"\"\"\n    Removes odd numbers from the given list and returns a new list containing only even numbers.\n\n    Args:\n        numbers (list): A list of integers.\n\n    Returns:\n        list: A list of even integers.\n    \"\"\"\n    # Use list comprehension to filter out odd numbers\n    return [num for num in numbers if num % 2 == 0]\n\n# Test the function with the provided assertion\nassert remove_odd([1, 2, 3]) == [2]\n\nprint(\"Function works as expected.\")\n```"}
+{"task_id": "Mbpp/413", "solution": ""}
+{"task_id": "Mbpp/414", "solution": "```python\ndef overlapping(seq1, seq2"}
+{"task_id": "Mbpp/415", "solution": ""}
+{"task_id": "Mbpp/418", "solution": ""}
+{"task_id": "Mbpp/419", "solution": ""}
+{"task_id": "Mbpp/420", "solution": ""}
+{"task_id": "Mbpp/421", "solution": ""}
+{"task_id": "Mbpp/422", "solution": ""}
+{"task_id": "Mbpp/424", "solution": "```python\ndef extract_rear(input_tuple):\n    \"\"\"\n    Extracts"}
+{"task_id": "Mbpp/425", "solution": ""}
+{"task_id": "Mbpp/426", "solution": "```python\ndef filter_oddnumbers(numbers):\n    \"\"\"\n    Filter odd numbers from a list of integers.\n    \n    Args:\n        numbers (list): A list of integers.\n        \n    Returns:\n        list: A list containing only the odd integers from the input list.\n    \"\"\"\n    return [num for num in numbers if num % 2 != 0]\n\n# Test case provided in the prompt\nassert filter_oddnumbers([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) == [1, 3, 5, 7, 9]\n\nprint(\"All tests passed.\")\n```"}
+{"task_id": "Mbpp/427", "solution": "```python\ndef change_date_format(date_string):\n    \"\"\"\n    Converts a date from yyyy-mm-dd format to dd-mm-yyyy format.\n    \n    Args:\n        date_string (str): A string in the format 'yyyy-mm-dd'.\n        \n    Returns:\n        str: The date string formatted as 'dd-mm-yyyy'.\n    \"\"\"\n    # Split the input string by hyphens\n    year, month, day = date_string.split('-')\n    \n    # Return the new format using an f-string\n    return f\"{day}-{month}-{year}\"\n\n# Test the function with the provided assertion\nassert change_date_format(\"2026-01-02\") == '02-01-2026'\n```"}
+{"task_id": "Mbpp/428", "solution": ""}
+{"task_id": "Mbpp/429", "solution": "```python\ndef and_tuples(t1, t2):\n    \"\"\"\n    Takes two tuples and returns a new tuple containing the elementwise \n    bitwise AND of the input tuples.\n    \"\"\"\n    return tuple(a & b for a, b in zip(t1, t2))\n\n# Test with the provided assertion\nassert and_tuples((10, 4, 6, 9), (5, 2, 3, 3)) == (0, 0, 2, 1)\n\nprint(\"Test passed.\")\n```"}
+{"task_id": "Mbpp/430", "solution": ""}
+{"task_id": "Mbpp/432", "solution": ""}
+{"task_id": "Mbpp/433", "solution": ""}
+{"task_id": "Mbpp/435", "solution": ""}
+{"task_id": "Mbpp/436", "solution": "```python\ndef neg_nos(lst):\n    \"\"\"\n    Write a python function to return the negative numbers in a list.\n    assert neg_nos([-1,4,5,-6]) == [-1,-6]\n    \"\"\"\n    # Use a list comprehension to filter items that are strictly less than 0\n    return [num for num in lst if num < 0]\n\nif __name__ == \"__main__\":\n    # Test case provided in the prompt\n    test_input = [-1, 4, 5, -6]\n    \n    result = neg_nos(test_input)\n    \n    # Verify the output\n    assert result == [-1, -6], f\"Expected [-1, -6], but got {result}\"\n    \n    print(f"}
+{"task_id": "Mbpp/437", "solution": ""}
+{"task_id": "Mbpp/439", "solution": ""}
+{"task_id": "Mbpp/440", "solution": ""}
+{"task_id": "Mbpp/441", "solution": "```python\ndef surfacearea_cube(size):\n    \"\"\"\n    Calculate the surface area of a cube.\n\n    A cube has 6 identical square faces. The formula for the total surface area"}
+{"task_id": "Mbpp/445", "solution": ""}
+{"task_id": "Mbpp/446", "solution": ""}
+{"task_id": "Mbpp/447", "solution": "```python\ndef cube_nums(numbers):\n    \"\"\"\n    Finds and returns the cubes of individual elements in a list.\n    \n    :param"}
+{"task_id": "Mbpp/448", "solution": ""}
+{"task_id": "Mbpp/450", "solution": ""}
+{"task_id": "Mbpp/451", "solution": "```python\ndef remove_whitespaces(input_string):\n    \"\"\"\n    Removes all whitespace characters from the given string.\n\n    Args:\n        input_string (str): The string to process.\n\n    Returns:\n        str: The string with no whitespace.\n    \"\"\"\n    # Using join() on an empty string concatenates all characters together,\n    # effectively removing any spaces, tabs, or newlines present in the original string.\n    return ''.join(input_string)\n\n\n# Test cases\nif __name__ == \"__main__\":\n    # Provided test case\n    assert remove_whitespaces(' Google    Flutter ') == 'GoogleFlutter'\n    \n    # Additional test cases for robustness (whitespace types)\n    assert remove_whitespaces"}
+{"task_id": "Mbpp/453", "solution": ""}
+{"task_id": "Mbpp/454", "solution": ""}
+{"task_id": "Mbpp/455", "solution": ""}
+{"task_id": "Mbpp/456", "solution": "```python\ndef reverse_string_list(string_list):\n    \"\"\"\n    Reverses each string in a given list of string values.\n    \n    Args:\n        string_list (list): A list of strings to be reversed.\n        \n    Returns:\n        list: A new list containing the reversed strings.\n    \"\"\"\n    # Using list comprehension with string slicing [::-1] to reverse each element\n    return [s[::-1] for s in string_list]\n\n# Example usage and assertion test\nif __name__ == \"__main__\":\n    input_list = ['Red', 'Green', 'Blue', 'White', 'Black']\n    expected_output = ['deR', 'neerG', 'eulB', 'etihW', 'kcalB']\n    \n    result = reverse_string_list(input_list)\n    \n   "}
+{"task_id": "Mbpp/457", "solution": ""}
+{"task_id": "Mbpp/458", "solution": "```python\ndef rectangle_area(length, width):\n    \"\"\"\n    Calculates the area of a rectangle based on its length and width.\n    \n    Args:\n        length (int or float): The length of the rectangle.\n        width (int or float): The width of the rectangle.\n        \n    Returns:\n        int or float: The calculated area.\n    \"\"\"\n    return length * width\n\n# Provided assertion to verify functionality\nassert rectangle_area(10, 20) == 200\n\nprint(\"Test passed!\")\n```"}
+{"task_id": "Mbpp/459", "solution": "```python\ndef remove_uppercase(text):\n    \"\"\"\n    Removes all uppercase alphabetic characters from a given string.\n\n   "}
+{"task_id": "Mbpp/460", "solution": "```python\ndef Extract(lst):\n    \"\"\"\n    Takes a list of lists and returns a new list containing the first element \n    from each sublist.\n    \"\"\"\n    return [sublist[0] for sublist in lst]\n\n# Test case provided in the prompt\nassert Extract([[1, 2], [3, 4, 5], [6, 7, 8, 9]]) == [1,"}
+{"task_id": "Mbpp/462", "solution": ""}
+{"task_id": "Mbpp/463", "solution": ""}
+{"task_id": "Mbpp/465", "solution": ""}
+{"task_id": "Mbpp/468", "solution": ""}
+{"task_id": "Mbpp/470", "solution": ""}
+{"task_id": "Mbpp/471", "solution": ""}
+{"task_id": "Mbpp/472", "solution": ""}
+{"task_id": "Mbpp/473", "solution": ""}
+{"task_id": "Mbpp/474", "solution": ""}
+{"task_id": "Mbpp/475", "solution": ""}
+{"task_id": "Mbpp/476", "solution": "```python\ndef big_sum(arr):\n    \"\"\"\n    Finds the sum of the largest and smallest value in a given list.\n\n    Args:\n        arr (list): A list of numbers.\n\n    Returns:\n        int/float: The sum of the maximum and minimum values.\n    \"\"\"\n    # Check if the list is empty to avoid errors from min() or max()\n    if not arr:\n        return 0\n    \n    # Return the sum of the smallest and largest elements\n    return min(arr) + max(arr)\n\n# Test cases based on the prompt\nassert big_sum([1, 2, 3]) == 4\nassert big_sum([-5, 0, 5]) == 0\nassert big_sum([10]) == 20\n\nprint(\"All tests passed.\")\n```"}
+{"task_id": "Mbpp/477", "solution": "```python\ndef is_lower(text):\n    \"\"\"\n    Converts the given string to lower case.\n\n    Args:\n        text (str): The string to be converted.\n\n    Returns:\n        str: The input string converted to lowercase.\n    \"\"\"\n    return text.lower()\n\n# Assertion provided in the problem statement\nassert is_lower(\"InValid\") == \"invalid\"\n```"}
+{"task_id": "Mbpp/478", "solution": ""}
+{"task_id": "Mbpp/479", "solution": ""}
+{"task_id": "Mbpp/554", "solution": "```python\ndef Split(numbers):\n    \"\"\"\n    Takes a list of integers and returns only the odd ones.\n    \n    Args:\n        numbers (list): A list of integers.\n        \n    Returns:\n        list: A new list containing only the odd integers from the input list.\n    \"\"\"\n    # Use a list comprehension to filter for numbers that are not divisible by 2\n    return [num for num in numbers if num % 2 != 0]\n\n# Test case provided in the problem description\nassert Split([1, 2, 3, 4, 5, 6]) == [1, 3, 5]\n```"}
+{"task_id": "Mbpp/555", "solution": ""}
+{"task_id": "Mbpp/556", "solution": ""}
+{"task_id": "Mbpp/557", "solution": ""}
+{"task_id": "Mbpp/558", "solution": ""}
+{"task_id": "Mbpp/559", "solution": ""}
+{"task_id": "Mbpp/560", "solution": "```python\n\"\"\"\nWrite a function to find the union of the elements of two given tuples and output them in sorted order.\n\"\"\"\n\ndef union_elements(tup1, tup2):\n    \"\"\"\n    Finds the union of two tuples and returns them as a sorted tuple.\n    \n    Args:\n        tup1 (tuple): First input tuple.\n        tup2 (tuple): Second input tuple.\n        \n    Returns:\n        tuple: A tuple containing unique elements from both inputs, sorted in ascending order.\n    \"\"\"\n    # Convert both tuples to sets to remove duplicates\n    set_union = set(tup1) | set(tup2)\n    \n    # Sort the set and convert back to a tuple\n    return tuple(sorted(set_union"}
+{"task_id": "Mbpp/562", "solution": "```python\ndef Find_Max_Length(list_of_lists):\n    \"\"\"\n    Finds the length of the longest sublist within a list of lists.\n    \n    Args:\n        list_of_lists (list): A list containing sublists.\n        \n    Returns:\n        int: The maximum length of any sublist. Returns 0 if the input is empty.\n    \"\"\"\n    max_length = 0\n    \n    # Iterate through each sublist in the main list\n    for sublist in list_of_lists:\n        current_length = len(sublist)\n        # Update max_length if the current sublist is longer"}
+{"task_id": "Mbpp/563", "solution": ""}
+{"task_id": "Mbpp/564", "solution": ""}
+{"task_id": "Mbpp/565", "solution": "```python\ndef split(text):\n    \"\"\"\n    Splits a string into individual characters and returns them as a list.\n    \"\"\"\n    return list(text)\n\n# Test case to verify the function works as expected\nif __name__ == \"__main__\":\n    assert split('python') == ['p','y','t','h','o','n']\n```"}
+{"task_id": "Mbpp/566", "solution": ""}
+{"task_id": "Mbpp/567", "solution": "```python\n"}
+{"task_id": "Mbpp/568", "solution": "```python\ndef empty_list(n):\n    \"\"\"\n    Write a function to create a list of N empty dictionaries.\n    assert empty_list(5)==[{},{},{},{},{}]\n    \"\"\"\n    return [{} for _ in range(n)]\n\n# Demonstration\nif __name__ == \"__main__\":\n    # Test case from the prompt\n    assert empty_list(5) == [{}, {}, {}, {}, {}]\n    \n    print(\"Success: The function created a list of 5 empty dictionaries.\")\n```"}
+{"task_id": "Mbpp/569", "solution": ""}
+{"task_id": "Mbpp/572", "solution": ""}
+{"task_id": "Mbpp/573", "solution": ""}
+{"task_id": "Mbpp/576", "solution": ""}
+{"task_id": "Mbpp/577", "solution": ""}
+{"task_id": "Mbpp/578", "solution": ""}
+{"task_id": "Mbpp/579", "solution": ""}
+{"task_id": "Mbpp/580", "solution": ""}
+{"task_id": "Mbpp/581", "solution": ""}
+{"task_id": "Mbpp/583", "solution": ""}
+{"task_id": "Mbpp/585", "solution": ""}
+{"task_id": "Mbpp/586", "solution": ""}
+{"task_id": "Mbpp/587", "solution": "```python\ndef list_tuple(input_list):\n    \"\"\"\n    Converts a given list to a tuple.\n    \"\"\"\n    return tuple(input_list)\n\n# Assertion from the problem statement\nassert list_tuple([5, 10, 7, 4, 15, 3]) == (5, 10, 7, 4, 15, 3)\n```"}
+{"task_id": "Mbpp/588", "solution": ""}
+{"task_id": "Mbpp/589", "solution": ""}
+{"task_id": "Mbpp/590", "solution": ""}
+{"task_id": "Mbpp/591", "solution": ""}
+{"task_id": "Mbpp/592", "solution": ""}
+{"task_id": "Mbpp/593", "solution": ""}
+{"task_id": "Mbpp/594", "solution": ""}
+{"task_id": "Mbpp/596", "solution": "```python\nimport sys\n\ndef tuple_size(data):\n    \"\"\"\n    Finds the size in bytes of the given tuple.\n    \n    This function utilizes Python's built-in sys module which provides \n    information about the interpreter.\n\n    Args:\n        data (tuple): The tuple to measure.\n\n    Returns:\n        int: The size of the tuple in bytes.\n    \"\"\"\n    return sys.get"}
+{"task_id": "Mbpp/597", "solution": ""}
+{"task_id": "Mbpp/598", "solution": ""}
+{"task_id": "Mbpp/599", "solution": "```python\ndef sum_average(n):\n    \"\"\"\n    Calculates the sum and average of the first n natural numbers.\n\n    Parameters:\n    n (int): The number of natural numbers to consider.\n\n    Returns:\n    tuple: A tuple containing (sum, average).\n    \"\"\"\n    # Calculate the sum using the arithmetic series formula: n * (n + 1)"}
+{"task_id": "Mbpp/600", "solution": "```python\ndef is_Even(n):\n    \"\"\"\n    Checks if the given number is even.\n    \n    Args:\n        n (int): The number to check.\n        \n    Returns:\n        bool: True if the number is even, False otherwise.\n    \"\"\"\n    return n % 2 == 0\n\n# Test cases based on the provided assertion\nassert is_Even(1) == False\nprint(\"Test passed: is_Even(1) returns False\")\n\nassert is_Even(2) == True\nprint(\"Test passed: is_Even(2) returns True\")\n```"}
+{"task_id": "Mbpp/602", "solution": ""}
+{"task_id": "Mbpp/603", "solution": ""}
+{"task_id": "Mbpp/604", "solution": "```python\ndef reverse_words(input_string):\n    \"\"\"\n    Reverses the order of words separated by spaces in a given string.\n    \n    Args:\n        input_string (str): The string containing words separated by spaces.\n        \n    Returns:\n        str: A new string with the"}
+{"task_id": "Mbpp/605", "solution": ""}
+{"task_id": "Mbpp/606", "solution": "```python\nimport math\n\ndef radian_degree(degrees):\n    \"\"\"\n    Converts degrees to radians.\n    \n    Args:\n        degrees (float): The angle in degrees.\n    \n    Returns:\n        float: The angle converted to radians.\n    \"\"\"\n    return degrees * (math.pi / 180)\n\n# Test case provided in the prompt\nassert radian_degree(90) == 1.5707963267948966\n\nprint(\"Conversion successful.\")\n```"}
+{"task_id": "Mbpp/607", "solution": ""}
+{"task_id": "Mbpp/608", "solution": ""}
+{"task_id": "Mbpp/610", "solution": ""}
+{"task_id": "Mbpp/611", "solution": ""}
+{"task_id": "Mbpp/612", "solution": ""}
+{"task_id": "Mbpp/614", "solution": "```python\ndef cummulative_sum(tuple_list):\n    \"\"\"\n    Finds the cumulative sum of all values present in a given list of tuples.\n    \n    Args:\n        tuple_list (list): A list containing tuples of numbers or numeric types.\n        \n    Returns:\n        int/float: The total sum of all elements across all tuples.\n    \"\"\"\n    # Initialize"}
+{"task_id": "Mbpp/615", "solution": ""}
+{"task_id": "Mbpp/616", "solution": "```python\ndef tuple_modulo(t1, t2):\n   "}
+{"task_id": "Mbpp/618", "solution": "```python\ndef div_list(list1, list2):\n    \"\"\"\n    Divides two lists element wise.\n    \n    Args:\n        list1 (list of numbers): The numerator list.\n        list2 (list of numbers): The denominator list.\n        \n    Returns:\n        list: A new list containing the results of dividing corresponding \n              elements in list1 by list2.\n              \n    Raises:\n        ZeroDivisionError: If any element in list2 is 0.\n    \"\"\"\n    return [a / b for a, b in zip(list1, list2)]\n\n# Test case"}
+{"task_id": "Mbpp/619", "solution": ""}
+{"task_id": "Mbpp/620", "solution": ""}
+{"task_id": "Mbpp/622", "solution": ""}
+{"task_id": "Mbpp/623", "solution": ""}
+{"task_id": "Mbpp/624", "solution": "```python\ndef is_upper(text):\n    \"\"\"\n    Converts a given string to uppercase.\n    \"\"\"\n    return text.upper()\n\n# Test case provided in the prompt\nif __name__ == \"__main__\":\n    assert is_upper(\"person\") == \"PERSON\"\n    print(\"Test passed.\")\n```"}
+{"task_id": "Mbpp/626", "solution": ""}
+{"task_id": "Mbpp/628", "solution": ""}
+{"task_id": "Mbpp/629", "solution": "```python\ndef Split(numbers):\n    \"\"\"\n    Filters a list of numbers and returns only the even numbers.\n\n    Parameters:\n    numbers (list): A list of integers.\n\n    Returns:\n    list: A list containing only the even integers.\n    \"\"\"\n    # Use list comprehension to filter for numbers divisible by 2\n    return [num for num in numbers if num % 2 == 0]\n\n# Assertion to verify the function works as expected\nassert Split([1, 2, 3, 4, 5]) == [2, 4]\n```"}
+{"task_id": "Mbpp/630", "solution": ""}
+{"task_id": "Mbpp/631", "solution": ""}
+{"task_id": "Mbpp/632", "solution": ""}
+{"task_id": "Mbpp/633", "solution": ""}
+{"task_id": "Mbpp/635", "solution": ""}
+{"task_id": "Mbpp/637", "solution": ""}
+{"task_id": "Mbpp/638", "solution": ""}
+{"task_id": "Mbpp/639", "solution": ""}
+{"task_id": "Mbpp/641", "solution": ""}
+{"task_id": "Mbpp/643", "solution": ""}
+{"task_id": "Mbpp/644", "solution": ""}
+{"task_id": "Mbpp/720", "solution": "```python\n\"\"\"\nWrite a function to add a dictionary to the tuple. The output should be a tuple.\nassert add_dict_to_tuple((4, 5, 6), {\"MSAM\" : 1, \"is\" : 2, \"best\" : 3} ) == (4, 5, 6, {'MSAM': 1, 'is': 2, 'best': 3})\n\"\"\"\n\ndef add_dict_to_tuple(t, d):\n    \"\"\"\n    Adds a dictionary to the end of an existing tuple and returns the new tuple.\n    \n   "}
+{"task_id": "Mbpp/721", "solution": ""}
+{"task_id": "Mbpp/722", "solution": ""}
+{"task_id": "Mbpp/723", "solution": ""}
+{"task_id": "Mbpp/724", "solution": ""}
+{"task_id": "Mbpp/725", "solution": ""}
+{"task_id": "Mbpp/726", "solution": "```python\n\"\"\"\nWrite a function that takes as input a tuple of numbers (t_1,...,t_{N+1}) \nand returns a tuple of length N where the i-th element of the tuple is equal to t_i * t_{i+1}.\n\"\"\"\n\ndef multiply_elements(numbers):\n    \"\"\"\n    Takes a tuple of numbers and returns a new tuple containing\n    the product of adjacent elements.\n    \n    Example:\n    >>> multiply_elements((1, 5, 7, 8, 10))\n    (5, 35, 56, 80)\n    \"\"\"\n    # zip takes pairs from two sequences.\n    # numbers[1:] shifts the sequence by one position to"}
+{"task_id": "Mbpp/728", "solution": ""}
+{"task_id": "Mbpp/730", "solution": ""}
+{"task_id": "Mbpp/731", "solution": ""}
+{"task_id": "Mbpp/732", "solution": ""}
+{"task_id": "Mbpp/733", "solution": ""}
+{"task_id": "Mbpp/734", "solution": ""}
+{"task_id": "Mbpp/735", "solution": ""}
+{"task_id": "Mbpp/736", "solution": ""}
+{"task_id": "Mbpp/737", "solution": "```python\nimport re\n\ndef check_str(s):\n    \"\"\"\n    Checks if the given string starts with a vowel using regular"}
+{"task_id": "Mbpp/739", "solution": ""}
+{"task_id": "Mbpp/740", "solution": "```python\ndef tuple_to_dict(input_tuple):\n    \"\"\"\n    Converts a tuple to a dictionary using adjacent elements.\n    The first element of each pair is the key and the second is the value.\n    \"\"\"\n   "}
+{"task_id": "Mbpp/741", "solution": ""}
+{"task_id": "Mbpp/742", "solution": ""}
+{"task_id": "Mbpp/743", "solution": ""}
+{"task_id": "Mbpp/744", "solution": "```python\n\"\"\"\nWrite a function to check if the given tuple has any none value or not.\nassert check_none((10, 4, 5, 6, None)) == True\n\"\"\"\n\ndef check_none(tup):\n    \"\"\"\n    Checks if a tuple contains the value None.\n\n    Args:\n        tup (tuple): The input tuple to check.\n\n    Returns:\n        bool: True if None is found in the tuple, False otherwise.\n    \"\"\"\n    return None in tup\n\n# Test the function with the provided assertion\nif __name__ == \"__main__\":\n    assert check_none((10, 4, 5, 6, None)) == True\n    assert check_none"}
+{"task_id": "Mbpp/745", "solution": ""}
+{"task_id": "Mbpp/748", "solution": ""}
+{"task_id": "Mbpp/749", "solution": "```python\ndef sort_numeric_strings(list_of_strings):\n    \"\"\"\n    Sorts a list of numeric strings numerically by converting them to integers first.\n    \n    :param list_of_strings: A list of strings representing numbers.\n    :return: A sorted list of integers.\n    \"\"\"\n    # Convert each string to an integer and then sort the list\n    return sorted"}
+{"task_id": "Mbpp/750", "solution": ""}
+{"task_id": "Mbpp/751", "solution": ""}
+{"task_id": "Mbpp/752", "solution": ""}
+{"task_id": "Mbpp/753", "solution": ""}
+{"task_id": "Mbpp/754", "solution": ""}
+{"task_id": "Mbpp/755", "solution": ""}
+{"task_id": "Mbpp/757", "solution": ""}
+{"task_id": "Mbpp/758", "solution": ""}
+{"task_id": "Mbpp/759", "solution": ""}
+{"task_id": "Mbpp/760", "solution": ""}
+{"task_id": "Mbpp/762", "solution": ""}
+{"task_id": "Mbpp/763", "solution": ""}
+{"task_id": "Mbpp/764", "solution": "```python\ndef number_ctr(s):\n    \"\"\"\n    Counts the number of digits (0-9) in a given string.\n    \n    :param s: The input string.\n    :return: An integer representing the count of digits.\n    \"\"\"\n    # Iterate through the string and sum 1 for every character that is a digit\n    return sum(1 for char in s if char.isdigit())\n\n# Test case from the prompt\nif __name__ == \"__main__\":\n    assert number_ctr('program2bedone') == 1\n```"}
+{"task_id": "Mbpp/765", "solution": ""}
+{"task_id": "Mbpp/766", "solution": ""}
+{"task_id": "Mbpp/767", "solution": ""}
+{"task_id": "Mbpp/769", "solution": ""}
+{"task_id": "Mbpp/770", "solution": ""}
+{"task_id": "Mbpp/771", "solution": ""}
+{"task_id": "Mbpp/772", "solution": ""}
+{"task_id": "Mbpp/773", "solution": ""}
+{"task_id": "Mbpp/775", "solution": ""}
+{"task_id": "Mbpp/777", "solution": ""}
+{"task_id": "Mbpp/778", "solution": ""}
+{"task_id": "Mbpp/780", "solution": ""}
+{"task_id": "Mbpp/781", "solution": ""}
+{"task_id": "Mbpp/782", "solution": ""}
+{"task_id": "Mbpp/784", "solution": ""}
+{"task_id": "Mbpp/785", "solution": ""}
+{"task_id": "Mbpp/786", "solution": ""}
+{"task_id": "Mbpp/787", "solution": ""}
+{"task_id": "Mbpp/788", "solution": ""}
+{"task_id": "Mbpp/790", "solution": ""}
+{"task_id": "Mbpp/791", "solution": ""}
+{"task_id": "Mbpp/792", "solution": "```python\ndef count_list(lists):\n    \"\"\"\n    Counts the number of lists in a given list of lists.\n\n    :param lists: A list containing elements (often lists themselves).\n    :return: The integer count of items in the input list.\n    \"\"\"\n    return len(lists)\n\n# Test with the provided assertion\nassert count_list([[1, 3], [5, 7], [9, 11], [13, 15, 17]]) == 4\n\nif __name__ == \"__main__\":\n    print(\"Test passed.\")\n```"}
+{"task_id": "Mbpp/793", "solution": ""}
+{"task_id": "Mbpp/794", "solution": ""}
+{"task_id": "Mbpp/796", "solution": "```python\ndef return_sum(data_dict):\n    \"\"\"\n    Finds the sum of all items (values) in the given dictionary.\n    \n    :param data_dict: A dictionary where values are summable numbers.\n    :return: The total sum of the dictionary's values.\n    \"\"\"\n    # Using the built-in sum() function with dict.values()\n    return sum(data_dict.values())\n\nif __name__"}
+{"task_id": "Mbpp/797", "solution": ""}
+{"task_id": "Mbpp/798", "solution": ""}
+{"task_id": "Mbpp/799", "solution": ""}
+{"task_id": "Mbpp/800", "solution": ""}
+{"task_id": "Mbpp/801", "solution": ""}
+{"task_id": "Mbpp/803", "solution": "```python\nimport math\n\ndef is_perfect_square(n):\n    \"\"\"\n    Check whether the given number is a perfect square.\n    \n    Args:\n        n (int): The number to"}
+{"task_id": "Mbpp/804", "solution": ""}
+{"task_id": "Mbpp/805", "solution": ""}
+{"task_id": "Mbpp/806", "solution": ""}
+{"task_id": "Mbpp/807", "solution": "```python\ndef first_odd(numbers):\n    \"\"\"\n    Finds and returns the first odd number in a given list of numbers.\n    \n    Args:\n        numbers (list): A list of integers.\n        \n    Returns:\n        The first odd integer found, or None if no odd number is present.\n    \"\"\"\n    for num in numbers:\n        # Check if the number is not divisible by 2\n        if num % 2 != 0:\n            return num\n            \n    return None\n\n# Test cases based on the prompt\nif __name__ == \"__main__\":\n    assert first_odd([1, 3, 5]) == 1\n    print(\"Test passed: [1, 3, 5] -> 1\")\n```"}
+{"task_id": "Mbpp/808", "solution": "```python\ndef check_K(tup, k):\n    \"\"\"\n    Function to check if element 'k' exists in the tuple '"}
+{"task_id": "Mbpp/809", "solution": ""}

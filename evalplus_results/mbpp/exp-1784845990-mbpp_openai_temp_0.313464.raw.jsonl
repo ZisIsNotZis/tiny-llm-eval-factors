@@ -1,0 +1,128 @@
+{"task_id": "Mbpp/2", "solution": ""}
+{"task_id": "Mbpp/3", "solution": ""}
+{"task_id": "Mbpp/4", "solution": ""}
+{"task_id": "Mbpp/6", "solution": ""}
+{"task_id": "Mbpp/7", "solution": ""}
+{"task_id": "Mbpp/8", "solution": ""}
+{"task_id": "Mbpp/9", "solution": ""}
+{"task_id": "Mbpp/11", "solution": ""}
+{"task_id": "Mbpp/12", "solution": ""}
+{"task_id": "Mbpp/14", "solution": ""}
+{"task_id": "Mbpp/16", "solution": ""}
+{"task_id": "Mbpp/17", "solution": ""}
+{"task_id": "Mbpp/18", "solution": ""}
+{"task_id": "Mbpp/19", "solution": ""}
+{"task_id": "Mbpp/20", "solution": ""}
+{"task_id": "Mbpp/56", "solution": ""}
+{"task_id": "Mbpp/57", "solution": ""}
+{"task_id": "Mbpp/58", "solution": ""}
+{"task_id": "Mbpp/59", "solution": ""}
+{"task_id": "Mbpp/61", "solution": ""}
+{"task_id": "Mbpp/62", "solution": ""}
+{"task_id": "Mbpp/63", "solution": ""}
+{"task_id": "Mbpp/64", "solution": "```python\ndef subject_marks(subjects):\n    \"\"\"Sort a list of tuples based on the second value of each tuple.\"\"\"\n    return sorted(subjects, key=lambda x: x[1])\n\n# Verify with the provided assertion\nassert subject_marks([('English', 88), ('Science', 90), ('Maths', 97), ('Social sciences', 82)]) == [\n    ('Social sciences', 82), ('English', 88), ('Science', 90), ('Maths', 97)\n]\n\nprint(\"Assertion passed successfully!\")\n```"}
+{"task_id": "Mbpp/65", "solution": ""}
+{"task_id": "Mbpp/66", "solution": "```python\ndef pos_count(numbers):\n    \"\"\"\n    Count the number of positive numbers in a list.\n    \n    Args:\n        numbers (list): A list of integers or floats.\n        \n    Returns:\n        int: The count of positive numbers.\n    \"\"\"\n    return sum(1 for num in numbers if num > 0)\n\n# Test case provided in the problem description\nassert pos_count([1, -2, 3, -4]) == 2\nprint(\"Assertion passed.\")\n```"}
+{"task_id": "Mbpp/67", "solution": ""}
+{"task_id": "Mbpp/68", "solution": ""}
+{"task_id": "Mbpp/69", "solution": ""}
+{"task_id": "Mbpp/70", "solution": ""}
+{"task_id": "Mbpp/71", "solution": ""}
+{"task_id": "Mbpp/72", "solution": ""}
+{"task_id": "Mbpp/74", "solution": ""}
+{"task_id": "Mbpp/75", "solution": ""}
+{"task_id": "Mbpp/77", "solution": ""}
+{"task_id": "Mbpp/79", "solution": ""}
+{"task_id": "Mbpp/80", "solution": "```python\ndef tetrahedral_number(n):\n    \"\"\"\n    Calculates the nth tetrahedral number using the formula n(n+1)(n+2)/6.\n    \"\"\"\n    return n * (n + 1) * (n + 2) // 6\n\n# Verification\nassert tetrahedral_number(5) == 35\n```"}
+{"task_id": "Mbpp/82", "solution": "```python\nimport math\n\ndef volume_sphere(radius):\n    \"\"\"\n    Calculates the volume of a sphere given its radius.\n    \n    Formula: V = (4/3) * pi * r^3\n    \"\"\"\n    return (4 / 3) * math.pi * (radius ** 3)\n\n# Verification test case provided in the prompt\nif __name__ == \"__main__\":\n    assert math.isclose(volume_sphere(10), 4188.790204786391, rel_tol=0.001)\n    print(\"Test passed: Volume of sphere with radius 10 is correct.\")\n```"}
+{"task_id": "Mbpp/84", "solution": ""}
+{"task_id": "Mbpp/85", "solution": "```python\nimport math\n\ndef surfacearea_sphere(radius):\n    \"\"\"\n    Calculates the surface area of a sphere given its radius.\n    \n    Formula: A = 4 * \u03c0 * r^2\n    \n    Args:\n        radius (float): The radius of the sphere.\n        \n    Returns:\n        float: The surface area of the sphere.\n    \"\"\"\n    return 4 * math.pi * (radius ** 2)\n\n# Verification test case\nassert math.isclose(surfacearea_sphere(10), 1256.6370614359173, rel_tol=0.001)\n```"}
+{"task_id": "Mbpp/86", "solution": ""}
+{"task_id": "Mbpp/87", "solution": ""}
+{"task_id": "Mbpp/88", "solution": "```python\ndef freq_count(lst):\n    \"\"\"\n    Returns a dictionary containing the frequency of each element in the list.\n    \"\"\"\n    counts = {}\n    for item in lst:\n        if item in counts:\n            counts[item] += 1\n        else:\n            counts[item] = 1\n    return counts\n\n# Verification based on the prompt's example\nassert freq_count([10, 10, 10, 10, 20, 20, 20, 20, 40, 40, 50, 50, 30]) == ({10: 4, 20: 4, 40: 2, 50: 2, 30: 1})\n\nprint(\"Assertion passed. Function works correctly.\")\n```"}
+{"task_id": "Mbpp/89", "solution": ""}
+{"task_id": "Mbpp/90", "solution": "```python\ndef len_log(words):\n    \"\"\"\n    Finds the length of the longest word in a list of strings.\n    \n    Args:\n        words (list): A list of strings.\n        \n    Returns:\n        int: The length of the longest word, or 0 if the list is empty.\n    \"\"\"\n    if not words:\n        return 0\n    \n    max_length = 0\n    for word in words:\n        current_length = len(word)\n        if current_length > max_length:\n            max_length = current_length\n            \n    return max_length\n\n# Test case provided in the prompt\nassert len_log([\"python\", \"PHP\", \"bigdata\"]) == 7\n\nprint(\"Assertion passed successfully.\")\n```"}
+{"task_id": "Mbpp/91", "solution": ""}
+{"task_id": "Mbpp/92", "solution": ""}
+{"task_id": "Mbpp/93", "solution": ""}
+{"task_id": "Mbpp/94", "solution": ""}
+{"task_id": "Mbpp/95", "solution": ""}
+{"task_id": "Mbpp/96", "solution": ""}
+{"task_id": "Mbpp/97", "solution": ""}
+{"task_id": "Mbpp/98", "solution": ""}
+{"task_id": "Mbpp/99", "solution": ""}
+{"task_id": "Mbpp/100", "solution": ""}
+{"task_id": "Mbpp/101", "solution": ""}
+{"task_id": "Mbpp/102", "solution": "```python\ndef snake_to_camel(snake_str):\n    \"\"\"\n    Converts a snake_case string to PascalCase (UpperCamelCase).\n    \n    Args:\n        snake_str (str): The input string in snake_case format.\n        \n    Returns:\n        str: The converted string in PascalCase format.\n    \"\"\"\n    # Split the string by underscores, capitalize the first letter of each part, \n    # and join them back together without separators.\n    return ''.join(word.capitalize() for word in snake_str.split('_'))\n\n# Verification based on the prompt's requirement\nassert snake_to_camel('python_program') == 'PythonProgram'\nprint(\"Assertion passed successfully.\")\n```"}
+{"task_id": "Mbpp/103", "solution": ""}
+{"task_id": "Mbpp/104", "solution": ""}
+{"task_id": "Mbpp/105", "solution": ""}
+{"task_id": "Mbpp/106", "solution": "```python\ndef add_lists(lst, tup):\n    \"\"\"\n    Appends the given list to the given tuple.\n    \n    Args:\n        lst (list): The list of elements to append.\n        tup (tuple): The original tuple.\n        \n    Returns:\n        tuple: A new tuple containing the original tuple's elements followed by the list's elements.\n    \"\"\"\n    return tup + tuple(lst)\n\n# Verification\n"}
+{"task_id": "Mbpp/108", "solution": "```python\ndef merge_sorted_list(list1, list2, list3):\n    \"\"\"\n    Merges three lists into a single sorted list.\n    \n    Args:\n        list1 (list): First input list.\n        list"}
+{"task_id": "Mbpp/109", "solution": ""}
+{"task_id": "Mbpp/111", "solution": ""}
+{"task_id": "Mbpp/113", "solution": ""}
+{"task_id": "Mbpp/116", "solution": ""}
+{"task_id": "Mbpp/118", "solution": ""}
+{"task_id": "Mbpp/119", "solution": ""}
+{"task_id": "Mbpp/120", "solution": ""}
+{"task_id": "Mbpp/123", "solution": ""}
+{"task_id": "Mbpp/124", "solution": ""}
+{"task_id": "Mbpp/125", "solution": ""}
+{"task_id": "Mbpp/126", "solution": ""}
+{"task_id": "Mbpp/127", "solution": "```python\ndef multiply_int(a, b):\n    \"\"\"Multiply two integers and return the result.\"\"\"\n    return a * b\n\n# Verification test case provided in the problem description\nassert multiply_int(10, 20) == 200\n\nprint(\"Test passed successfully!\")\n```"}
+{"task_id": "Mbpp/128", "solution": ""}
+{"task_id": "Mbpp/129", "solution": ""}
+{"task_id": "Mbpp/130", "solution": ""}
+{"task_id": "Mbpp/131", "solution": ""}
+{"task_id": "Mbpp/132", "solution": "```python\ndef tup_string(t):\n    \"\"\"\n    Converts a tuple of characters into a single string.\n    \n    Args:\n        t (tuple): A tuple containing character strings.\n        \n    Returns:\n        str: The joined string from the tuple elements.\n    \"\"\"\n    return \"\".join(t)\n\n# Verification based on the problem description\nassert tup_string(('e', 'x', 'e', 'r', 'c', 'i', 's', 'e', 's')) == \"exercises\"\n```"}
+{"task_id": "Mbpp/133", "solution": "```python\ndef sum_negativenum(numbers):\n    \"\"\"Calculate the sum of all negative numbers in a given list.\"\"\"\n    return sum(num for num in numbers if num < 0)\n\n# Test assertion provided in the problem description\nassert sum_negativenum([2, 4, -6, -9, 11, -12, 14, -5, 17]) == -32\nprint(\"Assertion passed successfully!\")\n```"}
+{"task_id": "Mbpp/135", "solution": "```python\ndef hexagonal_num(n):\n    \"\"\"\n    Calculate the nth hexagonal number.\n    \n    The formula for the nth hexagonal number is n * (2n - 1).\n    \"\"\"\n    return n * (2 * n - 1)\n\n# Verification of the provided assertion\nassert hexagonal_num(10) == 190\nprint(\"Assertion passed: hexagonal_num(10) is indeed 190.\")\n```"}
+{"task_id": "Mbpp/137", "solution": ""}
+{"task_id": "Mbpp/138", "solution": ""}
+{"task_id": "Mbpp/139", "solution": "```python\nimport math\n\ndef circle_circumference(radius):\n    \"\"\"\n    Calculates the circumference of a circle given its radius.\n    \n    Args:\n        radius (float): The radius of the circle.\n        \n    Returns:\n        float: The circumference of the circle.\n    \"\"\"\n    return 2 * math.pi * radius\n\n# Verification based on the provided assertion\nassert math.isclose(circle_circumference(10), 62.830000000000005, rel_tol=0.001)\n```"}
+{"task_id": "Mbpp/140", "solution": ""}
+{"task_id": "Mbpp/141", "solution": ""}
+{"task_id": "Mbpp/142", "solution": ""}
+{"task_id": "Mbpp/145", "solution": ""}
+{"task_id": "Mbpp/160", "solution": ""}
+{"task_id": "Mbpp/161", "solution": ""}
+{"task_id": "Mbpp/162", "solution": ""}
+{"task_id": "Mbpp/165", "solution": ""}
+{"task_id": "Mbpp/166", "solution": ""}
+{"task_id": "Mbpp/167", "solution": ""}
+{"task_id": "Mbpp/168", "solution": ""}
+{"task_id": "Mbpp/170", "solution": ""}
+{"task_id": "Mbpp/171", "solution": "```python\ndef perimeter_pentagon(side_length):\n    \"\"\"\n    Write a function to find the perimeter of a regular pentagon from the length of its sides.\n    assert perimeter_pentagon(5) == 25\n    \"\"\"\n    # A regular pentagon has 5 equal sides.\n    return side_length * 5\n\nif __name__ == \"__main__\":\n    # Run the assertion to verify the solution\n    assert perimeter_pentagon(5) == 25\n    print(\"Test passed: Perimeter of a pentagon with side 5 is 25.\")\n```"}
+{"task_id": "Mbpp/172", "solution": ""}
+{"task_id": "Mbpp/222", "solution": ""}
+{"task_id": "Mbpp/223", "solution": ""}
+{"task_id": "Mbpp/224", "solution": ""}
+{"task_id": "Mbpp/226", "solution": ""}
+{"task_id": "Mbpp/227", "solution": "```python\ndef min_of_three(a, b, c):\n    \"\"\"Return the minimum of three numbers.\"\"\"\n    return min(a, b, c)\n\nif __name__ == \"__main__\":\n    assert min_of_three(10, 20, 0) == 0\n    print(\"All tests passed!\")\n```"}
+{"task_id": "Mbpp/230", "solution": ""}
+{"task_id": "Mbpp/232", "solution": ""}
+{"task_id": "Mbpp/233", "solution": ""}
+{"task_id": "Mbpp/234", "solution": "```python\ndef volume_cube(side):\n    \"\"\"\n    Calculates the volume of a cube given its side length.\n    \n    Args:\n        side (int or float): The length of one side of the cube.\n        \n    Returns:\n        int or float: The volume of the cube.\n    \"\"\"\n    return side ** 3\n\n# Verification test case provided in the prompt\nif __name__ == \"__main__\":\n    assert volume_cube(3) == 27\n    print(\"Test passed: volume_cube(3) is 27\")\n```"}
+{"task_id": "Mbpp/235", "solution": ""}
+{"task_id": "Mbpp/237", "solution": ""}
+{"task_id": "Mbpp/238", "solution": "```python\ndef number_of_substrings(s: str) -> int:\n    \"\"\"Count the"}
+{"task_id": "Mbpp/239", "solution": ""}
+{"task_id": "Mbpp/240", "solution": ""}
+{"task_id": "Mbpp/242", "solution": "```python\ndef count_charac(s):\n    return len(s)\n\nassert count_charac(\"python programming\") == 18\nprint(\"Test passed!\")\n```"}
+{"task_id": "Mbpp/244", "solution": ""}
+{"task_id": "Mbpp/245", "solution": ""}
+{"task_id": "Mbpp/247", "solution": ""}
+{"task_id": "Mbpp/250", "solution": "```python\ndef count_X(t, x):\n    \"\"\"\n    Takes a tuple t and an element x, and returns the number of occurrences \n    of x in t.\n    \"\"\"\n    return t.count(x)\n\n# Test case provided in"}
+{"task_id": "Mbpp/251", "solution": ""}
+{"task_id": "Mbpp/252", "solution": ""}
+{"task_id": "Mbpp/253", "solution": ""}
+{"task_id": "Mbpp/255", "solution": ""}
+{"task_id": "Mbpp/256", "solution": ""}
+{"task_id": "Mbpp/257", "solution": "```python\ndef swap_numbers(a, b):\n    \"\"\"Takes two numbers and returns a tuple with the second number followed by the first.\"\"\"\n    return (b, a)\n\n# Verification\nassert swap_numbers(10, 20) == (20, 10)\nprint(\"Assertion passed.\")\n```"}
+{"task_id": "Mbpp/259", "solution": ""}
+{"task_id": "Mbpp/260", "solution": ""}
+{"task_id": "Mbpp/261", "solution": ""}
+{"task_id": "Mbpp/262", "solution": "```python\ndef split_two_parts(lst, L):\n    return lst[:L], lst[L:]\n\nassert split_two_parts([1, 1, 2, 3, 4"}
+{"task_id": "Mbpp/264", "solution": ""}
+{"task_id": "Mbpp/265", "solution": ""}

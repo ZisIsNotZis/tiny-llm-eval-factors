@@ -1,0 +1,164 @@
+{"task_id": "HumanEval/0", "solution": ""}
+{"task_id": "HumanEval/1", "solution": ""}
+{"task_id": "HumanEval/2", "solution": "```python\nimport math\n\ndef truncate_number(number: float) -> float:\n    \"\"\" Given a positive floating point number, it can be decomposed into\n    and integer part (largest integer smaller than given number) and decimals\n    (leftover part always smaller than 1).\n\n    Return the decimal part of the number.\n    >>> truncate_number(3.5)\n    0.5\n    >>> truncate_number(123.0)\n    0.0\n    \"\"\"\n"}
+{"task_id": "HumanEval/3", "solution": "```python\nfrom typing import List\n\n\ndef below_zero(operations: List[int]) -> bool:\n    \"\"\" You're given a list of deposit and withdrawal operations on a bank account that starts with\n    zero balance. Your task is to detect if at any point the balance of account fallls below zero, and\n    at that point function should return True. Otherwise it should return False.\n    >>> below_zero([1, 2, 3])\n    False\n    >>> below_zero([1, 2, -4, 5])\n    True\n    \"\"\"\n    balance = 0\n    for op in operations:\n        # Update the balance\n        "}
+{"task_id": "HumanEval/4", "solution": ""}
+{"task_id": "HumanEval/5", "solution": ""}
+{"task_id": "HumanEval/6", "solution": ""}
+{"task_id": "HumanEval/7", "solution": "```python\nfrom typing import List\n\n\ndef filter_by_substring(strings: List[str], substring: str) -> List[str]:\n    \"\"\" Filter an input list of strings only for ones that contain given substring\n    >>> filter_by_substring([], 'a')\n    []\n    >>> filter_by_substring(['abc', 'bacd', 'cde', 'array'], 'a')\n    ['abc', 'bacd', 'array']\n    \"\"\"\n    return [s for s in strings if substring in s]\n\nif __name__ == '__main__':\n    # Example tests based on docstring\n    print(f\"Test 1 (Empty list): {filter_by_substring([], 'a')}\")\n    \n    test_list = ['abc', 'bacd', 'cde', 'array']\n    print(f\"Test 2 (Sub-list): {filter_by_substring(test_list, 'a')}\")\n    \n    # Additional test case: searching for a longer substring\n    print(f\"Test 3 (Different substring): {filter_by_"}
+{"task_id": "HumanEval/8", "solution": "```python\nfrom typing import List, Tuple\n\ndef sum_product(numbers: List[int]) -> Tuple[int, int]:\n    \"\"\" \n    For a given list of integers, return a tuple consisting of a sum and a product of all the integers in a list.\n    Empty sum should be equal to 0 and empty product should be equal to 1.\n    >>> sum_product([])\n    (0, 1)\n    >>> sum_product([1, 2, 3, 4])\n    (10, 24)\n    \"\"\"\n    if not numbers:\n        return (0, 1)\n\n    total_sum = 0\n    total_product = 1\n\n    for number in numbers:\n        total_sum += number\n        total_product *= number\n\n    return (total_sum, total_product)\n\n# Example usage (Optional, for testing purposes)\nif __name__ == \"__main__\":\n    print(f\"Sum product of [] : {sum_product([])}\")\n    print(f\"Sum product of [1, 2, 3, 4] : {sum_product([1, 2, 3, 4])}\")\n    print(f\"Sum product of [-1, 5] : {sum_product([-1, 5])}\") # Sum=4, Product=-5\n```"}
+{"task_id": "HumanEval/9", "solution": ""}
+{"task_id": "HumanEval/10", "solution": ""}
+{"task_id": "HumanEval/11", "solution": "```python\nfrom typing import List\n\ndef string_xor(a: str, b: str) -> str:\n    \"\"\" Input are two strings a and b consisting only of 1s and 0s.\n    Perform binary XOR on these inputs and return result also as a string.\n    >>> string_xor('010', '110')\n    '100'\n    \"\"\"\n    # Use zip to iterate through both strings simultaneously and a generator expression\n    # to perform"}
+{"task_id": "HumanEval/12", "solution": "```python\nfrom typing import List, Optional\n\n\ndef longest(strings: List[str]) -> Optional[str]:\n    \"\"\" Out of list of strings, return the longest one. Return the first one in case of multiple\n    strings of the same length. Return None in case the input list is empty.\n    >>> longest([])"}
+{"task_id": "HumanEval/13", "solution": "```python\ndef greatest_common_divisor(a: int, b: int) -> int:\n    \"\"\" Return a greatest common divisor of"}
+{"task_id": "HumanEval/14", "solution": "```python\nfrom typing import List\n\n\ndef all_prefixes(string: str) -> List[str]:\n    \"\"\" Return list of all prefixes from shortest to longest of the input string\n    >>> all_prefixes('abc')\n    ['a', 'ab', 'abc']\n    >>> all_prefixes('hello')\n    ['h', 'he', 'hel', 'hell', 'hello']\n    >>> all_prefixes('')\n    []\n    \"\"\"\n    n = len(string)\n    return [string[:i] for i in range(1, n + 1)]\n\nif __name__ == '__main__':\n    # Test cases\n    print(f\"all_prefixes('abc'): {all_prefixes('abc')}\")\n    print(f\"all_prefixes('hello'): {all_prefixes('hello')}\")\n    print(f\"all_prefixes('a'): {all_prefixes('a')}\")\n    print(f\"all_prefixes(''): {all_prefixes('')}\")\n```"}
+{"task_id": "HumanEval/15", "solution": "```python\ndef string_sequence(n: int) -> str:\n    \"\"\" Return a string containing space-delimited numbers starting from 0 upto n inclusive.\n    >>> string_sequence(0)\n    '0'\n    >>> string_sequence(5)\n    '0 1 2 3 4 5'\n    \"\"\"\n    # Generate the sequence of numbers from 0 to n (inclusive).\n    # range(n + 1) covers the indices 0, 1, ..., n.\n    # We convert each number to a string and join them with spaces.\n    return \" \".join(map(str, range(n + 1)))\n\nif __name__ == '__main__':\n    # Example usage and verification:\n    print(f\"string_sequence(0): '{string_sequence(0)}'\")\n    print(f\"string_sequence(5): '{string_sequence(5)}'\")\n    print(f\"string_sequence(3): '{string_sequence(3)}'\")\n```"}
+{"task_id": "HumanEval/16", "solution": "```python\ndef count_distinct_characters(string: str) -> int:\n    \"\"\" Given a string, find out how many distinct characters (regardless of case) does it consist of\n    >>> count_distinct_characters('xyzXYZ')\n    3\n    >>> count_distinct_characters('Jerry')\n    4\n    \"\"\"\n    # Convert the entire string to lowercase to ensure case insensitivity.\n    lower_string = string.lower()\n    \n    # Use a set to automatically handle uniqueness. A set only stores distinct elements.\n    distinct_characters = set(lower_string)\n    \n    # Return the number of elements in the set.\n    return len(distinct_characters)\n\nif __name__ == '__main__':\n    # Verification tests\n    print"}
+{"task_id": "HumanEval/17", "solution": ""}
+{"task_id": "HumanEval/18", "solution": ""}
+{"task_id": "HumanEval/19", "solution": ""}
+{"task_id": "HumanEval/20", "solution": ""}
+{"task_id": "HumanEval/21", "solution": ""}
+{"task_id": "HumanEval/22", "solution": "```python\nfrom typing import List, Any\n\n\ndef filter_integers(values: List[Any]) -> List[int]:\n    \"\"\" Filter given list of any python values only for integers\n    >>> filter_integers(['a', 3.14, 5])\n    [5]\n    >>> filter_integers([1, 2, 3, 'abc', {}, []])\n    [1, 2, 3]\n    \"\"\"\n    # Using a list comprehension to iterate through the values and keep only those\n    # that have an integer type.\n    return [item for item in values if isinstance(item, int)]\n\nif __name__ == \"__main__\":\n    # Example tests to verify the functionality\n    test1 = ['a', 3.14, 5]\n    print"}
+{"task_id": "HumanEval/23", "solution": "```python\ndef strlen(string: str) -> int:\n    \"\"\" Return length of given string\n    >>> strlen('')\n    0\n    >>> strlen('abc')\n    3\n    \"\"\"\n    count = 0\n    for char in string:\n        count += 1\n    return count\n\nif __name__ == '__main__':\n    # Testing the function based on docstring examples\n    print(f\"Length of '': {strlen('')}\")  # Expected output: 0\n    print(f\"Length of 'abc': {strlen('abc')}\") # Expected output: 3\n    print(f\"Length of 'hello': {strlen('hello')}\") # Expected output: 5\n    print(f\"Length of 'Python code': {strlen('Python code')}\") # Expected output: 12\n```"}
+{"task_id": "HumanEval/24", "solution": ""}
+{"task_id": "HumanEval/25", "solution": ""}
+{"task_id": "HumanEval/26", "solution": "```python\nfrom typing import List\nfrom collections import Counter\n\n"}
+{"task_id": "HumanEval/27", "solution": "```python\ndef flip_case(string: str) -> str:\n    \"\"\" For a given string, flip lowercase characters to uppercase and uppercase to lowercase.\n    >>> flip_case('Hello')\n    'hELLO'\n    \"\"\"\n    # The built-in string method swapcase() is specifically designed \n    # to invert the case of all cased characters in a string.\n    return string.swapcase()\n\nif __name__ == '__main__':\n    # Example tests to verify functionality\n    print(f\"flip_case('Hello'): {flip_case('Hello')}\") # Expected: hELLO\n    print(f\"flip_case('PYTHON is FUN'): {flip_case('PYTHON is FUN')}\") # Expected: pYTHON IS fun\n    print(f\"flip_case('aBcDeF123'): {flip_case('aBcDeF123')}\") # Expected: AbCdEf123\n    print(f\"flip_case('HelloWorld'): {flip_case('HelloWorld')}\") # Expected: hELLOwORLD\n```"}
+{"task_id": "HumanEval/28", "solution": "```python\nfrom typing import List\n\n\ndef concatenate(strings: List[str]) -> str:\n    \"\"\" Concatenate list of strings into a single string\n    >>> concatenate([])\n    ''\n    >>> concatenate(['a', 'b', 'c'])\n    'abc'\n    \"\"\"\n    # The most efficient and Pythonic way to join a list of strings \n    # without any separator is using the str.join() method.\n    return \"\".join(strings)\n\nif __name__ == '__main__':\n    import doctest\n    doctest.testmod()\n\n    # Example usage:\n    print(f\"Test 1 (Empty list): '{concatenate([])}'\")\n    print(f\"Test 2 (Mixed strings): '{concatenate(['Hello', ' ', 'World'])}'\")\n    print(f\"Test 3 (Single string): '{concatenate(['Python'])}'\")\n```"}
+{"task_id": "HumanEval/29", "solution": "To solve this problem efficiently, we can use a list comprehension in Python, leveraging the built-in `startswith()` string method.\n\nHere is the self-contained Python script:\n\n```python\nfrom typing import List\n\n\ndef filter_by_prefix(strings: List[str], prefix: str) -> List[str]:\n    \"\"\" Filter an input list of strings only for ones that start with a given prefix.\n    >>> filter_by_prefix([], 'a')\n    []\n    >>> filter_by_prefix(['abc', 'bcd', 'cde', 'array'], 'a')\n    ['abc', 'array']\n    \"\"\"\n    # Use a list comprehension to iterate through the strings and select only those\n    # that begin with the specified prefix.\n    return [s for s in strings if s.startswith(prefix)]\n\n\nif __name__ =="}
+{"task_id": "HumanEval/30", "solution": "```python\ndef get_positive(l: list):\n    \"\"\"Return only positive numbers in the list.\n    >>> get_positive([-1, 2, -4, 5, 6])\n    [2, 5, 6]\n    >>> get_positive([5, 3, -5, 2, -3, 3, 9, 0, 123, 1, -10])\n    [5, 3, 2, 3, 9, 123, 1]\n    \"\"\"\n    # Use a list comprehension to filter the list, keeping elements x where x > 0\n    return [x for x in l if x > 0]\n\nif __name__ == '__main__':\n    # Test cases from the docstring\n    test_list_1 = [-1, 2, -4, 5, 6]\n    print(f\"Input: {test_list_1} -> Output: {get_positive(test_list_1)}\")\n\n    test_list_2 = [5,"}
+{"task_id": "HumanEval/31", "solution": ""}
+{"task_id": "HumanEval/32", "solution": ""}
+{"task_id": "HumanEval/33", "solution": ""}
+{"task_id": "HumanEval/34", "solution": "```python\ndef unique(l: list):\n    \"\"\"Return sorted unique elements in a list\n    >>> unique([5, 3, 5, 2, 3, 3, 9, 0, 123])\n    [0, 2, 3, 5, 9, 123]\n    \"\"\"\n    # Use a set to efficiently get only the unique elements.\n    # Then convert the set back to a list and sort it.\n    return sorted(list(set(l)))\n\nif __name__ == '__main__':\n    # Example usage/test case based on docstring\n    test_list = [5, 3, 5, 2, 3, 3, 9, 0, 123]\n    result = unique(test_list)\n    print(unique(test_list))  # Output: [0, 2, 3, 5, 9, 123]\n\n    assert result == [0, 2, 3, "}
+{"task_id": "HumanEval/35", "solution": "```python\ndef max_element(l: list):\n    \"\"\"Return maximum element in the list.\n\n    >>> max_element([1, 2, 3])\n    3\n    >>> max_element([5, 3, -5, 2, -3, 3, 9, 0, 123, 1, -10])\n    123\n    \"\"\"\n    if not l:\n        # Depending on requirements, you might raise a ValueError for an empty list.\n        # Returning None is another valid approach if allowed.\n        raise ValueError(\"Input list cannot be empty\")\n\n    # The most efficient and Pythonic way to find the maximum element is using"}
+{"task_id": "HumanEval/36", "solution": ""}
+{"task_id": "HumanEval/37", "solution": ""}
+{"task_id": "HumanEval/38", "solution": ""}
+{"task_id": "HumanEval/39", "solution": ""}
+{"task_id": "HumanEval/40", "solution": ""}
+{"task_id": "HumanEval/41", "solution": ""}
+{"task_id": "HumanEval/42", "solution": "```python\ndef incr_list(l: list):\n    \"\"\"Return list with elements incremented by 1.\n    >>> incr_list([1, 2, 3])\n    [2, 3, 4]\n    >>> incr_list([5, 3, 5, 2, 3, 3, 9, 0, 123])\n    [6, 4, 6, 3, 4, 4, 10, 1, 124]\n    \"\"\"\n    # Use a list comprehension to efficiently create a new list\n    # where each element is the original element plus 1.\n    return [x + 1 for x in l]\n\nif __name__ == '__main__':\n    # Testing the function with the examples provided in the docstring\n\n    list1 = [1, 2, 3]\n    result1 = incr_list(list1)\n    print(f\"Input: {list1}\")\n    print(f\"Output: {result1} (Expected: [2, 3, 4])\")\n\n    list2 = [5, 3, 5, 2, 3, 3, 9, 0, 123]\n    result2 = incr_list(list2)\n    print(f\"\\nInput: {"}
+{"task_id": "HumanEval/43", "solution": ""}
+{"task_id": "HumanEval/44", "solution": ""}
+{"task_id": "HumanEval/45", "solution": "```python\ndef triangle_area(a, h):\n    \"\"\"Given length of a side and high return area for a triangle.\n    >>> triangle_area(5, 3)\n    7.5\n    \"\"\"\n    return 0.5 * a * h\n\nif __name__ == '__main__':\n    # Example usage to verify the solution\n    result1 = triangle_area(5, 3)\n    print(f\"Area for side 5 and height 3: {result1}\")  # Expected output: 7.5\n\n    result2 = triangle_area(10, 4)\n    print(f\"Area for side 10 and height 4: {result2}\") # Expected output: 20.0\n```"}
+{"task_id": "HumanEval/46", "solution": ""}
+{"task_id": "HumanEval/47", "solution": ""}
+{"task_id": "HumanEval/48", "solution": "```python\ndef is_palindrome(text: str) -> bool:\n    \"\"\"\n    Checks if given string is a palindrome\n\n    A palindrome is a sequence that reads the same forwards and backwards,\n    ignoring case and non-alphanumeric characters (though this implementation\n    uses a strict comparison based on the string itself).\n    \n    Args:\n        text: The input string to check.\n\n    Returns:\n        True if the string is a palindrome, False otherwise.\n\n    >>> is_palindrome('')\n    True\n    >>> is_palindrome('aba')\n    True\n    >>> is_palindrome('aaaaa')\n    True\n    >>> is_palindrome('zbcd')\n    False\n    \"\"\"\n    # Use slicing to reverse the string: text[::-1] creates a reversed copy.\n    return text == text[::-1]\n\nif __name__ == '__main__':\n    # Example Usage and Verification\n    \n    print(f\"'aba' is a palindrome: {is_palindrome('aba')}\")\n    print(f\"'racecar' is a palindrome: {is_palindrome('racecar')}\")\n    print(f\"'' (empty) is a palindrome: {is_palindrome('')}\")\n    print(f\"'zbcd' is a palindrome: {is_palindrome('zbcd')}\")\n    print(f\"'level' is a palindrome: {is_palindrome('level')}\")\n```"}
+{"task_id": "HumanEval/49", "solution": ""}
+{"task_id": "HumanEval/50", "solution": "This self-contained Python script includes both `encode_shift` and `decode_shift` as requested, assuming the input consists of lowercase English letters.\n\n```python\nimport string\n\ndef encode_shift(s: str) -> str:\n    \"\"\"\n    returns encoded string by shifting every lowercase character in s"}
+{"task_id": "HumanEval/51", "solution": "```python\ndef remove_v"}
+{"task_id": "HumanEval/52", "solution": "```python\ndef below_threshold(l: list, t: int) -> bool:\n    \"\"\"Return True if all numbers in the list l are below threshold t.\n    >>> below_threshold([1, 2, 4, 10], 100)\n    True\n    >>> below_threshold([1, 20, 4, 10], 5)\n    False\n    \"\"\"\n    # This can be solved concisely using the all() function:\n    # We check if every element 'x' in the list 'l' satisfies the condition x < t.\n    return all(x < t for x in l)\n\nif __name__ == '__main__':\n    # Testing the provided examples\n    print(f\"Test 1: below_threshold([1, 2, 4, 10], 100) -> {below_threshold([1, 2, 4, 10], 100)}\")\n    print(f\"Test 2: below_threshold([1, 20, 4, 10], 5) -> {below_threshold([1, 20, 4, 10], 5"}
+{"task_id": "HumanEval/53", "solution": "Here is the self-contained Python script implementing the `add` function:\n\n```python\ndef add(x: int, y: int) -> int:\n    \"\"\"Add two numbers x and y\n\n    Args:\n        x: The first integer.\n        y: The second integer.\n\n    Returns:\n        The sum of x and y.\n\n    Examples:\n        >>> add(2, 3)\n        5\n        >>> add(5, 7)\n        12\n    \"\"\"\n    return x + y\n\n# Example usage to demonstrate the function works (optional but good practice)\nif __name__ == \"__main__\":\n    result1 = add(2, 3)\n    print(f\"The sum of 2 and 3 is: {result1}\")  # Output: The sum of 2 and 3 is: 5\n\n    result2 = add(5, 7)\n    print(f\"The sum of 5 and 7 is: {result2}\")  # Output: The sum of 5 and 7 is: 12\n```"}
+{"task_id": "HumanEval/54", "solution": ""}
+{"task_id": "HumanEval/55", "solution": ""}
+{"task_id": "HumanEval/56", "solution": "```python\ndef correct_bracketing(brackets: str):\n    \"\"\" \n    Checks if every opening bracket has a"}
+{"task_id": "HumanEval/57", "solution": ""}
+{"task_id": "HumanEval/58", "solution": ""}
+{"task_id": "HumanEval/59", "solution": ""}
+{"task_id": "HumanEval/60", "solution": "```python\ndef sum_to_n(n: int):\n    \"\"\"sum_to_n is a function that sums numbers from 1 to n.\n    >>> sum_to_n(30)\n    465\n    >>> sum_to_n(100)\n    5050\n    >>> sum_to_n(5)\n    15\n    >>> sum_to_n(10)\n    "}
+{"task_id": "HumanEval/61", "solution": "```python\ndef correct_bracketing(brackets: str) -> bool:\n"}
+{"task_id": "HumanEval/62", "solution": ""}
+{"task_id": "HumanEval/63", "solution": ""}
+{"task_id": "HumanEval/64", "solution": ""}
+{"task_id": "HumanEval/65", "solution": ""}
+{"task_id": "HumanEval/66", "solution": ""}
+{"task_id": "HumanEval/67", "solution": "```python\nimport re\n\ndef fruit_distribution(s: str, n: int) -> int:\n    \"\"\"\n    Given a string s representing the number of apples and oranges (e.g., \"5 apples and 6 oranges\") \n    and an integer n representing the total number of fruits in the basket, return the number of mango fruits.\n\n    Args:\n        s: The descriptive string of fruit counts.\n        n: The total number of fruits.\n\n    Returns:\n        The number of mango fruits (Total - Apples - Oranges).\n    \"\"\"\n    \n    # Regex pattern to find digits before 'apples' and"}
+{"task_id": "HumanEval/68", "solution": ""}
+{"task_id": "HumanEval/69", "solution": ""}
+{"task_id": "HumanEval/70", "solution": ""}
+{"task_id": "HumanEval/71", "solution": ""}
+{"task_id": "HumanEval/72", "solution": "```python\ndef will_it_fly(q, w):\n    \"\"\"\n    Write a function that returns True if the object q will fly, and False otherwise.\n    The object q will fly if it's balanced (it is a palindromic list) \n    and the sum of its elements is less than or equal to the maximum possible weight w.\n    \"\"\"\n    # Condition 1: Check if the list q is balanced (a palindrome)\n    is_balanced = (q == q[::-1])\n    \n    # Condition 2: Check if the sum of elements is within the weight limit w\n    total_weight = sum(q)\n    weight_check = total_weight <= w\n    \n    # The object flies only if both conditions are met\n    return is_balanced and weight_check\n\nif __name__ == '__main__':\n    # Example tests provided in the problem description\n    \n    print("}
+{"task_id": "HumanEval/73", "solution": ""}
+{"task_id": "HumanEval/74", "solution": ""}
+{"task_id": "HumanEval/75", "solution": ""}
+{"task_id": "HumanEval/76", "solution": ""}
+{"task_id": "HumanEval/77", "solution": ""}
+{"task_id": "HumanEval/78", "solution": "```python\ndef hex_key"}
+{"task_id": "HumanEval/79", "solution": ""}
+{"task_id": "HumanEval/80", "solution": ""}
+{"task_id": "HumanEval/81", "solution": ""}
+{"task_id": "HumanEval/82", "solution": "```python\ndef prime_length(string):\n    \"\"\"Write a function that takes a string and returns True if the string\n    length is a prime number or False otherwise.\n    Examples\n    prime_length('Hello') == True  # Length 5 (Prime)\n    prime"}
+{"task_id": "HumanEval/83", "solution": ""}
+{"task_id": "HumanEval/84", "solution": ""}
+{"task_id": "HumanEval/85", "solution": ""}
+{"task_id": "HumanEval/86", "solution": ""}
+{"task_id": "HumanEval/87", "solution": ""}
+{"task_id": "HumanEval/88", "solution": ""}
+{"task_id": "HumanEval/89", "solution": ""}
+{"task_id": "HumanEval/90", "solution": "```python\ndef next_smallest(lst):\n    \"\"\"\n    You are given a list of integers.\n    Write a function next_smallest() that returns the 2nd smallest element of the list.\n    Return None if there is no such element (i.e., fewer"}
+{"task_id": "HumanEval/91", "solution": ""}
+{"task_id": "HumanEval/92", "solution": ""}
+{"task_id": "HumanEval/93", "solution": ""}
+{"task_id": "HumanEval/94", "solution": "```python\nimport math\n\ndef is_prime(n):\n    \"\"\"Checks if a positive integer n is a prime number.\"\"\"\n    if n < 2:\n        return False\n    # Check divisibility up to the square root of n\n    for i in range(2, int(math.sqrt(n)) + 1):\n        if n % i == 0:\n            return False\n    return True\n\ndef sum_digits(n):\n    \"\"\"Calculates the sum of the digits of a positive integer.\"\"\"\n    #"}
+{"task_id": "HumanEval/95", "solution": ""}
+{"task_id": "HumanEval/96", "solution": ""}
+{"task_id": "HumanEval/97", "solution": "```python\ndef multiply(a, b):\n    \"\"\"Complete the function that takes two integers and returns \n    the product of their unit digits.\n    Assume the input is always valid.\n    Examples:\n    multiply(148, 412)"}
+{"task_id": "HumanEval/98", "solution": ""}
+{"task_id": "HumanEval/99", "solution": ""}
+{"task_id": "HumanEval/100", "solution": ""}
+{"task_id": "HumanEval/101", "solution": "This problem can be solved efficiently using string manipulation. A common approach is to first replace all occurrences of the delimiter (the comma) with a space, and then use Python's built-in `.split()` method. The `.split()` method, when called without arguments, automatically handles multiple spaces and ignores leading/trailing whitespace.\n\nHere is the self-contained Python script:\n\n```python\ndef words_string(s):\n    \"\"\"\n    Splits a string into an array of words using commas or spaces as delimiters.\n    \n    For example:\n    words_string(\"Hi, my name is John\") == [\"Hi\", \"my\", \"name\", \"is\", \"John\"]\n    words_string(\"One, two, three, four, five, six\") == [\"One\", \"two\", \"three\", \"four\", \"five\", \"six\"]\n    \"\"\"\n    # 1. Replace all commas with spaces to standardize the delimiters.\n    s_cleaned = s.replace(\",\", \" \")\n    \n    # 2. Split the resulting string by any whitespace.\n    # The .split() method handles multiple spaces and automatically filters out empty strings.\n    words = s_cleaned.split()\n    \n    return words\n\nif __name__ == '__"}
+{"task_id": "HumanEval/102", "solution": ""}
+{"task_id": "HumanEval/103", "solution": ""}
+{"task_id": "HumanEval/104", "solution": ""}
+{"task_id": "HumanEval/105", "solution": ""}
+{"task_id": "HumanEval/106", "solution": ""}
+{"task_id": "HumanEval/107", "solution": ""}
+{"task_id": "HumanEval/108", "solution": ""}
+{"task_id": "HumanEval/109", "solution": ""}
+{"task_id": "HumanEval/110", "solution": ""}
+{"task_id": "HumanEval/111", "solution": ""}
+{"task_id": "HumanEval/112", "solution": ""}
+{"task_id": "HumanEval/113", "solution": ""}
+{"task_id": "HumanEval/114", "solution": ""}
+{"task_id": "HumanEval/115", "solution": ""}
+{"task_id": "HumanEval/116", "solution": ""}
+{"task_id": "HumanEval/117", "solution": ""}
+{"task_id": "HumanEval/118", "solution": ""}
+{"task_id": "HumanEval/119", "solution": ""}
+{"task_id": "HumanEval/120", "solution": ""}
+{"task_id": "HumanEval/121", "solution": ""}
+{"task_id": "HumanEval/122", "solution": ""}
+{"task_id": "HumanEval/123", "solution": ""}
+{"task_id": "HumanEval/124", "solution": ""}
+{"task_id": "HumanEval/125", "solution": ""}
+{"task_id": "HumanEval/126", "solution": ""}
+{"task_id": "HumanEval/127", "solution": ""}
+{"task_id": "HumanEval/128", "solution": ""}
+{"task_id": "HumanEval/129", "solution": ""}
+{"task_id": "HumanEval/130", "solution": ""}
+{"task_id": "HumanEval/131", "solution": ""}
+{"task_id": "HumanEval/132", "solution": ""}
+{"task_id": "HumanEval/133", "solution": ""}
+{"task_id": "HumanEval/134", "solution": ""}
+{"task_id": "HumanEval/135", "solution": ""}
+{"task_id": "HumanEval/136", "solution": ""}
+{"task_id": "HumanEval/137", "solution": ""}
+{"task_id": "HumanEval/138", "solution": ""}
+{"task_id": "HumanEval/139", "solution": ""}
+{"task_id": "HumanEval/140", "solution": ""}
+{"task_id": "HumanEval/141", "solution": ""}
+{"task_id": "HumanEval/142", "solution": ""}
+{"task_id": "HumanEval/143", "solution": ""}
+{"task_id": "HumanEval/144", "solution": ""}
+{"task_id": "HumanEval/145", "solution": ""}
+{"task_id": "HumanEval/146", "solution": ""}
+{"task_id": "HumanEval/147", "solution": ""}
+{"task_id": "HumanEval/148", "solution": ""}
+{"task_id": "HumanEval/149", "solution": ""}
+{"task_id": "HumanEval/150", "solution": "```python\ndef x_or_y(n, x, y):\n    \"\"\"A simple program which should return the value of x if n is "}
+{"task_id": "HumanEval/151", "solution": ""}
+{"task_id": "HumanEval/152", "solution": "```python\ndef compare(game, guess):\n    \"\"\"\n    Determines how far off each guess was compared to the actual scores (game results).\n\n    Args:\n        game (list[int]): An array of scores (actual results).\n        guess (list[int]): An array of guesses.\n\n    Returns:\n        list[int]: An array of the same length, where each element is the \n                   absolute difference between the corresponding score and guess.\n    \"\"\"\n    # Use zip to iterate over both lists simultaneously and calculate the absolute difference\n    results = [abs(score - g) for score, g in zip(game"}
+{"task_id": "HumanEval/153", "solution": ""}
+{"task_id": "HumanEval/154", "solution": ""}
+{"task_id": "HumanEval/155", "solution": "```python\ndef even_odd_count(num):\n    \"\"\"Given an integer. return a tuple that has the number of even and odd digits respectively.\n\n    Example:\n       even_odd_count(-12) ==> (1, 1)  # Digits are 1 and 2\n       even_odd_count(123) ==> (1, 2)  # Digits are 1, 2"}
+{"task_id": "HumanEval/156", "solution": ""}
+{"task_id": "HumanEval/157", "solution": ""}
+{"task_id": "HumanEval/158", "solution": ""}
+{"task_id": "HumanEval/159", "solution": ""}
+{"task_id": "HumanEval/160", "solution": ""}
+{"task_id": "HumanEval/161", "solution": ""}
+{"task_id": "HumanEval/162", "solution": "```python\nimport hashlib\n\ndef string_to_md5(text):\n    \"\"\"\n    Given a string 'text', return its md5 hash equivalent string.\n    If 'text' is an empty string, return None.\n\n    >>> string_to_md5('Hello world') == '3e25960a79dbc69b674cd4ec67a72c62'\n    \"\"\"\n    if not text:\n        return None\n\n    # Encode the string to bytes, as hashlib requires byte input\n    encoded_text = text.encode('utf-8')\n\n    # Calculate MD5 and return its hexadecimal digest\n    md5"}
+{"task_id": "HumanEval/163", "solution": ""}
