@@ -7,7 +7,7 @@
 运行：python3 make_report.py  ->  report.html
 """
 from __future__ import annotations
-import base64, html, json, math, os, sqlite3, sys
+import base64, collections, html, json, math, os, re, sqlite3, sys
 
 import matplotlib
 matplotlib.use("Agg")
@@ -27,6 +27,18 @@ try:
     fm.fontManager.addfont(_CJK)
     plt.rcParams["font.sans-serif"] = [fm.FontProperties(fname=_CJK).get_name(), "DejaVu Sans"]
     plt.rcParams["axes.unicode_minus"] = False
+except Exception:
+    pass
+
+# 全局图表风格：统一字号 / 网格 / 边框，保证全文观感一致
+try:
+    plt.rcParams.update({
+        "font.size": 11, "axes.titlesize": 12.5, "axes.labelsize": 11,
+        "axes.grid": True, "grid.alpha": .25, "grid.linewidth": .6,
+        "axes.spines.top": False, "axes.spines.right": False,
+        "legend.framealpha": .92, "legend.fontsize": 8.5,
+        "figure.dpi": 130, "savefig.dpi": 130, "savefig.bbox": "tight",
+    })
 except Exception:
     pass
 
@@ -76,12 +88,12 @@ def b64(p):
     return base64.b64encode(open(p, "rb").read()).decode()
 
 
-def save(fig, name):
+def save(fig, name, caption=None):
     fig.tight_layout()
     p = f"{FIGDIR}/{name}.png"
     fig.savefig(p, dpi=130, bbox_inches="tight")
     plt.close(fig)
-    return p
+    return (p, caption) if caption else p
 
 
 def raw_scores(tag):
@@ -98,6 +110,114 @@ def tag_bpw(tag):
     return BPWMAP.get(r[0]) if r and r[0] in BPWMAP else None
 
 
+# ---------- 模型来源 / 复现信息 ----------
+# /home/z/hf/<basename>.gguf 是 exp.py 实际加载的入口；它是 mscache 或 HF 缓存快照的
+# 符号链接。解析符号链接目标即可知道“这份 gguf 到底来自哪个机构 / 哪个仓库”。
+HFROOT = "/home/z/hf"
+_VENDOR_FALLBACK = [
+    ("UD-TQ", "unsloth (Unsloth Dynamic)"), ("TSL", "unsloth"), ("UD-", "unsloth (Unsloth Dynamic)"),
+    ("it-qat", "unsloth (QAT)"), ("m55", "本地自建 (m55 补丁)"), ("GSQ-RCO", "ISTA-DASLab"),
+    ("Ternary", "prism-ml / dealignai"), ("Bonsai", "prism-ml / dealignai"),
+]
+
+
+def _parse_origin(target):
+    """从符号链接目标推 (机构, 仓库, 相对路径)。"""
+    if "/mscache/" in target:
+        rel = target.split("/mscache/", 1)[1]
+        parts = rel.split("/")
+        org = parts[0]
+        repo = parts[1] if len(parts) >= 3 else org
+        return org, repo, "mscache/" + rel
+    for part in target.split("/"):
+        if part.startswith("models--"):
+            bits = part.split("--")
+            org = bits[1] if len(bits) > 1 else part
+            repo = bits[2] if len(bits) > 2 else org
+            return org, repo, part
+    return None, None, target
+
+
+def _load_provenance():
+    prov = {}
+    try:
+        names = os.listdir(HFROOT)
+    except OSError:
+        return prov
+    for fn in names:
+        if fn.endswith(".gguf"):
+            prov[fn] = _parse_origin(os.path.realpath(os.path.join(HFROOT, fn)))
+    return prov
+
+
+PROV = _load_provenance()
+
+
+def model_meta(model):
+    """一个 gguf 的展示元数据（家族 / 规模 / 量化 / 有效位宽 / QAT / 来源）。"""
+    base = model if model.endswith(".gguf") else model + ".gguf"
+    stem, quant = mktables.split_quant(base)
+    fam = mktables.family_of(base)
+    _, size = mktables.lineage_and_size(base)
+    if size == fam:
+        size = "—"
+    org, repo, rel = PROV.get(base, (None, None, None))
+    if org is None:
+        vendor = "未知（本地文件，未找到下载来源）"
+        for pat, name in _VENDOR_FALLBACK:
+            if pat in base:
+                vendor = name
+                break
+    else:
+        vendor = org
+    qat = "是" if ("qat" in base.lower() or "-qat-" in base.lower()) else "否"
+    return {
+        "file": base, "family": fam, "size": size, "quant": quant or "—",
+        "bpw": ("%.3f" % BPWMAP[base]) if base in BPWMAP else "—",
+        "qat": qat, "vendor": vendor, "repo": repo or "—", "path": rel or "—",
+    }
+
+
+def repro_rows(tables):
+    """汇总一组表用到的全部 gguf（按文件排序，去重）。"""
+    seen, out = set(), []
+    for t in tables:
+        for models in t.get("row_models", []) or []:
+            for m in models:
+                if m and m not in seen:
+                    seen.add(m)
+                    out.append(model_meta(m))
+    return sorted(out, key=lambda d: (d["family"], d["bpw"]))
+
+
+FIXED_NOTE = ("<b>固定条件（除本节的“变化轴”外全部一致）：</b>同一台 llama-server（本机 llama.cpp 构建）+ 同一个模型文件；"
+              "固定 chat 模板、上下文大小、贪心解码（除非该节把采样当变量）、思考关。"
+              "标准基准协议：HumanEval+/MBPP+ = <code>evalplus-0.3.1-openai-chat-greedy-plus</code>；"
+              "MMLU/ARC-c/TruthfulQA = <code>lmeval-0.4.13-gguf-shim-reasoning-off</code>；"
+              "GSM8K/IFEval = <code>lmeval-0.4.13-chat-reasoning-off</code>；"
+              "多语言代码 = MultiPL-E 原始贪心 768。<br>"
+              "<b>有效位宽</b> = 8 × 文件字节数 ÷ 参数量（真实值，非厂商标称档位）。")
+
+
+def render_repro(rows, title="用到的模型文件与来源（复现用）"):
+    if not rows:
+        return ""
+    h = [f"<div class='repro'><div class='repro-h'>{title}</div>",
+         f"<div class='fixed'>{FIXED_NOTE}</div>",
+         "<div class='scroll'><table>",
+         "<tr><th>模型文件（gguf，实际加载项）</th><th>家族</th><th>规模</th><th>量化方案</th>"
+         "<th>有效位宽</th><th>QAT</th><th>量化发布方</th><th>GGUF 仓库</th><th>本地路径</th></tr>"]
+    for d in rows:
+        h.append("<tr><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>"
+                 "<td>%s</td><td>%s</td><td>%s</td><td class='nr'>%s</td></tr>"
+                 % (html.escape(d["file"]), html.escape(d["family"]), html.escape(str(d["size"])),
+                    html.escape(str(d["quant"])), d["bpw"], d["qat"],
+                    html.escape(str(d["vendor"])), html.escape(str(d["repo"])),
+                    html.escape(str(d["path"]))))
+    h.append("</table></div></div>")
+    return "\n".join(h)
+
+
 def pair_delta(a, b):
     A, B = raw_scores(a), raw_scores(b)
     out = {}
@@ -112,83 +232,388 @@ def pair_delta(a, b):
     return out
 
 
-# ---------- 通用图：每个基准一张，X 对 Y，每 series 一条线/一组柱 ----------
-def line_charts(t, xfun, xlabel, prefix):
+# ============================ 视觉样式系统 ============================
+# 设计原则（全文统一）：
+#  1. 颜色编码“品牌 / 血统”(brand)：同色 = 同族，跨所有图一致。
+#  2. 线型与标记编码“族内变体”（模型尺寸 / 量化配方）：同色不同形 = 同族不同配置。
+#  3. 族数很多的轴（有效位宽、模型规模）按血统拆成小面板，避免多线交缠。
+#  4. 每个数据点带 ±1.96·SE 误差棒（SE = √(p(1-p)/n)），可直接读显著性。
+#  5. 关键点直接标数值 / 线端直接标注，尽量不依赖大图例。
+BRAND_COLOR = {
+    "Qwen": "#1f77b4", "gemma": "#d62728", "granite": "#2ca02c",
+    "GLM": "#9467bd", "LFM": "#ff7f0e", "Llama": "#17becf",
+    "MiniCPM": "#8c564b", "NVIDIA": "#7f7f7f", "Ornith": "#e377c2",
+    "Phi": "#bcbd22", "Ternary": "#111111",
+}
+_FALLBACK = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e",
+             "#17becf", "#8c564b", "#7f7f7f", "#e377c2", "#bcbd22", "#111111"]
+MARKERS = ["o", "s", "^", "D", "v", "P", "X", "<", ">", "*", "h", "8"]
+LINESTYLES = ["-", "--", "-.", ":"]
+SIZE_TOK = re.compile(
+    r"[-_](?:E\d+(?:\.\d+)?B|\d+(?:\.\d+)?B(?:-A\d+(?:\.\d+)?B)?)(?=$|[-_])", re.I)
+
+
+def brand_of(name):
+    m = re.match(r"^[A-Za-z]+", name)
+    return m.group(0) if m else name
+
+
+def brand_color(name):
+    b = brand_of(name)
+    if b in BRAND_COLOR:
+        return BRAND_COLOR[b]
+    return _FALLBACK[sum(map(ord, b)) % len(_FALLBACK)]
+
+
+def lineage_root(name):
+    """去掉“@ 配方”、去掉尺寸 token、去掉 -it-qat，得到血统根名。"""
+    s = name.split(" @ ")[0].split(" · ")[0]
+    s = re.sub(r"[-_]it[-_]qat$", "", s)
+    m = SIZE_TOK.search(s)
+    if m:
+        s = s[:m.start()].rstrip("-_")
+    return s or name
+
+
+def variant_of(name, root):
+    v = name.split(" @ ")[0].split(" · ")[0]
+    v = v[len(root):].strip("-_") if v.startswith(root) else v
+    return v or name
+
+
+def _se(score, n):
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        return 0.0
+    if n <= 0:
+        return 0.0
+    return math.sqrt(max(score * (1 - score), 0.0) / n)
+
+
+def _mix(hexc, target, f):
+    r, g, b = int(hexc[1:3], 16), int(hexc[3:5], 16), int(hexc[5:7], 16)
+    return "#%02x%02x%02x" % (round(r + (target[0] - r) * f),
+                              round(g + (target[1] - g) * f),
+                              round(b + (target[2] - b) * f))
+
+
+def shade(hexc, f):
+    """f>0 变浅，f<0 变深。"""
+    return _mix(hexc, (255, 255, 255), f) if f >= 0 else _mix(hexc, (0, 0, 0), -f)
+
+
+def shade_run(base, i, n):
+    """同品牌内第 i/n 个变体的颜色（越靠后越浅，同色系仍可区分）。"""
+    return base if n <= 1 else shade(base, 0.5 * i / (n - 1))
+
+
+def _end_label(ax, x, y, text, color, fs=7.2, dx=5, dy=0):
+    ax.annotate(text, (x, y), xytext=(dx, dy), textcoords="offset points",
+                fontsize=fs, color=color, va="center", ha="left")
+
+
+def _style_axes(ax, xlabel=None, ylabel=None, title=None):
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    if title:
+        ax.set_title(title)
+    ax.grid(alpha=.25, lw=.6)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+
+def _bps_note():
+    return "误差棒 = 95% 置信区间（由每题 0/1 结果计算）。"
+
+
+# ---------- A 有效位宽：按家族拆成小面板 ----------
+def fig_A(t):
+    out = []
+    roots = sorted({lineage_root(c1) for c1, _, _ in t["rows"]},
+                   key=lambda r: (brand_of(r), r))
+    ncol = 4
+    nrow = math.ceil(len(roots) / ncol)
+    for k in t["col_keys"]:
+        if t["counts"].get(k, 0) == 0:
+            continue
+        # byroot[root] = [(家族名, [(bpw, 分数, SE), ...]), ...]：root 内可能含多个尺寸
+        byroot = collections.OrderedDict()
+        for c1, c2, cells in t["rows"]:
+            c = cells.get(k)
+            if not c or c[0] is None:
+                continue
+            try:
+                x = float(c2.split()[0])
+            except ValueError:
+                continue
+            byroot.setdefault(lineage_root(c1), collections.OrderedDict()).setdefault(
+                c1, []).append((x, c[0], _se(c[0], c[1])))
+        if not byroot:
+            continue
+        fig, axes = plt.subplots(nrow, ncol, figsize=(3.9 * ncol, 2.95 * nrow),
+                                 sharex=True, sharey=True)
+        axes = np.atleast_1d(axes).ravel()
+        for ax in axes:
+            ax.set_visible(False)
+        for i, r in enumerate(roots):
+            if r not in byroot:
+                continue
+            ax = axes[i]
+            ax.set_visible(True)
+            base = brand_color(r)
+            members = byroot[r]
+            nser = len(members)
+            ax.axvspan(3.0, 4.0, color="#f2b134", alpha=.12, zorder=0)
+            for j, (name, pts) in enumerate(members.items()):
+                col = shade_run(base, j, nser)
+                pts = sorted(pts)
+                xs = [p[0] for p in pts]
+                ys = [p[1] for p in pts]
+                ax.plot(xs, ys, "-", color=col, lw=1.5, alpha=.95, zorder=2)
+                for x, y, e in pts:
+                    ax.errorbar([x], [y], yerr=[1.96 * e], fmt=MARKERS[j % len(MARKERS)],
+                                ms=6.2, color=col, lw=0, elinewidth=1.1,
+                                capsize=2.5, zorder=3)
+                if nser > 1:
+                    _end_label(ax, xs[-1], ys[-1], variant_of(name, r), col,
+                               dy=(7 if j % 2 == 0 else -7))
+            ax.set_title(r, fontsize=10, color=shade(base, -0.12), pad=6)
+            ax.set_ylim(-0.04, 1.05)
+            ax.grid(alpha=.22, lw=.6)
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            if i % ncol == 0:
+                ax.set_ylabel("基准分数", fontsize=9)
+            if i >= len(roots) - ncol:
+                ax.set_xlabel("有效位宽", fontsize=9)
+        fig.suptitle(f"{LBL.get(k, k)}：基准分数 随 有效位宽（按家族拆开）",
+                     fontsize=13.5, y=1.0)
+        out.append(save(fig, f"A_{k}",
+                        caption="每格一个模型家族；横轴 = 该家族各量化文件的有效位宽。"
+                                "一格内若有多条线，用颜色深浅 / 标记区分尺寸或配方（线端标注）。"
+                                "若同一家族同时有 UD 动态与非 UD 原生 K 文件，已拆成不同系列（不会连成一条曲线）。"
+                                "黄色带 = 约 3–4 比特/权重的“拐点”区间。" + _bps_note()))
+    return out
+
+
+# ---------- B 模型规模：颜色=家族，线型/标记=配方 ----------
+def fig_B(t):
     out = []
     for k in t["col_keys"]:
         if t["counts"].get(k, 0) == 0:
             continue
         series = {}
         for c1, c2, cells in t["rows"]:
-            if not cells.get(k):
+            c = cells.get(k)
+            if not c or c[0] is None:
                 continue
-            x = xfun(c2)
+            x = mktables.size_value(c2)
             if x is None:
                 continue
-            series.setdefault(c1, []).append((x, cells[k][0]))
+            series.setdefault(c1, []).append((x, c[0], _se(c[0], c[1])))
         if not series:
             continue
-        fig, ax = plt.subplots(figsize=(11, 4.7))
-        for s, pts in sorted(series.items()):
-            pts = sorted(pts)
-            if len(pts) >= 1:
-                ax.plot([p[0] for p in pts], [p[1] for p in pts], "-o", ms=4.5, lw=1.5, label=s)
-        ax.set_xlabel(xlabel); ax.set_ylabel("基准分数")
-        ax.set_title(f"{LBL.get(k,k)}：基准分数 随 {xlabel} 的变化")
-        ax.legend(fontsize=7, loc="center left", bbox_to_anchor=(1.01, 0.5), framealpha=.9)
-        ax.grid(alpha=.25)
-        out.append(save(fig, f"{prefix}_{k}"))
+        recipes = sorted({s.split(" @ ")[-1] for s in series})
+        fig, ax = plt.subplots(figsize=(10.4, 5.2))
+        for s in sorted(series):
+            root = lineage_root(s)
+            rec = s.split(" @ ")[-1]
+            col = brand_color(root)
+            ri = recipes.index(rec)
+            pts = sorted(series[s])
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            es = [1.96 * p[2] for p in pts]
+            ax.errorbar(xs, ys, yerr=es, color=col, marker=MARKERS[ri % len(MARKERS)],
+                        ls=LINESTYLES[ri % len(LINESTYLES)], ms=6, lw=1.7,
+                        capsize=2.5, elinewidth=1, label=s, zorder=3)
+        _style_axes(ax, "模型参数量（B）", "基准分数",
+                    f"{LBL.get(k, k)}：基准分数 随 模型规模（同配方）")
+        ax.legend(fontsize=7.6, loc="center left", bbox_to_anchor=(1.01, 0.5),
+                  framealpha=.92)
+        out.append(save(fig, f"B_{k}",
+                        caption="颜色 = 家族；线型 / 标记 = 量化配方。同一配方连成一线，"
+                                "直接看规模效应。" + _bps_note()))
     return out
 
 
-def bar_charts(t, xlabel, prefix, color_by_series=False):
+# ---------- C 量化方案 / 厂商：分组柱 ----------
+def fig_C(t):
+    from matplotlib.patches import Patch
     out = []
     for k in t["col_keys"]:
         if t["counts"].get(k, 0) == 0:
             continue
-        xs, ys, ser = [], [], []
+        clusters = collections.OrderedDict()
         for c1, c2, cells in t["rows"]:
-            if cells.get(k):
-                xs.append(c2); ys.append(cells[k][0]); ser.append(c1)
-        if not xs:
+            c = cells.get(k)
+            if not c or c[0] is None:
+                continue
+            clusters.setdefault(c1, []).append((c2, c[0], _se(c[0], c[1])))
+        if not clusters:
             continue
-        fig, ax = plt.subplots(figsize=(8.6, 4.7))
-        cols = ["#c0392b", "#2c6fbb", "#27ae60", "#8e44ad", "#e67e22", "#16a085"]
-        if color_by_series:
-            uniq = sorted(set(ser)); cmap = {s: cols[i % len(cols)] for i, s in enumerate(uniq)}
-            ax.bar(range(len(xs)), ys, color=[cmap[s] for s in ser])
-            for s in uniq:
-                ax.bar(0, 0, color=cmap[s], label=s)
-            ax.legend(fontsize=8)
-        else:
-            ax.bar(range(len(xs)), ys, color="#2c6fbb")
-        ax.set_xticks(range(len(xs))); ax.set_xticklabels(xs, rotation=20, ha="right", fontsize=8)
-        ax.set_ylabel("基准分数"); ax.set_title(f"{LBL.get(k,k)}：基准分数 按 {xlabel}")
-        ax.grid(axis="y", alpha=.25)
-        out.append(save(fig, f"{prefix}_{k}"))
+        fig, ax = plt.subplots(figsize=(10.8, 5.6))
+        pos = 0.0
+        xtick, xlab, gsep, cats, gpos, glab = [], [], [], {}, [], []
+        for c1, items in clusters.items():
+            fam = c1.split(" @ ")[0]
+            bpw_rng = c1.split(" @ ")[-1].replace(" bpw", "")
+            for j, (q, y, e) in enumerate(items):
+                is_iq = "IQ" in q
+                col = "#0f9b8e" if is_iq else "#2c6fbb"
+                ax.bar(pos, y, width=.72, color=col, edgecolor="white", lw=.6, zorder=2)
+                ax.errorbar(pos, y, yerr=1.96 * e, fmt="none", ecolor="#222",
+                            elinewidth=1, capsize=2.5, zorder=3)
+                ax.annotate("%.3f" % y, (pos, y + 1.96 * e), xytext=(0, 3),
+                            textcoords="offset points", ha="center", fontsize=6.6)
+                xtick.append(pos)
+                xlab.append(q.replace("UD-", ""))
+                cats["IQ 系列（信息论量化）" if is_iq else "K 系列（传统量化）"] = col
+                pos += 1
+            gsep.append(pos - 0.5)
+            gpos.append(pos - len(items) / 2 - .5)
+            glab.append(f"{fam}\n{bpw_rng} bpw")
+            pos += 1.1
+        for s in gsep[:-1]:
+            ax.axvline(s + .55, color="#cfd8e3", lw=.9, ls=":")
+        ax.set_xticks(xtick)
+        ax.set_xticklabels(xlab, rotation=38, ha="right", fontsize=7.4)
+        ax.set_ylim(0, 1.16)
+        # 组名放在柱顶之上（白色底衬），不与横轴标签抢位置
+        for gp, gl in zip(gpos, glab):
+            ax.text(gp, 1.015, gl, ha="center", va="bottom", fontsize=7.0, color="#33475e",
+                    bbox=dict(facecolor="white", edgecolor="#cfd8e3", alpha=.92, pad=2.2))
+        _style_axes(ax, "量化方案（同一组内 = 同一模型、有效位宽相近）", "基准分数",
+                    f"{LBL.get(k, k)}：方案 / 厂商对比")
+        ax.legend(handles=[Patch(color=c, label=l) for l, c in cats.items()],
+                  fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.24), ncol=2)
+        out.append(save(fig, f"C_{k}",
+                        caption="柱顶白色标签 = “模型 + 位宽匹配组”；竖虚线分隔组。"
+                                "组内比较换方案（青 = IQ 系列，蓝 = K 系列）。"
+                                "柱顶数字为原始分数，" + _bps_note()))
     return out
 
 
+# ---------- D MoE 比特分配 ----------
+def fig_D(t):
+    out = []
+    for k in t["col_keys"]:
+        if t["counts"].get(k, 0) == 0:
+            continue
+        rows = [(c2, cells[k][0], _se(cells[k][0], cells[k][1]))
+                for _c1, c2, cells in t["rows"] if cells.get(k)]
+        if not rows:
+            continue
+        labels = [r[0] for r in rows]
+        ys = [r[1] for r in rows]
+        es = [r[2] for r in rows]
+        cols = ["#4c72b0", "#55a868", "#c44e52"]
+        xs = list(range(len(rows)))
+        fig, ax = plt.subplots(figsize=(9.6, 5.0))
+        ax.bar(xs, ys, color=cols[:len(rows)], width=.6, edgecolor="white", zorder=2)
+        ax.errorbar(xs, ys, yerr=[1.96 * e for e in es], fmt="none", ecolor="#222",
+                    elinewidth=1.1, capsize=3, zorder=3)
+        for x, y in zip(xs, ys):
+            ax.annotate("%.3f" % y, (x, y), xytext=(0, 3), textcoords="offset points",
+                        ha="center", fontsize=9)
+        wrapped = [re.sub(r", rest ", ",\nrest ", s) for s in labels]
+        ax.set_xticks(xs)
+        ax.set_xticklabels(wrapped, fontsize=8.2)
+        ax.set_ylim(0, 0.98)
+        _style_axes(ax, "配方（专家层 / 其余层）", "基准分数",
+                    f"{LBL.get(k, k)}：MoE 比特分配 配方对比")
+        out.append(save(fig, f"D_{k}",
+                        caption="三条配方共用同一套 base 权重，总分比特高低不同；"
+                                "比较“把低比特给专家层还是给其余层”。" + _bps_note()))
+    return out
+
+
+# ---------- E KV 缓存精度：按上下文分组 ----------
+def fig_E(t):
+    out = []
+    for k in t["col_keys"]:
+        if t["counts"].get(k, 0) == 0:
+            continue
+        ctxs = collections.OrderedDict()
+        for c1, c2, cells in t["rows"]:
+            c = cells.get(k)
+            if not c or c[0] is None:
+                continue
+            m = re.search(r"ctx(\d+)", c1)
+            ctx = m.group(1) if m else "?"
+            ctxs.setdefault(ctx, {})[c2] = (c[0], _se(c[0], c[1]))
+        if not ctxs:
+            continue
+        kvs = sorted({kv for d in ctxs.values() for kv in d})
+        fig, ax = plt.subplots(figsize=(9.8, 5.0))
+        n = len(kvs)
+        w = 0.82 / max(len(ctxs), 1)
+        for i, (ctx, d) in enumerate(ctxs.items()):
+            xs = [j + (i - (len(ctxs) - 1) / 2) * w for j in range(n)]
+            ys = [d[kv][0] if kv in d else np.nan for kv in kvs]
+            es = [1.96 * d[kv][1] if kv in d else 0 for kv in kvs]
+            ax.bar(xs, ys, width=w * .92, label=f"ctx {ctx}",
+                   color=_FALLBACK[i % len(_FALLBACK)], edgecolor="white", lw=.5, zorder=2)
+            ax.errorbar(xs, ys, yerr=es, fmt="none", ecolor="#222",
+                        elinewidth=.9, capsize=2, zorder=3)
+        ax.set_xticks(range(n))
+        ax.set_xticklabels(kvs, fontsize=9)
+        ax.set_ylim(0, 1.04)
+        _style_axes(ax, "KV 缓存精度（K / V）", "基准分数",
+                    f"{LBL.get(k, k)}：KV 精度对比（按上下文长度分组）")
+        ax.legend(fontsize=8, title="上下文长度", ncol=2)
+        out.append(save(fig, f"E_{k}",
+                        caption="分组 = 上下文长度；组内比较 KV 精度。" + _bps_note()))
+    return out
+
+
+# ---------- F 采样参数 ----------
 def fig_F(t):
     temp, topk = {}, {}
     for c1, c2, cells in t["rows"]:
+        c = cells.get("multipl_e")
+        if not c or c[0] is None:
+            continue
         try:
             v = float(c2)
         except ValueError:
             continue
-        if cells.get("multipl_e"):
-            (temp if "temperature" in c1 else topk)[v] = cells["multipl_e"][0]
-    fig, ax = plt.subplots(figsize=(8.6, 4.7))
-    if temp:
-        k = sorted(temp); ax.plot([str(x) for x in k], [temp[x] for x in k], "-o", label="温度")
-    if topk:
-        k = sorted(topk); ax.plot([str(x) for x in k], [topk[x] for x in k], "-s", label="top_k")
-    ax.set_xlabel("参数取值"); ax.set_ylabel("多语言代码通过率")
-    ax.legend(fontsize=9); ax.grid(alpha=.25)
-    ax.set_title("采样参数：代码通过率 随 取值")
-    return [save(fig, "F_value")]
+        model = c1.split(" · ")[0]
+        if "temperature" in c1:
+            temp.setdefault(model, []).append((v, c[0], c[1] or 0))
+        elif "top_k" in c1:
+            key = model + (" (temp 0)" if "temp 0" in c1 else "")
+            topk.setdefault(key, []).append((v, c[0], c[1] or 0))
+    fig, axes = plt.subplots(1, 2, figsize=(12.4, 5.0))
+    for ax, data, xlab, title in (
+            (axes[0], temp, "温度 temperature", "温度对代码通过率的影响"),
+            (axes[1], topk, "top_k", "top_k 对代码通过率的影响")):
+        for i, (name, pts) in enumerate(sorted(data.items())):
+            # 同一取值若有多条测量，按题目数加权平均后合并为一个点
+            agg = {}
+            for v, y, n in pts:
+                agg.setdefault(v, []).append((y, n))
+            pts = sorted((v,
+                          sum(y * n for y, n in vs) / max(sum(n for _y, n in vs), 1),
+                          sum(n for _y, n in vs)) for v, vs in agg.items())
+            col = _FALLBACK[i % len(_FALLBACK)]
+            err = [1.96 * _se(y, n) for _v, y, n in pts]
+            ax.errorbar([p[0] for p in pts], [p[1] for p in pts],
+                        yerr=err,
+                        marker=MARKERS[i % len(MARKERS)], ls=LINESTYLES[i % len(LINESTYLES)],
+                        color=col, lw=1.7, ms=6, capsize=2.5, label=name)
+        _style_axes(ax, xlab, "多语言代码通过率", title)
+        ax.legend(fontsize=7.6, loc="best")
+    fig.suptitle("采样 / 解码参数：代码通过率", fontsize=13.5)
+    return [save(fig, "F_value",
+                 caption="左：温度；右：top_k。温度 0 时没有分布可截断，top_k 曲线因此是平的"
+                         "（结构事实，不是测量误差）。" + _bps_note())]
 
 
+# ---------- G1 投机解码速度 ----------
 def fig_G1(t):
     series = {}
     last = t["col_keys"][-1]
@@ -197,17 +622,29 @@ def fig_G1(t):
             d = int(c2)
         except ValueError:
             continue
-        if cells.get(last):
-            series.setdefault(c1.split(" · ")[0], []).append((d, cells[last][0]))
-    fig, ax = plt.subplots(figsize=(9, 4.7))
-    for m, pts in series.items():
-        pts = sorted(pts); ax.plot([p[0] for p in pts], [p[1] for p in pts], "-o", ms=4.5, label=m)
-    ax.set_xlabel("投机解码草稿深度"); ax.set_ylabel("每秒生成 token 数")
-    ax.legend(fontsize=8); ax.grid(alpha=.25)
-    ax.set_title("投机解码速度：每秒生成 token 随 草稿深度")
-    return [save(fig, "G1_speed")]
+        c = cells.get(last)
+        if not c or c[0] is None:
+            continue
+        series.setdefault(c1.split(" · ")[0], []).append((d, c[0]))
+    fig, ax = plt.subplots(figsize=(10.4, 5.4))
+    for i, (m, pts) in enumerate(sorted(series.items())):
+        pts = sorted(pts)
+        col = _FALLBACK[i % len(_FALLBACK)]
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        ax.plot(xs, ys, marker=MARKERS[i % len(MARKERS)], ls=LINESTYLES[i % len(LINESTYLES)],
+                color=col, lw=1.8, ms=6.5, label=m, zorder=3)
+        if len(ys) >= 2 and ys[0]:
+            gain = (max(ys) / ys[0] - 1) * 100
+            _end_label(ax, xs[-1], ys[-1], f"+{gain:.0f}%", col, fs=7.6)
+    _style_axes(ax, "投机解码草稿深度", "每秒生成 token 数",
+                "投机解码速度：每秒生成 token 随 草稿深度")
+    ax.legend(fontsize=7.8, loc="upper left")
+    return [save(fig, "G1_speed",
+                 caption="线端数字 = 相对深度 0 的最大提速百分比。")]
 
 
+# ---------- G2 投机解码质量 ----------
 def fig_G2(t):
     out = []
     for key, name in (("humaneval", "代码 HumanEval"), ("mmlu", "知识 MMLU")):
@@ -217,36 +654,75 @@ def fig_G2(t):
                 d = int(c2)
             except ValueError:
                 continue
-            if cells.get(key):
-                series.setdefault(c1.split(" · ")[0], []).append((d, cells[key][0]))
+            c = cells.get(key)
+            if not c or c[0] is None:
+                continue
+            series.setdefault(c1.split(" · ")[0], []).append((d, c[0], _se(c[0], c[1])))
         if not series:
             continue
-        fig, ax = plt.subplots(figsize=(9, 4.7))
-        for m, pts in series.items():
-            pts = sorted(pts); ax.plot([p[0] for p in pts], [p[1] for p in pts], "-o", ms=4.5, label=m)
-        ax.set_xlabel("草稿深度"); ax.set_ylabel("基准分数")
-        ax.set_title(f"{name}：分数 随 草稿深度")
-        ax.legend(fontsize=8); ax.grid(alpha=.25)
-        out.append(save(fig, f"G2_{key}"))
+        fig, axes = plt.subplots(1, 2, figsize=(12.6, 4.8))
+        for i, (m, pts) in enumerate(sorted(series.items())):
+            pts = sorted(pts)
+            col = _FALLBACK[i % len(_FALLBACK)]
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            es = [1.96 * p[2] for p in pts]
+            axes[0].errorbar(xs, ys, yerr=es, marker=MARKERS[i % len(MARKERS)],
+                             ls=LINESTYLES[i % len(LINESTYLES)], color=col, lw=1.6,
+                             ms=6, capsize=2.5, label=m)
+            d0 = ys[0] if ys else 0
+            axes[1].plot(xs, [y - d0 for y in ys], marker=MARKERS[i % len(MARKERS)],
+                         ls=LINESTYLES[i % len(LINESTYLES)], color=col, lw=1.6, ms=6, label=m)
+        _style_axes(axes[0], "草稿深度", "基准分数", f"{name}：原始分数")
+        _style_axes(axes[1], "草稿深度", "相对深度 0 的差值", f"{name}：差值（放大看平不平）")
+        axes[1].axhline(0, color="#333", lw=.9, ls="--")
+        axes[0].legend(fontsize=7.6, loc="best")
+        fig.suptitle(f"投机解码质量：{name}", fontsize=13.5)
+        out.append(save(fig, f"G2_{key}",
+                        caption="左 = 原始分数；右 = 各深度减去深度 0 的差，"
+                                "用来放大看有没有系统性损伤。" + _bps_note()))
     return out
 
 
+# ---------- H 思考开关 ----------
 def fig_H(t):
-    series = {}
+    rows = []
     for c1, c2, cells in t["rows"]:
-        mode = "开" if "on" in c2 else "关"
-        series.setdefault(c1, {})[mode] = cells.get("gsm8k", (np.nan,))[0] if cells.get("gsm8k") else np.nan
-    models = [m for m in series if "开" in series[m] and "关" in series[m]]
-    fig, ax = plt.subplots(figsize=(11, 4.7))
-    x = np.arange(len(models)); w = .4
-    ax.bar(x - w / 2, [series[m]["关"] for m in models], w, label="思考关")
-    ax.bar(x + w / 2, [series[m]["开"] for m in models], w, label="思考开", color="#c0392b")
-    ax.set_xticks(x); ax.set_xticklabels(models, rotation=30, ha="right", fontsize=8)
-    ax.set_ylabel("推理 GSM8K 分数"); ax.legend(); ax.grid(axis="y", alpha=.25)
-    ax.set_title("思考开关：GSM8K 分数 按 模型与思考开关")
-    return [save(fig, "H_thinking")]
+        c = cells.get("gsm8k")
+        if c and c[0] is not None:
+            rows.append((c1, c2, c[0], _se(c[0], c[1])))
+    by = collections.OrderedDict()
+    for c1, c2, y, e in rows:
+        d = by.setdefault(c1, {})
+        d["on" if "on" in c2 else "off"] = (y, e)
+    models = [m for m in by if "on" in by[m] and "off" in by[m]]
+    models.sort(key=lambda m: by[m]["on"][0] - by[m]["off"][0])
+    ys = list(range(len(models)))
+    fig, ax = plt.subplots(figsize=(10.4, 5.6))
+    for y, m in zip(ys, models):
+        off, on = by[m]["off"], by[m]["on"]
+        ax.plot([off[0], on[0]], [y, y], color="#c9d3de", lw=2.4, zorder=1)
+        ax.errorbar([off[0]], [y], xerr=[1.96 * off[1]], fmt="o", color="#2c6fbb",
+                    ms=7, elinewidth=1, capsize=2.5, zorder=3)
+        ax.errorbar([on[0]], [y], xerr=[1.96 * on[1]], fmt="s", color="#c0392b",
+                    ms=7, elinewidth=1, capsize=2.5, zorder=3)
+        d = on[0] - off[0]
+        ax.annotate("%+.3f" % d, (max(off[0], on[0]), y), xytext=(10, 0),
+                    textcoords="offset points", va="center", fontsize=7.6,
+                    color="#b3261e" if abs(d) > 0.02 else "#8a94a0")
+    ax.set_yticks(ys)
+    ax.set_yticklabels([m.replace("-UD-", "\nUD-") for m in models], fontsize=7.6)
+    _style_axes(ax, "推理 GSM8K 分数", "模型 / 量化文件",
+                "思考开关：GSM8K 分数（按 开−关 差值排序）")
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[Line2D([], [], marker="o", ls="none", color="#2c6fbb", label="思考关"),
+                       Line2D([], [], marker="s", ls="none", color="#c0392b", label="思考开")],
+              fontsize=8.5, loc="lower right")
+    return [save(fig, "H_thinking",
+                 caption="每行一个模型文件；圆点 = 思考关，方块 = 思考开；线端数字 = 开−关差值。" + _bps_note())]
 
 
+# ---------- QAT：配对柱 + 差值森林图 ----------
 def fig_QAT():
     out = []
     for label, recipe, q, n in QAT_PAIRS:
@@ -254,34 +730,77 @@ def fig_QAT():
         ks = [k for k in BENCH_ORDER if a.get(k) or b.get(k)]
         if not ks:
             continue
-        fig, ax = plt.subplots(figsize=(8.6, 4.7))
-        x = np.arange(len(ks)); w = .4
-        ax.bar(x - w / 2, [a[k][0] if a.get(k) else np.nan for k in ks], w, label="QAT")
-        ax.bar(x + w / 2, [b[k][0] if b.get(k) else np.nan for k in ks], w, label="原生", color="#c0392b")
-        ax.set_xticks(x); ax.set_xticklabels([LBL[k] for k in ks], rotation=25, ha="right", fontsize=8)
-        ax.set_ylabel("基准分数"); ax.set_title(f"{label}（{recipe}）：QAT vs 原生")
-        ax.legend(); ax.grid(axis="y", alpha=.25)
-        out.append(save(fig, f"QAT_{label}_{recipe}"))
+        fig, ax = plt.subplots(figsize=(9.8, 4.9))
+        x = np.arange(len(ks))
+        w = .38
+        ax.bar(x - w / 2, [a[k][0] if a.get(k) else np.nan for k in ks], w,
+               yerr=[1.96 * _se(a[k][0], a[k][1]) if a.get(k) else 0 for k in ks],
+               capsize=2.5, label="QAT", color="#4c72b0", error_kw={"elinewidth": 1, "ecolor": "#222"})
+        ax.bar(x + w / 2, [b[k][0] if b.get(k) else np.nan for k in ks], w,
+               yerr=[1.96 * _se(b[k][0], b[k][1]) if b.get(k) else 0 for k in ks],
+               capsize=2.5, label="原生", color="#c44e52", error_kw={"elinewidth": 1, "ecolor": "#222"})
+        ax.set_xticks(x)
+        ax.set_xticklabels([LBL[k] for k in ks], rotation=25, ha="right", fontsize=8)
+        ax.set_ylim(0, 1.04)
+        bpq, bpn = tag_bpw(q), tag_bpw(n)
+        sub = ""
+        if bpq and bpn:
+            sub = f"（QAT {bpq:.2f} vs 原生 {bpn:.2f} 比特/权重）"
+        _style_axes(ax, "", "基准分数", f"{label}：{recipe} QAT vs 原生 {sub}")
+        ax.legend(fontsize=9)
+        out.append(save(fig, f"QAT_{label}_{recipe}",
+                        caption="青蓝 = QAT 文件，红 = 同标称配方的原生文件。" + _bps_note()))
+
+        dl = pair_delta(q, n)
+        rr = [(k, dl[k]) for k in BENCH_ORDER if dl.get(k)]
+        if not rr:
+            continue
+        fig, ax = plt.subplots(figsize=(9.8, 4.6))
+        for y, (k, (d, se, lo, hi)) in enumerate(rr):
+            sig = lo > 0 or hi < 0
+            col = "#b3261e" if sig else "#8a94a0"
+            ax.plot([lo, hi], [y, y], color=col, lw=2.4, solid_capstyle="round", zorder=2)
+            ax.plot([d], [y], "o", color=col, ms=7, zorder=3)
+            ax.annotate("%+.3f" % d, (hi, y), xytext=(6, 0), textcoords="offset points",
+                        va="center", fontsize=7.6, color=col)
+        ax.axvline(0, color="#333", lw=1, ls="--")
+        ax.set_yticks(range(len(rr)))
+        ax.set_yticklabels([LBL[k] for k, _ in rr], fontsize=9)
+        ax.invert_yaxis()
+        ax.set_xlabel("QAT − 原生（分数差，95% 置信区间）")
+        ax.set_title(f"{label}：{recipe} 差值森林图（跨 0 = 测不出）", fontsize=12)
+        ax.grid(axis="x", alpha=.25)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        out.append(save(fig, f"QATdelta_{label}_{recipe}",
+                        caption="横线 = 95% 置信区间。不跨 0 = 显著（红）；跨 0 = 测不出（灰）。"))
     return out
 
 
+# ---------- GSQ-RCO ----------
 def fig_GSQ():
     out = []
     for b in ("humaneval-plus", "mmlu", "gsm8k"):
-        fig, ax = plt.subplots(figsize=(8.6, 4.7))
-        xs, ys = [], []
+        fig, ax = plt.subplots(figsize=(9.4, 4.9))
+        xs, ys, es = [], [], []
         for tag, bpw in NATIVE_LADDER:
             sc = raw_scores(tag).get(b)
-            xs.append(bpw); ys.append(sc[0] if sc and sc[0] is not None else np.nan)
-        ax.plot(xs, ys, "-o", label="原生 UD 阶梯")
+            if sc and sc[0] is not None:
+                xs.append(bpw)
+                ys.append(sc[0])
+                es.append(1.96 * _se(sc[0], sc[1]))
+        ax.errorbar(xs, ys, yerr=es, marker="o", ls="-", color="#1f77b4", lw=1.9,
+                    ms=7, capsize=2.5, label="原生 UD 阶梯")
         for k, tag, bpw in GSQ_QUANTS:
             g = raw_scores(tag).get(b)
             if g and g[0] is not None:
-                ax.scatter([bpw], [g[0]], marker="*", s=200, zorder=5, label=k)
-        ax.set_xlabel("有效位宽"); ax.set_ylabel("基准分数")
-        ax.set_title(f"{LBL[b]}：分数 随 有效位宽")
-        ax.legend(fontsize=8); ax.grid(alpha=.25)
-        out.append(save(fig, f"GSQ_{b}"))
+                ax.errorbar([bpw], [g[0]], yerr=[1.96 * _se(g[0], g[1])], marker="*",
+                            ms=20, color="#d62728", elinewidth=1.2, capsize=3, label=k)
+        _style_axes(ax, "有效位宽", "基准分数", f"{LBL[b]}：分数 随 有效位宽")
+        ax.legend(fontsize=8.5)
+        out.append(save(fig, f"GSQ_{b}",
+                        caption="折线 = 原生 UD 阶梯；红星 = 第三方 GSQ-RCO 档位。"
+                                "星的纵坐标若落在折线上，则该方案无红利。" + _bps_note()))
     return out
 
 
@@ -303,13 +822,25 @@ th{background:var(--hd);color:#fff;text-align:center}
 td:first-child,th:first-child{text-align:left}
 tr:nth-child(even) td{background:var(--bg2)}
 .cover td{background:#eef4fb !important;font-weight:600}
-figure{margin:16px 0;text-align:center}
-img{width:100%;max-width:1350px;border:1px solid var(--bd);border-radius:6px}
+figure{margin:18px 0;text-align:center}
+img{width:100%;max-width:1350px;border:1px solid var(--bd);border-radius:6px;background:#fff}
+figcaption{margin:6px auto 0;max-width:1100px;font-size:13px;color:#5a6673;line-height:1.6}
 .scroll{overflow-x:auto}
 code{background:#eaeef2;padding:1px 5px;border-radius:4px}
 .lead{background:#eef4fb;border-left:5px solid #3b7dd8;padding:14px 18px;border-radius:6px;font-size:15.5px}
 .recap td.sig{color:#b3261e;font-weight:700}
 .nr{color:#8a94a0;font-style:italic}
+.repro{background:#fbfbf6;border:1px dashed #c9c2a8;border-radius:6px;padding:8px 14px;margin:10px 0}
+.repro-h{font-weight:700;color:#6b5620;margin:2px 0 8px;font-size:14px}
+.fixed{background:#fff;border:1px solid #e6e0cc;border-radius:5px;padding:8px 12px;margin:0 0 8px;font-size:13px;color:#4a4436;line-height:1.7}
+.repro table{font-size:12.5px;margin:0}
+.repro th{background:#7a6a34;font-size:12.5px}
+.repro td,.repro th{padding:4px 7px}
+.callout{background:#fff7e6;border:1px solid #e7b95e;border-left:5px solid #e7a93e;border-radius:6px;padding:10px 16px;margin:10px 0;font-size:15px}
+.callout b{color:#8a5a00}
+.tag{display:inline-block;background:#e8eef7;color:#33506e;border-radius:8px;padding:0 7px;font-size:11.5px;margin-left:4px}
+.inv td,.inv th{font-size:12.5px}
+.analysis ul{margin:6px 0 6px 4px;padding-left:20px}
 """
 
 
@@ -330,38 +861,219 @@ def render_table(t):
             elif unit == "tok_s":
                 tds.append("<td>%.1f <span class='nr'>(%s)</span></td>" % (c[0], c[1] if c[1] else 0))
             else:
-                tds.append("<td>%.4f <span class='nr'>(%s)</span></td>" % (c[0], c[1] or 0))
+                tds.append("<td>%.4f <span class='nr'>(%s)</span></td>"
+                           % (c[0], c[1] if c[1] is not None else "n?"))
         out.append("<tr><td>%s</td><td>%s</td>%s</tr>" % (html.escape(c1), html.escape(c2), "".join(tds)))
     out.append("</table></div>")
     return "\n".join(out)
 
 
+def tag_model(tag):
+    r = CON.execute("SELECT model FROM experiments WHERE run_tag=? LIMIT 1", (tag,)).fetchone()
+    return r[0] if r else None
+
+
 def qat_tables():
     ks = BENCH_ORDER; labs = [LBL[k] for k in ks]
-    rows = []; rows2 = []
+    rows = []; rows2 = []; all_models = []
     for label, recipe, q, n in QAT_PAIRS:
         for which, tag in (("QAT", q), ("原生", n)):
             bpw = tag_bpw(tag)
-            rows.append((f"{label} {recipe} {which}", f"{bpw:.3f}" if bpw else "—", raw_scores(tag)))
+            m = tag_model(tag)
+            if m:
+                all_models.append([m])
+            rows.append((f"{label} {recipe} {which}", f"{bpw:.3f}" if bpw else "—",
+                         raw_scores(tag), [m] if m else []))
         dl = pair_delta(q, n); cells = {}
         for b in ks:
             c = dl.get(b)
             if c:
                 cells[b] = (c[0], f"[{c[2]:+.3f},{c[3]:+.3f}]")
-        rows2.append((f"{label} {recipe}", "QAT − 原生", cells))
-    def mk(title, rows):
+        rows2.append((f"{label} {recipe}", "QAT − 原生", cells, []))
+    def mk(title, rows, models):
         return {"title": title, "c1_name": "系列", "c2_name": "有效位宽", "col_keys": ks, "col_labels": labs,
-                "rows": rows, "counts": {k: sum(1 for _, _, c in rows if c.get(k)) for k in ks}, "data_cols": len(ks)}
-    return [mk("量化感知训练：原始分数", rows), mk("量化感知训练：差值（QAT−原生）", rows2)]
+                "rows": [(r[0], r[1], r[2]) for r in rows],
+                "row_models": [r[3] if len(r) > 3 else [] for r in rows],
+                "counts": {k: sum(1 for r in rows if r[2].get(k)) for k in ks}, "data_cols": len(ks)}
+    return [mk("量化感知训练：原始分数", rows, all_models),
+            mk("量化感知训练：差值（QAT−原生）", rows2, [])]
 
 
 def gsq_tables():
     ks = BENCH_ORDER; labs = [LBL[k] for k in ks]
-    rows = [("原生 " + tag, f"{bpw:.3f}", raw_scores(tag)) for tag, bpw in NATIVE_LADDER]
-    rows += [(k, f"{bpw:.3f}", raw_scores(tag)) for k, tag, bpw in GSQ_QUANTS]
+    rows = [("原生 " + tag, f"{bpw:.3f}", raw_scores(tag), [tag_model(tag)])
+            for tag, bpw in NATIVE_LADDER]
+    rows += [(k, f"{bpw:.3f}", raw_scores(tag), [tag_model(tag)]) for k, tag, bpw in GSQ_QUANTS]
     return [{"title": "GSQ-RCO：原始分数", "c1_name": "系列", "c2_name": "有效位宽", "col_keys": ks,
-             "col_labels": labs, "rows": rows,
-             "counts": {k: sum(1 for _, _, c in rows if c.get(k)) for k in ks}, "data_cols": len(ks)}]
+             "col_labels": labs, "rows": [(r[0], r[1], r[2]) for r in rows],
+             "row_models": [[m for m in r[3] if m] for r in rows],
+             "counts": {k: sum(1 for r in rows if r[2].get(k)) for k in ks}, "data_cols": len(ks)}]
+
+
+MPL_LANGS = ["cpp", "py", "js", "java", "rs", "rb"]
+MPL_LANG_LBL = {"cpp": "C++", "py": "Python", "js": "JS", "java": "Java", "rs": "Rust", "rb": "Ruby"}
+BFCL_BENCH = [
+    ("bfcl-simple_python", "单轮·简单"), ("bfcl-multiple", "单轮·多函数"),
+    ("bfcl-parallel", "单轮·并行"), ("bfcl-parallel_multiple", "单轮·并行多函数"),
+    ("bfcl-irrelevance", "单轮·不相关"),
+    ("bfcl-live_simple", "Live·简单"), ("bfcl-live_multiple", "Live·多函数"),
+    ("bfcl-live_parallel", "Live·并行"), ("bfcl-live_parallel_multiple", "Live·并行多函数"),
+    ("bfcl-live_relevance", "Live·相关"), ("bfcl-live_irrelevance", "Live·不相关"),
+    ("bfcl-multi_turn_base", "多轮·基础"), ("bfcl-multi_turn_miss_func", "多轮·缺函数"),
+    ("bfcl-multi_turn_miss_param", "多轮·缺参数"), ("bfcl-multi_turn_long_context", "多轮·长上下文"),
+]
+
+
+def table_mpl_langs():
+    """MultiPL-E per language: one row per (model, protocol), columns = languages."""
+    cells = {}
+    rows = CON.execute(
+        "SELECT model,protocol,language,_score,n_items,run_tag FROM experiments "
+        "WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL")
+    prot_short = {}
+    models = set()
+    for model, proto, lang, score, n, _tag in rows:
+        p = "chat" if "chat" in (proto or "") else ("raw" if "raw" in (proto or "") else (proto or "—"))
+        prot_short[(model, proto)] = p
+        models.add(model)
+        cells.setdefault((model, proto), {})[lang] = (score, n if n is not None else 161)
+    out = []
+    for (model, proto), d in sorted(cells.items()):
+        if not d:
+            continue
+        out.append((model, prot_short[(model, proto)],
+                    {k: v for k, v in d.items()}, [model]))
+    order = {"raw": 0, "chat": 1}
+    out.sort(key=lambda r: (r[0], order.get(r[1], 9)))
+    keys = MPL_LANGS
+    return {"title": "多语言代码：逐语言", "c1_name": "模型文件", "c2_name": "生成协议",
+            "col_keys": keys, "col_labels": [MPL_LANG_LBL[k] for k in keys],
+            "rows": [(a, b, c) for a, b, c, _m in out], "row_models": [m for *_, m in out],
+            "counts": {k: sum(1 for _a, _b, c, _m in out if c.get(k)) for k in keys},
+            "data_cols": len(keys)}
+
+
+def table_bfcl():
+    """BFCL: one row per (model, protocol), columns = the BFCL categories."""
+    cells = {}
+    rows = CON.execute(
+        "SELECT model,protocol,_bench,_score,n_items FROM experiments "
+        "WHERE (bench_family='bfcl' OR bench_family='bfcl-multiturn') AND _score IS NOT NULL")
+    names = {b: l for b, l in BFCL_BENCH}
+    for model, proto, bench, score, n in rows:
+        if bench not in names:
+            continue
+        cells.setdefault((model, proto or "—"), {})[bench] = (score, n)
+    out = [(model, proto, d, [model]) for (model, proto), d in sorted(cells.items()) if d]
+    keys = [b for b, _ in BFCL_BENCH]
+    return {"title": "工具调用（BFCL）：协议 × 类别", "c1_name": "模型文件", "c2_name": "协议",
+            "col_keys": keys, "col_labels": [names[k] for k in keys],
+            "rows": [(a, b, c) for a, b, c, _m in out], "row_models": [m for *_, m in out],
+            "counts": {k: sum(1 for _a, _b, c, _m in out if c.get(k)) for k in keys},
+            "data_cols": len(keys)}
+
+
+def fig_mpl_langs(t):
+    langs = t["col_keys"]
+    # 行键必须是 (模型, 协议)：否则同一模型的 raw/chat 两行会被混成一行。
+    keys = sorted({(c1, c2) for c1, c2, _c in t["rows"]})
+    M = np.full((len(keys), len(langs)), np.nan)
+    for i, (m, p) in enumerate(keys):
+        for c1, c2, cells in t["rows"]:
+            if (c1, c2) != (m, p):
+                continue
+            for j, l in enumerate(langs):
+                c = cells.get(l)
+                if c and c[0] is not None:
+                    M[i, j] = c[0]
+    labels = [f"{m.replace('.gguf','')}\n[{p}]" for m, p in keys]
+    fig, ax = plt.subplots(figsize=(1.5 + 1.05 * len(langs), 0.46 * len(keys) + 2.2))
+    im = ax.imshow(M, cmap="RdYlGn", vmin=0, vmax=1, aspect="auto")
+    ax.set_xticks(range(len(langs)))
+    ax.set_xticklabels([MPL_LANG_LBL[l] for l in langs], fontsize=9)
+    ax.set_yticks(range(len(keys)))
+    ax.set_yticklabels(labels, fontsize=6.8)
+    for i in range(len(keys)):
+        for j in range(len(langs)):
+            if not np.isnan(M[i, j]):
+                ax.text(j, i, "%.2f" % M[i, j], ha="center", va="center", fontsize=7)
+    ax.set_title("多语言代码：每个（模型, 协议）的各语言通过率（空白 = 未测）", fontsize=12)
+    fig.colorbar(im, ax=ax, shrink=.7, label="通过率")
+    return [save(fig, "MPL_langs",
+                 "每格 = 该模型在该语言上的 pass（161 题）；空白 = 未测。"
+                 "同一行内的差异是真实的语言难度/模板效应；跨行比较时要注意协议（raw/chat）与测集。")]
+
+
+def fig_bfcl(t):
+    out = []
+    for bench, label in BFCL_BENCH:
+        if t["counts"].get(bench, 0) == 0:
+            continue
+        items = [(c1, c2, cells[bench][0]) for c1, c2, cells in t["rows"] if cells.get(bench)]
+        if not items:
+            continue
+        items.sort()
+        xs = list(range(len(items)))
+        protos = sorted({c2 for _c1, c2, _v in items})
+        fig, ax = plt.subplots(figsize=(max(7.5, 0.62 * len(items) + 3), 4.6))
+        for pi, p in enumerate(protos):
+            sel = [(x, v) for x, (_c1, c2, v) in zip(xs, items) if c2 == p]
+            if not sel:
+                continue
+            ax.bar([x + (pi - (len(protos) - 1) / 2) * 0.38 for x, _v in sel],
+                   [v for _x, v in sel], width=.36, label=p, zorder=2)
+        ax.set_xticks(xs)
+        ax.set_xticklabels([c1.replace(".gguf", "") for c1, _c2, _v in items],
+                           rotation=40, ha="right", fontsize=7.2)
+        ax.set_ylim(0, 1.04)
+        _style_axes(ax, "模型文件", "得分", f"工具调用 {label}")
+        ax.legend(fontsize=7.6)
+        out.append(save(fig, f"BFCL_{bench}",
+                        "同一模型不同协议（提示式工具调用 vs 原生 tools）柱子的差异 = 协议效应。"))
+    return out
+
+
+def table_testfrac():
+    cells = {}
+    for model, arm, lang, score in CON.execute(
+            "SELECT model,_bench,language,_score FROM experiments "
+            "WHERE run_tag='m41-testfrac' AND _score IS NOT NULL"):
+        a = arm.replace("testfrac-", "")
+        cells.setdefault((model, a), {})[lang] = (score, 161)
+    out = [(m, a, d, [m]) for (m, a), d in sorted(cells.items()) if d]
+    keys = MPL_LANGS
+    return {"title": "部分给分（每测试通过比例）", "c1_name": "模型文件", "c2_name": "方案类别",
+            "col_keys": keys, "col_labels": [MPL_LANG_LBL[k] for k in keys],
+            "rows": [(a, b, c) for a, b, c, _m in out], "row_models": [m for *_, m in out],
+            "counts": {k: sum(1 for _a, _b, c, _m in out if c.get(k)) for k in keys},
+            "data_cols": len(keys)}
+
+
+def fig_testfrac(t):
+    out = []
+    for lang in ("cpp", "py"):
+        items = [(c1, c2, cells[lang][0]) for c1, c2, cells in t["rows"] if cells.get(lang)]
+        if not items:
+            continue
+        items.sort()
+        fig, ax = plt.subplots(figsize=(max(7.5, 0.72 * len(items) + 2.6), 4.6))
+        cols = {"ternary": "#c44e52", "conventional": "#4c72b0"}
+        ax.bar(range(len(items)), [v for _c1, _c2, v in items],
+               color=[cols.get(c2, "#999") for _c1, c2, _v in items], zorder=2)
+        for i, (_c1, _c2, v) in enumerate(items):
+            ax.annotate("%.2f" % v, (i, v), xytext=(0, 2), textcoords="offset points",
+                        ha="center", fontsize=7.5)
+        ax.set_xticks(range(len(items)))
+        ax.set_xticklabels([c1.replace(".gguf", "") for c1, _c2, _v in items],
+                           rotation=40, ha="right", fontsize=7.0)
+        ax.set_ylim(0, 1.02)
+        _style_axes(ax, "模型文件", "每道题通过的测试比例", f"部分给分（{MPL_LANG_LBL[lang]}）")
+        from matplotlib.patches import Patch
+        ax.legend(handles=[Patch(color=cols["conventional"], label="原生 K（非三元）"),
+                           Patch(color=cols["ternary"], label="三元 / 极低位宽")], fontsize=8)
+        out.append(save(fig, f"testfrac_{lang}",
+                        "纵轴不是 pass@1 而是“测试通过比例”：用于区分三元模型是“错得更多”还是“错得不同”。"))
+    return out
 
 
 def section(H, title, definition, tables, figures, analysis_html):
@@ -370,17 +1082,140 @@ def section(H, title, definition, tables, figures, analysis_html):
     H.append("<h3>原始数据</h3>")
     for t in tables:
         H.append(render_table(t))
+    repro = render_repro(repro_rows(tables))
+    if repro:
+        H.append("<h3>复现信息（表格用到的模型文件与来源）</h3>")
+        H.append(repro)
     if figures:
         H.append("<h3>原始数据图</h3>")
-        for f in figures:
-            if os.path.exists(f):
-                H.append(f"<figure><img src='data:image/png;base64,{b64(f)}'></figure>")
+        for item in figures:
+            path, cap = item if isinstance(item, tuple) else (item, None)
+            if not path or not os.path.exists(path):
+                continue
+            capp = f"<figcaption>{cap}</figcaption>" if cap else ""
+            H.append(f"<figure><img src='data:image/png;base64,{b64(path)}'>{capp}</figure>")
     H.append("<h3>分析</h3>")
     H.append(f"<div class='analysis'>{analysis_html}</div>")
     H.append("</section>")
 
 
+def load_docs():
+    """读取研究文档 SSOT（docs/<layer>/<layer>.yaml）的 facts。"""
+    out = {}
+    for layer in ("plan", "result"):
+        p = os.path.join("docs", layer, f"{layer}.yaml")
+        try:
+            out[layer] = _yaml_load(p)
+        except Exception:
+            out[layer] = {}
+    return out
+
+
+def _yaml_load(path):
+    try:
+        import yaml
+        with open(path, encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        return {}
+
+
+def render_fact_list(facts, kinds=None):
+    items = []
+    for fid, f in sorted(facts.items()):
+        if not isinstance(f, dict):
+            continue
+        d = f.get("domain") or {}
+        if kinds and d.get("kind") not in kinds:
+            continue
+        src = f.get("origin", "")
+        status = f.get("status", "")
+        tag = f" <span class='tag'>{html.escape(d.get('kind',''))}</span>" if d.get("kind") else ""
+        prov = f" <span class='nr'>（{html.escape(str(status))}；来源：{html.escape(str(src))[:120]}）</span>" if src else ""
+        items.append(f"<li>{html.escape(str(f.get('_text','')))} {tag}{prov}</li>")
+    return "<ul>" + "".join(items) + "</ul>" if items else "<p class='nr'>（无）</p>"
+
+
+def data_quality_html():
+    """构建时从 DB / eval 文件复核的数据质量问题清单（不是静态文案）。"""
+    rows = []
+    # 1) 全 Exception 的评测（基础设施失败，不是 0）
+    n_exc = 0
+    try:
+        import glob as _glob
+        for f in _glob.glob(".wrapup/mres/*_eval.json"):
+            try:
+                d = json.load(open(f))
+            except Exception:
+                continue
+            det = d.get("details")
+            if isinstance(det, list) and det and all(x.get("status") == "Exception" for x in det):
+                n_exc += 1
+    except Exception:
+        pass
+    # 2) 语言覆盖（同一模型在 legacy MultiPL-E 里跑了哪些语言）
+    langs = {}
+    for model, lang in CON.execute(
+            "SELECT DISTINCT model,language FROM experiments "
+            "WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768'"):
+        langs.setdefault(model, set()).add(lang)
+    partial = sorted((m, "".join(sorted(v))) for m, v in langs.items() if not {"cpp", "py"} <= v)
+    # 3) 协议对比（同一模型 raw vs chat）
+    prot = CON.execute(
+        "SELECT model,protocol,round(avg(_score),4) FROM experiments "
+        "WHERE bench_family='humaneval-multipl-e' AND language='cpp' "
+        "AND model LIKE 'gemma-4-26B-A4B-it-UD-Q3%' GROUP BY model,protocol").fetchall()
+
+    h = ["<div class='analysis'>"]
+    h.append("<p><b>1. “12B 崩到 0”是数据缺陷，不是模型得分。</b> 旧的多语言代码（MultiPL-E）列把每个模型<br>"
+             "<b>碰巧跑过的语言</b>混在一起求平均：有的模型只有 cpp、有的只有 py、gemma-4-12b 只有 java/js/rb/rs。"
+             "不同测集不能相减，于是 12b/26B 的“0.002 / 0.043”其实是<b>语言覆盖不同</b>造成的假象。<br>"
+             f"当前数据库里语言覆盖不完整（不含 cpp+py 全对）的模型有 <b>{len(partial)}</b> 个："
+             + "、".join(f"<code>{html.escape(m)}</code>({html.escape(l) or '—'})" for m, l in partial[:12])
+             + (" 等" if len(partial) > 12 else "") + "。</p>")
+    h.append("<p><b>修复：</b>标准列现在只在 <b>cpp 与 py 都测过</b>时产出 MultiPL-E 单元（有效位宽无关的语言集不再进入比较）；"
+             "两者不全者记为缺失（NaN），报告里写 <code>—</code> 且不画点——与“缺失≠ 0”一致。"
+             "其它语言（java/js/rs/rb）保留在数据库，供单独的语言子研究。</p>")
+    h.append(f"<p><b>2. 基础设施失败被误记成 0。</b> 扫描 <code>.wrapup/mres/*_eval.json</code> 发现 <b>{n_exc}</b> 个评测的"
+             "每道题状态都是 <code>Exception</code>（整体报错），却被计为 score=0。典型：gemma-4-26B-A4B 的 py 在 chat 协议下 "
+             "cpp=0.832 而 py=0.000（161/161 Exception）。这些行已置为 <b>NULL</b>（缺失，不是 0）。"
+             "根因：summary 只写 score，不写状态直方图；已在本轮数据库修正，并在新面板中改为“全 Exception → null”。</p>")
+    h.append("<p><b>3. 生成协议会改变结论（轴 an7）。</b> 同一模型 gemma-4-26B-A4B 的 cpp："
+             + "；".join(f"<code>{html.escape(p)}</code> → {v}" for _m, p, v in prot)
+             + "。raw（纯补全）对 gemma 系列是不公平的：它的模板会先输出推理/散文，raw 下几乎全不通过（harness floor）。"
+             "所以旧的 raw MultiPL-E 对 gemma 家族不可比。这正是“换协议必须重测”。</p>")
+    h.append("<p><b>4. 模型规模曲线“越大越差”有两类原因，要分开看：</b>"
+             "(a) <b>方案反向</b>：Qwen3.5-2B 在 3.96（UD-IQ3_XXS）→ 4.11（UD-Q2_K_XL）字节更多、分数更低——同名档位跨供应商/方案不可比；"
+             "(b) <b>协议/测集不可比</b>：gemma-4 的 12b/26B 近零来自 raw 协议与语言覆盖，见上。"
+             "剩下同家族、同方案、同协议的单调趋势是真实的规模效应。</p>")
+    h.append("</div>")
+    return "\n".join(h)
+
+
+def run_tag_inventory():
+    rows = CON.execute(
+        "SELECT run_tag, count(*) n, count(distinct model) nm, count(distinct _bench) nb, "
+        "sum(CASE WHEN source_file LIKE 'mres/%' THEN 1 ELSE 0 END) mres "
+        "FROM experiments WHERE run_tag IS NOT NULL AND run_tag<>'' GROUP BY run_tag ORDER BY run_tag").fetchall()
+    h = ["<div class='scroll'><table class='inv'><tr><th>run_tag（研究批次）</th><th>行数</th>"
+         "<th>模型数</th><th>基准数</th><th>入报告方式</th></tr>"]
+    for tag, n, nm, nb, mres in rows:
+        where = "标准基准列（表 A–H 的来源）" if mres else "独立面板（部分尚未进报告）"
+        cls = "" if mres else " class='nr'"
+        h.append(f"<tr><td><code>{html.escape(tag)}</code></td><td>{n}</td><td>{nm}</td><td>{nb}</td>"
+                 f"<td{cls}>{where}</td></tr>")
+    h.append("</table></div>")
+    return "\n".join(h)
+
+
 def main():
+    # 清掉上一次的旧图，避免 report/figures 目录里残留不再引用的文件
+    for fn in os.listdir(FIGDIR):
+        if fn.endswith(".png"):
+            try:
+                os.remove(os.path.join(FIGDIR, fn))
+            except OSError:
+                pass
     T = {t["title"].split(".")[0].strip(): t for t in mktables.build_tables()}
     H = ['<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">',
          '<title>本地模型设置选择对基准分数的影响：逐项报告</title>', f'<style>{CSS}</style></head><body>']
@@ -402,49 +1237,84 @@ def main():
              "知识（MMLU）、科学（ARC-Challenge）、事实性（TruthfulQA）、推理（GSM8K）、指令（IFEval）。"
              "表格里每个分数后的括号是题目数；缺失写 <code>—</code>，绝不写 0。</div>")
 
+    T_MPL = table_mpl_langs()
+    T_BFCL = table_bfcl()
+    T_TF = table_testfrac()
     sections = [
         ("一、量化位宽（每个权重平均几个比特）",
          "X = 有效位宽（越大表示每个权重平均比特越多）；Y = 各基准分数；系列 = 模型家族（同家族 = 同一套 base 权重，只换量化文件）。",
-         [T["A"]], line_charts(T["A"], lambda c2: float(c2.split()[0]), "有效位宽", "A"),
+         [T["A"]], fig_A(T["A"]),
+         "<div class='callout'><b>重点解释：为什么 Qwen3.5-2B 的曲线在中间“掉”了一下？</b>"
+         "把它的七个文件按有效位宽排好：3.27 = <code>Qwen3.5-2B-UD-IQ2_XXS.gguf</code>、"
+         "3.66 = <code>UD-IQ2_M</code>、3.96 = <code>UD-IQ3_XXS</code>、4.11 = <code>UD-Q2_K_XL</code>、"
+         "4.93 = <code>UD-Q3_K_XL</code>、5.70 = <code>UD-Q4_K_XL</code>、6.24 = <code>UD-Q5_K_XL</code>。"
+         "掉点出现在 <b>3.96 → 4.11</b>：UD-Q2_K_XL 的字节比 UD-IQ3_XXS <b>更多</b>（4.11 &gt; 3.96 比特/权重），"
+         "分数却更低（HumanEval+ 0.372 → 0.238；GSM8K 0.52 → 0.44；MultiPL-E 0.189 → 0.092）。"
+         "原因是这是两个不同<b>方案</b>：unsloth 的 <code>Q2_K_XL</code> 是动态分配——保住少数关键层的高精度、"
+         "把其余层压到极低；<code>IQ3_XXS</code> 是信息论量化 + imatrix，按重要性较均匀地分比特。"
+         "所以<b>“有效位宽”不是质量的充分统计量</b>，同样字节数下换方案可以产生反向——这正是第三节（方案/厂商）的结论。"
+         "对照组：同门的 Qwen3.5-4B 在 3.69（<code>Q2_K_XL</code>）与 3.71（<code>IQ3_XXS</code>）上分数几乎相同，"
+         "说明这个反向是模型相关的，不是普遍规律。</div>"
          "<ul>"
          "<li>每条线是一个家族。多数家族在低比特一端分数很低，<b>在约 3–4 比特/权重之间出现明显抬升</b>，再往上（约 4 比特/权重以上）基本走平。</li>"
          "<li>抬升幅度在不同基准上差别很大：代码（HumanEval+/MBPP+）、推理（GSM8K）、指令（IFEval）抬升明显；"
          "知识（MMLU）、科学（ARC-c）、事实性（TruthfulQA）几乎不动。这就是“量化伤害取决于你测哪个基准”的来源。</li>"
          "<li>并非所有家族都这样：Qwen3.6-35B-A3B（大 MoE）在很低的比特上已经很高，抬升不明显——说明伤害大小取决于“低比特是否真的伤了这个模型”。</li>"
          "<li>操作结论：<b>量化位宽至少要到约 4 比特/权重；再往上除非能测出具体收益，否则多花比特买不到分数</b>（花岗岩 granite 是例外，继续加比特仍有收益）。</li>"
+         "<li><b>看图要点：</b>A 图已按家族拆成一格一格，比原来十几条线叠在一起清楚得多——"
+         "黄色带（3–4 比特/权重）内多数格子里的曲线正在爬升，带外右侧趋平；"
+         "坡度最陡的格子是 GLM-4.7-Flash、Llama-3.2、Phi-4、granite-4.1，"
+         "而 Qwen3.6-35B-A3B、Qwen3.8-27B、Ornith-1.5-9B 的格子几乎是一条平线。</li>"
+         "<li><b>系列划分与数据一致性（重要）：</b>一个家族在数据库里若同时存在 UD 动态量化与非 UD 的“原生 K”文件，"
+         "本轴会把它们<b>拆成两条独立系列</b>，绝不连成一条曲线——不同供应商的同名档位（如 Q3_K_XL 与 Q3_K_M），"
+         "权重分配不同，混在一起会把不可比的东西画成趋势。唯一出现混用的是 <b>Qwen3.6-35B-A3B</b>："
+         "UD-Q3_K_XL（3.88）与 bartowski 原生 Q3_K_M（3.86）位宽几乎相同。因为本轴要求“家族内至少 2 个位宽点”，"
+         "原生那一支只有 1 个点，被本轴规则剔除；它们的正确对比位置是第三节（方案 / 厂商）——那里才是控制变量的地方，"
+         "结果显示两者各基准分数都在噪声内一致，与“厂商标签测不出差异”一致。</li>"
          "</ul>"),
         ("二、模型规模（参数量）",
          "X = 模型参数量（单位 B）；Y = 各基准分数；系列 = 家族 + 量化配方。",
-         [T["B"]], line_charts(T["B"], lambda c2: mktables.size_value(c2) or None, "参数量（B）", "B"),
+         [T["B"]], fig_B(T["B"]),
          "<ul>"
          "<li>同一配方下，参数量越大分数越高。</li>"
          "<li>小模型之间（0.8B→2B→4B）的差距通常比大模型之间更大——大模型已接近各自的分数上限，规模带来的边际收益变小。</li>"
          "<li>规模还会影响低比特的表现：小模型在低比特的困难任务上会整体触底（见“量化位宽”一节里 2B 的曲线）。</li>"
+         "<li><b>看图要点：</b>B 图同色 = 同族，不同线型 / 标记 = 不同配方。Qwen3.5 的三条配方线都在 4B 附近到顶；"
+         "gemma-4 的线在 13B 附近有一个向下回折后再上抬的折点——这是不同尺寸在不同配方下的实测值，不是单调趋势。</li>"
          "</ul>"),
         ("三、量化方案 / 厂商",
          "X = 量化方案或厂商（在同一模型、相近的有效位宽区间内）；Y = 各基准分数。",
-         [T["C"]], bar_charts(T["C"], "方案（厂商）", "C", color_by_series=True),
+         [T["C"]], fig_C(T["C"]),
          "<ul>"
          "<li>在文件字节接近的前提下，换<b>方案</b>（例如 IQ 系列 vs 传统 K 系列）分数会出现可测的差异。</li>"
          "<li>而换<b>厂商</b>标签（同一模型、大小差不到 1%）基本测不出差异。</li>"
          "<li>结论：挑量化时应该比“字节 / 方案”，而不是比厂商标签。</li>"
+         "<li><b>看图要点：</b>C 图把“同一模型、有效位宽相近”的柱分到组（柱顶白框标出组名与位宽区间），只有组内比较才公平；"
+         "一眼可见 Qwen3.5-2B 组里 IQ2_XXS 明显垫底，而其余各组内部两根柱高度接近、误差棒大幅重叠。</li>"
+         "<li><b>本节的必要性：</b>正因为 A 轴不把“换供应商方案”当成家族曲线，"
+         "Qwen3.6-35B-A3B 的 UD-Q3_K_XL vs 原生 Q3_K_M（3.88 vs 3.86 比特/权重）只在这里比较："
+         "两者所有基准差都在噪声内，与“同大小下换厂商标签测不出差异”一致。</li>"
          "</ul>"),
         ("四、MoE 各层比特分配",
          "X = 哪些层拿低比特（专家层 vs 其余层），固定同一套 base 权重；Y = 各基准分数。",
-         [T["D"]], bar_charts(T["D"], "配方", "D"),
+         [T["D"]], fig_D(T["D"]),
          "<ul>"
          "<li>三条配方里，把<b>非专家层</b>压到最低的那条分数最低——尽管它的总比特最多（4.48 比特/权重）。</li>"
          "<li>把<b>专家层</b>压到最低、其余层保持高位的那条，反而保住了大部分能力，且总比特更低（2.92）。</li>"
          "<li>原因：非专家层（注意力、归一化等）每个 token 每次前向都会用到；单个专家只有一部分 token 会走到，"
          "MoE 的路由可以绕开被压坏的专家。所以要保护非专家层，专家层是省比特的安全区。</li>"
+         "<li><b>看图要点：</b>D 图三根柱的总比特从左到右是 3.88、2.92、4.48；"
+         "最右边那根比特最多、分数却最低，把“压非专家层代价最大”直接画了出来。</li>"
          "</ul>"),
         ("五、KV 缓存精度",
          "X = KV 缓存的精度（f16 / q8_0 / q4_0），固定模型、权重位宽与上下文；Y = 各基准分数。",
-         [T["E"]], bar_charts(T["E"], "KV 精度（K/V）", "E"),
+         [T["E"]], fig_E(T["E"]),
          "<ul>"
          "<li>三种精度（f16、q8_0、q4_0）的柱几乎等高，即在这类任务上<b>测不出差别</b>。</li>"
          "<li>注意范围：这里的上下文只有约 1k–2k tokens。KV 量化理论上只会在上下文很长时才咬人，"
          "所以这个结论只覆盖短到中等上下文，长上下文未测。</li>"
+         "<li><b>看图要点：</b>E 图每个上下文长度一组柱，组内几根几乎等高、误差棒大幅重叠——"
+         "这就是“在当前题目数下测不出差异”的直观样子（不等于相等）。</li>"
          "</ul>"),
         ("六、采样 / 解码参数",
          "X = 采样参数（温度、top_k），固定模型、位宽与上下文；Y = 多语言代码通过率。",
@@ -453,6 +1323,8 @@ def main():
          "<li>温度从 0 升到 0.3/0.7 会压低代码通过率。</li>"
          "<li>top_k 在贪心附近（温度 0）基本不变——这是结构事实：温度 0 时没有分布可截断，top_k 无从生效。</li>"
          "<li>知识类基准（MMLU）对采样完全无反应，因为它用对数似然打分、根本不采样。这反过来证明测量链路是对的。</li>"
+         "<li><b>看图要点：</b>F 图左（温度）各条线随温度下走或走平；右（top_k）在温度 0 的那条是严格水平线，"
+         "结构上本该如此。</li>"
          "</ul>"),
         ("七、投机解码（速度）",
          "X = 投机解码草稿深度；Y = 每秒生成 token 数（取自 llama-server 自身计时）；系列 = 模型。",
@@ -460,6 +1332,7 @@ def main():
          "<ul>"
          "<li>草稿深度越大，生成速度越快。</li>"
          "<li>模型越大，加速收益越大（0.8B 约 +36%，9B 约 +93%）——小模型本身已受内存带宽限制，草稿路径可利用的余量更小。</li>"
+         "<li><b>看图要点：</b>G1 图线端直接标了相对深度 0 的提速百分比，模型越大数字越大、曲线越陡。</li>"
          "</ul>"),
         ("八、投机解码（质量）",
          "X = 草稿深度；Y = 各基准分数；系列 = 模型。",
@@ -468,6 +1341,7 @@ def main():
          "<li>分数随草稿深度几乎不变，没有一致方向的损伤或增益。</li>"
          "<li>MMLU 在每个模型、每个深度上<b>逐位相同</b>：它走对数似然打分，不经过草稿模型。这是测量正确的正对照。</li>"
          "<li>因此投机解码可以放心开：它买速度，不伤质量（在测试的深度范围内）。</li>"
+         "<li><b>看图要点：</b>G2 图右侧的“差值”面板把纵轴放大到 ±0.05，所有点仍贴在 0 线上——MMLU 甚至逐点完全相同。</li>"
          "</ul>"),
         ("九、思考开关",
          "X = 是否开启思考（reasoning）；Y = GSM8K 分数；系列 = 模型文件。",
@@ -476,13 +1350,18 @@ def main():
          "<li>开与关的差随模型与生成预算而定，没有统一方向。</li>"
          "<li>在预算较小的情况下，开思考反而更低：推理流占用了答案预算。</li>"
          "<li>因此主协议统一使用“关思考”；开思考只作为单独诊断轴保留，不与主结果混用。</li>"
+         "<li><b>看图要点：</b>H 图用横向哑铃线：圆点 = 思考关，方块 = 思考开，线端数字 = 开−关；"
+         "大多数行方块都在圆点左侧（开更低），只有 granite 两行两者几乎重合。</li>"
          "</ul>"),
         ("十、量化感知训练（QAT）",
          "X = 该量化文件是否经过 QAT 训练，固定模型尺寸与标称配方；Y = 各基准分数（并给出差值表）。",
          qat_tables(), fig_QAT(),
          "<ul>"
-         "<li>所有 4-bit 配对里，QAT 与原生在多数基准上基本重合，而 QAT 文件还小 0.44–0.95 比特/权重。</li>"
-         "<li>只有 2-bit 配对里 QAT 明显更低（代码、算术、指令）。</li>"
+         "<li>所有 4-bit 配对里，QAT 与原生在多数基准上基本重合，而 QAT 文件还小 0.44–0.95 比特/权重；"
+         "唯一的例外是 <b>gemma-4-12B 的 MMLU</b>：QAT 显著更低（−0.197，95% 区间不跨 0）。</li>"
+         "<li>2-bit 配对里 QAT 明显更低（代码、算术、指令）。</li>"
+         "<li><b>看图要点：</b>森林图把“显著”与“测不出”一眼分开：2-bit 配对的行（红）明显偏向 0 左侧且不跨 0；"
+         "4-bit 配对除 12B-MMLU 外都是跨 0 的灰行。</li>"
          "<li>所以 QAT 应当被当成“同配方下体积更小”的选项，而不是质量升级。</li>"
          "<li>一个必须说明的事实：这些 QAT 文件用的是另一种量化格式（Q4_0 系列，ggml 类型 2），而原生对照是 K 系列格式，"
          "所以这个差值里还混了“方案”这一个因素，不能纯归给 QAT。</li>"
@@ -495,15 +1374,77 @@ def main():
          "<li>与“最接近的原生档位”比、与“按有效位宽线性插值后的原生”比，两种比法在所有基准上都测不出差异。</li>"
          "<li>结论：GSQ-RCO 是一个中性方案，没有方案级红利。（这与“同大小下 IQ 优于 K”并不矛盾——"
          "说明方案红利不是普遍规律。）</li>"
+         "<li><b>看图要点：</b>GSQ 图中红星落在原生折线上下不超过一个误差棒；两个星点本身的误差棒很长，"
+         "所以“测不出”有一部分是数据分辨力所限。</li>"
          "</ul>"),
         ("十二、扩散式解码（DiffusionGemma）",
          "X = 解码范式（扩散 vs 自回归），对照为同尺寸自回归 gemma-4-26B-A4B；Y = 各基准分数。",
          [], None,
          "<ul><li>本机的 llama.cpp（含 diffusion-cli）不认 <code>diffusion-gemma</code> 架构，处理侧完全没有数据。</li>"
          "<li>因此这一项是<b>未测</b>（不是 0，也不是 null）：需要另建支持该架构的运行时才能比较。</li></ul>"),
+        ("十三、多语言代码（MultiPL-E）：逐语言与生成协议",
+         "X = 语言（cpp/py/js/java/rs/rb）与生成协议（raw / chat）；Y = 通过率；行 = 模型文件。"
+         "这不是“量化位宽”的轴，而是把代码能力的语言维度与协议维度摆出来，用来说明为什么标准列必须固定语言集。",
+         [T_MPL], fig_mpl_langs(T_MPL),
+         "<ul>"
+         "<li>同一模型在不同语言上的通过率差异很大（C++ 与 Python 通常最高，Rust/Ruby/Java 低）。"
+         "所以把不同语言平均成一个数之前，必须保证每个模型跑的是同一个语言集，否则不可比。</li>"
+         "<li>这就是“12B 崩到 0”的来源：gemma-4-12b 只跑了 java/js/rb/rs，平均后接近 0，而它根本没跑 cpp/py。</li>"
+         "<li>raw（纯补全）与 chat（聊天模板、关思考）是两个不同协议；对 gemma 这类模板敏感的模型，"
+         "raw 会先输出散文/推理，分数落在 harness floor。报告标准列只用固定协议，且不跨协议混比。</li>"
+         "<li><b>看图要点：</b>热力图中一行内的横向差异 = 语言效应；空白（NaN）= 未测，绝不当作 0。</li>"
+         "</ul>"),
+        ("十四、工具调用（BFCL）：协议 × 类别",
+         "X = 工具调用协议（提示式 <code>bfcl-prompt</code> vs 原生 <code>bfcl-native-tools</code>，以及多轮官方协议）；"
+         "Y = 各类别得分；行 = 模型文件。",
+         [T_BFCL], fig_bfcl(T_BFCL),
+         "<ul>"
+         "<li>这是本报告里另一个“协议就是变量”的例子：同一模型、同一类别，提示式与原生 tools 两种协议的分数差距"
+         "常常大于不同模型之间的差距（例如 Qwen3.5-2B 单轮·简单：提示式 0.603 vs 原生 0.217）。"
+         "所以工具调用分数必须连同协议一起读，不能只看一个数。</li>"
+         "<li>多轮（base / miss_func / miss_param / long_context）目前只在少数锚点上跑过，覆盖很薄，属于<b>待扩测</b>。</li>"
+         "<li><b>看图要点：</b>每张图同一模型的柱子高低 = 协议效应；柱子缺失 = 该协议下未测。</li>"
+         "</ul>"),
+        ("十五、部分给分（每测试通过比例）",
+         "X = 模型（三元/极低位宽 vs 原生 K）；Y = 每道题通过的测试比例（不是 pass@1）；行 = 模型文件。",
+         [T_TF], fig_testfrac(T_TF),
+         "<ul>"
+         "<li>这是“二元 pass@1”之外的辅助度量：如果三元模型与原生模型 pass@1 接近，但每测试通过比例差很多，"
+         "说明它们错的测试集不同（部分正确程度不同）。</li>"
+         "<li>用途：回答“三元量化是错得更多，还是只是错得不一样”。它与主结论不冲突，只补一个视角。</li>"
+         "<li>注意：该度量来自 m41 面板，复用了各面板已有的生成样本（同一协议 <code>mpl-raw-greedy-768</code>），"
+         "因此与标准列同源，不引入新协议。</li>"
+         "</ul>"),
     ]
+    all_tables = []
     for title, defn, tables, figs, analysis in sections:
         section(H, title, defn, tables, figs, analysis)
+        all_tables.extend(tables or [])
+
+    docs = load_docs()
+    H.append("<h2>数据质量、可比性与待分析</h2>")
+    H.append("<p class='def'>这一节不是结论，而是“哪些数字可信、哪些不可比、哪些还没测”的账本。"
+             "它把这一轮审计发现的数据缺陷、修复方式，以及文档 SSOT 里登记的未决假设集中在一处。</p>")
+    H.append(data_quality_html())
+
+    H.append("<h3>客观结果（引自研究文档 L2，测量）</h3>")
+    H.append(render_fact_list(docs.get("result", {}), kinds={"measured"}))
+    H.append("<h3>分析结论（引自研究文档 L3）</h3>")
+    H.append(render_fact_list(docs.get("result", {}), kinds={"analysis"}))
+    H.append("<h3>引用与规模（非结论）</h3>")
+    H.append(render_fact_list(docs.get("result", {}), kinds={"citation"}))
+    H.append("<h3>待分析：尚未跑的假设与未决问题（引自计划 L1）</h3>")
+    H.append(render_fact_list(docs.get("plan", {})))
+
+    H.append("<h2>附录：全部研究批次（run_tag）清单</h2>")
+    H.append("<p class='def'>报告正文的表格来自标准基准列（<code>mres/%</code>）；其余独立面板也是实际跑过的研究，"
+             "本清单把它们列全，标记哪些已进正文、哪些尚待整理。</p>")
+    H.append(run_tag_inventory())
+
+    H.append("<h2>附录：本报告用到的全部模型文件与来源</h2>")
+    H.append("<p class='def'>下表把正文各节引用的每一个 gguf 文件列出，并给出它的机构（供应商）与仓库，"
+             "用于复现与区分“同名档位、不同供应商 / 不同方案”。本地路径为实际加载入口的解析结果。</p>")
+    H.append(render_repro(repro_rows(all_tables), title="全部模型文件"))
 
     H.append("<h2>结论与显著性总结</h2>")
     H.append("<p class='def'>显著 = 95% 置信区间不跨 0；测不出 = 区间跨 0（在当前题目数下无法区分，<b>不等于相等</b>）；"
@@ -518,7 +1459,7 @@ def main():
              "<tr><td>投机解码：速度</td><td class='sig'>草稿深度提速（模型越大收益越大）</td><td>—</td><td>—</td></tr>"
              "<tr><td>投机解码：质量</td><td>—</td><td>所有深度分数无差别</td><td>—</td></tr>"
              "<tr><td>思考开关</td><td class='sig'>小预算下开思考更低</td><td>多数配置接近</td><td>—</td></tr>"
-             "<tr><td>量化感知训练 QAT</td><td class='sig'>2-bit 下 QAT 更低</td><td>所有 4-bit 配对</td><td>31B（显存不足）</td></tr>"
+             "<tr><td>量化感知训练 QAT</td><td class='sig'>2-bit 下 QAT 更低；4-bit 中 12B 的 MMLU 显著更低</td><td>4-bit 其余配对</td><td>31B（显存不足）</td></tr>"
              "<tr><td>GSQ-RCO 方案</td><td>—</td><td class='sig'>全部差值都测不出</td><td>—</td></tr>"
              "<tr><td>扩散式解码</td><td>—</td><td>—</td><td class='nr'>运行时缺失</td></tr></table>")
     H.append("<p class='def'><b>一句话总结：</b>量化损失在代码、推理、指令上明显，在选择题知识与事实性上很小；"

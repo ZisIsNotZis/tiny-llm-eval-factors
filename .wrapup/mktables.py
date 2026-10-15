@@ -120,12 +120,25 @@ def bench_key(bench, family):
     return None
 
 
-def query_cells_by(where, extra="''", params=()):
+# MultiPL-E comparability: a model's MultiPL-E cell is only produced when the
+# canonical language pair is fully present.  Legacy panels ran different
+# languages per model (some cpp only, gemma-4-12b java/js/rb/rs only), so a
+# naive pool averaged different test sets and made a 12B model look like it
+# "crashed to zero".  A comparison must hold the test set equal: present ->
+# mean over CANON_MPL, absent -> no cell (NaN), which the report renders as `-`
+# and never plots.  Other languages stay in the DB for per-language studies.
+CANON_MPL = ("cpp", "py")
+
+
+def query_cells_by(where, extra="''", params=(), mpl_langs=CANON_MPL):
     """{(model, extra): {bench_key: (score, n)}} for a subset of the DB.
 
-    MultiPL-E rows (bench_family='humaneval-multipl-e') are pooled across
-    languages, weighted by the language item count; the pooled cell's n is the
-    number of pooled items.  Every other row keeps its own (_score, n_items).
+    MultiPL-E rows (bench_family='humaneval-multipl-e') are pooled over
+    `mpl_langs`, weighted by language item count; a cell is emitted only when
+    every language in that set is present.  The default CANON_MPL=(cpp,py) is
+    the comparable cross-model set.  Pass mpl_langs=None only for a within-model
+    axis (same model, one constant language set), where pooling whatever ran is
+    the controlled comparison.  Every other row keeps its own (_score, n_items).
     """
     q = ("SELECT model, %s, _bench, bench_family, _score, n_items, language "
          "FROM experiments WHERE run_tag IS NOT NULL AND run_tag <> '' "
@@ -142,8 +155,12 @@ def query_cells_by(where, extra="''", params=()):
         if k is not None:
             cells[(model, tag)][k] = (score, n)
     for key, per_lang in mpl.items():
+        langs = sorted(per_lang) if mpl_langs is None else mpl_langs
+        if any(l not in per_lang for l in langs):
+            continue                      # incomplete test set -> NaN, not a low score
         acc = tot = 0.0
-        for lang, scores in per_lang.items():
+        for lang in langs:
+            scores = per_lang[lang]
             w = LANG_N.get(lang, 161)
             acc += (sum(scores) / len(scores)) * w
             tot += w
@@ -244,33 +261,39 @@ def emit_table(o, title, note, c1_name, c2_name, col_keys, col_labels, rows,
                sort_key=None, sort1=None, unit=None, waiting=None):
     """Build ONE structured table from the DB and append it to `o`.
 
-    rows = [(col1, col2, cells)].  Implements the shape rules: a row with no
-    benchmark value at all is dropped; a col1 group with fewer than 2 distinct
-    values of the varied variable is dropped.  No markdown is produced -- `o` is
-    the single machine-readable table set that the report renders.
+    rows = [(col1, col2, cells[, models])].  The 4th element (the GGUF basenames
+    behind the row) is optional; it is kept aside in ``row_models`` for the
+    report's provenance panel and does not change the 3-tuple row shape.
+    Implements the shape rules: a row with no benchmark value at all is dropped;
+    a col1 group with fewer than 2 distinct values of the varied variable is
+    dropped.  No markdown is produced -- `o` is the single machine-readable table
+    set that the report renders.
     """
-    kept = [(c1, c2, cells) for c1, c2, cells in rows
-            if any(cells.get(k) is not None for k in col_keys)]
+    norm = [(r[0], r[1], r[2], list(r[3]) if len(r) > 3 else [])
+            for r in rows]
+    kept = [(r[0], r[1], r[2], r[3]) for r in norm
+            if any(r[2].get(k) is not None for k in col_keys)]
     groups = collections.defaultdict(list)
-    for c1, c2, cells in kept:
-        groups[c1].append((c2, cells))
+    for c1, c2, cells, models in kept:
+        groups[c1].append((c2, cells, models))
     groups = {c1: v for c1, v in groups.items()
-              if len({c2 for c2, _ in v}) >= 2}
+              if len({c2 for c2, _, _ in v}) >= 2}
     keys = sorted(groups, key=sort1) if sort1 else sorted(groups)
-    ordered = []
+    ordered, row_models = [], []
     for c1 in keys:
         items = groups[c1]
         if sort_key:
             items = sorted(items, key=lambda kv: sort_key(kv[0]))
-        for c2, cells in items:
+        for c2, cells, models in items:
             ordered.append((c1, c2, cells))
+            row_models.append(models)
     counts = {k: sum(1 for _, _, cells in ordered if cells.get(k) is not None)
               for k in col_keys}
     o.append({
         "title": title, "note": note,
         "c1_name": c1_name, "c2_name": c2_name,
         "col_keys": col_keys, "col_labels": col_labels,
-        "rows": ordered, "counts": counts,
+        "rows": ordered, "row_models": row_models, "counts": counts,
         "data_cols": sum(1 for k in col_keys if counts[k] > 0),
         "unit": unit, "waiting": waiting,
     })
@@ -293,8 +316,28 @@ def load_standard():
 
 
 # ---- axes -----------------------------------------------------------------
+def scheme_class(model):
+    """供應商量化方案大类，用于把“UD 动态”与“非 UD 原生 K”分开。
+
+    同名档位（如 Q3_K_XL vs Q3_K_M）来自不同供应商，权重分配不同，绝不能
+    当成同一条曲线上的点。（QAT 单独一类，它有自己的轴。）
+    """
+    b = model.lower()
+    if "qat" in b:
+        return "QAT"
+    if "-ud-" in b or b.startswith("ud-") or "-ud-tq" in b:
+        return "UD 动态"
+    return "原生 K"
+
+
 def axis_a(std):
-    """BPW sweep: held = model family, varied = effective bpw."""
+    """BPW sweep: held = model family + supplier scheme class, varied = bpw.
+
+    A family that contains both UD and non-UD files is split into one series per
+    scheme class, so a single curve never mixes suppliers.  A split-off class with
+    only one bpw level is dropped by ``emit_table`` (rule 4) -- the UD-vs-native
+    comparison for the same size is axis C, not this axis.
+    """
     rows, missing = [], []
     by_fam = collections.defaultdict(list)
     for model, cells in std.items():
@@ -305,8 +348,11 @@ def axis_a(std):
             continue
         by_fam[family_of(model)].append((model, cells))
     for fam in sorted(by_fam):
+        classes = {scheme_class(m) for m, _ in by_fam[fam]}
+        multi = len(classes) > 1
         for model, cells in by_fam[fam]:
-            rows.append((fam, "%.2f" % BPW[model], cells))
+            c1 = "%s · %s" % (fam, scheme_class(model)) if multi else fam
+            rows.append((c1, "%.2f" % BPW[model], cells, [model]))
     return rows, missing
 
 
@@ -321,10 +367,10 @@ def axis_b(std):
         recipe = recipe_of(model)
         if recipe is None:
             continue
-        by[(lineage, recipe)].append((size, cells))
+        by[(lineage, recipe)].append((size, model, cells))
     for (lineage, recipe) in sorted(by):
-        for size, cells in by[(lineage, recipe)]:
-            rows.append(("%s @ %s" % (lineage, recipe), size, cells))
+        for size, model, cells in by[(lineage, recipe)]:
+            rows.append(("%s @ %s" % (lineage, recipe), size, cells, [model]))
     return rows
 
 
@@ -339,23 +385,23 @@ def axis_c(std):
         _, quant = split_quant(model)
         if quant is None:
             continue
-        by_fam[family_of(model)].append((BPW[model], quant, cells))
+        by_fam[family_of(model)].append((BPW[model], quant, model, cells))
     for fam in sorted(by_fam):
         items = sorted(by_fam[fam])
         clusters = []
-        for bpw, quant, cells in items:
+        for bpw, quant, model, cells in items:
             if clusters and bpw - clusters[-1][-1][0] <= MATCH_BPW:
-                clusters[-1].append((bpw, quant, cells))
+                clusters[-1].append((bpw, quant, model, cells))
             else:
-                clusters.append([(bpw, quant, cells)])
+                clusters.append([(bpw, quant, model, cells)])
         for cl in clusters:
-            if len({q for _, q, _ in cl}) < 2:
+            if len({q for _, q, _, _ in cl}) < 2:
                 continue
-            lo = min(b for b, _, _ in cl)
-            hi = max(b for b, _, _ in cl)
+            lo = min(b for b, _, _, _ in cl)
+            hi = max(b for b, _, _, _ in cl)
             c1 = "%s @ %.2f-%.2f bpw" % (fam, lo, hi)
-            for bpw, quant, cells in cl:
-                rows.append((c1, quant, cells))
+            for bpw, quant, model, cells in cl:
+                rows.append((c1, quant, cells, [model]))
     return rows
 
 
@@ -385,7 +431,7 @@ def axis_moe(o):
     for model, label in M55_RECIPES:
         bpw = BPW.get(model)
         c2 = label if bpw is None else "%s · %.2f bpw" % (label, bpw)
-        rows.append(("LFM2.5-8B-A1B (m55 MoE panel)", c2, by_model.get(model, {})))
+        rows.append(("LFM2.5-8B-A1B (m55 MoE panel)", c2, by_model.get(model, {}), [model]))
     return emit_table(
         o, "D. MoE bit allocation -- LFM2.5-8B-A1B m55 recipes",
         "Held constant: model, harness, protocol.  Varied: which layers get the low bits "
@@ -410,7 +456,9 @@ def axis_kv(o):
     kv_rows = con.execute(
         "SELECT DISTINCT model, protocol FROM experiments WHERE run_tag='m30-kv-ctx'"
     ).fetchall()
-    cells = query_cells_by("run_tag='m30-kv-ctx'", "protocol")
+    # m30 is a within-model panel with one constant language set (cpp only), so
+    # pooling whatever ran is the controlled comparison -- do not force cpp+py.
+    cells = query_cells_by("run_tag='m30-kv-ctx'", "protocol", mpl_langs=None)
     for model, proto in kv_rows:
         mc = re.search(r"ctx=(\d+)", proto or "")
         mk = re.search(r"kv=([\w]+)/([\w]+)", proto or "")
@@ -418,7 +466,7 @@ def axis_kv(o):
             continue
         c1 = "%s %s · ctx%s" % (family_of(model), _bpw_tag(model), mc.group(1))
         rows.append((c1, "%s/%s" % (mk.group(1), mk.group(2)),
-                     cells.get((model, proto), {})))
+                     cells.get((model, proto), {}), [model]))
 
     # standard-benchmark KV panels: the KV pair lives in the cache_type_k/v columns
     new = con.execute(
@@ -427,13 +475,13 @@ def axis_kv(o):
     ).fetchall()
     newcells = query_cells_by(
         "source_file LIKE '%/variant_panel.json' AND protocol LIKE 'variant-kv-%'",
-        "cache_type_k || '/' || cache_type_v")
+        "cache_type_k || '/' || cache_type_v", mpl_langs=None)
     for model, k, v, ctx in new:
         c1 = "%s %s · ctx%s" % (family_of(model), _bpw_tag(model), ctx)
         label = f"{k}/{v}"
         if label not in order:
             order.append(label)
-        rows.append((c1, label, newcells.get((model, label), {})))
+        rows.append((c1, label, newcells.get((model, label), {}), [model]))
 
     return emit_table(
         o, "E. KV-cache quantisation",
@@ -454,10 +502,10 @@ def axis_sampling(o):
     rows, tk_order = [], ["1", "20", "40", "64", "200"]
     for (model, tk), cells in query_cells_by("run_tag='m31-topk'", "top_k").items():
         rows.append(("%s %s · top_k" % (family_of(model), _bpw_tag(model)),
-                     str(tk), cells))
+                     str(tk), cells, [model]))
     for (model, tp), cells in query_cells_by("run_tag='m27-sampling'", "temp").items():
         rows.append(("%s %s · temperature" % (family_of(model), _bpw_tag(model)),
-                     str(tp), cells))
+                     str(tp), cells, [model]))
 
     # m131: the same axes re-measured on the standard columns.  Note the deliberate
     # control: MMLU is scored by log-likelihood and does not sample, so it must be
@@ -469,12 +517,12 @@ def axis_sampling(o):
         if float(tp or 0) == 0.0:
             continue                      # the greedy baseline is the top_k rows below
         rows.append(("%s %s · temperature" % (family_of(model), _bpw_tag(model)),
-                     str(tp), cells))
+                     str(tp), cells, [model]))
     for (model, tk), cells in query_cells_by(
             "source_file LIKE '%/variant_panel.json' AND protocol LIKE 'variant-sampling%' "
             "AND CAST(temp AS REAL)=0", "top_k").items():
         rows.append(("%s %s · top_k @ temp 0" % (family_of(model), _bpw_tag(model)),
-                     str(tk), cells))
+                     str(tk), cells, [model]))
 
     def rank(s):
         if s in tk_order:
@@ -526,9 +574,9 @@ def axis_spec(o):
 
     tok_cells = {k: {b: (sum(v) / len(v), len(v)) for b, v in per.items()}
                  for k, per in tok.items()}
-    tok_rows = [("%s · ctx%s" % (family_of(m), c), str(n), tok_cells[(m, c, n)])
+    tok_rows = [("%s · ctx%s" % (family_of(m), c), str(n), tok_cells[(m, c, n)], [m])
                 for (m, c, n) in tok_cells]
-    sc_rows = [("%s · ctx%s" % (family_of(m), c), str(n), sc.get((m, c, n), {}))
+    sc_rows = [("%s · ctx%s" % (family_of(m), c), str(n), sc.get((m, c, n), {}), [m])
                for (m, c, n) in tok_cells]
 
     n1 = emit_table(
@@ -597,9 +645,9 @@ def axis_thinking(o):
     for model in sorted(set(on) | set(off)):
         c1 = model_stem(model)
         if model in off:
-            rows.append((c1, "thinking off", off[model]))
+            rows.append((c1, "thinking off", off[model], [model]))
         if model in on:
-            rows.append((c1, "thinking on", on[model]))
+            rows.append((c1, "thinking on", on[model], [model]))
     exp = expected_on_tags() or ["m61gs-gsm8k", "m62gs-gsm8k", "m63gs-gsm8k"]
     n = emit_table(
         o, "H. Thinking on vs off -- the newly added axis",

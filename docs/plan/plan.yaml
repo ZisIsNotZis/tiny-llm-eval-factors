@@ -55,3 +55,11 @@ plan7:
   status: provisional
   domain:
     kind: open_question
+plan8:
+  _text: "MultiPL-E 提示集曾从 /tmp 丢失（/tmp/MultiPL-E/prompts 被清理），已用 nuprl/MultiPL-E 的 cpp/java/js/rs/rb parquet 与 openai_humaneval 重建（py 取与人 HumanEval 相同的 161 题子集）；m160 面板（gemma-4-12b/26B、Qwen3.8-27B 的 cpp+py，raw vs chat）正在 GPU 上运行，并同时作为重建提示集的可复现验证。"
+  author: agent
+  origin: "本轮数据审计；.wrapup/run_m160_protocol.sh"
+  scope: general
+  status: provisional
+  domain:
+    kind: hypothesis

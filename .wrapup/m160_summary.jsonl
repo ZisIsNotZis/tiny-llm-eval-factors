@@ -1,0 +1,1 @@
+{"model": "g12b-q2", "lang": "cpp", "n": 161, "pass": 0, "score": 0.0, "protocol": "mpl-raw-greedy-768", "statuses": {"Exception": 74, "SyntaxError": 84, "Timeout": 3}}

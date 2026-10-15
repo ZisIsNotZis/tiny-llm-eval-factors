@@ -189,3 +189,35 @@ an7:
   status: provisional
   domain:
     kind: analysis
+res16:
+  _text: "MultiPL-E 旧列不可比：各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。标准列现在只在 cpp 与 py 都测过时产出该单元，否则记缺失（NaN），不画点。"
+  from: "result.res5"
+  author: measurement
+  origin: "报告数据质量节；experiments.sqlite 的 humaneval-multipl-e 行"
+  scope: general
+  status: current
+  evidence: "SELECT DISTINCT model,language WHERE protocol='multipl-e-raw-greedy-768'"
+  producer: "report 构建时扫描数据库 + .wrapup/mres/*_eval.json"
+  domain:
+    kind: measured
+res17:
+  _text: "基础设施失败曾被误记为 0：9 个 .wrapup/mres/*_eval.json 的每道题状态都是 Exception（整轮报错），却被写成 score=0。典型为 gemma-4-26B-A4B 的 py（chat 协议，161/161 Exception）而同模型 cpp=0.832。已将对应 10 行 _score 置 NULL（备份 experiments.sqlite.bak37），并在新面板中改为“全 Exception → null”。"
+  from: "result.res16"
+  author: measurement
+  origin: "报告数据质量节；.wrapup/m26.log 与 mres 评测文件"
+  scope: general
+  status: current
+  evidence: ".wrapup/mres/m26-g26b-q2-py_eval.json statuses=Exception x161"
+  producer: "report 构建时扫描 .wrapup/mres/*_eval.json"
+  domain:
+    kind: measured
+res18:
+  _text: "生成协议改变 MultiPL-E 分数：同一模型 gemma-4-26B-A4B cpp，raw 纯补全约 0.043，chat（关思考）0.832（.wrapup/m160 已启动做同文件 raw vs chat 受控复测）。"
+  from: "result.res17"
+  author: measurement
+  origin: "报告数据质量节；m26.log；m160 面板（运行中）"
+  scope: general
+  status: provisional
+  evidence: "m26_summary.jsonl cpp=0.8323 vs m10_summary.jsonl cpp=0.0559"
+  domain:
+    kind: measured

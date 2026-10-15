@@ -19,6 +19,7 @@ Run:  python3 migrate_db.py
 """
 import json
 import os
+import re
 import sqlite3
 import sys
 
@@ -756,6 +757,31 @@ def ingest_m44(con):
     return n
 
 
+def _m41_model(filebase):
+    """Resolve a testfrac sample name to its gguf basename.
+
+    m41 reuses already-generated samples from many panels, so the sample file
+    encodes the model (e.g. 'm21-bonsai-q2g64-cpp', 'pan-glm47flash-q3-js').
+    The old ingest hardcoded 'Ternary-Bonsai-27B-Q2_g64' for every ternary row
+    and the literal 'TODO.gguf' for every conventional row, which destroyed the
+    model identity.  Resolve through the union of the panel model maps; return
+    None when unknown so the row is dropped rather than mislabelled.
+    """
+    s = re.sub(r"-(cpp|py|js|java|rs|rb)$", "", filebase)
+    union = {}
+    for name, val in list(globals().items()):
+        if name.endswith("_MODELS") and isinstance(val, dict):
+            union.update(val)
+    cands = [s]
+    for pre in ("m3", "m21", "m24", "mt1", "pan", "m33", "m35", "m37", "m38", "m39"):
+        if s.startswith(pre + "-"):
+            cands.append(s[len(pre) + 1:])
+    for c in cands:
+        if c in union:
+            return union[c]
+    return None
+
+
 def ingest_m41(con):
     """Partial-credit (mean fraction of tests passed) -- a CONTINUOUS metric, stored as
     bench_family='testfrac' so it is never confused with binary pass@1."""
@@ -773,8 +799,11 @@ def ingest_m41(con):
         mf = r.get("mean_frac")
         if mf is None:
             continue
-        row = base_row("Ternary-Bonsai-27B-Q2_g64.gguf" if r.get("arm") == "ternary"
-                       else "TODO.gguf", f"testfrac-{r.get('arm')}", 0.0, mf, None)
+        model = _m41_model(r.get("file", ""))
+        if model is None:
+            print("  [m41] unresolved sample", r.get("file"))
+            continue
+        row = base_row(model, f"testfrac-{r.get('arm')}", 0.0, mf, None)
         row.update({"run_tag": "m41-testfrac", "rep": 1, "ctx_size": 4096,
                     "protocol": "mpl-raw-greedy-768 + per-test fraction",
                     "language": r.get("lang", "cpp"), "bench_family": "testfrac",
