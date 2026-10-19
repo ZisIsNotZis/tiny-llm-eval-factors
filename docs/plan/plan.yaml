@@ -91,3 +91,39 @@ plan10:
   status: current
   domain:
     kind: open_question
+plan11:
+  _text: "里程碑 m161（进行中，owner=worker）：用修好的 harness 重测 6 个 chat/py cell（gemma-4-12b Q2/Q3、gemma-4-26B-A4B Q2/Q3、Qwen3.8-27B Q2/Q3）加 1 个端到端控制格（q38-27b-q3 cpp chat，应落回 0.857±0.03，证明修复在生成侧也生效）。验收：`.wrapup/m161_summary.jsonl` 每行含 model/lang/n=161/pass/score/protocol/statuses，6 个 eval json 的 n 都是 161，日志含提示集 sha256 与 llama-server build；全 Exception 的格不得折成一个分数。预算 ≤ 2 小时 GPU。"
+  from: "result.res20, result.res21, plan.plan8"
+  author: user
+  origin: "用户 auto advance 确认按 1→2 顺序执行"
+  scope: specific
+  status: current
+  domain:
+    kind: open_question
+plan12:
+  _text: "里程碑 m161 入库（owner=worker，依赖 plan11）：只走 `migrate_db.py`，先备份 `experiments.sqlite.bak39` 再改——m26 两条 chat cpp 行按修正后处理重算（0.2174→0.6335、0.4845→0.8571），m6b 4 条 gemma-4-12b chat 行入库（cpp 用重算值，py 缩进受损不入库），m161 的 6 条 py 行入库替换 m26 的 null/低报值；M10_MODELS 需补 g12b-q2/g12b-q3。验收：`PRAGMA integrity_check` 为 ok、行数与 protocol 分布前后对照、被改的每条给出旧值与新值。"
+  from: "plan.plan11, plan.plan9"
+  author: user
+  origin: "用户 auto advance 确认按 1→2 顺序执行"
+  scope: specific
+  status: current
+  domain:
+    kind: open_question
+plan13:
+  _text: "里程碑 m161 交付面（owner=worker，依赖 plan12）：`python3 make_report.py` 重生成 report.html，口径数字与 DB 一致；docs 更新 res20/res22 的最终入数值与 plan11/12 的完成状态，删掉已失效的中间值表述。验收：report.html 的 MultiPL-E chat 节与 DB 查询逐格一致，文档里每个数字可由一条 SQL 或一条命令复现。"
+  from: "plan.plan12"
+  author: user
+  origin: "用户 auto advance 确认按 1→2 顺序执行"
+  scope: specific
+  status: current
+  domain:
+    kind: open_question
+plan14:
+  _text: "里程碑 m161 独立复核（owner=reviewer，fresh context，依赖 plan12+plan13）：按 `proof.review` 复核改动集，重点是可证伪性——重算值能否由命令重现、入库前后集合差是否只落在声明的那几行、report 数字是否来自 DB 而非手写。阻塞项：任何一处无法由命令复现的数字。"
+  from: "plan.plan12, plan.plan13"
+  author: user
+  origin: "用户 auto advance 确认按 1→2 顺序执行"
+  scope: specific
+  status: provisional
+  domain:
+    kind: open_question
