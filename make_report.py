@@ -1136,23 +1136,53 @@ def render_fact_list(facts, kinds=None):
     return "<ul>" + "".join(items) + "</ul>" if items else "<p class='nr'>（无）</p>"
 
 
+def _eval_status_index():
+    """扫描 .wrapup/mres/*_eval.json，按 (语言, 通过数, 题数) 索引每份评测的状态直方图。
+
+    DB 行不带 mres 文件名，所以报告用「语言 + 通过数/题数 == _score」把库行与评测文件配对。
+    """
+    import glob
+    idx = {}
+    for path in glob.glob(".wrapup/mres/*_eval.json"):
+        try:
+            d = json.load(open(path))
+        except Exception:
+            continue
+        det = d.get("details")
+        if not isinstance(det, list) or not det:
+            continue
+        base = re.sub(r"(-chat)?(_fixed)?$", "", os.path.basename(path)[:-len("_eval.json")])
+        lang = next((l for l in MPL_LANGS if base.endswith("-" + l) or base.endswith("_" + l)), None)
+        n = len(det)
+        p = int(d.get("pass") or 0)
+        st = collections.Counter(x.get("status") for x in det)
+        idx.setdefault((lang, p, n), []).append((os.path.basename(path), st))
+    return idx
+
+
+def _cell_status(idx, lang, score):
+    """给库中的一个 MultiPL-E 分数找配对的评测状态直方图。
+
+    配对不唯一时只在各份直方图完全一致时接受（返回 file=None）；互相矛盾则视为无法配对。
+    """
+    if score is None:
+        return None
+    hits = [(n, base, st) for (l, p, n), files in idx.items() if l == lang and n
+            for base, st in files if abs(p / n - score) < 1e-9]
+    if not hits:
+        return None
+    n, base, st = hits[0]
+    if any(x[0] != n or x[2] != st for x in hits):
+        return None
+    return (base if len(hits) == 1 else None), n, st
+
+
 def data_quality_html():
     """构建时从 DB / eval 文件复核的数据质量问题清单（不是静态文案）。"""
-    rows = []
-    # 1) 全 Exception 的评测（基础设施失败，不是 0）
-    n_exc = 0
-    try:
-        import glob as _glob
-        for f in _glob.glob(".wrapup/mres/*_eval.json"):
-            try:
-                d = json.load(open(f))
-            except Exception:
-                continue
-            det = d.get("details")
-            if isinstance(det, list) and det and all(x.get("status") == "Exception" for x in det):
-                n_exc += 1
-    except Exception:
-        pass
+    idx = _eval_status_index()
+    # 1) 全 Exception 的评测文件（全 Exception 不是整轮运行失败，也不得写成 0）
+    n_all_exc = sum(1 for (_l, _p, n), files in idx.items() for _base, st in files
+                    if n and st.get("Exception", 0) == n)
     # 2) 语言覆盖（同一模型在 legacy MultiPL-E 里跑了哪些语言）
     langs = {}
     for model, lang in CON.execute(
@@ -1165,27 +1195,52 @@ def data_quality_html():
         "SELECT model,protocol,round(avg(_score),4) FROM experiments "
         "WHERE bench_family='humaneval-multipl-e' AND language='cpp' "
         "AND model LIKE 'gemma-4-26B-A4B-it-UD-Q3%' GROUP BY model,protocol").fetchall()
+    # 4) chat 协议下 gemma-4-26B-A4B 的每个格：库中 _score + 配对的评测状态直方图
+    g26b_cells = []
+    for model, lang, score in CON.execute(
+            "SELECT model, language, _score FROM experiments "
+            "WHERE bench_family='humaneval-multipl-e' AND protocol='mpl-chat-nothink-greedy-768' "
+            "AND model LIKE 'gemma-4-26B-A4B%' ORDER BY language, model"):
+        tier = model.split("-UD-")[-1][:-len(".gguf")] if "-UD-" in model else model
+        pair = _cell_status(idx, lang, score)
+        if pair:
+            base, n, st = pair
+            pair_txt = f"通过 {st.get('OK', 0)}/{n}，<code>Exception</code> {st.get('Exception', 0)}"
+            if base:
+                pair_txt += f"，<code>{html.escape(base)}</code>"
+            g26b_cells.append(f"<code>{html.escape(tier)}</code> {MPL_LANG_LBL.get(lang, lang)} "
+                              f"{round(score, 4)}（{pair_txt}）")
+        else:
+            g26b_cells.append(f"<code>{html.escape(tier)}</code> {MPL_LANG_LBL.get(lang, lang)} "
+                              f"{round(score, 4)}（库中当前值，未配到评测文件）")
 
     h = ["<div class='analysis'>"]
     h.append("<p><b>1. “12B 崩到 0”是数据缺陷，不是模型得分。</b> 旧的多语言代码（MultiPL-E）列把每个模型<br>"
              "<b>碰巧跑过的语言</b>混在一起求平均：有的模型只有 cpp、有的只有 py、gemma-4-12b 只有 java/js/rb/rs。"
-             "不同测集不能相减，于是 12b/26B 的“0.002 / 0.043”其实是<b>语言覆盖不同</b>造成的假象。<br>"
+             "不同测集不能相减，于是 12b/26B 的旧列近零分数其实是<b>语言覆盖不同</b>造成的假象。<br>"
              f"当前数据库里语言覆盖不完整（不含 cpp+py 全对）的模型有 <b>{len(partial)}</b> 个："
              + "、".join(f"<code>{html.escape(m)}</code>({html.escape(l) or '—'})" for m, l in partial[:12])
              + (" 等" if len(partial) > 12 else "") + "。</p>")
     h.append("<p><b>修复：</b>标准列现在只在 <b>cpp 与 py 都测过</b>时产出 MultiPL-E 单元（有效位宽无关的语言集不再进入比较）；"
              "两者不全者记为缺失（NaN），报告里写 <code>—</code> 且不画点——与“缺失≠ 0”一致。"
              "其它语言（java/js/rs/rb）保留在数据库，供单独的语言子研究。</p>")
-    h.append(f"<p><b>2. 基础设施失败被误记成 0。</b> 扫描 <code>.wrapup/mres/*_eval.json</code> 发现 <b>{n_exc}</b> 个评测的"
-             "每道题状态都是 <code>Exception</code>（整体报错），却被计为 score=0。典型：gemma-4-26B-A4B 的 py 在 chat 协议下 "
-             "cpp=0.832 而 py=0.000（161/161 Exception）。这些行已置为 <b>NULL</b>（缺失，不是 0）。"
-             "根因：summary 只写 score，不写状态直方图；已在本轮数据库修正，并在新面板中改为“全 Exception → null”。</p>")
+    h.append(f"<p><b>2. 全 <code>Exception</code> 的格不是整轮运行失败，也不得记成 0。</b> 扫描 <code>.wrapup/mres/*_eval.json</code> 的状态直方图，"
+             f"有 <b>{n_all_exc}</b> 份文件每道题状态都是 <code>Exception</code>。它们都不构成可用分数："
+             "全 Exception 一律记为缺失（NULL）、不得写成 0；库中对应的格要么是 NULL，要么已被后来的重测取代。"
+             "把这类格读成整轮运行失败的旧归因已撤回（<code>docs/result/result.yaml::res17b</code>），"
+             "成因被查为旧后处理抹掉无围栏完成物的首行缩进（<code>::res21</code>）。</p>")
+    h.append("<p><b>重测后这些格按真实通过数记分。</b> gemma-4-26B-A4B 在 chat 协议下的格，库中当前值与配对的评测状态："
+             + "；".join(g26b_cells)
+             + "。两个 py 格的 <code>Exception</code> 来自模型行为：模型把函数体首行写在第 0 列，拼接后必然缩进错误；"
+             "每格「首行在第 0 列」的完成物条数与该格 <code>Exception</code> 条数逐格相等，而同为 py 的 Qwen3.8-27B Q3 格几乎没有这种完成物、得分很高，"
+             "所以不是 harness 剥离（<code>docs/result/result.yaml::res24</code>）。</p>")
     h.append("<p><b>3. 生成协议会改变结论（轴 an7）。</b> 同一模型 gemma-4-26B-A4B 的 cpp："
              + "；".join(f"<code>{html.escape(p)}</code> → {v}" for _m, p, v in prot)
              + "。raw（纯补全）对 gemma 系列是不公平的：它的模板会先输出推理/散文，raw 下几乎全不通过（harness floor）。"
              "所以旧的 raw MultiPL-E 对 gemma 家族不可比。这正是“换协议必须重测”。</p>")
     h.append("<p><b>4. 模型规模曲线“越大越差”有两类原因，要分开看：</b>"
-             "(a) <b>方案反向</b>：Qwen3.5-2B 在 3.96（UD-IQ3_XXS）→ 4.11（UD-Q2_K_XL）字节更多、分数更低——同名档位跨供应商/方案不可比；"
+             "(a) <b>方案反向</b>：Qwen3.5-2B 在相邻的跨供应商档位上，字节更多的一档分数反而更低——同名档位跨供应商/方案不可比（当前值见 "
+             "<code>docs/result/result.yaml::res5</code>）；"
              "(b) <b>协议/测集不可比</b>：gemma-4 的 12b/26B 近零来自 raw 协议与语言覆盖，见上。"
              "剩下同家族、同方案、同协议的单调趋势是真实的规模效应。</p>")
     h.append("</div>")

@@ -201,7 +201,7 @@ res16:
   domain:
     kind: measured
 res17:
-  _text: "基础设施失败曾被误记为 0：9 个 .wrapup/mres/*_eval.json 的每道题状态都是 Exception（整轮报错），却被写成 score=0。典型为 gemma-4-26B-A4B 的 py（chat 协议，161/161 Exception）而同模型 cpp=0.832。已将对应 10 行 _score 置 NULL（备份 experiments.sqlite.bak37），并在新面板中改为“全 Exception → null”。"
+  _text: "全 `Exception` 的格曾被写成 score=0：9 份 .wrapup/mres/*_eval.json 的每道题状态都是 Exception，却被计为 0，其中含 gemma-4-26B-A4B 的 py（chat 协议）而同模型 cpp 正常。「这类格必须记缺失（NULL）、不得写 0」仍是当前规则，对应行已置 NULL（备份 experiments.sqlite.bak37）；把它解释为整轮运行失败的旧归因已撤回，见 res17b。"
   from: "result.res16"
   author: measurement
   origin: "报告数据质量节；.wrapup/m26.log 与 mres 评测文件"
@@ -212,7 +212,7 @@ res17:
   domain:
     kind: measured
 res17b:
-  _text: "（撤回 res17 的一半归因）res17 把那些全 `Exception` 判为「基础设施整轮报错」，该归因已撤回：原因是 res21 的缩进破坏。「却被写成 0、必须记 null」这一半仍然成立，但不得再称之为基础设施失败。"
+  _text: "（撤回 res17 的一半归因）res17 把那些全 `Exception` 判为「整轮运行报错」，该归因已撤回：原因是 res21 的缩进破坏。「却被写成 0、必须记缺失」这一半仍然成立，但不得再把这类格称为整轮运行失败。"
   from: "result.res17, result.res21"
   author: measurement
   origin: "m160 缺陷追查"
@@ -252,7 +252,7 @@ res20:
   domain:
     kind: measured
 res21:
-  _text: "旧 `strip_fences` 开头 `text.strip()` 会抹掉无围栏完成物的首行缩进：gemma-4-26B py chat 有 90/161（Q2）与 103/161（Q3）完成物首行缩进受损，全部编译后报错并记为 `Exception`。res17 把这些 `Exception` 归因为基础设施失败是错的——原因是评测后处理破坏缩进，而成品已落盘，缩进无法从样本恢复。"
+  _text: "旧 `strip_fences` 开头 `text.strip()` 会抹掉无围栏完成物的首行缩进：gemma-4-26B py chat 有 90/161（Q2）与 103/161（Q3）完成物首行缩进受损，全部编译后报错并记为 `Exception`。res17 把这些 `Exception` 归因为整轮运行失败是错的——原因是评测后处理破坏缩进，而成品已落盘，缩进无法从样本恢复。"
   from: "result.res17, result.res20"
   author: measurement
   origin: ".wrapup/mres/m26-g26b-q*-py.jsonl 逐条检查首行缩进"

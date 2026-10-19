@@ -1,32 +1,33 @@
 # STATUS
 
-路由文件：只记「它是什么、现在什么状态、进展落在哪、下一步」。数字与结论见 `FINDINGS.md`；`文件:行` 引用绑定该提交之前的 revision `a2e62fc`。
+路由文件：只记「它是什么、现在什么状态、下一步落在哪」。数值与结论的当前值在 `docs/result/result.yaml`，研究问题与里程碑状态在 `docs/plan/plan.yaml`；本文件不复制它们的值，也不写 `文件:行` 引用（行号随修订漂移）。`::` 后面是节点 id。
 
 ## 它是什么
 
-一个可复现的**本地语言模型推理因子测量工作台**：量化、模型规模、解码协议与基准行为。数据 SSOT 是 `experiments.sqlite`（记录下来的测量），`docs/plan/plan.yaml` 拥有当前研究问题及其状态，`docs/result/result.yaml` 拥有当前结论及其证据引用，`report.html` 由 `make_report.py` 生成、不得手改。（`README.md:3`、`README.md:7-12`、`AGENTS.md:23`）
+一个可复现的本地语言模型推理因子测量工作台：量化、模型规模、解码协议与基准行为。数据 SSOT 是 `experiments.sqlite`；`report.html` 由 `make_report.py` 从库与评测文件生成、不得手改；方法与协议在 `docs/method/method.yaml`。
 
 ## 当前状态
 
-**活跃**，截至 2026-10-19（HEAD `a2e62fc`）。
+**活跃。** 里程碑 m161 已完成入库、报告重生成与结果/方法/计划层的同步：
 
-- 里程碑 **m161 进行中**（owner=worker）：用修好的 harness 重测 6 个 chat/py cell + 1 个端到端控制格，预算 ≤ 2 小时 GPU。（`docs/plan/plan.yaml:94`）
-- 后续三个里程碑已排定且未完成：入库（`plan12`，`docs/plan/plan.yaml:103`）、报告重生成（`plan13`，`:112`）、独立复核（`plan14`，`:121`）。
-- 当前数据库与报告**仍是低报值**：DB 里 m26 的两条 chat cpp 行还是 `0.2174/0.4845`（正确值 `0.6335/0.8571`，可由磁盘样本重算），`report.html` 因此仍印低报值。（`docs/plan/plan.yaml:76`、`docs/result/result.yaml:243`）
-- 文档层有两个**未闭合的阻塞**，不得记为通过：`docs/check_docs.py` 实际执行时因 `/home/z/vibe/AGENTS.docs.schema.yaml` 缺失退出 2（`docs/plan/plan.yaml:58`）；研究证据可恢复性（result 的来源仍指向已退役的 `.scratch/originals`）待修复（同处）。
-- 硬阻塞实验（`BLOCKED-on-VRAM` / `GATE-FAIL`）登记在 `docs/plan/plan.yaml:1`。
+- 测量与入库：`docs/result/result.yaml::res24`（重测的 chat 格与端到端控制格）、`::res23`（重复行去重与 `ingest_mpl` 幂等修复）。当前库行数、去重前后的集合差与备份名都在 `res23` 的证据里。
+- 报告已由 `make_report.py` 重生成；数据质量节现在从库与 `.wrapup/mres/*_eval.json` 现算（`make_report.py::data_quality_html`），不再带手写数字。
 
-## 最新进展落在哪个文件
+仍开放，均不得记为通过：
 
-1. 当前问题与里程碑状态：`docs/plan/plan.yaml`（最近三条 m161 计划在同一文件 `plan11`–`plan14`）。
-2. 当前结论与证据：`docs/result/result.yaml`（最近的条目是 `res19`–`res22`，都是 MultiPL-E 判分缺陷的追查）。
+1. **独立复核未执行**：`docs/plan/plan.yaml::plan14`（owner=reviewer，fresh context，按 `proof.review`）。
+2. **MultiPL-E chat 单次值的可复现风险未裁决**：`docs/plan/plan.yaml::plan15`——同一个 cell 的三次记录值、两个候选原因和裁决命令都在该节点。
+3. **陈旧脚本根路径未修**：`docs/plan/plan.yaml::plan10`。
+4. **文档层阻塞**：证据可恢复性与文档检查受阻都登记在 `docs/plan/plan.yaml::evidence_repair`；`python3 docs/check_docs.py` 目前因共享 schema 缺失而退出，不得记为通过。
+5. **硬阻塞实验**（显存不足、架构无法加载）不是缺失也不是 0：`docs/plan/plan.yaml::plan1`。
+
+## 事实落在哪
+
+1. 当前问题、里程碑与未决项：`docs/plan/plan.yaml`。
+2. 当前结论与证据：`docs/result/result.yaml`。
 3. 方法/协议：`docs/method/method.yaml`；产品与需求：`docs/product/product.yaml`、`docs/need/`、`docs/pain/`、`docs/architecture/`。
-4. 本地产物（不入库，按 `README.md:12` 的规则）：`.wrapup/`，含 `m161_summary.jsonl`、`prompts/SHA256SUMS`。
+4. 数据：`experiments.sqlite`；报告：`report.html`（生成物，不得手改）；本地产物：`.wrapup/`（不入库，规则见 `README.md` 与 `AGENTS.md`）。
 
 ## 下一步
 
-仓内已写明的顺序，未新增判断：
-
-1. `plan11` → `plan12` → `plan13` → `plan14` 依次执行：重测 6 个 chat/py cell → 只经 `migrate_db.py` 入库（先备份 `experiments.sqlite.bak39`）→ `make_report.py` 重生成 → fresh-context 独立复核。（`docs/plan/plan.yaml:94`、`:103`、`:112`、`:121`）
-2. 未决问题：长上下文的 KV 影响未测、31B 与 26B-A4B 原生档显存不足未测、扩散式解码未测、12B 原生档 MMLU 异常需复测（`docs/plan/plan.yaml:50`）；`.wrapup/` 下 10+ 脚本硬编码已不存在的 `/home/z/hf/research`，按 `migrate_on_touch` 逐个改（`:85`）。
-3. 假设池 B1–B3 与 MoE 双变量回归等仍为 `provisional`，未开跑（`docs/plan/plan.yaml:10-49`）。
+按仓内已写明的顺序：`plan14` 独立复核 → `plan15` 的可复现性裁决 → `plan10` 的脚本根路径修复；`evidence_repair` 的文档检查与证据可恢复性在获得授权后单独处理。
