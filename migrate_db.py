@@ -111,6 +111,57 @@ def insert(con, row):
     )
 
 
+# A cell's identity is WHAT WAS RUN, not what it scored: the model, protocol,
+# language, benchmark, replicate, run configuration (ctx, max_tokens,
+# parallel_slots, seed, reasoning/spec/cache settings) and every variant column
+# that distinguishes runs under one protocol -- the sampling parameters top_p,
+# top_k, min_p, presence_penalty and temp, so a top-k or temperature axis under a
+# single protocol string stays N distinct cells instead of collapsing into one.
+# `_score` and `_bad_rate` are the cell's VALUE, `_wall_time`/`_tok_s` are timing,
+# `source_file`, `completed_at`, `n_items`, `limit_spec` are provenance and
+# `_file_size` is read from disk, so none of them names the cell.  The derived
+# `__*` block is absent on purpose: `ingest_mpl` cannot compute it, and ignoring it
+# is what lets a re-read of a summary recognise the enriched copy `exp.py` already
+# inserted instead of appending a bare duplicate.
+# Consequence: a rerun never refreshes a score.  A corrected score needs an
+# explicit delete-then-reinsert, as ingest_m26 / ingest_m6b / ingest_m161 do.
+MEASUREMENT_IDENTITY = [
+    "model", "cache_type_k", "cache_type_k_draft", "cache_type_v",
+    "cache_type_v_draft", "reasoning", "spec_type", "spec_draft_n_max", "temp",
+    "top_p", "top_k", "min_p", "presence_penalty", "_bench", "run_tag", "rep",
+    "ctx_size", "parallel_slots", "seed", "protocol", "language", "bench_family",
+    "max_tokens",
+]
+
+
+def measurement_present(con, row):
+    """True when this measurement cell already exists, enriched or bare."""
+    # `IS` rather than `=` so a NULL-valued factor (seed) still matches.
+    where = " AND ".join(f"{c} IS ?" for c in MEASUREMENT_IDENTITY)
+    return con.execute(
+        f"SELECT 1 FROM experiments WHERE {where} LIMIT 1",
+        [row.get(c) for c in MEASUREMENT_IDENTITY],
+    ).fetchone() is not None
+
+
+def repair_duplicate_bare_copies(con):
+    """Delete the bare copy of a cell when an enriched copy of the same cell exists.
+
+    `ingest_mpl` used to append on every full run, so 17 MultiPL-E panels hold two
+    copies of each cell: the enriched one (`exp.py` computed `__*`) and a bare one.
+    Keep the enriched row, drop only the bare duplicate: a cell that has no enriched
+    copy is a legitimate measurement and is never touched.  Idempotent, because after
+    one run no bare row has an enriched twin left.
+    """
+    same_cell = " AND ".join(f"e.{c} IS b.{c}" for c in MEASUREMENT_IDENTITY)
+    cur = con.execute(
+        "DELETE FROM experiments WHERE rowid IN ("
+        " SELECT b.rowid FROM experiments b JOIN experiments e ON " + same_cell +
+        " WHERE b.__model IS NULL AND e.__model IS NOT NULL)"
+    )
+    return cur.rowcount
+
+
 def base_row(model, bench, temp, score, bad):
     return {
         "model": model, "cache_type_k": "q8_0", "cache_type_k_draft": "q8_0",
@@ -182,11 +233,19 @@ MPL_MODELS = {
 
 
 def ingest_mpl(con, path, run_tag, source, model_map=None):
+    """Ingest a MultiPL-E summary, inserting only cells that are not in the DB yet.
+
+    A full `python3 migrate_db.py` re-reads every summary; before this presence check
+    each re-read appended a second (bare) copy of every cell `exp.py` had already
+    inserted enriched, so the DB grew by one copy per run.  `insert` itself stays
+    additive -- callers that refresh a run delete their rows first.
+    """
     model_map = model_map or MPL_MODELS
     if not os.path.exists(path):
         print(f"  (no {source})")
         return 0
     n = 0
+    skipped = 0
     for line in open(path):
         line = line.strip()
         if not line:
@@ -200,8 +259,13 @@ def ingest_mpl(con, path, run_tag, source, model_map=None):
                     "parallel_slots": 1, "protocol": "multipl-e-raw-greedy-768",
                     "language": lang, "bench_family": "humaneval-multipl-e",
                     "max_tokens": 768, "source_file": source})
+        if measurement_present(con, row):
+            skipped += 1
+            continue
         insert(con, row)
         n += 1
+    if skipped:
+        print(f"  {run_tag}: {skipped} cell(s) already present, not re-inserted")
     return n
 
 
@@ -1539,6 +1603,9 @@ def main():
     before = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
     print("== migrating schema ==")
     migrate_schema(con)
+    print("== repairing duplicate bare cells ==")
+    repaired = repair_duplicate_bare_copies(con)
+    print(f"  removed {repaired} bare duplicate(s) that an enriched copy already covered")
     print("== ingesting ==")
     existing = {r[0] for r in con.execute(
         "SELECT DISTINCT run_tag FROM experiments WHERE run_tag IS NOT NULL")}
