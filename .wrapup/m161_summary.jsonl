@@ -1,0 +1,7 @@
+{"model": "q38-27b-q3", "lang": "cpp", "n": 161, "pass": 140, "score": 0.8695652173913043, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"OK": 140, "Exception": 18, "SyntaxError": 3}}
+{"model": "g12b-q2", "lang": "py", "n": 161, "pass": 77, "score": 0.4782608695652174, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"Exception": 83, "OK": 77, "Timeout": 1}}
+{"model": "g12b-q3", "lang": "py", "n": 161, "pass": 93, "score": 0.577639751552795, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"OK": 93, "Exception": 68}}
+{"model": "g26b-q2", "lang": "py", "n": 161, "pass": 2, "score": 0.012422360248447204, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"Exception": 159, "OK": 2}}
+{"model": "g26b-q3", "lang": "py", "n": 161, "pass": 1, "score": 0.006211180124223602, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"Exception": 160, "OK": 1}}
+{"model": "q38-27b-q2", "lang": "py", "n": 161, "pass": 121, "score": 0.7515527950310559, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"OK": 121, "Exception": 40}}
+{"model": "q38-27b-q3", "lang": "py", "n": 161, "pass": 145, "score": 0.9006211180124224, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"OK": 145, "Exception": 16}}
