@@ -314,6 +314,17 @@ M10_MODELS = {
 }
 
 
+# The MultiPL-E *chat* panels (m6b, m26, m161) share the m10 roster plus the
+# gemma-4-12B chat pair, which no raw-completion panel can measure: in raw mode the
+# model emits its <|channel>thought channel at every quant (see M6_MODELS), so its
+# raw scores are a protocol artifact, not a quantization measurement.  A sibling map
+# keeps `M10_MODELS` meaning exactly the roster m10_summary.jsonl contains.
+MPL_CHAT_MODELS = dict(M10_MODELS, **{
+    "g12b-q2": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+    "g12b-q3": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+})
+
+
 def ingest_m10(con):
     return ingest_mpl(con, ".wrapup/m10_summary.jsonl", "m10-family-ladder",
                       "m10_summary.jsonl", model_map=M10_MODELS)
@@ -687,6 +698,23 @@ def ingest_m52(con):
     return n
 
 
+# What m26 still owns in the chat protocol, as (pass, n) re-derived from the stored
+# completions under the fixed postprocess -- mpl_run.py::strip_fences at commit
+# b57a71f, reproduced per cell by
+#   python3 .wrapup/mpl_run.py eval --lang cpp \
+#       --samples .wrapup/mres/m26-<tag>-cpp_fixed.jsonl
+# whose "pass"/"n" are the numbers below.  Everything else m26 measured is gone:
+# m161 re-generated the six chat py cells with the fixed harness and measured the
+# q38-27b-q3 cpp control cell, so m161 is their single home and an m26 copy would be
+# a second home for one fact.  gemma-4-26B's cpp completions carry no markdown fence,
+# so their scores are unchanged; Qwen3.8-27B Q2 cpp's old 0.2174 was the fence defect.
+M26_CHAT_CELLS = {
+    ("g26b-q2", "cpp"): (134, 161),      # 0.8323, unchanged by the postprocess fix
+    ("g26b-q3", "cpp"): (134, 161),      # 0.8323, unchanged
+    ("q38-27b-q2", "cpp"): (102, 161),   # 0.6335, was 0.2174 (fence scored as SyntaxError)
+}
+
+
 def ingest_m26(con):
     """M26 / M43 (QUEUE #17): Tier-2C dense vs MoE at matched TOTAL size.
 
@@ -694,6 +722,10 @@ def ingest_m26(con):
     run_m43.sh rebuilt m26_summary.jsonl from the per-cell evals (CPU-only, no
     re-run). Chat protocol, greedy, ctx 4096 -- protocol is read per row so the
     chat-vs-raw distinction is preserved.
+
+    Only M26_CHAT_CELLS are ingested, and their scores come from that table rather
+    than from the summary, because the summary was scored by the defective
+    postprocess (see the table's comment for the re-derivation).
     """
     path = ".wrapup/m26_summary.jsonl"
     if not os.path.exists(path):
@@ -701,20 +733,144 @@ def ingest_m26(con):
         return 0
     con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m26-tier2c-dense-moe",))
     n = 0
+    seen = set()
     for line in open(path):
         line = line.strip()
         if not line:
             continue
         r = json.loads(line)
-        if r["model"] not in M10_MODELS:
+        cell = (r["model"], r["lang"])
+        if cell not in M26_CHAT_CELLS:
             continue
-        lang = r["lang"]
-        row = base_row(M10_MODELS[r["model"]], f"humaneval-{lang}", 0.0, r["score"], None)
+        passed, total = M26_CHAT_CELLS[cell]
+        row = base_row(MPL_CHAT_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0,
+                       passed / total, None)
         row.update({"run_tag": "m26-tier2c-dense-moe", "rep": 1, "ctx_size": 4096,
                     "parallel_slots": 1,
                     "protocol": r.get("protocol", "mpl-chat-nothink-greedy-768"),
-                    "language": lang, "bench_family": "humaneval-multipl-e",
+                    "language": r["lang"], "bench_family": "humaneval-multipl-e",
                     "max_tokens": 768, "source_file": "m26_summary.jsonl"})
+        insert(con, row); n += 1
+        seen.add(cell)
+    missing = set(M26_CHAT_CELLS) - seen
+    if missing:
+        print(f"  ! m26 summary lacks declared cells {sorted(missing)}")
+    return n
+
+
+M6B_CHAT_CELLS = {
+    # pass/n re-derived from the stored completions under the fixed postprocess:
+    #   python3 .wrapup/mpl_run.py eval --lang cpp \
+    #       --samples .wrapup/mres/m6b-g12b-q2-cpp_fixed.jsonl    -> pass 4
+    #   python3 .wrapup/mpl_run.py eval --lang cpp \
+    #       --samples .wrapup/mres/m6b-g12b-q3-cpp_fixed.jsonl    -> pass 130
+    # m6b_summary.jsonl holds the pre-fix counts (2 and 130), because it was written
+    # before strip_fences was fixed; the _fixed evals are the authoritative numbers.
+    ("g12b-q2", "cpp"): (4, 161),
+    ("g12b-q3", "cpp"): (130, 161),
+}
+
+# m6b ran a different server configuration from m26/m161 -- ctx 4096 per
+# n_ctx_slot in m6b.log, not 2048 -- so its rows must not pool into the m161 chat
+# column: the suffix is the visible reason they are not comparable, and it is part
+# of the cell key the report groups on.
+M6B_PROTOCOL = "mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified"
+
+
+def ingest_m6b(con):
+    """M6B: gemma-4-12B chat panel (2026-09-30), ingested for the cpp cells only.
+
+    The two py cells are deliberately absent, and no zero stands in for them: the
+    old `strip_fences` ran `text.strip()` over the completion, so the first line's
+    indentation was destroyed *when the completions were generated* (e.g.
+    mres/m6b-g12b-q3-py.jsonl starts `for i in range(...)` at column 0 while its
+    following lines keep theirs).  Python completions are function bodies, so the
+    stored text cannot compile for reasons the postprocess now handles, and no
+    re-score can restore the removed bytes.  A cell whose score is unrecoverable
+    stays absent rather than being recorded as 0.
+
+    Configuration actually recorded here, and what is only partly established:
+      * ctx_size 4096 and four slots -- m6b.log prints `n_slots = 4, n_ctx_slot =
+        4096`, so this is observed, not assumed.
+      * cache_type_k/v q8_0 -- taken from the launch line of run_m6b.sh, which is
+        the only survived record of the panel's server flags; the log itself does
+        not print them.  The script cannot be trusted for everything (it says raw
+        completion and writes samples under different names than the ones on disk,
+        so the invocation that produced these cells was a modified copy), hence a
+        weaker provenance than m161's.
+      * --jinja / the chat-template path -- NOT established.  m6b.log has no
+        template-init line, and the corresponding line in m161.log is model-
+        dependent, so its absence is not proof of absence; the protocol string
+        therefore marks the template as unverified instead of implying it matched.
+    cpp scores come from M6B_CHAT_CELLS (re-derived, see there).
+    """
+    path = ".wrapup/m6b_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m6b summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m6b-chat-gemma12b",))
+    n = 0
+    seen = set()
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        cell = (r["model"], r["lang"])
+        if cell not in M6B_CHAT_CELLS:
+            continue
+        passed, total = M6B_CHAT_CELLS[cell]
+        row = base_row(MPL_CHAT_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0,
+                       passed / total, None)
+        row.update({"run_tag": "m6b-chat-gemma12b", "rep": 1, "ctx_size": 4096,
+                    "parallel_slots": 4, "protocol": M6B_PROTOCOL,
+                    "language": r["lang"], "bench_family": "humaneval-multipl-e",
+                    "max_tokens": 768, "source_file": "m6b_summary.jsonl"})
+        insert(con, row); n += 1
+        seen.add(cell)
+    missing = set(M6B_CHAT_CELLS) - seen
+    if missing:
+        print(f"  ! m6b summary lacks declared cells {sorted(missing)}")
+    return n
+
+
+def ingest_m161(con):
+    """M161: the six MultiPL-E chat py cells re-generated with the FIXED postprocess,
+    plus the q38-27b-q3 cpp cell that end-to-end controls the fix.
+
+    run_m161_chat_py.sh ran the pinned prompt set (.wrapup/prompts, hash-checked
+    before GPU time) at ctx 2048 with four parallel slots, greedy, 768 max tokens.
+    Unlike m26, these are fresh generations: the pre-fix samples could not be
+    re-scored, because the damaged text was the generation itself (method.m48).
+
+    An all-Exception cell keeps `_score` NULL.  Exception means the program compiled
+    and then failed, so a cell where every item raised is not a measured zero; m48
+    keeps SyntaxError / Exception / Timeout as distinct outcomes and forbids folding
+    them into one 0.
+    """
+    path = ".wrapup/m161_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m161 summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?",
+                ("m161-chat-postprocess-fixed",))
+    n = 0
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r["model"] not in MPL_CHAT_MODELS:
+            continue
+        statuses = r.get("statuses") or {}
+        score = None if statuses and set(statuses) == {"Exception"} else r["score"]
+        row = base_row(MPL_CHAT_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0,
+                       score, None)
+        row.update({"run_tag": "m161-chat-postprocess-fixed", "rep": 1,
+                    "ctx_size": 2048, "parallel_slots": 4,
+                    "protocol": r.get("protocol", "mpl-chat-nothink-greedy-768"),
+                    "language": r["lang"], "bench_family": "humaneval-multipl-e",
+                    "max_tokens": 768, "source_file": "m161_summary.jsonl"})
         insert(con, row); n += 1
     return n
 
@@ -1418,7 +1574,8 @@ def main():
         ("m55", ingest_m55), ("m56", ingest_m56), ("m57", ingest_m57),
         ("m58", ingest_m58), ("m59", ingest_m59), ("m60", ingest_m60),
         ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
-        ("m54", ingest_m54), ("m26", ingest_m26), ("m44", ingest_m44),
+        ("m54", ingest_m54), ("m26", ingest_m26), ("m6b", ingest_m6b),
+        ("m161", ingest_m161), ("m44", ingest_m44),
         ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),
