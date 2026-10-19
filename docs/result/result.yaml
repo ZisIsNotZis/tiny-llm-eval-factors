@@ -118,10 +118,10 @@ res14:
   domain:
     kind: measured
 res15:
-  _text: "当前规模：`experiments.sqlite` 约 3300 行（已去重）、208 个模型文件、59 种协议。"
-  producer: "SELECT count(*) FROM experiments"
+  _text: "当前规模：`experiments.sqlite` 3231 行、211 个模型文件、60 种非空协议（`protocol` 为空的历史行另计，见 architecture.arch3）。"
+  producer: "SELECT count(*), count(DISTINCT model), count(DISTINCT protocol) FROM experiments"
   author: measurement
-  origin: ".scratch/originals/README.md 当前规模; LEDGER R16"
+  origin: "对 experiments.sqlite 的只读查询"
   scope: specific
   status: current
   domain:
@@ -269,5 +269,26 @@ res22:
   scope: specific
   status: current
   evidence: "m6b-g12b-q3-cpp 重算后 OK 130 / Exception 16 / SyntaxError 15；m6b-g12b-q2-cpp OK 4 / SyntaxError 156"
+  domain:
+    kind: measured
+res23:
+  _text: "重复测量行缺陷与修复：修复前 17 个 MultiPL-E 面板的 80 个 cell 各存两份——一份 enriched 副本（`exp.py::double_underscore_fields` 写入 `__*` 列）、一份 bare 副本（`migrate_db.py::ingest_mpl` 当时无条件 `insert`，所以每跑一次全量入库这 80 个 cell 各多一行）；修复只删「有 enriched 双胞胎」的 bare 副本，行数 3311→3231，enriched 副本 2172 行前后不变，只存一份的 1059 个 bare cell 未动；`ingest_mpl` 现先用 `measurement_present` 按 `MEASUREMENT_IDENTITY` 预检，重跑插入 0 行。备份 `experiments.sqlite.bak40`。"
+  author: measurement
+  origin: "m161-2b 入库修复（commit 63191f4）"
+  scope: general
+  status: current
+  evidence: "bak40 行数 3311、enriched 2172 / bare 1139；现库 3231、enriched 2172 / bare 1059；按身份分组的重复组 bak40=80（17 个 run_tag）现库=0；完整性 ok"
+  producer: "`sqlite3 experiments.sqlite.bak40 'SELECT count(*) FROM experiments'`（3311）与 `sqlite3 experiments.sqlite`（3231）；`SELECT CASE WHEN __model IS NOT NULL THEN 'enriched' ELSE 'bare' END, count(*) ... GROUP BY 1`；重复组数 = 对 MEASUREMENT_IDENTITY 23 列做 `GROUP BY … HAVING count(*)>1` 的行数；重跑无新增 = 在库副本上跑 `python3 migrate_db.py` 后 `rows 3231 -> 3231` 且 `removed 0 bare duplicate(s)`"
+  domain:
+    kind: measured
+res24:
+  _text: "里程碑 m161 的 7 个 chat cell（`mpl-chat-nothink-greedy-768`，n=161）：q38-27b-q3 cpp 140/161=0.8696（端到端控制格）、q38-27b-q2 py 121/161=0.7516、q38-27b-q3 py 145/161=0.9006、gemma-4-12b Q2 py 77/161=0.4783、gemma-4-12b Q3 py 93/161=0.5776、gemma-4-26B-A4B Q2 py 2/161=0.0124、gemma-4-26B-A4B Q3 py 1/161=0.0062；gemma-4-26B 的两个 py 格是 Exception 主导（159/161、160/161 都是 `Exception`），成因是模型把函数体首行写在第 0 列（harness 不重排缩进，`mpl_run.strip_fences` 只剥行首围栏、保留缩进），每格「首行在第 0 列的完成物条数」与该格 Exception 条数逐格相等（159=159、160=160），所以是模型行为、不是 harness 剥离；同为 py 的 q38-27b-q3 首行列 0 只有 2/161，得分 0.9006。"
+  from: "result.res21, method.m48"
+  author: measurement
+  origin: ".wrapup/m161.log（面板 2026-10-19 21:36 启动）; .wrapup/m161_summary.jsonl; .wrapup/mres/m161-*"
+  scope: specific
+  status: current
+  evidence: "首行在第 0 列计数 g26b-q2-py=159、g26b-q3-py=160、q38-27b-q3-py=2；对应 eval json 的 Exception 计数 159/160/16；HumanEval_0 的完成物原文为 `for i in range(len(numbers)):` 后接 8 空格缩进的 `for j …`（首行列 0、续行缩进，拼接后必然 IndentationError）"
+  producer: "`jq -c '{model,lang,pass,n,statuses}' .wrapup/m161_summary.jsonl`；每格首行列 0 条数 `jq -r '.completion|split(\"\\n\")[0]' .wrapup/mres/m161-<cell>-chat.jsonl | grep -c '^[^ \\t]'`；每格 Exception 条数 `jq -r '.details[]|select(.status==\"Exception\")|.name' .wrapup/mres/m161-<cell>_eval.json | wc -l`"
   domain:
     kind: measured

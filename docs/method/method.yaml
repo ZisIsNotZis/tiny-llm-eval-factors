@@ -386,3 +386,21 @@ m48:
   evidence: ".wrapup/mpl_run.py::strip_fences 单测：未闭合围栏、已闭合围栏、无围栏保缩进、围栏不在行首不动"
   domain:
     topic: protocol
+m49:
+  _text: "测量 cell 的身份是「跑了什么」：`migrate_db.py::MEASUREMENT_IDENTITY` 的 23 列（model、`_bench`/bench_family、protocol、language、run_tag、rep，以及 temp/top_p/top_k/min_p/presence_penalty、spec_*、cache_type_*、reasoning、ctx_size、parallel_slots、seed、max_tokens 这些变体列）；`_score`/`_bad_rate` 是这个 cell 的值，`source_file` 与 `__*` 列是它的来源，不参与身份。因此重跑同一个 cell 不会刷新分数（身份已存在就跳过插入），要改一个已入库 cell 的分数必须显式删旧行再插入。"
+  author: agent
+  origin: "m161-2b 入库修复：80 个 MultiPL-E cell 因无条件 append 而各存两份（result.res23）"
+  scope: general
+  status: current
+  evidence: "migrate_db.py::MEASUREMENT_IDENTITY（23 列）、measurement_present、ingest_mpl 的预检分支；带 REFRESH 的入库函数先按 run_tag 删除再插"
+  domain:
+    topic: operations
+m50:
+  _text: "MultiPL-E 提示集是仓库内的固定输入：`.wrapup/prompts/humaneval-<lang>.jsonl`（6 个文件）加 `SHA256SUMS`，`mpl_run.py` 默认读它；面板脚本在花 GPU 前用 `sha256sum -c` 校验，缺目录与被篡改各以 exit 2 中止，从而把「提示集缺失」与「完成物为空」分开（m160 的 16 个 cell 曾因 `/tmp` 提示集被清理而在准备阶段静默失败）。"
+  author: agent
+  origin: "m160 缺陷追查; .wrapup/run_m160_protocol.sh 的 preflight"
+  scope: general
+  status: current
+  evidence: ".wrapup/prompts/SHA256SUMS；run_m160_protocol.sh 的两个负控（缺目录 / 被篡改各 exit 2）；.wrapup/m161.log 首行记录 humaneval-py.jsonl sha256=ac14c3b0…"
+  domain:
+    topic: protocol

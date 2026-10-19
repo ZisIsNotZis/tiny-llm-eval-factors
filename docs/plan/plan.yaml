@@ -64,66 +64,31 @@ evidence_repair:
   evidence: "make_report.py::CON/raw_scores/tag_bpw/BPWMAP；docs/result/result.yaml::res1-res15；python3 docs/check_docs.py 已实际执行，因 /home/z/vibe/AGENTS.docs.schema.yaml 缺失退出 2，完整 schema/引用检查仍受阻，不得记为通过"
   domain:
     kind: open_question
-plan8:
-  _text: "MultiPL-E 提示集与判分后处理（m160 遗留）：提示集已从 /tmp 落到仓库 `.wrapup/prompts/`（6 个 jsonl，1.2 MB，附 `SHA256SUMS`），`mpl_run.py` 默认读它，`run_m160_protocol.sh` 在花 GPU 前校验存在性与哈希并区分「提示集缺失」与「完成物为空」；判分后处理已修（res20/res21）。剩余：用修好的 harness 重生成 6 个缩进受损的 chat py cell——gemma-4-12b Q2/Q3、gemma-4-26B-A4B Q2/Q3、Qwen3.8-27B Q2/Q3——约 6 × 13 分钟 GPU；gemma-4-12b 的 cpp 已由 m6b 回答（res22），不必重跑。"
-  author: agent
-  origin: "m160 缺陷追查（.wrapup/m160.log、mres 样本逐条检查）"
-  scope: general
-  status: current
-  evidence: ".wrapup/prompts/SHA256SUMS；run_m160_protocol.sh preflight 的两个负控（缺目录/被篡改各 exit 2）；mpl_run.strip_fences 单测 7 条"
-  domain:
-    kind: open_question
-plan9:
-  _text: "数据库与报告修复（待批）：m26 chat 两条 cpp 行（Qwen3.8-27B Q2/Q3）与 m6b 4 条 12b chat 行需要按修正后处理重新入库，m26 的 6 条 chat py 行需重跑后替换；当前 DB 仍存 0.2174/0.4845 这两个低报值（正确 0.6335/0.8571，可由磁盘样本重算），report.html 因此仍印低报值。入库只走 migrate_db.py，改前按规矩备份并跑完整性检查。"
-  from: "result.res20, result.res21, plan.plan8"
-  author: agent
-  origin: "本轮缺陷追查"
-  scope: specific
-  status: current
-  domain:
-    kind: open_question
 plan10:
   _text: "陈旧根路径：`.wrapup/` 下仍有 10+ 个脚本硬编码 `/home/z/hf/research`（该目录已不存在），任何重跑都会像 m160 那样在准备阶段静默失败；按 @migrate_on_touch 改成脚本相对路径，先改下一个被使用的脚本。"
-  from: "result.res19, plan.plan8"
+  from: "result.res19"
   author: agent
   origin: "grep -rl /home/z/hf/research .wrapup"
   scope: general
   status: current
   domain:
     kind: open_question
-plan11:
-  _text: "里程碑 m161（进行中，owner=worker）：用修好的 harness 重测 6 个 chat/py cell（gemma-4-12b Q2/Q3、gemma-4-26B-A4B Q2/Q3、Qwen3.8-27B Q2/Q3）加 1 个端到端控制格（q38-27b-q3 cpp chat，应落回 0.857±0.03，证明修复在生成侧也生效）。验收：`.wrapup/m161_summary.jsonl` 每行含 model/lang/n=161/pass/score/protocol/statuses，6 个 eval json 的 n 都是 161，日志含提示集 sha256 与 llama-server build；全 Exception 的格不得折成一个分数。预算 ≤ 2 小时 GPU。"
-  from: "result.res20, result.res21, plan.plan8"
-  author: user
-  origin: "用户 auto advance 确认按 1→2 顺序执行"
-  scope: specific
-  status: current
-  domain:
-    kind: open_question
-plan12:
-  _text: "里程碑 m161 入库（owner=worker，依赖 plan11）：只走 `migrate_db.py`，先备份 `experiments.sqlite.bak39` 再改——m26 两条 chat cpp 行按修正后处理重算（0.2174→0.6335、0.4845→0.8571），m6b 4 条 gemma-4-12b chat 行入库（cpp 用重算值，py 缩进受损不入库），m161 的 6 条 py 行入库替换 m26 的 null/低报值；M10_MODELS 需补 g12b-q2/g12b-q3。验收：`PRAGMA integrity_check` 为 ok、行数与 protocol 分布前后对照、被改的每条给出旧值与新值。"
-  from: "plan.plan11, plan.plan9"
-  author: user
-  origin: "用户 auto advance 确认按 1→2 顺序执行"
-  scope: specific
-  status: current
-  domain:
-    kind: open_question
-plan13:
-  _text: "里程碑 m161 交付面（owner=worker，依赖 plan12）：`python3 make_report.py` 重生成 report.html，口径数字与 DB 一致；docs 更新 res20/res22 的最终入数值与 plan11/12 的完成状态，删掉已失效的中间值表述。验收：report.html 的 MultiPL-E chat 节与 DB 查询逐格一致，文档里每个数字可由一条 SQL 或一条命令复现。"
-  from: "plan.plan12"
-  author: user
-  origin: "用户 auto advance 确认按 1→2 顺序执行"
-  scope: specific
-  status: current
-  domain:
-    kind: open_question
 plan14:
-  _text: "里程碑 m161 独立复核（owner=reviewer，fresh context，依赖 plan12+plan13）：按 `proof.review` 复核改动集，重点是可证伪性——重算值能否由命令重现、入库前后集合差是否只落在声明的那几行、report 数字是否来自 DB 而非手写。阻塞项：任何一处无法由命令复现的数字。"
-  from: "plan.plan12, plan.plan13"
+  _text: "里程碑 m161 独立复核（owner=reviewer，fresh context）：对 result.res23 / result.res24 与 m161 的改动集按 `proof.review` 复核，重点是可证伪性——重算值能否由命令重现、入库前后集合差是否只落在声明的那几行、report 数字是否来自 DB 而非手写。阻塞项：任何一处无法由命令复现的数字。"
+  from: "result.res23, result.res24"
   author: user
   origin: "用户 auto advance 确认按 1→2 顺序执行"
   scope: specific
   status: provisional
+  domain:
+    kind: open_question
+plan15:
+  _text: "未决：同一个 cell `q38-27b-q3 py chat`（`mpl-chat-nothink-greedy-768`）在记录里有三个值——m26 按旧后处理判分 131/161=0.8137，用修正后处理重判同一批落盘完成物 139/161=0.8634，m161 新生成 145/161=0.9006（现入库值）；0.8137→0.8634 由判分缺陷解释（res20），而 0.8634→0.9006 的 6 道题只能来自生成侧。两个候选原因都还没有证据裁决：(a) m161 用的是 2026-10-14 重建的提示集 `.wrapup/prompts`，m26 用的是已被清理的 `/tmp/MultiPL-E/prompts`，两者是否逐字节相同无从比对；(b) 两次运行都是 4 槽 server（日志 `n_slots = 4`），贪心批处理不保证逐 token 可复现。cpp 侧同向：q38-27b-q3 cpp 重判 138/161=0.8571、m161 重跑 140/161=0.8696。后果：MultiPL-E chat 的单次值带 ≥6/161 的不可复现风险，与 method.m16 记录的「贪心代码噪声地板 0」冲突，小于该幅度的跨 run 比较不成立；裁决办法是同一提示集下用 `-np 1` 与 4 槽各跑一遍同一 cell，逐题比对。"
+  from: "result.res20, result.res24, method.m16"
+  author: agent
+  origin: "m161 交付核对（m26/m161 两轮同一 cell 的值 + 采样槽配置）"
+  scope: specific
+  status: current
+  evidence: "m26 py 131/161 `.wrapup/mres/m26-q38-27b-q3-py_eval.json`、重判 139/161 `.wrapup/mres/m26-q38-27b-q3-py_fixed_eval.json`、m161 145/161 `.wrapup/mres/m161-q38-27b-q3-py-chat_eval.json`；cpp 重判 138/161 `.wrapup/mres/m26-q38-27b-q3-cpp_fixed_eval.json`、m161 140/161 `.wrapup/mres/m161-q38-27b-q3-cpp-chat_eval.json`；`grep -c 'n_slots = 4' .wrapup/m26.log .wrapup/m161.log` 各 9；`.wrapup/prompts/*.jsonl` 的 mtime 为 2026-10-14，m26 面板启动行为 `[M26] panel start Fri Oct  2 20:51:40 CST 2026`"
   domain:
     kind: open_question
