@@ -73,15 +73,6 @@ plan10:
   status: current
   domain:
     kind: open_question
-plan14:
-  _text: "里程碑 m161 独立复核（owner=reviewer，fresh context）：对 result.res23 / result.res24 与 m161 的改动集按 `proof.review` 复核，重点是可证伪性——重算值能否由命令重现、入库前后集合差是否只落在声明的那几行、report 数字是否来自 DB 而非手写。阻塞项：任何一处无法由命令复现的数字。"
-  from: "result.res23, result.res24"
-  author: user
-  origin: "用户 auto advance 确认按 1→2 顺序执行"
-  scope: specific
-  status: provisional
-  domain:
-    kind: open_question
 plan15:
   _text: "未决：同一个 cell `q38-27b-q3 py chat`（`mpl-chat-nothink-greedy-768`）在记录里有三个值——m26 按旧后处理判分 131/161=0.8137，用修正后处理重判同一批落盘完成物 139/161=0.8634，m161 新生成 145/161=0.9006（现入库值）；0.8137→0.8634 由判分缺陷解释（res20），而 0.8634→0.9006 的 6 道题只能来自生成侧。两个候选原因都还没有证据裁决：(a) m161 用的是 2026-10-14 重建的提示集 `.wrapup/prompts`，m26 用的是已被清理的 `/tmp/MultiPL-E/prompts`，两者是否逐字节相同无从比对；(b) 两次运行都是 4 槽 server（日志 `n_slots = 4`），贪心批处理不保证逐 token 可复现。cpp 侧同向：q38-27b-q3 cpp 重判 138/161=0.8571、m161 重跑 140/161=0.8696。后果：MultiPL-E chat 的单次值带 ≥6/161 的不可复现风险，与 method.m16 记录的「贪心代码噪声地板 0」冲突，小于该幅度的跨 run 比较不成立；裁决办法是同一提示集下用 `-np 1` 与 4 槽各跑一遍同一 cell，逐题比对。"
   from: "result.res20, result.res24, method.m16"
@@ -90,5 +81,15 @@ plan15:
   scope: specific
   status: current
   evidence: "m26 py 131/161 `.wrapup/mres/m26-q38-27b-q3-py_eval.json`、重判 139/161 `.wrapup/mres/m26-q38-27b-q3-py_fixed_eval.json`、m161 145/161 `.wrapup/mres/m161-q38-27b-q3-py-chat_eval.json`；cpp 重判 138/161 `.wrapup/mres/m26-q38-27b-q3-cpp_fixed_eval.json`、m161 140/161 `.wrapup/mres/m161-q38-27b-q3-cpp-chat_eval.json`；`grep -c 'n_slots = 4' .wrapup/m26.log .wrapup/m161.log` 各 9；`.wrapup/prompts/*.jsonl` 的 mtime 为 2026-10-14，m26 面板启动行为 `[M26] panel start Fri Oct  2 20:51:40 CST 2026`"
+  domain:
+    kind: open_question
+plan16:
+  _text: "MultiPL-E 表仍渲染重复行：同一模型的两条协议串——`multipl-e-raw-t0.3-768` 与 `mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation)`——都渲染成同一个行标签 `raw·temp=0.3`，于是 Qwen3.5-2B 的三个量化档各出现两行标签与数值都相同的行，读起来像「同一协议测了两遍」。成因是行键：`make_report.py::table_mpl_langs` 的 cell 以完整 `(model, protocol)` 为键，而标签函数 `mpl_protocol_label` 有意丢掉不参与区分的附加段（只留 `ctx=`/`kv=`/`tmpl=`），键比标签细，两条键落到同一个显示名上。这是表格行键（行怎么分组、同名键怎么合并）的问题，不是标签问题：让标签去区分这两串会与「不参与区分的附加段省掉」的既定规则相冲突。"
+  from: "result.res22"
+  author: agent
+  origin: "m161 独立复核的残余观测（对 3eea78f 重生成的 report.html 与库内协议串）"
+  scope: specific
+  status: current
+  evidence: "库里同模型的这两串协议渲染同一标签：`multipl-e-raw-t0.3-768` 与 `mpl-raw-t0.3-768;topk-set=…;anchors …`；受影响的 cell 是 Qwen3.5-2B 的 Q2_K/Q3_K/Q4_K_XL 三个量化档，各两行同名同值"
   domain:
     kind: open_question
