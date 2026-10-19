@@ -25,8 +25,11 @@ import time
 import urllib.request
 import urllib.error
 
-PROMPTS = "/tmp/MultiPL-E/prompts"
-JAR = "/home/z/hf/research/.wrapup/jars/javatuples-1.2.jar"
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# Pinned prompt set: tracked next to this runner (with SHA256SUMS), never /tmp,
+# because a /tmp wipe silently made an entire panel report 0/161 (m160).
+PROMPTS = os.environ.get("MULTIPLE_PROMPTS") or os.path.join(_HERE, "prompts")
+JAR = os.path.join(_HERE, "jars", "javatuples-1.2.jar")
 
 LANGS = {
     "cpp": {"ext": ".cpp", "timeout": 20},
@@ -51,10 +54,25 @@ def post(url, payload, timeout=600):
 
 
 def strip_fences(text):
-    text = text.strip()
-    m = re.search(r"```[a-zA-Z0-9_+-]*\n(.*?)```", text, re.S)
+    """Remove a leading Markdown code fence, terminated or not.
+
+    MultiPL-E's own chat pipeline postprocesses markdown (dataset_builder/
+    chat_completions.py: "if completion.startswith('```')"), so a fence left in
+    place is scored as a syntax error rather than as formatting.  The usual case
+    here is an *unterminated* fence, because the dataset stop token ('\\n}')
+    cuts the completion before the closing fence is written.
+
+    Only a fence at the very start is removed, and leading indentation is kept
+    when there is none: for Python the completion is a function body, so
+    stripping its indent would turn every cell into an IndentationError.
+    """
+    m = re.match(r"[ \t]*(?:\r?\n[ \t]*)*```[a-zA-Z0-9_+-]*[ \t]*\r?\n", text)
     if m:
-        text = m.group(1)
+        body = text[m.end():]
+        close = body.rfind("```")
+        if close != -1 and not body[close + 3:].strip():
+            body = body[:close]
+        return body.rstrip()
     return text.rstrip()
 
 
@@ -85,6 +103,17 @@ def strip_thought(text):
     return text
 
 
+def prompt_path(lang):
+    """Resolve the pinned prompt file or stop with the reason, not a traceback."""
+    p = os.path.join(PROMPTS, f"humaneval-{lang}.jsonl")
+    if not os.path.isfile(p) or os.path.getsize(p) == 0:
+        raise SystemExit(
+            f"prompt set missing: {p}\n"
+            f"  restore it with: git checkout -- .wrapup/prompts/ "
+            f"(or set MULTIPLE_PROMPTS to a directory holding humaneval-<lang>.jsonl)")
+    return p
+
+
 def load_prompts(args):
     """Prompt source: a per-panel override (same schema) or the frozen dataset.
 
@@ -92,7 +121,7 @@ def load_prompts(args):
     m30 KV-at-length grid) without touching the frozen MultiPL-E files; the
     canonical ``tests`` are still read from the dataset, so ``eval`` is unchanged.
     """
-    src = args.prompt_file or f"{PROMPTS}/humaneval-{args.lang}.jsonl"
+    src = args.prompt_file or prompt_path(args.lang)
     problems = [json.loads(l) for l in open(src)]
     if args.limit:
         problems = problems[:args.limit]
@@ -140,8 +169,8 @@ def gen(args):
         except Exception as e:
             print(f"  ! request failed on {p['name']}: {e}", file=sys.stderr)
             text = ""
-        if args.mode == "chat":
-            text = strip_fences(text)
+        # Same post-processing in both modes: only the prompt format varies.
+        text = strip_fences(text)
         completion = truncate_at_stops(text, stops)
         results.append({"name": p["name"], "completion": completion})
         print(f"\r  gen {i+1}/{len(problems)}", end="", file=sys.stderr)
@@ -212,7 +241,7 @@ def eval_one(lang, prompt, completion, tests, workdir):
 
 def run_eval(args):
     problems = {json.loads(l)["name"]: json.loads(l)
-                for l in open(f"{PROMPTS}/humaneval-{args.lang}.jsonl")}
+                for l in open(prompt_path(args.lang))}
     samples = [json.loads(l) for l in open(args.samples)]
     npass = 0
     details = []

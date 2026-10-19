@@ -377,3 +377,12 @@ m47:
   status: current
   domain:
     topic: operations
+m48:
+  _text: "MultiPL-E 判分后处理（`multipl-e-raw-greedy-768` 与 `mpl-chat-nothink-greedy-768` 两种协议共用）：生成后先剥离**行首** Markdown 代码围栏（数据集停止串 `\n}` 常把完成物切在闭合围栏之前，必须按「未闭合围栏」处理），保留完成物首行缩进（Python 完成物是函数体，去缩进即 IndentationError），再按数据集 `stop_tokens` 截断，最后拼 `prompt + completion + '\n' + tests` 编译执行；`statuses` 里 `SyntaxError` 是编译失败、`Exception` 是编译通过但运行/断言失败、`Timeout` 是超时，三者不可合并成一个 0 分。"
+  author: agent
+  origin: "nuprl/MultiPL-E dataset_builder/chat_completions.py::postprocess_completion（上游同样剥行首围栏）+ m160 缺陷复现"
+  scope: general
+  status: current
+  evidence: ".wrapup/mpl_run.py::strip_fences 单测：未闭合围栏、已闭合围栏、无围栏保缩进、围栏不在行首不动"
+  domain:
+    topic: protocol

@@ -18,12 +18,22 @@
 #
 # Run under the GPU flock:
 #   bash gpu_locked.sh bash run_m160_protocol.sh
+# Subset (cells are `<tag>:<lang>:<mode>`, space separated):
+#   ONLY="q38-27b-q3:cpp:chat" bash run_m160_protocol.sh
 # Writes .wrapup/m160_summary.jsonl in the MultiPL-E summary shape.
+#
+# Prompt set: .wrapup/prompts/humaneval-<lang>.jsonl, tracked and hashed in
+# .wrapup/prompts/SHA256SUMS.  The first m160 attempt (20:46) lost all 16 cells
+# to /tmp/MultiPL-E/prompts being cleaned; the preflight below turns that into
+# one explicit ABORT instead of sixteen silent "CORRUPT" cells.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m160.log
-SUMMARY=/home/z/hf/research/.wrapup/m160_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPO=$(dirname "$HERE")
+cd "$HERE" || exit 1
+LOG=$HERE/m160.log
+SUMMARY=$HERE/m160_summary.jsonl
+MRES=$HERE/mres
+PROMPTS=${MULTIPLE_PROMPTS:-$HERE/prompts}
 PORT=${PORT:-8086}
 BASE=http://127.0.0.1:$PORT
 CTX=${CTX:-2048}
@@ -31,10 +41,32 @@ PY=python3
 CHAT_KW='{"enable_thinking": false}'
 MODELS="g12b-q2:gemma-4-12b-it-UD-Q2_K_XL.gguf g12b-q3:gemma-4-12b-it-UD-Q3_K_XL.gguf g26b-q3:gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf q38-27b-q3:Qwen3.8-27B-UD-Q3_K_XL.gguf"
 MODES="raw chat"
+ONLY=${ONLY:-}
 
 mkdir -p "$MRES"
 TAG="M160"
-echo "[$TAG] panel start $(date) models=[$MODELS] modes=[$MODES]" >> "$LOG"
+echo "[$TAG] panel start $(date) models=[$MODELS] modes=[$MODES] only=[$ONLY]" >> "$LOG"
+
+# --- preflight: the prompt set is the experiment's input, so it is checked and
+# --- its hash bound into the log before any GPU time is spent.
+preflight() {
+  local lang f h
+  for lang in cpp py; do
+    f="$PROMPTS/humaneval-$lang.jsonl"
+    if [ ! -s "$f" ]; then
+      echo "[$TAG] ABORT: prompt set missing $f (git checkout -- .wrapup/prompts/)" >> "$LOG"
+      return 1
+    fi
+    h=$(sha256sum "$f" | cut -d' ' -f1)
+    echo "[$TAG] prompts $lang sha256=$h" >> "$LOG"
+  done
+  ( cd "$PROMPTS" && sha256sum -c SHA256SUMS --quiet ) >/dev/null 2>&1 || {
+    echo "[$TAG] ABORT: prompt set does not match SHA256SUMS in $PROMPTS (content changed; a panel run against an unpinned prompt set is not comparable)" >> "$LOG"
+    return 1
+  }
+  echo "[$TAG] preflight ok: prompt set matches SHA256SUMS" >> "$LOG"
+}
+preflight || exit 2
 
 pid=$(ss -ltnp 2>/dev/null | grep ":$PORT" | grep -oP 'pid=\K[0-9]+' | head -1); [ -n "$pid" ] && kill "$pid"; sleep 2
 
@@ -55,20 +87,35 @@ start_server() {
   echo "[$TAG] server TIMEOUT $1" >> "$LOG"; kill "$srv" 2>/dev/null; return 1
 }
 
-empty_count() {
+# Reports the number of empty completions, or UNREADABLE when the samples file
+# is missing/unparseable.  The old version answered 999 for both, which is how
+# 16 cells burned GPU time against a missing prompt set and were recorded as if
+# the model had produced nothing.
+samples_state() {
   "$PY" - "$1" <<'PY'
-import json, sys
+import json, os, sys
+p = sys.argv[1]
+if not os.path.exists(p):
+    print("UNREADABLE:file-missing"); raise SystemExit
 try:
-    rows = [json.loads(l) for l in open(sys.argv[1])]
-except Exception:
-    print(999); raise SystemExit
-print(sum(1 for r in rows if not (r.get("completion") or "").strip()))
+    rows = [json.loads(l) for l in open(p)]
+except Exception as e:
+    print(f"UNREADABLE:{type(e).__name__}"); raise SystemExit
+print(f"{sum(1 for r in rows if not (r.get('completion') or '').strip())}/{len(rows)}")
 PY
+}
+
+cell_wanted() {
+  [ -z "$ONLY" ] && return 0
+  local c
+  for c in $ONLY; do [ "$c" = "$1" ] && return 0; done
+  return 1
 }
 
 run_cell() {   # $1 tag  $2 lang  $3 model  $4 mode
   local tag="$1" lang="$2" model="$3" mode="$4"
   local samples="$MRES/m160-${tag}-${lang}-${mode}.jsonl"
+  cell_wanted "$tag:$lang:$mode" || return 0
   start_server "$model" || return 1
   echo "[$TAG] gen $tag $lang mode=$mode $(date +%H:%M:%S)" >> "$LOG"
   if [ "$mode" = chat ]; then
@@ -80,12 +127,18 @@ run_cell() {   # $1 tag  $2 lang  $3 model  $4 mode
       --max_tokens 768 \
       --samples "$samples" --base_url "$BASE" >> "$LOG" 2>&1
   fi
-  local empty; empty=$(empty_count "$samples")
-  if [ "${empty:-999}" -gt 32 ]; then
-    echo "[$TAG] CORRUPT $tag $lang mode=$mode empty=$empty" >> "$LOG"
+  local state; state=$(samples_state "$samples")
+  case "$state" in
+    UNREADABLE:*)
+      echo "[$TAG] GEN-FAILED $tag $lang mode=$mode $state" >> "$LOG"
+      kill "$srv" 2>/dev/null; wait "$srv" 2>/dev/null; srv=""; return 1 ;;
+  esac
+  local empty=${state%%/*}
+  if [ "$empty" -gt 32 ]; then
+    echo "[$TAG] CORRUPT $tag $lang mode=$mode empty=${state}" >> "$LOG"
     kill "$srv" 2>/dev/null; wait "$srv" 2>/dev/null; srv=""; return 1
   fi
-  timeout 1800 "$PY" mpl_run.py eval --lang "$lang" --samples "$samples" >> "$LOG" 2>&1
+  timeout 2400 "$PY" mpl_run.py eval --lang "$lang" --samples "$samples" >> "$LOG" 2>&1
   "$PY" - "$tag" "$lang" "${samples%.jsonl}_eval.json" "$SUMMARY" "$mode" <<'PY' >> "$LOG" 2>&1
 import json, sys, collections
 tag, lang, ev, dest, mode = sys.argv[1:6]
@@ -129,6 +182,7 @@ for spec in $MODELS; do
         echo "[$TAG] retry $tag $lang $mode (attempt $attempt)" >> "$LOG"
         sleep 5
       done
+      cell_wanted "$tag:$lang:$mode" || ok=1
       [ "$ok" = 1 ] || echo "[$TAG] GAVE UP $tag $lang $mode" >> "$LOG"
     done
   done

@@ -211,6 +211,16 @@ res17:
   producer: "report 构建时扫描 .wrapup/mres/*_eval.json"
   domain:
     kind: measured
+res17b:
+  _text: "（撤回 res17 的一半归因）res17 把那些全 `Exception` 判为「基础设施整轮报错」，该归因已撤回：原因是 res21 的缩进破坏。「却被写成 0、必须记 null」这一半仍然成立，但不得再称之为基础设施失败。"
+  from: "result.res17, result.res21"
+  author: measurement
+  origin: "m160 缺陷追查"
+  scope: general
+  status: current
+  evidence: "res21 的逐条首行缩进检查"
+  domain:
+    kind: measured
 res18:
   _text: "生成协议改变 MultiPL-E 分数：同一模型 gemma-4-26B-A4B cpp，raw 纯补全约 0.043，chat（关思考）0.832（.wrapup/m160 已启动做同文件 raw vs chat 受控复测）。"
   from: "result.res17"
@@ -219,5 +229,45 @@ res18:
   scope: general
   status: provisional
   evidence: "m26_summary.jsonl cpp=0.8323 vs m10_summary.jsonl cpp=0.0559"
+  domain:
+    kind: measured
+res19:
+  _text: "m160 面板没有产出测量：2026-10-14 20:46 启动的 16 个 cell 全部在生成前失败（`/tmp/MultiPL-E/prompts` 已被清理，`FileNotFoundError`），脚本把它记成 `CORRUPT ... empty=999`；其后一次不经脚本的运行留下 `g12b-q2 cpp raw` 的 0/161，其完成物 151/161 不含 `return`、27/161 只有注释、18/161 带 `<|channel>` 通道 token——是原始补全模式下模型不写函数体，不是提示集坏了。"
+  author: measurement
+  origin: ".wrapup/m160.log; .wrapup/mres/m160-g12b-q2-cpp-raw.jsonl"
+  scope: general
+  status: current
+  evidence: "log 行 42-55 FileNotFoundError: /tmp/MultiPL-E/prompts/humaneval-cpp.jsonl；grep -c '\\[M160\\] CORRUPT' 16 次，均有对应 retry/GAVE UP"
+  domain:
+    kind: measured
+res20:
+  _text: "MultiPL-E chat 判分曾把 Markdown 代码围栏当语法错误：旧 `strip_fences` 只在围栏闭合时才剥离，而数据集停止串 `\n}` 通常把完成物切在闭合围栏之前，于是整格失败。用磁盘完成物（同一份生成、只补上正确后处理）重算：Qwen3.8-27B cpp chat Q2 0.2174→0.6335、Q3 0.4845→0.8571；py 仅 +0.0435/+0.0497。gemma-4-26B 的完成物无围栏，其 cpp 0.8323 不变。"
+  from: "result.res16, result.res18"
+  author: measurement
+  origin: ".wrapup/mres/m26-*_fixed.jsonl（由 m26 原始样本经修正后处理生成）"
+  scope: general
+  status: current
+  evidence: "m26-q38-27b-q3-cpp: 72/161 围栏且 72/161 失败；重算 pass 78→138"
+  producer: "`python3 .wrapup/mpl_run.py eval --lang cpp --samples <cell>_fixed.jsonl`，其中 `_fixed.jsonl` 由 mpl_run.strip_fences 处理原始样本得到"
+  domain:
+    kind: measured
+res21:
+  _text: "旧 `strip_fences` 开头 `text.strip()` 会抹掉无围栏完成物的首行缩进：gemma-4-26B py chat 有 90/161（Q2）与 103/161（Q3）完成物首行缩进受损，全部编译后报错并记为 `Exception`。res17 把这些 `Exception` 归因为基础设施失败是错的——原因是评测后处理破坏缩进，而成品已落盘，缩进无法从样本恢复。"
+  from: "result.res17, result.res20"
+  author: measurement
+  origin: ".wrapup/mres/m26-g26b-q*-py.jsonl 逐条检查首行缩进"
+  scope: general
+  status: current
+  evidence: "首行非空白且次行缩进的完成物计数：g26b-q2-py 90/161、g26b-q3-py 103/161；对照组 q38-27b-q3-py 1/161"
+  domain:
+    kind: measured
+res22:
+  _text: "gemma-4-12b chat cpp（m6b 面板，2026-09-30，从未入库）：Q2 4/161=0.0248、Q3 130/161=0.8075；同批 py 完成物缩进受损（Q2 62/161、Q3 87/161），不可用。所以 m160 的前提「12b 没有任何 cpp/py 数据」不成立，其 cpp 问题已可由 m6b 回答。"
+  from: "result.res21"
+  author: measurement
+  origin: ".wrapup/m6b_summary.jsonl; .wrapup/mres/m6b-g12b-q*-cpp.jsonl"
+  scope: specific
+  status: current
+  evidence: "m6b-g12b-q3-cpp 重算后 OK 130 / Exception 16 / SyntaxError 15；m6b-g12b-q2-cpp OK 4 / SyntaxError 156"
   domain:
     kind: measured
