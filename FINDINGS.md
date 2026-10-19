@@ -29,7 +29,7 @@
 | 第三方方案 GSQ-RCO 相对原生阶梯**测不出差异** | 两个档 `3.058` / `3.549` 比特/权重 vs 原生 `2.878` / `3.850` / `4.173`；所有差值 95% CI 跨 0 | `docs/result/result.yaml:104` | 成立（`scope: specific`） |
 | **未测不是 0**：三个配置根本没跑出来 | gemma-4-31B QAT/原生档与 gemma-4-26B-A4B 原生档显存不足未测；扩散式解码 DiffusionGemma 本机加载不了该架构、未测 | `docs/result/result.yaml:112` | 部分（明确登记为未测） |
 | MultiPL-E 旧列**不可比**：不同模型跑了不同语言子集，把不同测集平均后近零分数是语言覆盖造成的假象；标准列现在只在 cpp 与 py 都测过时产出，否则记 NaN | 例：Qwen3.5-2B-UD-IQ2_XXS 只有 cpp、gemma-4-12b 只有 java/js/rb/rs | `docs/result/result.yaml:192` | 成立 |
-| m160 面板 16 个 cell **全部在生成前失败**（提示集 `/tmp/MultiPL-E/prompts` 已被清理），被脚本记成 `CORRUPT ... empty=999`；同批 raw 完成物 151/161 不含 `return`、27/161 只有注释、18/161 带 `<|channel>` token | 16 cell、`empty=999`、`151/161`、`27/161`、`18/161` | `docs/result/result.yaml:234` | 成立 |
+| m160 面板 16 个 cell **全部在生成前失败**（提示集 `/tmp/MultiPL-E/prompts` 已被清理），被脚本记成 `CORRUPT ... empty=999`；同批 raw 完成物 151/161 不含 `return`、27/161 只有注释、18/161 带 `<\|channel>` token | 16 cell、`empty=999`、`151/161`、`27/161`、`18/161` | `docs/result/result.yaml:234` | 成立 |
 | 生成协议改变 MultiPL-E 分数（同一模型 cpp：raw 纯补全 vs chat 关思考） | raw 约 `0.043` vs chat `0.832`（`m10_summary.jsonl cpp=0.0559` vs `m26_summary.jsonl cpp=0.8323`） | `docs/result/result.yaml:224` | 部分（`status: provisional`，同文件受控复测当时在跑） |
 
 ## 三、撤回记录
