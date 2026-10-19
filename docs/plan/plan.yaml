@@ -55,6 +55,15 @@ plan7:
   status: provisional
   domain:
     kind: open_question
+evidence_repair:
+  _text: "研究证据可恢复性待修复：当前 result.yaml 的若干来源仍指向已退役的 .scratch/originals，make_report.py 依赖 .wrapup 支撑输入及本机路径，README 未给出可重放的环境入口；先为一个代表性结果解析数据库行、协议、代码版本、数据与配置来源，再修复可打开的当前引用和报告输入声明，不得把文档数字当成已复现结果。验收是经授权后从只读数据库查询独立重建该表、核对输入哈希并运行文档检查与报告入口；证据缺失保持未知。本工作只登记问题，不授权数据库修改、新模型实验、训练或覆盖既有报告。"
+  author: agent
+  origin: "对 README.md、make_report.py 与 docs/result/result.yaml 的静态核对"
+  scope: specific
+  status: current
+  evidence: "make_report.py::CON/raw_scores/tag_bpw/BPWMAP；docs/result/result.yaml::res1-res15；python3 docs/check_docs.py 已实际执行，因 /home/z/vibe/AGENTS.docs.schema.yaml 缺失退出 2，完整 schema/引用检查仍受阻，不得记为通过"
+  domain:
+    kind: open_question
 plan8:
   _text: "MultiPL-E 提示集曾从 /tmp 丢失（/tmp/MultiPL-E/prompts 被清理），已用 nuprl/MultiPL-E 的 cpp/java/js/rs/rb parquet 与 openai_humaneval 重建（py 取与人 HumanEval 相同的 161 题子集）；m160 面板（gemma-4-12b/26B、Qwen3.8-27B 的 cpp+py，raw vs chat）正在 GPU 上运行，并同时作为重建提示集的可复现验证。"
   author: agent
