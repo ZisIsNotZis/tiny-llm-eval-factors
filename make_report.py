@@ -924,6 +924,28 @@ BFCL_BENCH = [
 ]
 
 
+def mpl_protocol_label(proto):
+    """协议串 → 表格/图的一行标签，并保留数据库记下的附加条件。
+
+    `mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified`（gemma-4-12b 的 cpp，
+    m6b 面板）与 `mpl-chat-nothink-greedy-768`（同一模型的 py，m161 重测）是两套
+    不同设置；都缩成 `chat` 会让同一个模型的 cpp 与 py 落在两个同名行上，读起来
+    像“固定 chat 模板与上下文”，而数据库保留的正是这两点差异（result.res22）。
+    `ctx=`/`kv=`/`tmpl=` 三段是设置本身，原样留下；其余附加段（如 `fa=on`、
+    `prefix=…`）不参与区分，标签里省掉。协议名里的采样温度同理：`-t0.3-` 是另一个
+    采样设置，不能和贪心那行挤成同一个 `raw`。
+    """
+    proto = proto or "—"
+    head = proto.split(";")[0]
+    base = "chat" if "chat" in head else ("raw" if "raw" in head else head)
+    t = re.search(r"-t([0-9.]+)-", head)
+    if t:
+        base += f"·temp={t.group(1)}"
+    extra = [part.strip() for seg in proto.split(";")[1:] for part in seg.split(",")
+             if part.strip().startswith(("ctx=", "kv=", "tmpl="))]
+    return "·".join([base] + extra)
+
+
 def table_mpl_langs():
     """MultiPL-E per language: one row per (model, protocol), columns = languages."""
     cells = {}
@@ -933,7 +955,7 @@ def table_mpl_langs():
     prot_short = {}
     models = set()
     for model, proto, lang, score, n, _tag in rows:
-        p = "chat" if "chat" in (proto or "") else ("raw" if "raw" in (proto or "") else (proto or "—"))
+        p = mpl_protocol_label(proto)
         prot_short[(model, proto)] = p
         models.add(model)
         cells.setdefault((model, proto), {})[lang] = (score, n if n is not None else 161)
@@ -1160,6 +1182,17 @@ def _eval_status_index():
     return idx
 
 
+def _all_exception_files(idx):
+    """每道题状态都是 `Exception` 的评测文件：[(文件名, 题数)]。"""
+    return [(base, n) for (_lang, _pass, n), files in idx.items() for base, st in files
+            if n and st.get("Exception", 0) == n]
+
+
+def _eval_cell(basename):
+    """评测文件名 → 它所属的格；`_fixed` 是同一个格的换后处理重判，不是另一个格。"""
+    return re.sub(r"(_fixed)?_eval\.json$", "", basename)
+
+
 def _cell_status(idx, lang, score):
     """给库中的一个 MultiPL-E 分数找配对的评测状态直方图。
 
@@ -1180,9 +1213,14 @@ def _cell_status(idx, lang, score):
 def data_quality_html():
     """构建时从 DB / eval 文件复核的数据质量问题清单（不是静态文案）。"""
     idx = _eval_status_index()
-    # 1) 全 Exception 的评测文件（全 Exception 不是整轮运行失败，也不得写成 0）
-    n_all_exc = sum(1 for (_l, _p, n), files in idx.items() for _base, st in files
-                    if n and st.get("Exception", 0) == n)
+    # 1) 全 Exception 的评测文件（全 Exception 不是整轮运行失败，也不得写成 0）。
+    #    份数分三类：同一格的 `_fixed` 重判、5 题探针、以及 161 题整格；读者不能把
+    #    文件数当格数，所以这里同时给出文件数与去重后的格数。
+    all_exc = _all_exception_files(idx)
+    n_all_exc = len(all_exc)
+    n_fixed = sum(1 for base, _n in all_exc if base.endswith("_fixed_eval.json"))
+    n_probe = sum(1 for _base, n in all_exc if n == 5)
+    n_cells = len({_eval_cell(base) for base, _n in all_exc})
     # 2) 语言覆盖（同一模型在 legacy MultiPL-E 里跑了哪些语言）
     langs = {}
     for model, lang in CON.execute(
@@ -1224,11 +1262,14 @@ def data_quality_html():
     h.append("<p><b>修复：</b>标准列现在只在 <b>cpp 与 py 都测过</b>时产出 MultiPL-E 单元（有效位宽无关的语言集不再进入比较）；"
              "两者不全者记为缺失（NaN），报告里写 <code>—</code> 且不画点——与“缺失≠ 0”一致。"
              "其它语言（java/js/rs/rb）保留在数据库，供单独的语言子研究。</p>")
-    h.append(f"<p><b>2. 全 <code>Exception</code> 的格不是整轮运行失败，也不得记成 0。</b> 扫描 <code>.wrapup/mres/*_eval.json</code> 的状态直方图，"
-             f"有 <b>{n_all_exc}</b> 份文件每道题状态都是 <code>Exception</code>。它们都不构成可用分数："
+    h.append(f"<p><b>2. 全 <code>Exception</code> 的格不是整轮运行失败，也不得记成 0。</b> 构建时扫描 <code>.wrapup/mres/*_eval.json</code> 的状态直方图，"
+             f"每道题状态都是 <code>Exception</code> 的有 <b>{n_all_exc}</b> 份文件，来自 <b>{n_cells}</b> 个格："
+             f"其中 <b>{n_fixed}</b> 份是同一格的 <code>_fixed</code> 重判（只把后处理换成正确的、重判旧落盘完成物，每道题仍是 <code>Exception</code>），"
+             f"<b>{n_probe}</b> 份是 5 题探针（n=5，不是 161 题整格）。它们都不构成可用分数："
              "全 Exception 一律记为缺失（NULL）、不得写成 0；库中对应的格要么是 NULL，要么已被后来的重测取代。"
-             "把这类格读成整轮运行失败的旧归因已撤回（<code>docs/result/result.yaml::res17b</code>），"
-             "成因被查为旧后处理抹掉无围栏完成物的首行缩进（<code>::res21</code>）。</p>")
+             "把这类格读成整轮运行失败的旧归因已撤回（<code>docs/result/result.yaml::res17b</code>）；"
+             "把它们归因为旧后处理破坏首行缩进的归因也已撤回（<code>::res21</code>）：同一签名在修正后的 harness 下依然存在，"
+             "成因见下一条。</p>")
     h.append("<p><b>重测后这些格按真实通过数记分。</b> gemma-4-26B-A4B 在 chat 协议下的格，库中当前值与配对的评测状态："
              + "；".join(g26b_cells)
              + "。两个 py 格的 <code>Exception</code> 来自模型行为：模型把函数体首行写在第 0 列，拼接后必然缩进错误；"
@@ -1447,6 +1488,10 @@ def main():
          "<li>这就是“12B 崩到 0”的来源：gemma-4-12b 只跑了 java/js/rb/rs，平均后接近 0，而它根本没跑 cpp/py。</li>"
          "<li>raw（纯补全）与 chat（聊天模板、关思考）是两个不同协议；对 gemma 这类模板敏感的模型，"
          "raw 会先输出散文/推理，分数落在 harness floor。报告标准列只用固定协议，且不跨协议混比。</li>"
+         "<li><b>行标签里的 <code>·ctx=…</code>／<code>·kv=…</code>／<code>·tmpl=…</code> 是数据库协议串自己记的附加条件，不是排版噪声。</b>"
+         "以 gemma-4-12b 为例，它的 cpp 行来自 m6b 面板（<code>ctx=4096</code>、chat 模板未经核对 ⇒ <code>tmpl=unverified</code>），"
+         "它的 py 行来自 m161 重测（<code>ctx=2048 --jinja</code>），所以同一个模型的 cpp 与 py 是两套设置，"
+         "不能拿来互相解释（<code>docs/result/result.yaml::res22</code>）。</li>"
          "<li><b>看图要点：</b>热力图中一行内的横向差异 = 语言效应；空白（NaN）= 未测，绝不当作 0。</li>"
          "</ul>"),
         ("十四、工具调用（BFCL）：协议 × 类别",

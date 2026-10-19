@@ -383,7 +383,7 @@ m48:
   origin: "nuprl/MultiPL-E dataset_builder/chat_completions.py::postprocess_completion（上游同样剥行首围栏）+ m160 缺陷复现"
   scope: general
   status: current
-  evidence: ".wrapup/mpl_run.py::strip_fences 单测：未闭合围栏、已闭合围栏、无围栏保缩进、围栏不在行首不动"
+  evidence: ".wrapup/test_mpl_postprocess.py 单测（`python3 .wrapup/test_mpl_postprocess.py`，5 例全 PASS、退出码 0）：未闭合围栏被剥离、已闭合围栏被剥离、无围栏时 Python 缩进逐字节不变、围栏不在行首不动、围栏前有空行仍剥离；在临时副本里改坏一条期望后同一脚本报 FAIL 并以 1 退出（反证它有能力失败；提交的文件未改动）"
   domain:
     topic: protocol
 m49:

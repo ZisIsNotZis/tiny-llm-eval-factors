@@ -201,7 +201,7 @@ res16:
   domain:
     kind: measured
 res17:
-  _text: "全 `Exception` 的格曾被写成 score=0：9 份 .wrapup/mres/*_eval.json 的每道题状态都是 Exception，却被计为 0，其中含 gemma-4-26B-A4B 的 py（chat 协议）而同模型 cpp 正常。「这类格必须记缺失（NULL）、不得写 0」仍是当前规则，对应行已置 NULL（备份 experiments.sqlite.bak37）；把它解释为整轮运行失败的旧归因已撤回，见 res17b。"
+  _text: "全 `Exception` 的格曾被写成 score=0：扫描 .wrapup/mres/*_eval.json 时有多份文件每道题状态都是 Exception，却被计为 0，其中含 gemma-4-26B-A4B 的 py（chat 协议）而同模型 cpp 正常。份数不在本节点写：报告数据质量第 2 条按构建时扫描给出当前文件数、其中 `_fixed` 重判份数、5 题探针份数与去重后的格数。「这类格必须记缺失（NULL）、不得写 0」仍是当前规则，对应行已置 NULL（备份 experiments.sqlite.bak37）；整轮运行失败与旧后处理破坏缩进这两种归因都已撤回，当前成因见 res24。"
   from: "result.res16"
   author: measurement
   origin: "报告数据质量节；.wrapup/m26.log 与 mres 评测文件"
@@ -212,13 +212,14 @@ res17:
   domain:
     kind: measured
 res17b:
-  _text: "（撤回 res17 的一半归因）res17 把那些全 `Exception` 判为「整轮运行报错」，该归因已撤回：原因是 res21 的缩进破坏。「却被写成 0、必须记缺失」这一半仍然成立，但不得再把这类格称为整轮运行失败。"
-  from: "result.res17, result.res21"
+  _text: "（撤回 res17 的两半归因）res17 把那些全 `Exception` 的格判为「整轮运行报错」，该归因已撤回；m160 追查时给出的替代归因「旧 `strip_fences` 的 `text.strip()` 破坏首行缩进」同样撤回——同一「函数体首行在第 0 列」的签名在修正后的 harness 下依然存在（gemma-4-26B-A4B py chat 仍 159/161、160/161 为 `Exception`），可见修 harness 既没有、也不可能救回那些格；成因现在归到模型行为（res24）。「却被写成 0、必须记缺失」这一半仍然成立：这类格记 NULL，不写 0。"
+  from: "result.res17, result.res24"
   author: measurement
-  origin: "m160 缺陷追查"
+  origin: "m160 缺陷追查；m161 修正 harness 复测"
   scope: general
   status: current
-  evidence: "res21 的逐条首行缩进检查"
+  evidence: ".wrapup/mres/m161-g26b-q2-py-chat_eval.json 与 .wrapup/mres/m161-g26b-q3-py-chat_eval.json 的 statuses 中 Exception 各 159、160（n=161）；.wrapup/mres/m161-g26b-q2-py-chat.jsonl 首条完成物首行为 `for i in range(len(numbers)):`（列 0）"
+  producer: "`jq -r '.details[]|select(.status==\"Exception\")|.name' .wrapup/mres/m161-g26b-q2-py-chat_eval.json | wc -l`（q3 同命令）"
   domain:
     kind: measured
 res18:
@@ -241,7 +242,7 @@ res19:
   domain:
     kind: measured
 res20:
-  _text: "MultiPL-E chat 判分曾把 Markdown 代码围栏当语法错误：旧 `strip_fences` 只在围栏闭合时才剥离，而数据集停止串 `\n}` 通常把完成物切在闭合围栏之前，于是整格失败。用磁盘完成物（同一份生成、只补上正确后处理）重算：Qwen3.8-27B cpp chat Q2 0.2174→0.6335、Q3 0.4845→0.8571；py 仅 +0.0435/+0.0497。gemma-4-26B 的完成物无围栏，其 cpp 0.8323 不变。"
+  _text: "MultiPL-E chat 判分曾把 Markdown 代码围栏当语法错误：旧 `strip_fences` 只在围栏闭合时才剥离，而数据集停止串 `\n}` 通常把完成物切在闭合围栏之前，于是整格失败。用磁盘完成物（同一份生成、只补上正确后处理）重算：Qwen3.8-27B cpp chat Q2 0.2174→0.6335、Q3 0.4845→0.8571；py 仅 +0.0435/+0.0497。gemma-4-26B 的完成物无围栏，其 cpp 0.8323 不变。Q3 那一对是重判值、不是该格的当前值：q38-27b-q3 cpp chat 现入库值是 0.8696 = 140/161（res24），0.8571 只是对旧落盘完成物的重判，重判与重跑之差见 plan15。"
   from: "result.res16, result.res18"
   author: measurement
   origin: ".wrapup/mres/m26-*_fixed.jsonl（由 m26 原始样本经修正后处理生成）"
@@ -252,23 +253,25 @@ res20:
   domain:
     kind: measured
 res21:
-  _text: "旧 `strip_fences` 开头 `text.strip()` 会抹掉无围栏完成物的首行缩进：gemma-4-26B py chat 有 90/161（Q2）与 103/161（Q3）完成物首行缩进受损，全部编译后报错并记为 `Exception`。res17 把这些 `Exception` 归因为整轮运行失败是错的——原因是评测后处理破坏缩进，而成品已落盘，缩进无法从样本恢复。"
-  from: "result.res17, result.res20"
+  _text: "旧 `strip_fences` 开头 `text.strip()` 确实会抹掉无围栏完成物的首行缩进（m48 已改为只剥行首围栏），但「因此造成 gemma-4-26B-A4B py 那些 `Exception`」这一因果从句撤回：落盘完成物普遍带「函数体首行在第 0 列」的签名——m26 的 g26b-q2-py 160/161、g26b-q3-py 161/161，对照格 q38-27b-q3-py 13/161；而 m161 是在修正后的 harness 下落盘的，同一签名仍在（g26b-q2-py 159/161、g26b-q3-py 160/161 首行列 0），`strip_fences` 对无围栏完成物只做 `rstrip`、不动缩进。所以这个签名不是后处理造成的证据，成因以 res24 的模型行为为准。仍然为真的另一半：m26 落盘的 py 完成物用修正后处理重判仍是 `pass: 0`，这些格靠重判救不回来；res17 的「整轮运行失败」也仍然是错的归因。"
+  from: "result.res17, result.res20, result.res24"
   author: measurement
-  origin: ".wrapup/mres/m26-g26b-q*-py.jsonl 逐条检查首行缩进"
+  origin: ".wrapup/mres/m26-g26b-q*-py.jsonl 与 .wrapup/mres/m161-g26b-q*-py-chat.jsonl 的首行缩进；两份 m26 `_fixed_eval.json` 的重判结果"
   scope: general
   status: current
-  evidence: "首行非空白且次行缩进的完成物计数：g26b-q2-py 90/161、g26b-q3-py 103/161；对照组 q38-27b-q3-py 1/161"
+  evidence: "首行列 0 的完成物计数：m26 g26b-q2-py 160/161、g26b-q3-py 161/161、对照 q38-27b-q3-py 13/161；m161（修正后处理）g26b-q2-py 159/161、g26b-q3-py 160/161；m26 落盘 py 完成物用修正后处理重判 .wrapup/mres/m26-g26b-q2-py_fixed_eval.json 与 .wrapup/mres/m26-g26b-q3-py_fixed_eval.json 的 `pass` 均为 0（n=161）"
+  producer: "每格首行列 0 条数 `jq -r '.completion|split(\"\\n\")[0]' <samples.jsonl> | grep -c '^[^[:space:]]'`；重判值 `jq .pass .wrapup/mres/m26-g26b-q2-py_fixed_eval.json`（q3 同）"
   domain:
     kind: measured
 res22:
-  _text: "gemma-4-12b chat cpp（m6b 面板，2026-09-30，从未入库）：Q2 4/161=0.0248、Q3 130/161=0.8075；同批 py 完成物缩进受损（Q2 62/161、Q3 87/161），不可用。所以 m160 的前提「12b 没有任何 cpp/py 数据」不成立，其 cpp 问题已可由 m6b 回答。"
-  from: "result.res21"
+  _text: "gemma-4-12b chat cpp（m6b 面板，2026-09-30）：Q2 4/161=0.0248、Q3 130/161=0.8075，已按协议串原样入库（run_tag `m6b-chat-gemma12b`，protocol 末尾记着 `;ctx=4096;tmpl=unverified`）。同批 py 格不并入：m6b 是 `ctx=4096` 且没有 `--jinja`、模板路径未核对的一套配置，而 m161 用 `ctx=2048 --jinja` 把这两格重测成了 Q2 77/161=0.4783、Q3 93/161=0.5776（res24），m6b 的 py 值只是另一套配置下的旧记录（.wrapup/m6b_summary.jsonl 记 Q2 75/161=0.4658、Q3 5/161=0.0311），已被 m161 取代；0.0311 是配置差异还是旧后处理造成的，本节点不裁决。所以 m160 的前提「12b 没有任何 cpp/py 数据」不成立，其 cpp 问题已可由 m6b 回答。"
+  from: "result.res24"
   author: measurement
-  origin: ".wrapup/m6b_summary.jsonl; .wrapup/mres/m6b-g12b-q*-cpp.jsonl"
+  origin: ".wrapup/m6b_summary.jsonl; .wrapup/mres/m6b-g12b-q*-{cpp,py}*.json; .wrapup/run_m6b.sh 与 .wrapup/run_m161_chat_py.sh 的启动参数"
   scope: specific
   status: current
-  evidence: "m6b-g12b-q3-cpp 重算后 OK 130 / Exception 16 / SyntaxError 15；m6b-g12b-q2-cpp OK 4 / SyntaxError 156"
+  evidence: "m6b-g12b-q3-cpp_fixed_eval.json OK 130 / Exception 16 / SyntaxError 15；m6b-g12b-q2-cpp_fixed_eval.json OK 4 / SyntaxError 156 / Exception 1；.wrapup/m6b_summary.jsonl 的 g12b-q2 py pass 75（0.4658）、g12b-q3 py pass 5（0.0311）；.wrapup/m6b.log 有 `n_ctx_slot = 4096`，.wrapup/run_m6b.sh 的 start_server 无 `--jinja`，.wrapup/run_m161_chat_py.sh 为 `CTX=2048` 加 `--jinja`"
+  producer: "`python3 -c \"import json,collections;d=json.load(open('.wrapup/mres/m6b-g12b-q2-cpp_fixed_eval.json'));print(collections.Counter(x['status'] for x in d['details']))\"`（q3 同）；`jq -c 'select(.lang==\"py\")' .wrapup/m6b_summary.jsonl`；`grep -n 'n_ctx_slot\\|--jinja\\|CTX=' .wrapup/m6b.log .wrapup/run_m6b.sh .wrapup/run_m161_chat_py.sh`；库值 `sqlite3 experiments.sqlite \"SELECT protocol,round(_score,4) FROM experiments WHERE run_tag='m6b-chat-gemma12b'\"`"
   domain:
     kind: measured
 res23:
@@ -289,6 +292,6 @@ res24:
   scope: specific
   status: current
   evidence: "首行在第 0 列计数 g26b-q2-py=159、g26b-q3-py=160、q38-27b-q3-py=2；对应 eval json 的 Exception 计数 159/160/16；HumanEval_0 的完成物原文为 `for i in range(len(numbers)):` 后接 8 空格缩进的 `for j …`（首行列 0、续行缩进，拼接后必然 IndentationError）"
-  producer: "`jq -c '{model,lang,pass,n,statuses}' .wrapup/m161_summary.jsonl`；每格首行列 0 条数 `jq -r '.completion|split(\"\\n\")[0]' .wrapup/mres/m161-<cell>-chat.jsonl | grep -c '^[^ \\t]'`；每格 Exception 条数 `jq -r '.details[]|select(.status==\"Exception\")|.name' .wrapup/mres/m161-<cell>_eval.json | wc -l`"
+  producer: "`jq -c '{model,lang,pass,n,statuses}' .wrapup/m161_summary.jsonl`；每格首行列 0 条数 `jq -r '.completion|split(\"\\n\")[0]' .wrapup/mres/m161-<cell>-chat.jsonl | grep -c '^[^[:space:]]'`（BRE 里 `\\t` 是字面 t，写成 `^[^ \\t]` 会漏掉以 t 开头的首行）；每格 Exception 条数 `jq -r '.details[]|select(.status==\"Exception\")|.name' .wrapup/mres/m161-<cell>_eval.json | wc -l`"
   domain:
     kind: measured

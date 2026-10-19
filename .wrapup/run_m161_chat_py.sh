@@ -2,18 +2,24 @@
 # m161 — re-measure the 6 chat/py cells plus one end-to-end control cell with
 # the FIXED MultiPL-E postprocess (commit b57a71f, mpl_run.py::strip_fences).
 #
-# WHY: the pre-fix harness destroyed Python indentation (`completion.strip()`
-# before the fence pass), so the stored chat/py samples in m26 for these models
-# are unusable: gemma-4-26B-A4B was recorded 0.0 with 161 SyntaxError.  Those
-# cells cannot be re-scored from the old samples; the completions themselves are
-# damaged, so the models must be re-generated against the pinned prompt set.
+# WHY: the stored chat/py samples in m26 were scored under the pre-fix
+# postprocess (`completion.strip()` before the fence pass) and re-scoring them
+# with the fixed code still gives pass 0 (result.res21), so those cells cannot be
+# recovered from the old samples and the models are re-generated against the
+# pinned prompt set.  Re-generating is not a rescue for every cell: under the
+# fixed harness gemma-4-26B-A4B py is still Exception-dominated (159/161,
+# 160/161) because the model writes the function body's first line at column 0,
+# which is model behaviour and not something the harness re-indents
+# (result.res24).
 #
 # Correctness gate: a post-hoc re-evaluation of the already stored
-# q38-27b-q3 cpp chat samples with the fixed code gives 0.8696 (140/161; the
-# m161 contract states 138/161 = 0.8571).  A fresh generation of that same cell
-# is run FIRST and must land inside 0.8571 +/- 0.03 = [0.8271, 0.8871]; if it
-# does not, the harness fix has not taken effect on the generation side either
-# and the run stops instead of producing six quietly wrong cells.
+# q38-27b-q3 cpp chat samples with the fixed code gives 138/161 = 0.8571, and
+# that re-score of the OLD samples is the reference (CONTROL_REF) -- it is not
+# this cell's current value and not the rerun's number: the fresh generation of
+# the same cell scored 140/161 = 0.8696 (result.res24).  A fresh generation is
+# run FIRST and must land inside 0.8571 +/- 0.03 = [0.8271, 0.8871]; if it does
+# not, the harness fix has not taken effect on the generation side either and
+# the run stops instead of producing six quietly wrong cells.
 #
 # Protocol (unchanged from m26/m160 chat, do not edit):
 #   llama-server -ngl 99 -c 2048 --cache-type-k q8_0 --cache-type-v q8_0

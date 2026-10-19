@@ -36,10 +36,10 @@
 
 | 被撤回的说法 | 事实所在 | 状态 |
 | --- | --- | --- |
-| 全 `Exception` 的格曾被归因为整轮运行失败；真实原因是旧后处理破坏缩进。「必须记缺失、不得写 0」这一半仍成立 | `docs/result/result.yaml::res17b`、`::res17` | 已撤回（一半） |
+| 全 `Exception` 的格曾被归因为整轮运行失败，随后又被归因为旧后处理破坏缩进；两种归因都已撤回，成因改为模型把函数体首行写在第 0 列。「必须记缺失、不得写 0」这一半仍成立 | `docs/result/result.yaml::res17b`、`::res17`、`::res24` | 已撤回（两种归因） |
 | 旧 `strip_fences` 只在围栏闭合时剥离，把 Markdown 围栏当语法错误；该批 chat 分数作废，只补正确后处理重算 | `docs/result/result.yaml::res20` | 已撤回（旧分数作废） |
-| 旧 `strip_fences` 的 `text.strip()` 抹掉无围栏完成物的首行缩进；该批 py 格作废，缩进无法从样本恢复 | `docs/result/result.yaml::res21` | 已撤回（该批 py 格作废） |
-| m160 的前提「12b 没有任何 cpp/py 数据」不成立：m6b 面板已有 chat cpp 数据，其 py 完成物同样不可用 | `docs/result/result.yaml::res22` | 已撤回（前提作废） |
+| 旧 `strip_fences` 的 `text.strip()` 抹掉无围栏完成物的首行缩进，并因此造成 gemma-4-26B-A4B py 的 `Exception`：观察成立、因果撤回（同一签名在修正 harness 下依然存在） | `docs/result/result.yaml::res21` | 已撤回（因果从句） |
+| m160 的前提「12b 没有任何 cpp/py 数据」不成立：m6b 面板已有 chat cpp 数据；同批 py 格因配置不同（ctx=4096、模板未核对）已被 m161 重测取代，不并入 | `docs/result/result.yaml::res22` | 已撤回（前提作废） |
 
 ## 四、推断性判断（`author: agent`、`status: provisional`，不是测量结论）
 
