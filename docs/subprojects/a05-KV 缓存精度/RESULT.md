@@ -3,7 +3,7 @@
 每条事实一行一个陈述；数字后面必须跟证据路径与一条能重算出它的命令，没有命令的数字不写（`@falsifiable`）。
 未测写「未测」并写原因，不写 0。状态：`current` 为当前值，`provisional` 为暂时，`retracted` 为已撤回但保留其死因。
 判断类结论（analysis）与技术测量分开，analysis 不覆盖任何数字。
-本文件所有数字由一条命令复算：`python3 "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py"`（12 条预期；`A05_SELFTEST=1` 时退出 1）。
+本文件所有数字由一条命令复算：`python3 "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py"`（20 条预期，含长上下文那批的 H 段；**其中 H5 当前是红的**，因为阳性对照格还在等重跑；`A05_SELFTEST=1` 时退出 1；缺 `evidence/needle-retune/` 时退出 1）。
 
 ## 短上下文（约 1k tokens）
 
@@ -19,7 +19,7 @@
 | q4_0/q4_0 | 0.6140 (280/456) | 0.60 (30/50) | 0.68 (34/50) | 0.5488 (90/164) |
 
 - **HumanEval 逐题配对（164 题，两套判分各算一遍）**：base 上 `f16→q8_0` 掉 7 题、涨 3 题；`f16→q4_0` 掉 15 题、涨 11 题（净 −4）；`q8_0→q4_0` 掉 12 题、涨 12 题（净 0）。plus 上 `f16→q8_0` 掉 4 涨 4（净 0，两配置都是 86/164，但通过集不同）、`f16→q4_0` 掉 14 涨 11（净 −3）、`q8_0→q4_0` 掉 13 涨 10（净 −3）。
-- 读法：KV 精度在这条链路上**改变个别题**（最多 15/164），净值小且方向不单调；逐题配对表只报计数，不给 p 值（单次运行、无重复）。
+- 读法：KV 精度在这条链路上**改变个别题**（最多 26/164 = 丢 15 + 得 11，口径与 `kv-two-metrics` 一致：报丢/得之和，不是净差），净值小且方向不单调；逐题配对表只报计数，不给 p 值（单次运行、无重复）。
 - 状态：current。
 - 证据：`.wrapup/mres/m130-kv/variant_panel.json`；`.wrapup/mres/m130-kv/codegen/{f16_f16,q8_0_q8_0,q4_0_q4_0}/humaneval/m130-kv-*_openai_temp_0.0_eval_results.json`；库行 `source_file='mres/m130-kv/variant_panel.json'`、`protocol LIKE 'variant-kv-%'`。
 - 复现：`python3 "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py"` 的 A 段（打印三行分数与六行 lose/gain）；库侧 `sqlite3 -readonly experiments.sqlite "SELECT protocol,cache_type_k,cache_type_v,bench_family,n_items,_score FROM experiments WHERE protocol LIKE 'variant-kv-%' ORDER BY 1,2"`。
@@ -123,18 +123,19 @@
 | 16384（15362） | 20/20 = 1.00 | 20/20 = 1.00 | 0 | 0 / 0（逐题完全相同） | 两侧都 [0.84,1.00]（天花板） |
 | 32768（31746） | 14/20 = 0.70 | 15/20 = 0.75 | **+1** | **0 丢 / 1 得** | f16 [0.48,0.85]，q4_0 [0.53,0.89] |
 
-- **阳性对照 0/20**（同一条 8k 题把针那一行删掉，模型无从检索）：打分器看得到失败，这一轮不是「模型在猜」。
-- **动态范围门（本轮门 v2，跑前写死）**：f16 在 32768 上 14/20 ≥ 8/20 ⇒ 可用；20/20 记「单侧（只能测出退化）」。门 v1（8–19/20）在第一次跑时因为深度混合被地板拉低而失败，v1→v2 的改动只放宽了天花板一侧，地板一侧不变，理由写在 `PLAN.md::WP4`。
-- **结论与方向**：在 32k 上 q4_0 与 f16 不可分辨（14 vs 15，配对 0 丢 1 得，单侧 20 条下可见性下限约 4/20）；**唯一 ≥4 的差在最短的 8k 上（q4_0 4 丢 0 得，单侧精确 p = 0.0625）**，16k 两侧都顶到 20/20。所以「上下文越长、KV 量化越贵」这个方向的证据**不存在**；本设计下长上下文没有让 KV 量化更贵。
+- **阳性对照**：旧写法 `hit = (got == needle) and not absent` 是**自证**——`absent=True` 让对照恒为 0，实测的 0/20 只是 20 条回答都输出了占位符 `12345`，它证明不了打分器能看到失败。已删除该判据，改成：**保留针、去掉最后那行指令**，判定与处理组同一条码路（第一个 5 位数字 == 针即命中），所以这条对照**可以非 0**（模型若复述针就记命中）；对照的 `prompt_tokens` 也改成按实际 prompt 用 `/tokenize` 重算（旧值是从处理组复制的 7169）。
+- **对照的重跑没跑成，本轮按 void 记**：`needle_grid.py --control-only` 两次排队（1200 s、480 s）都撞在 `a04` 的 `m164-a04-uni45`（`evalplus.codegen mbpp`）持有的 `/tmp/llama_gpu.lock` 上；证据目录里那份对照已改名为 `…-control-absent-VOID.json`，`summary.json` 的 `control` 块写明 `status=void-absent-veto` 与重跑命令。当前可执行的替代负控是 `kv_evidence.py` 的 **H4**：用四个纯函数例子证明打分器「能记命中、能记失败、无数字记失败、占位符 12345 记失败」；**H5 因此是红的**，这正是「对照还没修好」的机器可读状态。
+- **动态范围门**：v1 = 8–19/20，首次 13 格（深度混合）跑出 7/20 判不可用；v2 = 地板一侧不变（<8/20 仍不可用）、天花板 20/20 记「单侧」。**v2 与结果同一次提交（`82ae026`），「先写后跑」这件事 git 证明不了**；不受它影响的是：f16 在 32768 上 14/20 同时落在 v1 的 8–19 与 v2 的 ≥8 里，两种门下都通过。
+- **结论与方向**：32k 上 q4_0 与 f16 **本次设计未观察到差异**（14 vs 15，配对 0 丢 1 得）；唯一 ≥4 的差在最短的 8k 上（q4_0 4 丢 0 得），16k 两侧都顶到 20/20。可观测下限 **4/20**（n=20 时单侧 α=0.05 的首个分裂是 5/20，所以 4/20 只是「这个量级的差看得出来」，不是显著）；因此可以说「本次设计未观察到长上下文让 KV 量化更贵」，不能说「长上下文不会让 KV 更贵」。
 - 限制：只有深度 0.9 这一层、每格 20 条单次运行、`q8_0` 没有重跑（第一次跑的四配置在三个 ctx 上逐格相同，见 `evidence/run-first-void.out`，但那一轮按规则判不可用）；16k 是天花板、只能测出退化。
 - 状态：current。
 - 证据：`evidence/needle-retune/a05-needle-d0.9-ctx{8192,16384,32768}-kv{f16_f16,q4_0_q4_0}.json`（每条的深度、针值、完成物、是否命中、prompt sha256）与 `evidence/needle-retune/summary.json`；第一次（不可用）的一轮在 `evidence/needle/`。
-- 复现：`timeout 780 bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a05-KV 缓存精度/analysis/needle_grid.py" --depths 0.9 --kvs f16:f16,q4_0:q4_0 --outdir "docs/subprojects/a05-KV 缓存精度/evidence/needle-retune"`；重算命中率与配对翻动：见本条表格下的命令块（`python3 - <<'PY'` 读 evidence/needle-retune/*.json 统计 `hit` 与 `i`）。
+- 复现：`timeout 780 bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a05-KV 缓存精度/analysis/needle_grid.py" --depths 0.9 --kvs f16:f16,q4_0:q4_0 --outdir "docs/subprojects/a05-KV 缓存精度/evidence/needle-retune"`；重算命中率、配对丢/得与对照（不需要 GPU）：`python3 "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py"` 的 H 段（读 `evidence/needle-retune/*.json`，缺文件即退出 1）。
 
 ### kv-long-ctx-unmeasured :: 长上下文的 KV 效应已由针检索覆盖到 32k（先前「未测」的状态撤销）
 
 - 本条原为「未测」，现由 `kv-long-ctx-needle` 取代：32k 上 q4_0 与 f16 的检索命中不可分辨（14 vs 15，0 丢 1 得），可见性下限约 4/20。
-- 仍未覆盖的部分（不是 0）：40k 以上没测（Qwen3.5-2B 的原生窗口之外）；中间深度（0.5）在该模型上是结构性地板，KV 在那一层无法被测出——这是模型行为（lost in the middle），不是 KV 结论；`q8_0` 只在第一次（按规则不可用的）一轮里测过。
+- 仍未覆盖的部分（不是 0）：**40k 以上没测，理由是成本与时间**，不是模型窗口——GGUF 头 `qwen35.context_length = 262144`（`python3 -c` 读头可验），但 32k 一格已经要 ~64 s（20 条 × 31.7k tokens 提示处理），40k/64k 在 9% GPU 额度下性价比低，且该模型在 32k 上已降到 14/20，再加长只会更快落地板；中间深度（0.5）在该模型上是结构性地板，KV 在那一层测不出——模型行为（lost in the middle），不是 KV 结论；**K 与 V 分开量化未测**：可用的一轮只有 `f16/f16` 与 `q4_0/q4_0`（K、V 同时变），`q8_0/f16` 与 `f16/q8_0` 只在判不可用的第一轮里跑过，所以「长上下文里是 K 还是 V 在起作用」未测。
 - 代价已实测：13 格（含 1 个阳性对照）wall 约 11 分钟，其中 32k 格 ~64 s、16k ~32 s、8k ~20 s（`evidence/run-retune.out` 的时间戳）；重跑 7 格约 4 分钟。
 - 证据：`evidence/needle-retune/`、`evidence/run-first-void.out`、`evidence/run-retune.out`。
 - 复现：见 `kv-long-ctx-needle` 的复现命令；未覆盖档的代价是一次 `--ctxs 8192,16384,32768,49152`（4 个 ctx × 2 KV × 20 条约 8 分钟）。
@@ -167,5 +168,5 @@
 ### kv-analysis :: 在 1k 上下文上 KV 量化是可换的，在长上下文上还答不了
 
 - 短上下文：三个 KV 精度（f16 / q8_0 / q4_0）的**净值**差在 164 与 161 题的规模上都是个位数，方向不单调（`kv-short-panel`、`kv-short-m29`）；但逐题会翻动，最多 26/164（`kv-two-metrics`）。两个口径的差距是可量化的：6 对配置分数差为 0 而逐题集合不同（最强的一对是 90 vs 90、12 丢 12 得），翻转最大的一对是 26 翻 / −4 分。所以「为了省显存把 KV 降到 q8_0 或 q4_0」在 1k 上下文上不必担心分数方向；「同一份权重换 KV 会得到逐题不同的结果」这一点必须承认，跨配置比较单个题目的判定没有意义，报告也不能再写「测不出差别」。
-- 长上下文：现有唯一的长 ctx 数据被判不可分辨（`kv-ctx-padded-floor`），所以「KV 能不能省显存」这个问题在长上下文上仍未答；答它需要 `PLAN.md::WP4` 的有动态范围测量，预算 ≤30 GPU 分钟。
+- 长上下文：针检索（`kv-long-ctx-needle`）在 8k/16k/32k 上给出「本次设计未观察到 q4_0 与 f16 的差异」，可观测下限 4/20；8k 上反而有一处 −4（4 丢 0 得），与「越长越贵」的方向相反。所以现在能答的是有界的一档：≤32k、深度 0.9、20 条/格；40k 以上与 K/V 分开量化仍未测（`kv-long-ctx-unmeasured`）。
 - 这条 analysis 不覆盖任何数字；数字都在上面的事实里。

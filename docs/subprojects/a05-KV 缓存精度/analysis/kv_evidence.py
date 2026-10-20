@@ -301,6 +301,86 @@ def m29_collision():
         copy.unlink(missing_ok=True)
 
 
+# ------------------------------------------- H: 长上下文针检索（WP4 的落盘产物）
+NEEDLE_DIR = HERE.parent / "evidence/needle-retune"
+
+
+def needle():
+    """从落盘证据重算长上下文命中率、配对丢/得与阳性对照。
+
+    没有这些文件就判失败（退出码非 0）——「一条命令复算全部数字」必须包括这一批。
+    """
+    print("\n== H. 长上下文针检索（evidence/needle-retune/，重算而不引用结论）")
+    if not NEEDLE_DIR.is_dir() or not list(NEEDLE_DIR.glob("a05-needle-d*.json")):
+        expect("H0 长上下文证据存在", False,
+               f"缺 {NEEDLE_DIR.relative_to(REPO)}：无法复算长上下文那批数字")
+        return
+    cells = {}
+    for path in sorted(NEEDLE_DIR.glob("a05-needle-d*.json")):
+        d = json.load(open(path))
+        hits = sum(1 for it in d["items"] if it["answer"] == it["needle"])
+        cells[(d["ctx"], d["kv"], bool(d.get("control")))] = d
+        print(f"  {path.name}: 重算 {hits}/{d['n_items']}（文件自报 {d['hits']}）"
+              + ("  [对照]" if "control" in path.name else ""))
+        if "control" not in path.name:
+            if hits != d["hits"]:
+                expect("H1 每格 hits 可重算", False, f"{path.name}: {hits} != {d['hits']}")
+                return
+    expect("H1 每格的 hits 都能从逐条判定重算出来", True,
+           f"{len([p for p in cells if not p[2]])} 个格子重算与自报一致")
+
+    def hits_of(ctx, kv):
+        d = cells.get((ctx, kv, False))
+        return None if d is None else sum(1 for it in d["items"] if it["answer"] == it["needle"])
+
+    print("  逐 ctx 配对（f16/f16 vs q4_0/q4_0，同一批 prompt，逐题比较）")
+    diffs = {}
+    for ctx in (8192, 16384, 32768):
+        a, b = cells.get((ctx, "f16/f16", False)), cells.get((ctx, "q4_0/q4_0", False))
+        if not a or not b:
+            continue
+        A = {it["i"]: it["answer"] == it["needle"] for it in a["items"]}
+        B = {it["i"]: it["answer"] == it["needle"] for it in b["items"]}
+        lose = sum(1 for k in A if A[k] and not B[k]); gain = sum(1 for k in A if not A[k] and B[k])
+        diffs[ctx] = (sum(A.values()), sum(B.values()), lose, gain)
+        print(f"    ctx={ctx:5d}: f16 {sum(A.values()):2d}/20  q4_0 {sum(B.values()):2d}/20  "
+              f"丢 {lose} 得 {gain}")
+    if 32768 in diffs:
+        f16_32, q4_32, lose32, gain32 = diffs[32768]
+        expect("H2 32k 上 f16 与 q4_0 的配对差不超 2/20（本次设计未观察到差异）",
+               abs(q4_32 - f16_32) <= 2,
+               f"f16 {f16_32}/20 vs q4_0 {q4_32}/20，丢 {lose32} 得 {gain32}")
+        expect("H3 动态范围门（v2）成立：f16 在 32k 上 ≥8/20", f16_32 >= 8,
+               f"f16 32k = {f16_32}/20")
+    # H4：打分器本身能不能失败——纯函数级负控，不需要 GPU。
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("needle_grid", HERE / "needle_grid.py")
+    ng = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ng)
+    cases = {"命中：完成物就是针": ("48157", "48157", True),
+             "失败：完成物是别的数": ("12345", "48157", False),
+             "失败：完成物没有数字": ("I cannot find it.", "48157", False),
+             "失败：占位符 12345（旧对照的实际回答）": ("12345", "48157", False)}
+    ok = all((ng.first_digits(comp) == needle) == want for comp, needle, want in cases.values())
+    print("  打分器单元检查：" + "；".join(
+        f"{k} -> {'命中' if (ng.first_digits(c) == nd) else '失败'}" for k, (c, nd, _w) in cases.items()))
+    expect("H4 打分器能记命中也能记失败（对照不再被一票否决）", ok, "四例方向全部符合预期")
+
+    ctl = [d for (ctx, kv, is_ctl), d in cells.items() if is_ctl]
+    if ctl:
+        c = ctl[0]
+        recomp = sum(1 for it in c["items"] if it["answer"] == it["needle"])
+        same_path = all((it["answer"] == it["needle"]) == it["hit"] for it in c["items"])
+        print(f"  对照 {c['cell']}: {recomp}/{c['n_items']}，"
+              f"答案形态 {collections.Counter(it.get("answer_shape", "unrecorded") for it in c["items"])}")
+        expect("H5 对照格存在、0/20，且逐条 hit==(answer==needle)", recomp == 0 and same_path,
+               f"重算 {recomp}/20，逐条一致={same_path}")
+    else:
+        expect("H5 对照格可用（不是 absent 一票否决的 void 版本）", False,
+               "证据里只有 VOID 对照：旧实现的 0/20 是自证。重跑："
+               "needle_grid.py --control-only（命令见 RESULT.md::kv-long-ctx-needle）")
+
+
 def main():
     m130()
     m29()
@@ -309,6 +389,7 @@ def main():
     db_state()
     two_metrics()
     m29_collision()
+    needle()
     bad = [n for n, ok, _ in results if not ok]
     print(f"\n{len(results) - len(bad)}/{len(results)} 条预期成立"
           + ("（A05_SELFTEST=1：E2 被故意设错，装置应当判 FAIL）" if SELFTEST else ""))

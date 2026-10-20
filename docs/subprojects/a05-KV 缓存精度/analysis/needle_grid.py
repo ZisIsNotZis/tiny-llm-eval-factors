@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import argparse
+import collections
 import hashlib
 import json
 import os
@@ -154,9 +155,13 @@ def run_cell(cell_id, ctx, ctk, ctv, prompts, outdir, port, logfile, selftest=Fa
         for it in prompts:
             comp = srv.complete(it["prompt"], 32)
             got = first_digits(comp)
-            hit = (got == it["needle"]) and not it["absent"]
+            hit = (got == it["needle"])      # 只比数字：对照的针仍在 prompt 里，所以对照可以非 0
             items.append({"i": it["i"], "depth": it["depth"], "needle": it["needle"],
-                          "absent": it["absent"], "completion": comp, "answer": got,
+                          "control": it.get("control"),
+                          "completion": comp, "answer": got,
+                          "answer_shape": ("empty" if not got else
+                                           "placeholder" if len(set(got)) == 1 else
+                                           "five-digits"),
                           "hit": hit, "prompt_sha256": it["prompt_sha256"],
                           "prompt_tokens": it["prompt_tokens"]})
         hits = sum(1 for x in items if x["hit"])
@@ -185,10 +190,13 @@ def main():
     ap.add_argument("--logfile", default=str(WR / "a05_needle_server.log"))
     ap.add_argument("--gate-ctx", type=int, default=32768)
     ap.add_argument("--gate-kv", default="f16:f16")
+    ap.add_argument("--control-only", action="store_true",
+                    help="只跑阳性对照格（修对照时用，不重跑处理组、不重写 summary.json）")
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
     ctxs = [int(c) for c in args.ctxs.split(",")]
+    gate0 = tuple(args.gate_kv.split(":"))
     depths = [float(d) for d in args.depths.split(",")]
     kvs = [tuple(k.split(":")) for k in args.kvs.split(",")]
     filler = CORPUS.read_text(errors="ignore")
@@ -199,9 +207,9 @@ def main():
     with Server(2048, "f16", "f16", args.port, args.logfile) as tk:
         total, n_ctx = tk.slots()
         log(f"tokenizer server: n_slots={total} n_ctx={n_ctx}")
-        for ctx in ctxs:
+        for ctx in ([min(ctxs)] if args.control_only else ctxs):
             target = ctx - args.reserve
-            for depth in depths:
+            for depth in ([depths[-1]] if args.control_only else depths):
                 items = []
                 for i in range(n):
                     needle = needle_for(i, ctx, depth)
@@ -222,10 +230,26 @@ def main():
     ctl_depth = depths[-1]
     control = []
     for x in plans[(ctl_ctx, ctl_depth)][:n]:
-        without = x["prompt"].replace("\nKEY: " + x["needle"] + "\n", "\n", 1)
-        control.append(dict(x, prompt=without, absent=True,
-                            prompt_sha256=hashlib.sha256(without.encode()).hexdigest()))
-    log(f"control: {len(control)} prompts, needle removed, expect 0/{len(control)}")
+        # 针留在 prompt 里，只把最后那行「只回答数字」的指令去掉：模型若复述针，就会记命中，
+        # 所以这个对照**能失败**，它检验的是「打分器看到正确答案时会不会记命中」。
+        stripped = x["prompt"].replace(INSTR, "", 1)
+        assert stripped != x["prompt"]
+        control.append(dict(x, prompt=stripped, control="instruction-removed",
+                            prompt_tokens=None))
+    with Server(2048, "f16", "f16", args.port, args.logfile) as tk2:
+        for c in control:
+            c["prompt_tokens"] = tk2.tokenize(c["prompt"])
+            c["prompt_sha256"] = hashlib.sha256(c["prompt"].encode()).hexdigest()
+    log(f"control: {len(control)} prompts, instruction removed (needle kept), tokens "
+        f"{min(c['prompt_tokens'] for c in control)}–{max(c['prompt_tokens'] for c in control)}")
+
+    if args.control_only:
+        rec = run_cell(f"a05-needle-d{ctl_depth}-ctx{ctl_ctx}-kv{gate0[0]}_{gate0[1]}-control-noinstruction",
+                       ctl_ctx, gate0[0], gate0[1], control, outdir, args.port, args.logfile)
+        shapes = collections.Counter(it["answer_shape"] for it in rec["items"])
+        print(json.dumps({"control_only": True, "cell": rec["cell"], "hits": rec["hits"],
+                          "n": rec["n_items"], "answer_shapes": shapes}, indent=1))
+        return 0 if rec["hits"] == 0 else 4
 
     # 3) 逐格跑。门率先跑，便于早发现问题。
     cells = []
@@ -237,11 +261,14 @@ def main():
             cell_id = f"a05-needle-d{depth}-ctx{ctx}-kv{ck}_{cv}"
             cells.append(run_cell(cell_id, ctx, ck, cv, plans[(ctx, depth)],
                                   outdir, args.port, args.logfile))
-    cells.append(run_cell(f"a05-needle-d{ctl_depth}-ctx{ctl_ctx}-kv{gate[0]}_{gate[1]}-control-absent",
+    cells.append(run_cell(f"a05-needle-d{ctl_depth}-ctx{ctl_ctx}-kv{gate[0]}_{gate[1]}-control-noinstruction",
                           ctl_ctx, gate[0], gate[1], control, outdir, args.port, args.logfile))
 
     # 4) 汇总与门判定。
-    ctl = [c for c in cells if c["cell"].endswith("control-absent")][0]
+    ctl = [c for c in cells if c["cell"].endswith("control-noinstruction")][0]
+    ctl_shapes = {}
+    for it in ctl["items"]:
+        ctl_shapes[it["answer_shape"]] = ctl_shapes.get(it["answer_shape"], 0) + 1
     strata = {}
     for depth in depths:
         gate_cell = [c for c in cells if c["cell"] == f"a05-needle-d{depth}-ctx{args.gate_ctx}-kv{gate[0]}_{gate[1]}"]
@@ -272,7 +299,11 @@ def main():
         "design": "needle at a fixed depth per cell (depth is a stratum, not pooled), "
                   "answer-only instruction, prompt = ctx-1024 tokens, 20 items per cell",
         "control": {"cell": ctl["cell"], "hits": ctl["hits"], "n": ctl["n_items"],
-                    "passed": ctl["hits"] == 0},
+                    "passed": ctl["hits"] == 0,
+                    "mode": "instruction-removed (needle kept in the prompt)",
+                    "answer_shapes": ctl_shapes,
+                    "can_fail": "命中=完成物第一个 5 位数字等于针；对照里针仍在，模型复述它就记命中，"
+                                "所以这条对照可以非 0（旧的 absent 一票否决写法永远 0，已删除）"},
         "strata": strata,
         "cells": [{"cell": c["cell"], "ctx": c["ctx"], "kv": c["kv"],
                    "depth": c["items"][0]["depth"], "hits": c["hits"], "n": c["n_items"]}
