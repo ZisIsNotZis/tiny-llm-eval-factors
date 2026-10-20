@@ -62,6 +62,7 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/open_questions.json report_inputs/paired_deltas.json \
          report_inputs/reproducibility.json report_inputs/scheme_effects.json \
          report_inputs/size_claims.json report_inputs/kv_evidence.json \
+         report_inputs/bfcl_gap.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -69,6 +70,11 @@ if [ "$missing_inputs" = 0 ]; then
     record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 report_inputs/build_bfcl_gap.py --check >/dev/null 2>&1; then
+    record PASS "bfcl_gap.json 与现有 BFCL 汇总一致"
+else
+    record WARN "bfcl_gap.json 与 BFCL 汇总不一致：python3 report_inputs/build_bfcl_gap.py"
 fi
 if python3 report_inputs/build_kv_evidence.py --check >/dev/null 2>&1; then
     record PASS "kv_evidence.json 与 a05 的证据脚本输出一致"

@@ -216,3 +216,10 @@
 - evidence: 第五节由 `report_inputs/kv_evidence.json` 渲染，而该索引由 `report_inputs/build_kv_evidence.py` 跑 `a05` 的 `analysis/kv_evidence.py` 并解析其输出（不抄散文）：`f16→q4_0` 在 HumanEval base 丢 15 / 得 11（净 −4，分数 0.5732→0.5488）、plus 丢 14 / 得 11（净 −3），`f16→q8_0` base 丢 7 / 得 3；据此写明「分数相近 ≠ 判定相同」并接到「测量可复现性边界」一节；方向不一致（gsm8k/ifeval 上 q4_0 反而更高）保留原判断但改为按计数说话；长上下文标为未测并给出原因（两个 m30 网格都无信息量：一个由构造决定、一个是模型在续写填充前言）；m29 未入库单独说明「这属于未入库，不等于 KV 没有数据」。
 - producer: `python3 report_inputs/build_kv_evidence.py --check`；`python3 checks/kv_evidence_negative_control.py`（把四类计数改成 0 → 正文从「逐题在双向翻动」变回「逐题判定完全相同、测不到影响」）
 
+## res50 :: 报告的 BFCL micro/macro 差改读派生索引，报告不再随别人的新 summary 变字节。
+
+- kind: measured
+- status: current
+- evidence: 新增 `report_inputs/bfcl_gap.json` 与生成器 `report_inputs/build_bfcl_gap.py`；`make_report.py::bfcl_micro_macro_gap()` 改为只读该索引（缺索引即 `SystemExit`），不再扫 `.wrapup/*_summary.jsonl`。性质验证：往 `.wrapup/m8_summary.jsonl` 追加一条带 `per_category` 的假记录后重建报告，字节哈希与追加前**完全相同**（`b35f94af…`），还原文件后仍一致——这正是派生索引要买到的：summary 变动要先显式重建索引，报告本身不动。
+- producer: `python3 report_inputs/build_bfcl_gap.py --check`；`./reproduce.sh` 的「bfcl_gap.json 与现有 BFCL 汇总一致」一步
+

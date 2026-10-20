@@ -1362,6 +1362,7 @@ def kv_evidence_html():
 
 
 SIZE_CLAIMS = "report_inputs/size_claims.json"
+BFCL_GAP = "report_inputs/bfcl_gap.json"
 
 
 def size_claims_html():
@@ -1477,33 +1478,14 @@ def scheme_effects_html():
 
 
 def bfcl_micro_macro_gap():
-    """BFCL 汇总里「按题加权 micro」与「类别等权 macro」的最大差（从 run 汇总算，不手抄）。
+    """BFCL 的 micro/macro 最大差——读随仓库分发的派生索引，不现扫 `.wrapup/*_summary.jsonl`。
 
-    面板 summary 的 `score` 是按题加权的 micro；读者从类别列能算出来的只有未加权 macro。
-    两者不是同一个量，差多少取决于类别题量是否均衡，所以这里当场算一遍再写进正文。
+    现扫会让报告随别人的新 summary 变字节，干净 clone 就与提交的报告不一致；索引把这一步冻结在
+    提交里（`report_inputs/build_bfcl_gap.py`），summary 变了要显式重建索引。
     """
-    import glob
-    best = None
-    for path in glob.glob(os.path.join(".wrapup", "*_summary.jsonl")):
-        for line in open(path, encoding="utf-8", errors="replace"):
-            try:
-                r = json.loads(line)
-            except Exception:
-                continue
-            per = r.get("per_category")
-            if not isinstance(per, dict) or not per or r.get("score") is None:
-                continue
-            accs = [v["acc"] for v in per.values()
-                    if isinstance(v, dict) and v.get("acc") is not None]
-            if not accs:
-                continue
-            macro = sum(accs) / len(accs)
-            gap = abs(r["score"] - macro)
-            if best is None or gap > best["gap"]:
-                best = {"gap": gap, "micro": r["score"], "macro": macro,
-                        "model": r.get("model"), "file": os.path.basename(path)}
-    return best
-
+    if not os.path.exists(BFCL_GAP):
+        raise SystemExit(f"报告输入缺失：{BFCL_GAP}（由 report_inputs/build_bfcl_gap.py 生成）。")
+    return json.load(open(BFCL_GAP, encoding="utf-8"))
 
 REPRODUCIBILITY = "report_inputs/reproducibility.json"
 
@@ -1563,38 +1545,6 @@ def reproducibility_html():
                f"本节的数字由 <code>report_inputs/build_reproducibility.py</code> 抽取，改那两条事实这一节就跟着变；"
                f"重算命令见该节点的 <code>repro</code> 行（<code>audits/noise_floor_compare.py</code>）。</p>")
     return "".join(out)
-
-
-def bfcl_micro_macro_gap():
-    """BFCL 汇总里「按题加权 micro」与「类别等权 macro」的最大差（从 run 汇总算，不手抄）。
-
-    面板 summary 的 `score` 是按题加权的 micro；读者从类别列能算出来的只有未加权 macro。
-    两者不是同一个量，差多少取决于类别题量是否均衡，所以这里当场算一遍再写进正文。
-    """
-    import glob
-    best = None
-    for path in glob.glob(os.path.join(".wrapup", "*_summary.jsonl")):
-        for line in open(path, encoding="utf-8", errors="replace"):
-            try:
-                r = json.loads(line)
-            except Exception:
-                continue
-            per = r.get("per_category")
-            if not isinstance(per, dict) or not per or r.get("score") is None:
-                continue
-            accs = [v["acc"] for v in per.values()
-                    if isinstance(v, dict) and v.get("acc") is not None]
-            if not accs:
-                continue
-            macro = sum(accs) / len(accs)
-            gap = abs(r["score"] - macro)
-            if best is None or gap > best["gap"]:
-                best = {"gap": gap, "micro": r["score"], "macro": macro,
-                        "model": r.get("model"), "file": os.path.basename(path)}
-    return best
-
-
-REPRODUCIBILITY = "report_inputs/reproducibility.json"
 
 
 def inversion_callout():
