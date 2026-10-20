@@ -984,7 +984,8 @@ def ingest_m163(con):
                     "ctx_size": 2048, "parallel_slots": 4,
                     "protocol": r.get("protocol", "mpl-chat-nothink-greedy-768"),
                     "language": r["lang"], "bench_family": "humaneval-multipl-e",
-                    "max_tokens": 768, "source_file": "m163_summary.jsonl"})
+                    "max_tokens": 768, "source_file": "m163_summary.jsonl",
+                    "n_items": r["n"]})
         insert(con, row); n += 1
         seen.add(cell)
     missing = M163_CHAT_CELLS - seen
