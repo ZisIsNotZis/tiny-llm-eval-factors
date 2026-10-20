@@ -61,7 +61,7 @@ missing_inputs=0
 for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json \
          report_inputs/open_questions.json report_inputs/paired_deltas.json \
          report_inputs/reproducibility.json report_inputs/scheme_effects.json \
-         report_inputs/size_claims.json \
+         report_inputs/size_claims.json report_inputs/kv_evidence.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -69,6 +69,11 @@ if [ "$missing_inputs" = 0 ]; then
     record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 report_inputs/build_kv_evidence.py --check >/dev/null 2>&1; then
+    record PASS "kv_evidence.json 与 a05 的证据脚本输出一致"
+else
+    record WARN "kv_evidence.json 与 a05 的脚本输出不一致：python3 report_inputs/build_kv_evidence.py"
 fi
 if python3 report_inputs/build_size_claims.py --check >/dev/null 2>&1; then
     record PASS "size_claims.json 与 a02 的通道/曲线产物一致"
@@ -119,6 +124,13 @@ else
 fi
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/kv_evidence_negative_control.py >/tmp/reproduce_kv.$$ 2>&1; then
+    record PASS "第五节 KV 说法的负控（丢/得改 0 则从「逐题在翻」变「无差异」）"
+else
+    record FAIL "第五节 KV 说法的负控未通过：python3 checks/kv_evidence_negative_control.py"
+fi
+rm -f /tmp/reproduce_kv.$$
+
 if python3 checks/size_claims_negative_control.py >/tmp/reproduce_sc.$$ 2>&1; then
     record PASS "第二节规模说法的负控（区间改重叠则从「反驳」变「分不出」）"
 else

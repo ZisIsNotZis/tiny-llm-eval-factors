@@ -1,0 +1,183 @@
+{
+ "source_script": "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py",
+ "source_fact": "docs/subprojects/a05-KV 缓存精度/RESULT.md::kv-two-metrics",
+ "two_metrics": {
+  "base f16->q8_0": {
+   "score_delta_items": -4,
+   "from_items": 94,
+   "to_items": 90,
+   "lose": 7,
+   "gain": 3,
+   "flips": 10,
+   "same_pass_set": false
+  },
+  "base f16->q4_0": {
+   "score_delta_items": -4,
+   "from_items": 94,
+   "to_items": 90,
+   "lose": 15,
+   "gain": 11,
+   "flips": 26,
+   "same_pass_set": false
+  },
+  "base **q8_0->q4_0**": {
+   "score_delta_items": 0,
+   "from_items": 90,
+   "to_items": 90,
+   "lose": 12,
+   "gain": 12,
+   "flips": 24,
+   "same_pass_set": false
+  },
+  "plus f16->q8_0": {
+   "score_delta_items": 0,
+   "from_items": 86,
+   "to_items": 86,
+   "lose": 4,
+   "gain": 4,
+   "flips": 8,
+   "same_pass_set": false
+  },
+  "plus f16->q4_0": {
+   "score_delta_items": -3,
+   "from_items": 86,
+   "to_items": 83,
+   "lose": 14,
+   "gain": 11,
+   "flips": 25,
+   "same_pass_set": false
+  },
+  "plus q8_0->q4_0": {
+   "score_delta_items": -3,
+   "from_items": 86,
+   "to_items": 83,
+   "lose": 13,
+   "gain": 10,
+   "flips": 23,
+   "same_pass_set": false
+  }
+ },
+ "zero_diff_but_flipped": [
+  "base **q8_0->q4_0**",
+  "plus f16->q8_0"
+ ],
+ "widest_flip": {
+  "pair": "base f16->q4_0",
+  "score_delta_items": -4,
+  "from_items": 94,
+  "to_items": 90,
+  "lose": 15,
+  "gain": 11,
+  "flips": 26,
+  "same_pass_set": false
+ },
+ "no_per_item_columns": [
+  "mmlu",
+  "gsm8k",
+  "ifeval"
+ ],
+ "scores": {
+  "f16/f16": {
+   "mmlu": 0.6096,
+   "gsm8k": 0.6,
+   "ifeval": 0.62,
+   "humaneval_base": 0.5732,
+   "n": 164
+  },
+  "q8_0/q8_0": {
+   "mmlu": 0.6075,
+   "gsm8k": 0.68,
+   "ifeval": 0.64,
+   "humaneval_base": 0.5488,
+   "n": 164
+  },
+  "q4_0/q4_0": {
+   "mmlu": 0.614,
+   "gsm8k": 0.6,
+   "ifeval": 0.68,
+   "humaneval_base": 0.5488,
+   "n": 164
+  }
+ },
+ "pairs": {
+  "base_f16_to_q4": {
+   "lose": 15,
+   "gain": 11
+  },
+  "plus_f16_to_q4": {
+   "lose": 14,
+   "gain": 11
+  },
+  "base_f16_to_q8": {
+   "lose": 7,
+   "gain": 3
+  }
+ },
+ "checks": {
+  "A1": {
+   "ok": true,
+   "what": "面板 humaneval 列取 base 判分",
+   "detail": "0.5732*164=94.0，逐题 base 通过 94/164 与面板数一致"
+  },
+  "A2": {
+   "ok": true,
+   "what": "KV 改变个别题的判定（不是逐题相同）",
+   "detail": "base f16->q4_0 lose/gain=(15, 11)"
+  },
+  "A3": {
+   "ok": true,
+   "what": "净值方向不一致（不是单调变差）",
+   "detail": "base f16->q4_0 净 -4/164"
+  },
+  "B1": {
+   "ok": true,
+   "what": "每个配置的重复行逐格同值（重复入库可无损折叠）",
+   "detail": "24 行 / 12 个配置，重复行取值全同"
+  },
+  "B2": {
+   "ok": true,
+   "what": "fa=on 下 V=q8_0 与 V=f16 的差双向且 ≤3/161",
+   "detail": "逐格差 [0, 1, -3, -1]"
+  },
+  "C1": {
+   "ok": true,
+   "what": "三个 ctx 的逐题状态逐字节相同（-c 在短提示上不改变任何题）",
+   "detail": "4 个 KV 配置 × 3 个 ctx 全部同哈希"
+  },
+  "D1": {
+   "ok": true,
+   "what": "16k/49k 全部格落在地板（≤1/60）",
+   "detail": "ctx=16384 与 49152 的 8 个格 pass ∈ {0,1}"
+  },
+  "D2": {
+   "ok": true,
+   "what": "49k 的四个 KV 配置逐题状态完全相同（没有分辨力）",
+   "detail": "49k 四份 eval 同哈希"
+  },
+  "D3": {
+   "ok": true,
+   "what": "长前缀格的完成物在续写填充段（测量的是模仿伪像，不是长上下文能力）",
+   "detail": "49k 格过半完成物以 “// canonical Python solution (reference):” 开头"
+  },
+  "E1": {
+   "ok": true,
+   "what": "m30 的 cache_type 列全是默认值 q8_0/q8_0（不能用它分组）",
+   "detail": "12/12 行都是 q8_0/q8_0，KV 真实取值只在 protocol 串里"
+  },
+  "E2": {
+   "ok": true,
+   "what": "报告里的 8 个 0.0 格里 6 个属本层",
+   "detail": "m30-kv-ctx 的 0.0 行 = 6"
+  },
+  "F1": {
+   "ok": true,
+   "what": "入库会让 fa=on 与 fa=off 落到同一个行标签",
+   "detail": "1 格触发行键冲突（q2 cpp 18 vs 17），3 格静默合并"
+  }
+ },
+ "long_context": {
+  "tested": false,
+  "why": "两个 m30 网格都无信息量：一个由构造决定（同一 KV 配置在不同 ctx 上产物逐字节相同），一个是模型在续写填充前言（长前缀格首条完成物不是代码）"
+ },
+ "m29_ingested": false
+}

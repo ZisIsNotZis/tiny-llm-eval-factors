@@ -209,3 +209,10 @@
 - producer: `python3 report_inputs/build_size_claims.py --check`；`python3 checks/size_claims_negative_control.py`（区间改重叠→「分不出」；291→0 与 76→169 两个数改掉时正文跟着变）
 - 与 a02 产物的口径: 上面两条修正（1352/291、76 vs 169）与库对得上（`select count(*) from experiments where protocol<>'' [and __size is not null]` → 1352 / 291），但 `a02` 的 `size_provenance.json` 目前只给出 169 条 gguf-tensors 组、不拆「带协议行」这一维，所以这两条由本子项目直接查库得到；等 `a02` 的真值 fixture 落地后改为读它（保持一个家）。
 
+## res49 :: 报告第五节改成「分数差 与 逐题丢/得」两口径并排，长上下文标明未测，m29 未入库不等于没数据。
+
+- kind: measured
+- status: current
+- evidence: 第五节由 `report_inputs/kv_evidence.json` 渲染，而该索引由 `report_inputs/build_kv_evidence.py` 跑 `a05` 的 `analysis/kv_evidence.py` 并解析其输出（不抄散文）：`f16→q4_0` 在 HumanEval base 丢 15 / 得 11（净 −4，分数 0.5732→0.5488）、plus 丢 14 / 得 11（净 −3），`f16→q8_0` base 丢 7 / 得 3；据此写明「分数相近 ≠ 判定相同」并接到「测量可复现性边界」一节；方向不一致（gsm8k/ifeval 上 q4_0 反而更高）保留原判断但改为按计数说话；长上下文标为未测并给出原因（两个 m30 网格都无信息量：一个由构造决定、一个是模型在续写填充前言）；m29 未入库单独说明「这属于未入库，不等于 KV 没有数据」。
+- producer: `python3 report_inputs/build_kv_evidence.py --check`；`python3 checks/kv_evidence_negative_control.py`（把四类计数改成 0 → 正文从「逐题在双向翻动」变回「逐题判定完全相同、测不到影响」）
+

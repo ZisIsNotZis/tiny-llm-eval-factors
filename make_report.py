@@ -1306,6 +1306,61 @@ def bfcl_aggregation_note():
     return "".join(parts)
 
 
+KV_EVIDENCE = "report_inputs/kv_evidence.json"
+
+
+def kv_evidence_html():
+    """第五节的结论句：KV 精度要看两口径——分数差 与 逐题丢/得；长上下文仍未测。
+
+    数字来自 `report_inputs/kv_evidence.json`，由 `a05` 的 `analysis/kv_evidence.py` 输出解析而来；
+    把「掉 15 / 涨 11」改成「掉 0 / 涨 0」，这段就会从「逐题在翻」变回「无差异」。
+    """
+    if not os.path.exists(KV_EVIDENCE):
+        raise SystemExit(f"报告输入缺失：{KV_EVIDENCE}（由 report_inputs/build_kv_evidence.py 生成）。")
+    d = json.load(open(KV_EVIDENCE, encoding="utf-8"))
+    b, pl, q8 = d["pairs"]["base_f16_to_q4"], d["pairs"]["plus_f16_to_q4"], d["pairs"]["base_f16_to_q8"]
+    out = []
+    if b["lose"] or b["gain"] or pl["lose"] or pl["gain"]:
+        out.append("<li><b>两个口径要并排读：分数差 与 逐题丢/得。</b>")
+        out.append(f"<table class='recap'><tr><th>配置变化</th><th>分数（base / plus）</th>"
+                   f"<th>逐题丢 / 得（base）</th><th>逐题丢 / 得（plus）</th></tr>"
+                   f"<tr><td><code>f16 → q4_0</code></td>"
+                   f"<td>{d['scores'].get('f16/f16', {}).get('humaneval_base', float('nan')):.4f} → "
+                   f"{d['scores'].get('q4_0/q4_0', {}).get('humaneval_base', float('nan')):.4f}</td>"
+                   f"<td>丢 {b['lose']} / 得 {b['gain']}（净 {b['gain'] - b['lose']:+d}）</td>"
+                   f"<td>丢 {pl['lose']} / 得 {pl['gain']}（净 {pl['gain'] - pl['lose']:+d}）</td></tr>"
+                   f"<tr><td><code>f16 → q8_0</code></td><td>—</td>"
+                   f"<td>丢 {q8['lose']} / 得 {q8['gain']}（净 {q8['gain'] - q8['lose']:+d}）</td><td>—</td></tr>"
+                   f"</table>"
+                   f"<b>分数相近 ≠ 判定相同</b>：净变化只有个位数，但逐题判定在双向翻动——"
+                   f"这正是「测量可复现性边界」一节说的：不能用分数差判断复现性，KV 轴上同样成立。</li>")
+        zf = d.get("zero_diff_but_flipped") or []
+        wide = d.get("widest_flip") or {}
+        out.append(f"<li><b>分数差完全看不见翻转：</b>{len(d['two_metrics'])} 对配置里 "
+                   + (f"{len(zf)} 对分数差为 0 而通过集不同（{'、'.join(html.escape(z) for z in zf)}），" if zf else "")
+                   + (f"翻转最宽的一对是 <code>{html.escape(wide['pair'])}</code>："
+                      f"{wide['lose']} 丢 {wide['gain']} 得（{wide['flips']} 题互翻）、分数净 "
+                      f"{wide['score_delta_items']:+d} 题。" if wide else "")
+                   + "所以「KV 省显存几乎免费」只在<b>分数层面</b>成立，逐题比较不成立。</li>")
+        out.append("<li><b>方向不一致，不是单调变差：</b>q4_0 并不比 f16 系统性更差（gsm8k 与 ifeval 上 "
+                   "q4_0 还更高），「省 KV 显存」这个方向的判断保留，但必须按计数说话。</li>")
+        out.append("<li><b>只有 HumanEval 有逐题产物：</b>mmlu / gsm8k / ifeval 三列没有逐题落盘，"
+                   "翻转在那三列上<b>未测</b>——那三列只能写分数，不能写「判定相同」。</li>")
+    else:
+        out.append("<li><b>三种精度的逐题判定完全相同（丢 0 / 得 0）</b>，分数差也只在个位数之内："
+                   "在这类任务上测不到 KV 精度的影响。</li>")
+    lc = d["long_context"]
+    out.append(f"<li><b>长上下文仍未测：</b>{html.escape(lc['why'])}。"
+               f"所以本节的结论只覆盖短到中等上下文，不得外推。</li>")
+    if not d.get("m29_ingested", True):
+        out.append("<li><b>m29（fa × KV）未入库</b>：它的 fa 因子会被报告行标签吞掉、且存在静默合并，"
+                   "所以那 24 行留在库外——这属于「未入库」，不等于「KV 没有数据」；"
+                   "上表用的是 m130 面板（已入库、逐题可复算）。</li>")
+    out.append("<li><b>看图要点：</b>E 图每组柱是同一上下文下的不同 KV 精度，柱高接近只说明分数接近；"
+               "判定是否相同要看上表的丢/得计数。</li>")
+    return "".join(out)
+
+
 SIZE_CLAIMS = "report_inputs/size_claims.json"
 
 
@@ -1845,13 +1900,7 @@ def main():
         ("五、KV 缓存精度",
          "X = KV 缓存的精度（f16 / q8_0 / q4_0），固定模型、权重位宽与上下文；Y = 各基准分数。",
          [T["E"]], fig_E(T["E"]),
-         "<ul>"
-         "<li>三种精度（f16、q8_0、q4_0）的柱几乎等高，即在这类任务上<b>测不出差别</b>。</li>"
-         "<li>注意范围：这里的上下文只有约 1k–2k tokens。KV 量化理论上只会在上下文很长时才咬人，"
-         "所以这个结论只覆盖短到中等上下文，长上下文未测。</li>"
-         "<li><b>看图要点：</b>E 图每个上下文长度一组柱，组内几根几乎等高、误差棒大幅重叠——"
-         "这就是“在当前题目数下测不出差异”的直观样子（不等于相等）。</li>"
-         "</ul>"),
+         "<ul>" + kv_evidence_html() + "</ul>"),
         ("六、采样 / 解码参数",
          "X = 采样参数（温度、top_k），固定模型、位宽与上下文；Y = 多语言代码通过率。",
          [T["F"]], fig_F(T["F"]),
