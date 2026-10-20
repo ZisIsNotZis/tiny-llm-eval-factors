@@ -105,17 +105,40 @@
 - evidence: `LFM2.5-8B-A1B` 记作 A1B，实测激活 1.69B（差 69%）；`GLM-4.7-Flash-REAP-23B-A3B` 记作 23/3，其非 REAP 同族文件实测 29.94/3.90 却被记成 27.56/27.56。所以 `plan5` 不能拿库里的 `__activation_size` 当激活轴，必须用实测列。
 - repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_provenance.json'));[print(r['model'],round(r['gguf']['n_params']/1e9,2),round(r['gguf']['active_params']/1e9,2),str(r['gguf']['expert_used'])+'/'+str(r['gguf']['expert_count']),r['db_size'],r['db_active']) for r in d['rows'] if r['gguf_says_moe'] and r['gguf']]" | sort -u`
 
-### size-axis-verdict :: 规模这个 X 只在「同族 + 同配方 + 标签通道诚实」三者同时成立时才是单调量：Qwen3.5 与 Ternary-Bonsai 的整条阶梯可用，gemma-4 只有 12B/26B-A4B 两档可与 12.0/25.23 的真值对齐，E2B/E4B 两档不可用（标签是有效参数量、`__size` 又随量化档在 2.19–4.29 之间漂移），GLM-4.7-Flash 与 LFM2.5-230M 整族不可用；报告 §2 那张表把「文件字节数」与「文件名标签」两种量混在同一个 X 轴上。
+### size-axis-verdict :: 三个候选 X 的可用性逐族判定：实测参数量（GGUF）在 gemma-4、Qwen3.5、Ternary-Bonsai、GLM-4.7-Flash、LFM2.5 上都能当族内单调量用；文件名标签只在 Qwen3.5、Ternary-Bonsai、LFM2.5 等标签诚实的族里可用，在 gemma-4（8 个文件的标签不是参数量）、GLM-4.7-Flash（8 个全是 2×字节数）、granite-4.1、MiniCPM5 上不可用；`experiments.__size` 在报告用的面板里一行都没有值，不能当分析用的 X。
 
 - author: agent
 - scope: general
-- status: provisional
+- status: current
 - kind: analysis
 - from: result.size-channel-inventory, result.label-honest-families, result.label-dishonest-cases, result.size-null-on-protocol-rows
-- origin: 本层对 `report.html` §2 的 30 格逐格追溯（家族 @ 配方 × 规模）
-- evidence: §2 的四个 lineage 中，Qwen3.5（0.752/1.882/4.206/8.954）与 Ternary-Bonsai（1.72/4.02/8.19）可用；gemma-4 的 E2B 的八个量化档在库里的 `__size` 是 2.186/2.291/2.373/2.404/2.620/2.924/3.184/4.294（同一个模型八个「规模」），E4B 的四档是 4.0/4.0/4.2157/4.5884，而它们是 4.65B 与 7.52B 的模型；GLM-4.7-Flash 不在 §2 面板里，但同一条通道会污染任何按它画的曲线。
-- repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_provenance.json'));[print(r['model'],r['db_size'],r['channel']) for r in d['rows'] if r['model'].startswith('gemma-4-E')]" | sort -u`
-- 推翻条件：若 §2 的规模列改用 GGUF 真参数量重算后，E2B/E4B 两档仍落在同一单调序列上且与 12B/26B 同量纲，本条改写为「可用，仅需换数源」。
+- origin: `analysis/size_ladder.py`（对 `size_provenance.json` 逐族折叠 + 报告 §2 那一列 `_bench=humaneval` / `evalplus-0.3.1-openai-chat-greedy-base` 的 n=164 逐格）
+- evidence: `size_ladder.json` 的逐族 `x_truth` / `x_label` / `x_db_size`：Qwen3.5 = yes/yes/yes（20/24 文件有实测值，标签 20 个全对，`__size` 覆盖率 49%）、Ternary-Bonsai = yes/yes/yes（4/4、3/3 对、7%）、gemma-4 = yes/**no**/no（11/27 有实测值，5 个标签对、8 个标签不是参数量）、GLM-4.7-Flash = yes/**no**/no（3/8 有实测值，8 个文件全是 2×字节数）、granite-4.1 与 MiniCPM5 的标签也全是 `label-below-total`。§2 面板（evalplus base，n=164）里 `__size` 非空的行数为 0。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_ladder.py" | head -16`（实跑输出：上表 15 行按族计数）
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_ladder.py" --check`（实跑输出：`15 expected true, 0 false`，退出 0）
+- 结论的边界：本条判的是「族内能否比大小」，不是「跨族可比」——不同族的 tokenizer、训练数据与评测协议都不同，跨族只有 `plan5` 那种多变量设计才能谈。
+
+### gemma4-q2kxl-inversion :: gemma-4 的 Q2_K_XL 档里 12B 比 4B 低 20.1 个百分点（54.3% [46.6, 61.7] vs 74.4% [67.2, 80.5]，n=164，区间不重叠），而同一个 12B 在 Q3_K_XL 档是 93.9% —— 这个反例是配方格的损伤，不是规模效应，报告 §2 把它叙述成「13B 附近的回折」是没有依据的。
+
+- author: measurement
+- scope: specific
+- status: current
+- kind: measured
+- from: result.size-axis-verdict
+- origin: `size_ladder.py` 的 `gemma-4` → `detail.Q2_K_XL`（Wilson 区间，`n_items=164`）
+- evidence: Q2_K_XL 档按实测参数量排序的四格：4.647B→53.0%、7.518B→74.4%、11.907B→54.3%、25.233B→95.7%；Q3_K_XL 档同一 12B 是 93.9%。同一模型两档相差 39.6 pp，远超二项噪声（n=164 时 1.96σ≈7.3 pp），所以「12B 在 Q2_K_XL 上的位置」不能读成规模效应。
+- repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_ladder.json'));print(json.dumps(d['gemma-4']['detail']['Q2_K_XL'],ensure_ascii=False,indent=1))"`
+
+### size-curve-shape :: 「越大越高」在 Qwen3.5 的 Q3_K_XL 档成立且增量递减（0.752→23.8%、1.882→57.3%、4.206→81.7%、8.954→82.3%，即 +33.5 / +24.4 / +0.6 pp），但在 Q2_K_XL 档不成立（9.1% → 25.6% → 72.0% → 79.9%，最大的一步是 1.882→4.206 的 +46.4 pp）；Ternary-Bonsai 的 4.022→8.189 是 −3.0 pp 且区间重叠（76.4–87.9 vs 73.1–85.3），判「测不出」。
+
+- author: measurement
+- scope: specific
+- status: current
+- kind: measured
+- from: result.size-axis-verdict
+- origin: `size_ladder.py` 的 `detail` 字段（Qwen3.5 / Ternary-Bonsai 两族）
+- evidence: 六条同配方曲线里 5 条在实测参数量下单调，唯一的两处反向是 Ternary-Bonsai 的 −3.0 pp（区间重叠，属噪声）与 gemma-4 Q2_K_XL 的 −20.1 pp（`gemma4-q2kxl-inversion`）。所以「小模型之间差距更大」这句话在 Q3_K_XL 档成立、在 Q2_K_XL 档不成立，不能作为通例。
+- repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_ladder.json'));[print(lin,rec,v['rungs'],v['inversions']) for lin in ('Qwen3.5','Ternary-Bonsai') for rec,v in d[lin]['detail'].items()]"`
 
 ## plan5：双变量回归的可识别性
 

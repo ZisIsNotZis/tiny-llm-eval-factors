@@ -1,0 +1,3651 @@
+{
+ "gemma-4": {
+  "files": {
+   "gemma-4-E4B-it-UD-Q3_K_XL.gguf": {
+    "label": "E4B",
+    "truth": 7.51806929,
+    "sizes": [
+     4.588441
+    ],
+    "channels": [
+     "clamped-to-file-bytes",
+     "size-null"
+    ],
+    "score": 0.8170731707317073,
+    "n": 164
+   },
+   "gemma-4-E2B-it-UD-Q5_K_XL.gguf": {
+    "label": "E2B",
+    "truth": null,
+    "sizes": [
+     4.294174848
+    ],
+    "channels": [
+     "clamped-to-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-E2B-it-UD-Q4_K_XL.gguf": {
+    "label": "E2B",
+    "truth": 4.647450147,
+    "sizes": [
+     3.18449472
+    ],
+    "channels": [
+     "clamped-to-file-bytes",
+     "size-null"
+    ],
+    "score": 0.75,
+    "n": 164
+   },
+   "gemma-4-E2B-it-UD-Q3_K_XL.gguf": {
+    "label": "E2B",
+    "truth": 4.647450147,
+    "sizes": [
+     2.923780224,
+     2.923782
+    ],
+    "channels": [
+     "clamped-to-file-bytes",
+     "size-null"
+    ],
+    "score": 0.676829268292683,
+    "n": 164
+   },
+   "gemma-4-E2B-it-UD-Q2_K_XL.gguf": {
+    "label": "E2B",
+    "truth": 4.647450147,
+    "sizes": [
+     2.4036128,
+     2.403615
+    ],
+    "channels": [
+     "clamped-to-file-bytes",
+     "size-null"
+    ],
+    "score": 0.5304878048780488,
+    "n": 164
+   },
+   "gemma-4-E2B-it-UD-IQ3_XXS.gguf": {
+    "label": "E2B",
+    "truth": null,
+    "sizes": [
+     2.372991104
+    ],
+    "channels": [
+     "clamped-to-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-E2B-it-UD-IQ2_M.gguf": {
+    "label": "E2B",
+    "truth": null,
+    "sizes": [
+     2.290858112
+    ],
+    "channels": [
+     "clamped-to-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-E4B-it-UD-Q2_K_XL.gguf": {
+    "label": "E4B",
+    "truth": 7.51806929,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "label-below-total",
+     "size-null"
+    ],
+    "score": 0.7439024390243902,
+    "n": 164
+   },
+   "gemma-4-12b-it-UD-Q2_K_XL.gguf": {
+    "label": "12b",
+    "truth": 11.907350576,
+    "sizes": [
+     12.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.5426829268292683,
+    "n": 164
+   },
+   "gemma-4-12b-it-UD-Q3_K_XL.gguf": {
+    "label": "12b",
+    "truth": 11.907350576,
+    "sizes": [
+     12.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9390243902439024,
+    "n": 164
+   },
+   "gemma-4-12b-it-UD-Q4_K_XL.gguf": {
+    "label": "12b",
+    "truth": 11.907350576,
+    "sizes": [
+     12.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9451219512195121,
+    "n": 164
+   },
+   "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf": {
+    "label": "26B-A4B",
+    "truth": 25.233142046,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9573170731707317,
+    "n": 164
+   },
+   "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf": {
+    "label": "26B-A4B",
+    "truth": 25.233142046,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9146341463414634,
+    "n": 164
+   },
+   "gemma-4-E4B-it-UD-Q4_K_XL.gguf": {
+    "label": "E4B",
+    "truth": 7.51806929,
+    "sizes": [],
+    "channels": [
+     "size-null"
+    ],
+    "score": 0.8048780487804879,
+    "n": 164
+   },
+   "gemma-4-31B-it-UD-IQ2_M.gguf": {
+    "label": "31B",
+    "truth": null,
+    "sizes": [
+     31.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-31B-it-UD-IQ2_XXS.gguf": {
+    "label": "31B",
+    "truth": null,
+    "sizes": [
+     31.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-31B-it-UD-IQ3_XXS.gguf": {
+    "label": "31B",
+    "truth": null,
+    "sizes": [
+     31.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-31B-it-UD-Q2_K_XL.gguf": {
+    "label": "31B",
+    "truth": null,
+    "sizes": [
+     31.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-31B-it-UD-Q3_K_XL.gguf": {
+    "label": "31B",
+    "truth": null,
+    "sizes": [
+     31.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-26B-A4B-it-UD-IQ2_M.gguf": {
+    "label": "26B-A4B",
+    "truth": null,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf": {
+    "label": "26B-A4B",
+    "truth": null,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-26B-A4B-it-UD-IQ3_S.gguf": {
+    "label": "26B-A4B",
+    "truth": null,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-26B-A4B-it-UD-IQ3_XXS.gguf": {
+    "label": "26B-A4B",
+    "truth": null,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-26B-A4B-it-UD-Q3_K_M.gguf": {
+    "label": "26B-A4B",
+    "truth": null,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-12b-it-UD-IQ2_M.gguf": {
+    "label": "12b",
+    "truth": null,
+    "sizes": [
+     12.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-12b-it-UD-IQ3_XXS.gguf": {
+    "label": "12b",
+    "truth": null,
+    "sizes": [
+     12.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma-4-E4B-it-UD-IQ3_XXS.gguf": {
+    "label": "E4B",
+    "truth": null,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "11/27 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "5 个文件标签=真参数量，8 个标签不是参数量（dishonest:clamped-to-file-bytes, dishonest:label-below-total）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 61%（252/416 行有值）；2 个模型有多个值，8 个通道错"
+  },
+  "recipes_checked": 3,
+  "detail": {
+   "Q2_K_XL": {
+    "rungs": [
+     [
+      4.647,
+      53.0,
+      164,
+      "gemma-4-E2B-it-UD-Q2_K_XL.gguf"
+     ],
+     [
+      7.518,
+      74.4,
+      164,
+      "gemma-4-E4B-it-UD-Q2_K_XL.gguf"
+     ],
+     [
+      11.907,
+      54.3,
+      164,
+      "gemma-4-12b-it-UD-Q2_K_XL.gguf"
+     ],
+     [
+      25.233,
+      95.7,
+      164,
+      "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf"
+     ]
+    ],
+    "inversions": [
+     {
+      "from": 7.518,
+      "to": 11.907,
+      "drop_pp": -20.12,
+      "ci_from": [
+       67.2,
+       80.5
+      ],
+      "ci_to": [
+       46.6,
+       61.7
+      ],
+      "recipe": "Q2_K_XL"
+     }
+    ]
+   },
+   "Q3_K_XL": {
+    "rungs": [
+     [
+      4.647,
+      67.7,
+      164,
+      "gemma-4-E2B-it-UD-Q3_K_XL.gguf"
+     ],
+     [
+      7.518,
+      81.7,
+      164,
+      "gemma-4-E4B-it-UD-Q3_K_XL.gguf"
+     ],
+     [
+      11.907,
+      93.9,
+      164,
+      "gemma-4-12b-it-UD-Q3_K_XL.gguf"
+     ],
+     [
+      25.233,
+      91.5,
+      164,
+      "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf"
+     ]
+    ],
+    "inversions": [
+     {
+      "from": 11.907,
+      "to": 25.233,
+      "drop_pp": -2.44,
+      "ci_from": [
+       89.1,
+       96.7
+      ],
+      "ci_to": [
+       86.2,
+       94.8
+      ],
+      "recipe": "Q3_K_XL"
+     }
+    ]
+   },
+   "Q4_K_XL": {
+    "rungs": [
+     [
+      4.647,
+      75.0,
+      164,
+      "gemma-4-E2B-it-UD-Q4_K_XL.gguf"
+     ],
+     [
+      7.518,
+      80.5,
+      164,
+      "gemma-4-E4B-it-UD-Q4_K_XL.gguf"
+     ],
+     [
+      11.907,
+      94.5,
+      164,
+      "gemma-4-12b-it-UD-Q4_K_XL.gguf"
+     ]
+    ],
+    "inversions": []
+   }
+  },
+  "monotone_in_truth": false,
+  "inversions": [
+   {
+    "from": 7.518,
+    "to": 11.907,
+    "drop_pp": -20.12,
+    "ci_from": [
+     67.2,
+     80.5
+    ],
+    "ci_to": [
+     46.6,
+     61.7
+    ],
+    "recipe": "Q2_K_XL"
+   },
+   {
+    "from": 11.907,
+    "to": 25.233,
+    "drop_pp": -2.44,
+    "ci_from": [
+     89.1,
+     96.7
+    ],
+    "ci_to": [
+     86.2,
+     94.8
+    ],
+    "recipe": "Q3_K_XL"
+   }
+  ]
+ },
+ "Qwen3.5": {
+  "files": {
+   "Qwen3.5-0.8B-UD-Q2_K_XL.gguf": {
+    "label": "0.8B",
+    "truth": 0.752393024,
+    "sizes": [
+     0.8
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.09146341463414634,
+    "n": 164
+   },
+   "Qwen3.5-0.8B-UD-Q3_K_XL.gguf": {
+    "label": "0.8B",
+    "truth": 0.752393024,
+    "sizes": [
+     0.8
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.23780487804878048,
+    "n": 164
+   },
+   "Qwen3.5-0.8B-UD-Q4_K_XL.gguf": {
+    "label": "0.8B",
+    "truth": 0.752393024,
+    "sizes": [
+     0.8
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-2B-UD-IQ2_M.gguf": {
+    "label": "2B",
+    "truth": 1.881825088,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.2682926829268293,
+    "n": 164
+   },
+   "Qwen3.5-2B-UD-IQ2_XXS.gguf": {
+    "label": "2B",
+    "truth": 1.881825088,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.036585365853658534,
+    "n": 164
+   },
+   "Qwen3.5-2B-UD-IQ3_XXS.gguf": {
+    "label": "2B",
+    "truth": 1.881825088,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.3902439024390244,
+    "n": 164
+   },
+   "Qwen3.5-2B-UD-Q2_K_XL.gguf": {
+    "label": "2B",
+    "truth": 1.881825088,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.25609756097560976,
+    "n": 164
+   },
+   "Qwen3.5-2B-UD-Q3_K_XL.gguf": {
+    "label": "2B",
+    "truth": 1.881825088,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.573170731707317,
+    "n": 164
+   },
+   "Qwen3.5-2B-UD-Q4_K_XL.gguf": {
+    "label": "2B",
+    "truth": 1.881825088,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.5670731707317073,
+    "n": 164
+   },
+   "Qwen3.5-2B-UD-Q5_K_XL.gguf": {
+    "label": "2B",
+    "truth": 1.881825088,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.5426829268292683,
+    "n": 164
+   },
+   "Qwen3.5-4B-UD-IQ3_XXS.gguf": {
+    "label": "4B",
+    "truth": 4.205751296,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.7195121951219512,
+    "n": 164
+   },
+   "Qwen3.5-4B-UD-Q2_K_XL.gguf": {
+    "label": "4B",
+    "truth": 4.205751296,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.7195121951219512,
+    "n": 164
+   },
+   "Qwen3.5-4B-UD-Q3_K_XL.gguf": {
+    "label": "4B",
+    "truth": 4.205751296,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.8170731707317073,
+    "n": 164
+   },
+   "Qwen3.5-4B-UD-Q4_K_XL.gguf": {
+    "label": "4B",
+    "truth": 4.205751296,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-9B-UD-Q2_K_XL.gguf": {
+    "label": "9B",
+    "truth": 8.953803264,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.7987804878048781,
+    "n": 164
+   },
+   "Qwen3.5-9B-UD-Q3_K_XL.gguf": {
+    "label": "9B",
+    "truth": 8.953803264,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.823170731707317,
+    "n": 164
+   },
+   "Qwen3.5-9B-UD-Q4_K_XL.gguf": {
+    "label": "9B",
+    "truth": 9.197093888,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf": {
+    "label": "35B-A3B",
+    "truth": 34.660610688,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.8475609756097561,
+    "n": 164
+   },
+   "Qwen3.5-0.8B-UD-IQ2_M.gguf": {
+    "label": "0.8B",
+    "truth": 0.752393024,
+    "sizes": [
+     0.8
+    ],
+    "channels": [
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-0.8B-UD-Q5_K_XL.gguf": {
+    "label": "0.8B",
+    "truth": 0.752393024,
+    "sizes": [
+     0.8
+    ],
+    "channels": [
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-9B-UD-IQ2_M.gguf": {
+    "label": "9B",
+    "truth": null,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-9B-UD-IQ3_XXS.gguf": {
+    "label": "9B",
+    "truth": null,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-4B-UD-IQ2_M.gguf": {
+    "label": "4B",
+    "truth": null,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-0.8B-UD-IQ3_XXS.gguf": {
+    "label": "0.8B",
+    "truth": null,
+    "sizes": [
+     0.8
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "20/24 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "20 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 49%（379/779 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 3,
+  "detail": {
+   "IQ3_XXS": {
+    "rungs": [
+     [
+      1.882,
+      39.0,
+      164,
+      "Qwen3.5-2B-UD-IQ3_XXS.gguf"
+     ],
+     [
+      4.206,
+      72.0,
+      164,
+      "Qwen3.5-4B-UD-IQ3_XXS.gguf"
+     ]
+    ],
+    "inversions": []
+   },
+   "Q2_K_XL": {
+    "rungs": [
+     [
+      0.752,
+      9.1,
+      164,
+      "Qwen3.5-0.8B-UD-Q2_K_XL.gguf"
+     ],
+     [
+      1.882,
+      25.6,
+      164,
+      "Qwen3.5-2B-UD-Q2_K_XL.gguf"
+     ],
+     [
+      4.206,
+      72.0,
+      164,
+      "Qwen3.5-4B-UD-Q2_K_XL.gguf"
+     ],
+     [
+      8.954,
+      79.9,
+      164,
+      "Qwen3.5-9B-UD-Q2_K_XL.gguf"
+     ]
+    ],
+    "inversions": []
+   },
+   "Q3_K_XL": {
+    "rungs": [
+     [
+      0.752,
+      23.8,
+      164,
+      "Qwen3.5-0.8B-UD-Q3_K_XL.gguf"
+     ],
+     [
+      1.882,
+      57.3,
+      164,
+      "Qwen3.5-2B-UD-Q3_K_XL.gguf"
+     ],
+     [
+      4.206,
+      81.7,
+      164,
+      "Qwen3.5-4B-UD-Q3_K_XL.gguf"
+     ],
+     [
+      8.954,
+      82.3,
+      164,
+      "Qwen3.5-9B-UD-Q3_K_XL.gguf"
+     ]
+    ],
+    "inversions": []
+   }
+  },
+  "monotone_in_truth": true,
+  "inversions": []
+ },
+ "LFM2.5": {
+  "files": {
+   "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf": {
+    "label": "8B-A1B",
+    "truth": 8.467856832,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.32926829268292684,
+    "n": 164
+   },
+   "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf": {
+    "label": "8B-A1B",
+    "truth": 8.467856832,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.3780487804878049,
+    "n": 164
+   },
+   "LFM2.5-8B-A1B-m55-Q3_K_M.gguf": {
+    "label": "8B-A1B",
+    "truth": 8.467856832,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.35365853658536583,
+    "n": 164
+   },
+   "LFM2.5-8B-A1B-m55-exq2.gguf": {
+    "label": "8B-A1B",
+    "truth": 8.467856832,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.2926829268292683,
+    "n": 164
+   },
+   "LFM2.5-8B-A1B-m55-exq4.gguf": {
+    "label": "8B-A1B",
+    "truth": 8.467856832,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.1402439024390244,
+    "n": 164
+   },
+   "LFM2.5-8B-A1B-UD-IQ1_M.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-IQ2_M.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-IQ2_XXS.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-IQ3_S.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-IQ3_XXS.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-IQ4_NL.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-IQ4_XS.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-Q3_K_M.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-Q4_K_M.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-Q4_K_S.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-8B-A1B-UD-Q4_K_XL.gguf": {
+    "label": "8B-A1B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-1.2B-Instruct-UD-Q2_K_XL.gguf": {
+    "label": "1.2B",
+    "truth": null,
+    "sizes": [
+     1.2
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-1.2B-Instruct-UD-Q3_K_XL.gguf": {
+    "label": "1.2B",
+    "truth": null,
+    "sizes": [
+     1.2
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-1.2B-Instruct-UD-Q4_K_XL.gguf": {
+    "label": "1.2B",
+    "truth": null,
+    "sizes": [
+     1.2
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "5/19 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "5 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 51%（70/137 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Qwen3.6": {
+  "files": {
+   "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf": {
+    "label": "35B-A3B",
+    "truth": 35.505251456,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf": {
+    "label": "35B-A3B",
+    "truth": 35.505251456,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9390243902439024,
+    "n": 164
+   },
+   "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf": {
+    "label": "35B-A3B",
+    "truth": 35.505251456,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9207317073170732,
+    "n": 164
+   },
+   "Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf": {
+    "label": "35B-A3B",
+    "truth": 35.505251456,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.926829268292683,
+    "n": 164
+   },
+   "Qwen3.6-35B-A3B-UD-IQ1_M.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-IQ2_M.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-IQ2_XXS.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-IQ3_S.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-IQ4_NL.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-Q3_K_M.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf": {
+    "label": "35B-A3B",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-27B-UD-IQ2_M.gguf": {
+    "label": "27B",
+    "truth": null,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-27B-UD-IQ2_XXS.gguf": {
+    "label": "27B",
+    "truth": null,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-27B-UD-IQ3_XXS.gguf": {
+    "label": "27B",
+    "truth": null,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-27B-UD-Q2_K_XL.gguf": {
+    "label": "27B",
+    "truth": null,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-27B-UD-Q3_K_XL.gguf": {
+    "label": "27B",
+    "truth": null,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.6-27B-UD-Q4_K_XL.gguf": {
+    "label": "27B",
+    "truth": null,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "4/18 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "4 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 94%（786/838 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "granite-4.1": {
+  "files": {
+   "granite-4.1-3b-Q2_K.gguf": {
+    "label": "3b",
+    "truth": 3.40283648,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "label-below-total",
+     "size-null"
+    ],
+    "score": 0.0975609756097561,
+    "n": 164
+   },
+   "granite-4.1-3b-Q3_K_M.gguf": {
+    "label": "3b",
+    "truth": 3.40283648,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "label-below-total",
+     "size-null"
+    ],
+    "score": 0.725609756097561,
+    "n": 164
+   },
+   "granite-4.1-3b-Q4_K_M.gguf": {
+    "label": "3b",
+    "truth": 3.40283648,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "label-below-total",
+     "size-null"
+    ],
+    "score": 0.8048780487804879,
+    "n": 164
+   },
+   "granite-4.1-8b-UD-IQ2_M.gguf": {
+    "label": "8b",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-8b-UD-IQ3_XXS.gguf": {
+    "label": "8b",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-8b-UD-Q2_K_XL.gguf": {
+    "label": "8b",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-8b-UD-Q3_K_XL.gguf": {
+    "label": "8b",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-8b-UD-Q4_K_XL.gguf": {
+    "label": "8b",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-3b-UD-IQ2_M.gguf": {
+    "label": "3b",
+    "truth": null,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-3b-UD-IQ3_XXS.gguf": {
+    "label": "3b",
+    "truth": null,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-3b-UD-Q2_K_XL.gguf": {
+    "label": "3b",
+    "truth": null,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-3b-UD-Q3_K_XL.gguf": {
+    "label": "3b",
+    "truth": null,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "granite-4.1-3b-UD-Q4_K_XL.gguf": {
+    "label": "3b",
+    "truth": null,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "3/13 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，3 个标签不是参数量（dishonest:label-below-total）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 72%（82/114 行有值）；0 个模型有多个值，3 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "DeepSeek-R1-0528-Qwen3": {
+  "files": {
+   "DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_S.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "DeepSeek-R1-0528-Qwen3-8B-UD-IQ2_M.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "DeepSeek-R1-0528-Qwen3-8B-UD-IQ2_XXS.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "DeepSeek-R1-0528-Qwen3-8B-UD-IQ3_XXS.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "DeepSeek-R1-0528-Qwen3-8B-UD-Q2_K_XL.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "DeepSeek-R1-0528-Qwen3-8B-UD-Q3_K_XL.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "DeepSeek-R1-0528-Qwen3-8B-UD-Q4_K_XL.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/8 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（42/42 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "GLM-4.7-Flash": {
+  "files": {
+   "GLM-4.7-Flash-UD-Q2_K_XL.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": 29.94339392,
+    "sizes": [
+     23.777518,
+     23.777518272
+    ],
+    "channels": [
+     "size-null",
+     "two-times-file-bytes"
+    ],
+    "score": 0.8048780487804879,
+    "n": 164
+   },
+   "GLM-4.7-Flash-UD-Q3_K_XL.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": 29.94339392,
+    "sizes": [
+     27.564008,
+     27.564008128
+    ],
+    "channels": [
+     "size-null",
+     "two-times-file-bytes"
+    ],
+    "score": 0.7987804878048781,
+    "n": 164
+   },
+   "GLM-4.7-Flash-UD-TQ1_0.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": 29.94339392,
+    "sizes": [
+     16.662008
+    ],
+    "channels": [
+     "size-null",
+     "two-times-file-bytes"
+    ],
+    "score": 0.47560975609756095,
+    "n": 164
+   },
+   "GLM-4.7-Flash-UD-IQ3_XXS.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": null,
+    "sizes": [
+     25.8147376
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-UD-IQ2_M.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": null,
+    "sizes": [
+     21.983552192
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-UD-IQ2_XXS.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": null,
+    "sizes": [
+     21.02725088
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-UD-IQ1_M.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": null,
+    "sizes": [
+     19.617014464
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-UD-IQ1_S.gguf": {
+    "label": "GLM-4.7-Flash",
+    "truth": null,
+    "sizes": [
+     18.495967936
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "3/8 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，8 个标签不是参数量（dishonest:two-times-file-bytes）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 53%（40/76 行有值）；2 个模型有多个值，8 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "GLM-4.7-Flash-REAP": {
+  "files": {
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ1_M.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ1_S.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ2_M.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ2_XXS.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ3_XXS.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-Q2_K_XL.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-Q3_K_XL.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "GLM-4.7-Flash-REAP-23B-A3B-UD-Q4_K_XL.gguf": {
+    "label": "23B-A3B",
+    "truth": null,
+    "sizes": [
+     23.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/8 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（53/53 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "LFM2.5-230M": {
+  "files": {
+   "LFM2.5-230M-UD-IQ2_M.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-230M-UD-IQ3_XXS.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-230M-UD-Q2_K_XL.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-230M-UD-Q3_K_XL.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-230M-UD-Q4_K_XL.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-230M-UD-Q5_K_XL.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-230M-UD-Q6_K_XL.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-230M-UD-Q8_K_XL.gguf": {
+    "label": "LFM2.5-230M",
+    "truth": null,
+    "sizes": [
+     230.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/8 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，8 个标签不是参数量（dishonest:size-too-large-for-file）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（53/53 行有值）；0 个模型有多个值，8 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "NVIDIA-Nemotron-3-Nano-Omni-Reasoning": {
+  "files": {
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ2_M.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ2_XXS.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ3_S.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ3_XXS.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ4_XS.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-Q2_K_XL.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-Q3_K_M.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-Q3_K_XL.gguf": {
+    "label": "30B-A3B",
+    "truth": null,
+    "sizes": [
+     30.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/8 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（33/33 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "North-Mini-Code-1.0": {
+  "files": {
+   "North-Mini-Code-1.0-UD-Q3_K_XL.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     28.686074048
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "North-Mini-Code-1.0-UD-Q3_K_M.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     28.4260272
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "North-Mini-Code-1.0-UD-IQ3_S.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     25.530679488
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "North-Mini-Code-1.0-UD-IQ3_XXS.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     23.416750272
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "North-Mini-Code-1.0-UD-Q2_K_XL.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     20.96000224
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "North-Mini-Code-1.0-UD-IQ2_M.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     19.726876864
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "North-Mini-Code-1.0-UD-IQ2_XXS.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     19.56490464
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "North-Mini-Code-1.0-UD-IQ1_M.gguf": {
+    "label": "North-Mini-Code-1.0",
+    "truth": null,
+    "sizes": [
+     18.759598272
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/8 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，8 个标签不是参数量（dishonest:two-times-file-bytes）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（32/32 行有值）；0 个模型有多个值，8 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "functiongemma-270m": {
+  "files": {
+   "functiongemma-270m-it-UD-IQ2_M.gguf": {
+    "label": "functiongemma-270m",
+    "truth": null,
+    "sizes": [
+     270.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "functiongemma-270m-it-UD-IQ2_XXS.gguf": {
+    "label": "functiongemma-270m",
+    "truth": null,
+    "sizes": [
+     270.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "functiongemma-270m-it-UD-IQ3_XXS.gguf": {
+    "label": "functiongemma-270m",
+    "truth": null,
+    "sizes": [
+     270.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "functiongemma-270m-it-UD-Q2_K_XL.gguf": {
+    "label": "functiongemma-270m",
+    "truth": null,
+    "sizes": [
+     270.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "functiongemma-270m-it-UD-Q3_K_XL.gguf": {
+    "label": "functiongemma-270m",
+    "truth": null,
+    "sizes": [
+     270.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "functiongemma-270m-it-UD-Q4_K_XL.gguf": {
+    "label": "functiongemma-270m",
+    "truth": null,
+    "sizes": [
+     270.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   },
+   "functiongemma-270m-it-UD-Q5_K_XL.gguf": {
+    "label": "functiongemma-270m",
+    "truth": null,
+    "sizes": [
+     270.0
+    ],
+    "channels": [
+     "size-too-large-for-file"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/7 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，7 个标签不是参数量（dishonest:size-too-large-for-file）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（14/14 行有值）；0 个模型有多个值，7 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "gemma-4-it-qat": {
+  "files": {
+   "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf": {
+    "label": "E4B",
+    "truth": 7.463013674,
+    "sizes": [
+     4.21569376
+    ],
+    "channels": [
+     "clamped-to-file-bytes",
+     "size-null"
+    ],
+    "score": 0.8353658536585366,
+    "n": 164
+   },
+   "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf": {
+    "label": "E2B",
+    "truth": 4.628569635,
+    "sizes": [
+     2.62036896
+    ],
+    "channels": [
+     "clamped-to-file-bytes",
+     "size-null"
+    ],
+    "score": 0.75,
+    "n": 164
+   },
+   "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf": {
+    "label": "E2B",
+    "truth": 4.628569635,
+    "sizes": [
+     2.186184768
+    ],
+    "channels": [
+     "clamped-to-file-bytes",
+     "size-null"
+    ],
+    "score": 0.21951219512195122,
+    "n": 164
+   },
+   "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf": {
+    "label": "E4B",
+    "truth": 7.463013674,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "label-below-total",
+     "size-null"
+    ],
+    "score": 0.5487804878048781,
+    "n": 164
+   },
+   "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf": {
+    "label": "12B",
+    "truth": 11.907350576,
+    "sizes": [
+     12.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9390243902439024,
+    "n": 164
+   },
+   "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf": {
+    "label": "26B-A4B",
+    "truth": 25.233142046,
+    "sizes": [
+     26.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.9573170731707317,
+    "n": 164
+   },
+   "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf": {
+    "label": "31B",
+    "truth": 30.697345596,
+    "sizes": [
+     31.0
+    ],
+    "channels": [
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "7/7 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "3 个文件标签=真参数量，4 个标签不是参数量（dishonest:clamped-to-file-bytes, dishonest:label-below-total）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 79%（203/257 行有值）；0 个模型有多个值，4 个通道错"
+  },
+  "recipes_checked": 2,
+  "detail": {
+   "Q2_K_XL": {
+    "rungs": [
+     [
+      4.629,
+      22.0,
+      164,
+      "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf"
+     ],
+     [
+      7.463,
+      54.9,
+      164,
+      "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf"
+     ]
+    ],
+    "inversions": []
+   },
+   "Q4_K_XL": {
+    "rungs": [
+     [
+      4.629,
+      75.0,
+      164,
+      "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf"
+     ],
+     [
+      7.463,
+      83.5,
+      164,
+      "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf"
+     ],
+     [
+      11.907,
+      93.9,
+      164,
+      "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf"
+     ],
+     [
+      25.233,
+      95.7,
+      164,
+      "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf"
+     ]
+    ],
+    "inversions": []
+   }
+  },
+  "monotone_in_truth": true,
+  "inversions": []
+ },
+ "NVIDIA-Nemotron-3-Nano": {
+  "files": {
+   "NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf": {
+    "label": "4B",
+    "truth": 3.973556832,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.8292682926829268,
+    "n": 164
+   },
+   "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf": {
+    "label": "4B",
+    "truth": 3.973556832,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.8414634146341463,
+    "n": 164
+   },
+   "NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_M.gguf": {
+    "label": "4B",
+    "truth": null,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_XXS.gguf": {
+    "label": "4B",
+    "truth": null,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-4B-UD-IQ3_XXS.gguf": {
+    "label": "4B",
+    "truth": null,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL.gguf": {
+    "label": "4B",
+    "truth": null,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "2/6 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "2 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 69%（44/64 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Ternary-Bonsai": {
+  "files": {
+   "Ternary-Bonsai-1.7B-Q2_0_g64.gguf": {
+    "label": "1.7B",
+    "truth": 1.72002816,
+    "sizes": [
+     1.7
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.5426829268292683,
+    "n": 164
+   },
+   "Ternary-Bonsai-27B-Q2_g64.gguf": {
+    "label": "27B",
+    "truth": 26.895998464,
+    "sizes": [],
+    "channels": [
+     "size-null"
+    ],
+    "score": 0.9146341463414634,
+    "n": 164
+   },
+   "Ternary-Bonsai-4B-Q2_0_g64.gguf": {
+    "label": "4B",
+    "truth": 4.021784576,
+    "sizes": [
+     4.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.8292682926829268,
+    "n": 164
+   },
+   "Ternary-Bonsai-8B-Q2_0_g64.gguf": {
+    "label": "8B",
+    "truth": 8.188548096,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.7987804878048781,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "4/4 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "3 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 7%（6/85 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 1,
+  "detail": {
+   "Q2_0_g64": {
+    "rungs": [
+     [
+      1.72,
+      54.3,
+      164,
+      "Ternary-Bonsai-1.7B-Q2_0_g64.gguf"
+     ],
+     [
+      4.022,
+      82.9,
+      164,
+      "Ternary-Bonsai-4B-Q2_0_g64.gguf"
+     ],
+     [
+      8.189,
+      79.9,
+      164,
+      "Ternary-Bonsai-8B-Q2_0_g64.gguf"
+     ]
+    ],
+    "inversions": [
+     {
+      "from": 4.022,
+      "to": 8.189,
+      "drop_pp": -3.05,
+      "ci_from": [
+       76.4,
+       87.9
+      ],
+      "ci_to": [
+       73.1,
+       85.3
+      ],
+      "recipe": "Q2_0_g64"
+     }
+    ]
+   }
+  },
+  "monotone_in_truth": false,
+  "inversions": [
+   {
+    "from": 4.022,
+    "to": 8.189,
+    "drop_pp": -3.05,
+    "ci_from": [
+     76.4,
+     87.9
+    ],
+    "ci_to": [
+     73.1,
+     85.3
+    ],
+    "recipe": "Q2_0_g64"
+   }
+  ]
+ },
+ "LFM2.5-Thinking": {
+  "files": {
+   "LFM2.5-1.2B-Thinking-UD-Q2_K_XL.gguf": {
+    "label": "1.2B",
+    "truth": null,
+    "sizes": [
+     1.2
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-1.2B-Thinking-UD-Q3_K_XL.gguf": {
+    "label": "1.2B",
+    "truth": null,
+    "sizes": [
+     1.2
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-1.2B-Thinking-UD-Q4_K_XL.gguf": {
+    "label": "1.2B",
+    "truth": null,
+    "sizes": [
+     1.2
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/3 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（6/6 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "LFM2.5-VL": {
+  "files": {
+   "LFM2.5-VL-1.6B-UD-Q2_K_XL.gguf": {
+    "label": "1.6B",
+    "truth": null,
+    "sizes": [
+     1.6
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-VL-1.6B-UD-Q3_K_XL.gguf": {
+    "label": "1.6B",
+    "truth": null,
+    "sizes": [
+     1.6
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "LFM2.5-VL-1.6B-UD-Q4_K_XL.gguf": {
+    "label": "1.6B",
+    "truth": null,
+    "sizes": [
+     1.6
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/3 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（6/6 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "MiniCPM5": {
+  "files": {
+   "MiniCPM5-2B-Q2_K.gguf": {
+    "label": "2B",
+    "truth": 2.51675648,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "label-below-total",
+     "size-null"
+    ],
+    "score": 0.1402439024390244,
+    "n": 164
+   },
+   "MiniCPM5-2B-Q3_K_M.gguf": {
+    "label": "2B",
+    "truth": 2.51675648,
+    "sizes": [
+     2.0
+    ],
+    "channels": [
+     "label-below-total",
+     "size-null"
+    ],
+    "score": 0.7317073170731707,
+    "n": 164
+   },
+   "MiniCPM5-1B-Q4_K_M.gguf": {
+    "label": "1B",
+    "truth": 1.080632832,
+    "sizes": [
+     1.0
+    ],
+    "channels": [
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "3/3 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "1 个文件标签=真参数量，2 个标签不是参数量（dishonest:label-below-total）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 29%（8/28 行有值）；0 个模型有多个值，2 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Qwen3.8": {
+  "files": {
+   "Qwen3.8-27B-UD-IQ4_XS.gguf": {
+    "label": "27B",
+    "truth": 27.320697856,
+    "sizes": [],
+    "channels": [
+     "size-null"
+    ],
+    "score": 0.9024390243902439,
+    "n": 164
+   },
+   "Qwen3.8-27B-UD-Q2_K_XL.gguf": {
+    "label": "27B",
+    "truth": 27.320697856,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.926829268292683,
+    "n": 164
+   },
+   "Qwen3.8-27B-UD-Q3_K_XL.gguf": {
+    "label": "27B",
+    "truth": 27.320697856,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.8719512195121951,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "3/3 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "2 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 11%（4/38 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "gemma4-coding": {
+  "files": {
+   "gemma4-coding-Q4_K_M.gguf": {
+    "label": "gemma4-coding",
+    "truth": null,
+    "sizes": [
+     14.762763328
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma4-coding-Q3_K_M.gguf": {
+    "label": "gemma4-coding",
+    "truth": null,
+    "sizes": [
+     12.174173248
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma4-coding-Q2_K.gguf": {
+    "label": "gemma4-coding",
+    "truth": null,
+    "sizes": [
+     9.660294208
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/3 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，3 个标签不是参数量（dishonest:two-times-file-bytes）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（6/6 行有值）；0 个模型有多个值，3 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Llama-3.2": {
+  "files": {
+   "Llama-3.2-3B-Instruct-Q2_K.gguf": {
+    "label": "3B",
+    "truth": 3.212749888,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.4329268292682927,
+    "n": 164
+   },
+   "Llama-3.2-3B-Instruct-Q3_K_M.gguf": {
+    "label": "3B",
+    "truth": 3.212749888,
+    "sizes": [
+     3.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.5853658536585366,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "2/2 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "2 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 17%（4/24 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Ornith-1.5": {
+  "files": {
+   "Ornith-1.5-9B-Q4_K_M.gguf": {
+    "label": "9B",
+    "truth": 9.197093888,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.7804878048780488,
+    "n": 164
+   },
+   "Ornith-1.5-9B-Q5_K_M.gguf": {
+    "label": "9B",
+    "truth": 9.197093888,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.7560975609756098,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "2/2 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": true,
+   "why": "2 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": true,
+   "why": "`__size` 覆盖率 33%（10/30 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Phi-4-mini": {
+  "files": {
+   "Phi-4-mini-instruct-Q2_K.gguf": {
+    "label": "Phi-4-mini",
+    "truth": 3.836021856,
+    "sizes": [
+     3.365272
+    ],
+    "channels": [
+     "size-null",
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Phi-4-mini-instruct-Q3_K_M.gguf": {
+    "label": "Phi-4-mini",
+    "truth": 3.836021856,
+    "sizes": [
+     4.235066
+    ],
+    "channels": [
+     "size-null",
+     "two-times-file-bytes"
+    ],
+    "score": 0.5853658536585366,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": true,
+   "why": "2/2 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，2 个标签不是参数量（dishonest:two-times-file-bytes）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 11%（4/36 行有值）；0 个模型有多个值，2 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Qwen3.5-DeepSeek-V4-Flash": {
+  "files": {
+   "Qwen3.5-9B-DeepSeek-V4-Flash-Q3_K_M.gguf": {
+    "label": "9B",
+    "truth": null,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "Qwen3.5-9B-DeepSeek-V4-Flash-Q4_K_M.gguf": {
+    "label": "9B",
+    "truth": null,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/2 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（5/5 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "gemma4-v2": {
+  "files": {
+   "gemma4-v2-Q4_K_M.gguf": {
+    "label": "gemma4-v2",
+    "truth": 11.907350576,
+    "sizes": [
+     14.762763328
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   },
+   "gemma4-v2-Q3_K_M.gguf": {
+    "label": "gemma4-v2",
+    "truth": null,
+    "sizes": [
+     12.174173248
+    ],
+    "channels": [
+     "two-times-file-bytes"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "1/2 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，2 个标签不是参数量（dishonest:two-times-file-bytes）"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（4/4 行有值）；0 个模型有多个值，2 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "ornith-1.0": {
+  "files": {
+   "ornith-1.0-35b-Q4_K_M.gguf": {
+    "label": "35b",
+    "truth": null,
+    "sizes": [
+     35.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   },
+   "ornith-1.0-9b-Q4_K_M.gguf": {
+    "label": "9b",
+    "truth": null,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/2 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（8/8 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Bonsai": {
+  "files": {
+   "Bonsai-27B-Q1_0.gguf": {
+    "label": "27B",
+    "truth": 26.895998464,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "size-null",
+     "token-rounded"
+    ],
+    "score": 0.8658536585365854,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "1/1 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "1 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 15%（2/13 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Dolphin3.0-Llama3.1-abliterated.Q3_K_M": {
+  "files": {
+   "Dolphin3.0-Llama3.1-8B-abliterated.Q3_K_M.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/1 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Dolphin3.0-Llama3.1-abliterated.Q4_K_M": {
+  "files": {
+   "Dolphin3.0-Llama3.1-8B-abliterated.Q4_K_M.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/1 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Dolphin3.0-Llama3.1-abliterated.Q4_K_S": {
+  "files": {
+   "Dolphin3.0-Llama3.1-8B-abliterated.Q4_K_S.gguf": {
+    "label": "8B",
+    "truth": null,
+    "sizes": [
+     8.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/1 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "MiniCPM5-Agentic-Tooluse-Nemotron-DPO.Q4_K_M": {
+  "files": {
+   "MiniCPM5-1B-Agentic-Tooluse-Nemotron-DPO.Q4_K_M.gguf": {
+    "label": "1B",
+    "truth": null,
+    "sizes": [
+     1.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/1 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "MiniCPM5-Claude-Opus-Fable5-Thinking": {
+  "files": {
+   "MiniCPM5-1B-Claude-Opus-Fable5-Thinking-Q4_K_M.gguf": {
+    "label": "1B",
+    "truth": null,
+    "sizes": [
+     1.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/1 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Qwen3.8-GSQ-RCO-IQ3_S-mtp": {
+  "files": {
+   "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf": {
+    "label": "27B",
+    "truth": 27.320697856,
+    "sizes": [],
+    "channels": [
+     "size-null"
+    ],
+    "score": 0.9390243902439024,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "1/1 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 0%（0/10 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Qwen3.8-GSQ-RCO-IQ3_XXS-mtp": {
+  "files": {
+   "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf": {
+    "label": "27B",
+    "truth": 27.320697856,
+    "sizes": [],
+    "channels": [
+     "size-null"
+    ],
+    "score": 0.8902439024390244,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "1/1 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 0%（0/10 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Qwythos-Claude-Mythos-5-1M-MTP": {
+  "files": {
+   "Qwythos-9B-Claude-Mythos-5-1M-MTP-Q4_K_M.gguf": {
+    "label": "9B",
+    "truth": 9.197093888,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "token-rounded"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "1/1 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "1 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "Qwythos-v2-MTP": {
+  "files": {
+   "Qwythos-9B-v2-MTP-Q4_K_M.gguf": {
+    "label": "9B",
+    "truth": null,
+    "sizes": [
+     9.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/1 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "ThinkingCap-Qwen3.6": {
+  "files": {
+   "ThinkingCap-Qwen3.6-27B-Q4_K_M.gguf": {
+    "label": "27B",
+    "truth": null,
+    "sizes": [
+     27.0
+    ],
+    "channels": [
+     "undecidable"
+    ],
+    "score": null,
+    "n": null
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "0/1 个文件有实测参数量"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ }
+}
