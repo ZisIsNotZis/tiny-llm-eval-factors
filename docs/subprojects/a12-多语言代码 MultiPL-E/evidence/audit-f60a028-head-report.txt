@@ -1,20 +1,23 @@
+# captured for revision f60a028 (HEAD), report.html sha256 e97af396da4d26bbd24b5521ba0446a2dc69779a0b528969ffad0a563b2b3295
+# command: python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
+# datetime: 2026-10-21 00:09:54 CST  exit: 0
 a12 MultiPL-E cell audit
-  audited revision : 8152a383a63511c758505a49f418f60124964c21
+  audited revision : f60a0286cc187bef52ad123bc1453b8438ab6f48
   script sha256    : c5d4d63ab41e9995084c6792a1793b9832a8413486f3e22e1f378d517e546a94
-  command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py --report /tmp/tmp.BYSAZMbS9Q/head-report.html
+  command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py
   database         : /home/z/vibe/local_lm_research/experiments.sqlite
-  report           : /tmp/tmp.BYSAZMbS9Q/head-report.html
-  dirty paths      : 147 dirty path(s) in the tree; uncommitted among the ones this audit reads: .wrapup/mktables.py, make_report.py, report.html
-MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cpp': 161, 'py': 161, 'js': 161, 'java': 158, 'rs': 155, 'rb': 161}
+  report           : /home/z/vibe/local_lm_research/report.html
+  dirty paths      : 3 dirty path(s) in the tree; uncommitted among the ones this audit reads: none
+MultiPL-E cells in the DB: 250 (scored 246, NULL 4); full-cell item counts: {'cpp': 161, 'py': 161, 'js': 161, 'java': 158, 'rs': 155, 'rb': 161}
 
 [1] lineage: does each scored cell trace to a stored artefact?
-    scored cells traced          : 244/244 (via summary 242, via per-item eval 2)
+    scored cells traced          : 246/246 (via summary 244, via per-item eval 2)
     untraced                     : 0
       eval-only trace: Qwen3.8-27B-UD-Q2_K_XL.gguf              cpp    0.6335403726708074 <- ['m26-q38-27b-q2-cpp_fixed_eval.json'] (tag match)
       eval-only trace: gemma-4-12b-it-UD-Q2_K_XL.gguf           cpp    0.024844720496894408 <- ['m6b-g12b-q2-cpp_fixed_eval.json'] (tag match)
-    scored cells with no per-item eval: 0/244 (older panels stored only the panel summary; the summary is then the artefact of record)
-    (language, pass, n) key matches one file: 101 cells; several files: 143 cells (the key is not model-unique, so it proves a file reproduces the cell, not that the file is this model's)
-    eval keys with >1 file       : 64 (the report accepts only identical status histograms for those)
+    scored cells with no per-item eval: 0/246 (older panels stored only the panel summary; the summary is then the artefact of record)
+    (language, pass, n) key matches one file: 101 cells; several files: 145 cells (the key is not model-unique, so it proves a file reproduces the cell, not that the file is this model's)
+    eval keys with >1 file       : 65 (the report accepts only identical status histograms for those)
 
 [2] coverage: canonical raw-greedy protocol (multipl-e-raw-greedy-768)
     models: 54; with all 6 languages: 4; with the cpp+py pair: 51
@@ -78,13 +81,13 @@ MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cp
 [3] coverage: chat-generation protocol
       Qwen3.8-27B-UD-Q2_K_XL.gguf                    mpl-chat-nothink-greedy-768                          {'py': 0.7516, 'cpp': 0.6335}
       Qwen3.8-27B-UD-Q3_K_XL.gguf                    mpl-chat-nothink-greedy-768                          {'cpp': 0.8696, 'py': 0.9006}
-      gemma-4-12b-it-UD-Q2_K_XL.gguf                 mpl-chat-nothink-greedy-768                          {'py': 0.4783}
-      gemma-4-12b-it-UD-Q3_K_XL.gguf                 mpl-chat-nothink-greedy-768                          {'py': 0.5776}
+      gemma-4-12b-it-UD-Q2_K_XL.gguf                 mpl-chat-nothink-greedy-768                          {'py': 0.4783, 'cpp': 0.0186}
+      gemma-4-12b-it-UD-Q3_K_XL.gguf                 mpl-chat-nothink-greedy-768                          {'py': 0.5776, 'cpp': 0.7267}
       gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf             mpl-chat-nothink-greedy-768                          {'py': 0.0124, 'cpp': 0.8323}
       gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf             mpl-chat-nothink-greedy-768                          {'py': 0.0062, 'cpp': 0.8323}
       gemma-4-12b-it-UD-Q2_K_XL.gguf                 mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified {'cpp': 0.0248}
       gemma-4-12b-it-UD-Q3_K_XL.gguf                 mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified {'cpp': 0.8075}
-    chat cells: 12 over 6 models; languages ['cpp', 'py']
+    chat cells: 14 over 6 models; languages ['cpp', 'py']
     unmeasured under chat: 24 of 36 model x language slots (languages ['java', 'js', 'rb', 'rs'], 6 models)
 
 [4] non-measurements and stored zeros
@@ -112,46 +115,14 @@ MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cp
     6 files pinned; 0 drifted
 
 [7] every cell the report prints belongs to its own protocol row
-    report cells read: 192; not belonging to their protocol row: 32
-    item counts compared: 192; cells skipped because the report prints no n: 0
-      MISMATCH: ('LFM2.5-8B-A1B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.0696, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('LFM2.5-8B-A1B-UD-Q3_K_XL.gguf', 'raw', 'java', 0.0506, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.3734, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf', 'raw', 'java', 0.4051, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('Ornith-1.5-9B-Q4_K_M.gguf', 'raw', 'rs', 0.5226, 'printed n=161, artefact n=[155]')
-      MISMATCH: ('Ornith-1.5-9B-Q5_K_M.gguf', 'raw', 'rs', 0.5484, 'printed n=161, artefact n=[155]')
-      MISMATCH: ('Qwen3.5-0.8B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.019, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('Qwen3.5-0.8B-UD-Q3_K_XL.gguf', 'raw', 'java', 0.0949, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.1203, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q2_K_XL.gguf', 'raw', 'rs', 0.0645, 'printed n=161, artefact n=[155]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw', 'java', 0.2152, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw', 'rs', 0.1613, 'printed n=161, artefact n=[155]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=16384·kv=f16/f16', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=16384·kv=f16/q8_0', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=16384·kv=q8_0/f16', 'cpp', 0.0167, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=16384·kv=q8_0/q8_0', 'cpp', 0.0167, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=2048·kv=f16/f16', 'cpp', 0.0667, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=2048·kv=f16/q8_0', 'cpp', 0.0667, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=2048·kv=q8_0/f16', 'cpp', 0.0667, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=2048·kv=q8_0/q8_0', 'cpp', 0.0667, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=f16/f16', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=f16/q8_0', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=q8_0/f16', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=q8_0/q8_0', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
-      MISMATCH: ('Qwen3.5-4B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.3228, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('Qwen3.5-4B-UD-Q2_K_XL.gguf', 'raw', 'rs', 0.2581, 'printed n=161, artefact n=[155]')
-      MISMATCH: ('Qwen3.5-4B-UD-Q3_K_XL.gguf', 'raw', 'java', 0.4873, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('Qwen3.5-4B-UD-Q3_K_XL.gguf', 'raw', 'rs', 0.4129, 'printed n=161, artefact n=[155]')
-      MISMATCH: ('gemma-4-12b-it-UD-Q2_K_XL.gguf', 'raw', 'java', 0.0, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('gemma-4-12b-it-UD-Q2_K_XL.gguf', 'raw', 'rs', 0.0065, 'printed n=161, artefact n=[155]')
-      MISMATCH: ('gemma-4-12b-it-UD-Q3_K_XL.gguf', 'raw', 'java', 0.0253, 'printed n=161, artefact n=[158]')
-      MISMATCH: ('gemma-4-12b-it-UD-Q3_K_XL.gguf', 'raw', 'rs', 0.0, 'printed n=161, artefact n=[155]')
-    report mtime 1792508900, DB mtime 1792421044
+    report cells read: 188; not belonging to their protocol row: 0
+    item counts compared: 186; cells skipped because the report prints no n: 2
+    report mtime 1792512389, DB mtime 1792511968
 
 [8] standard-column pooling state in the report
-    standard tables with ONE pooled MultiPL-E column: 8
-    standard tables with per-language MultiPL-E columns: 0
-    pooled: the standard column averages cpp+py, which the acceptance forbids; the split is i02's work package (PLAN.md WP7)
+    standard tables with ONE pooled MultiPL-E column: 0
+    standard tables with per-language MultiPL-E columns: 8
+    no standard table pools cpp+py
 
 [9] no stored protocol lost or invented a setting at ingest (full string, `;` fields included)
     stored protocols that disagree with every summary line of their score: 0
@@ -159,10 +130,10 @@ MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cp
       NOTED: gemma-4-12b-it-UD-Q3_K_XL.gguf cpp 'mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified' -- m6b run config, summary wrote no ctx/tmpl
 
 [10] cells the per-language table cannot hold apart (row key lacks a column)
-    (model, protocol, language) keys: 192 from 244 scored rows; 29 keys repeat the same value (duplicate ingest), 3 keys disagree
+    (model, protocol, language) keys: 194 from 246 scored rows; 29 keys repeat the same value (duplicate ingest), 3 keys disagree
       ONE ROW HIDES OTHERS: Qwen3.5-2B-UD-Q2_K_XL.gguf mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) py -> [(0.1366, 'm31-topk'), (0.1615, 'm31-topk'), (0.1615, 'm31-topk'), (0.1615, 'm31-topk'), (0.1615, 'm31-topk')]
       ONE ROW HIDES OTHERS: Qwen3.5-2B-UD-Q3_K_XL.gguf mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) cpp -> [(0.2422, 'm31-topk'), (0.1739, 'm31-topk'), (0.1739, 'm31-topk'), (0.1739, 'm31-topk'), (0.1739, 'm31-topk')]
       ONE ROW HIDES OTHERS: Qwen3.5-2B-UD-Q4_K_XL.gguf mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) py -> [(0.2733, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk')]
     OPEN (i02): a row key without the varied column hides the other rows; the sampling axis measures that column, this table cannot
 
-FAIL: see the untraced / all-Exception / relabelled / drift / mismatch rows above
+PASS: every scored cell traces to a stored artefact, no all-Exception cell carries a score, no stored protocol lost or invented a setting, the prompt set matches its pin, and every cell the report prints belongs to its own protocol row
