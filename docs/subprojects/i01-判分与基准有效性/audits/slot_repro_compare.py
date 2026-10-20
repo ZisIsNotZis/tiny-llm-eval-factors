@@ -36,7 +36,7 @@ import json
 import os
 import sys
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 MRES = os.path.join(REPO, ".wrapup", "mres")
 ARMS = ["np1-p1", "np1-p2", "np4-p1", "np4-p2", "np4b-p1"]
 

@@ -4,9 +4,22 @@
 未测写「未测」并写原因，不写 0。状态：`current` 为当前值，`provisional` 为暂时，`retracted` 为已撤回但保留其死因。
 判断类结论（analysis）与技术测量分开，analysis 不覆盖任何数字。
 
-## 判分缺陷与修复
+## 生成可复现性与噪声
 
-### res16 MultiPL-E 旧列不可比（language 覆盖）
+### res25 同一 cell 在 `-np 1` 下贪心生成逐字节可复现（plan15 的一半已裁决）
+
+- 条件：plan15 那个 cell（`q38-27b-q3` = `Qwen3.8-27B-UD-Q3_K_XL.gguf`，py，`mpl-chat-nothink-greedy-768`，chat 关思考，贪心，768 tokens，每槽 ctx 2048），提示集 `.wrapup/prompts`（`humaneval-py.jsonl` sha256=ac14c3b0…，跑前过 `sha256sum -c SHA256SUMS`），server 显式 `-np 1`，同一 server 实例内两次独立生成。
+- 两次都是 **145/161 = 0.9006**，逐题判定差异 **0 道**，且两份完成物文件 **sha256 完全相同**：单槽贪心生成在这条链路上是逐字节可复现的。
+- 与 m161 的关系：现入库值 145/161 正是本次 `-np 1` 复现出的值。所以「m26 用旧判分 131 → 重判 139 → m161 重生成 145」这 6 道题的差，不能说成「贪心生成本身不稳定」；它只能来自两个仍未排除的方向：四槽批处理（`np4`/`np4b` 待测）或提示集（m26 的 `/tmp/MultiPL-E/prompts` 已被删除，不可测）。
+- 因此本层仍不得声称 plan15 已完全裁决；已知的是「四槽不是必要条件，单槽就得到 145」。
+- 状态：current。
+- 证据：`.wrapup/mres/i01-slot-np1-p{1,2}-py-chat.jsonl` 与 `_eval.json`；`.wrapup/mres/i01-slot-np1-meta.json`（含 `n_slots = 1, n_ctx_slot = 2048` 与提示集哈希）。
+- 复现：
+  1. 逐题通过集：`for f in p1 p2; do jq -r '.details[]|select(.pass)|.name' .wrapup/mres/i01-slot-np1-$f-py-chat_eval.json | sort > /tmp/i01-$f.txt; done; diff /tmp/i01-p1.txt /tmp/i01-p2.txt && echo IDENTICAL`（实跑输出：无差异，即两次通过集相同）。
+  2. 完成物逐字节：`sha256sum .wrapup/mres/i01-slot-np1-p{1,2}-py-chat.jsonl`（实跑输出：两行同为 `a2f5eb5dac78a1e4a2387a4fdb943c318dcf71d16edfffeaa9626cbc22457779`）。
+  3. 重跑整个 arm：`bash .wrapup/gpu_locked.sh bash "docs/subprojects/i01-判分与基准有效性/audits/slot_repro_arm.sh" np1`。
+
+## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
 - 当前规则：标准列只在 cpp 与 py 都测过时产出该单元，否则记缺失（NaN），不画点。

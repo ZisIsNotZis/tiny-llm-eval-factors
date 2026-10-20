@@ -34,7 +34,7 @@ import os
 import sys
 import tempfile
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from evalplus.data import get_human_eval_plus, get_mbpp_plus  # noqa: E402
 from evalplus.evaluate import evaluate  # noqa: E402
@@ -121,23 +121,40 @@ def part_questions(workdir, he, mbpp):
     print("  status histogram for this batch: %s" % hist)
 
     print("\n[Q4] the MBPP+ oracle bypass, counted rather than assumed")
+    from evalplus.evaluate import get_groundtruth, get_mbpp_plus_hash
+    expected_out = get_groundtruth(mbpp, get_mbpp_plus_hash(), [])
     not_none = sorted(t for t, p in mbpp.items() if p["entry_point"] in MBPP_OUTPUT_NOT_NONE_TASKS)
     always_true = sorted(t for t, p in mbpp.items() if p["entry_point"] == "are_equivalent")
     seteq = sorted(t for t, p in mbpp.items() if p["entry_point"] in MBPP_OUTPUT_SET_EQ_TASKS)
     print("  oracle is only 'output is not None': %s" % not_none)
-    print("  oracle is `exact_match or True`: %s" % always_true)
+    print("  oracle is `exact_match or True`: %s (absent from this dataset version)" % always_true)
     print("  oracle is set equality (order-insensitive): %d tasks %s" % (len(seteq), seteq))
-    bypass = (not_none + always_true)[:3]
+
+    # A wrong body is scored as a pass on such a task exactly when its returned
+    # shape matches what the reduced oracle can see, so the expectation is derived
+    # from the ground truth rather than assumed: `return None` passes iff every plus
+    # expectation is False, `return object()` passes iff every plus expectation is
+    # True.  Deriving it keeps the audit honest if upstream changes the oracle set.
+    def wrong_none(p):
+        return p["prompt"] + "\ndef %s(*args, **kwargs):\n    return None\n" % p["entry_point"]
+
+    def wrong_object(p):
+        return p["prompt"] + "\ndef %s(*args, **kwargs):\n    return object()\n" % p["entry_point"]
+
+    cases, plan = [], []
+    for task_id in not_none:
+        exp = expected_out[task_id]["plus"]
+        for name, build, bad_flag in (("wrong_returns_None", wrong_none, None),
+                                      ("wrong_returns_object", wrong_object, True)):
+            want = "pass" if all(e is bad_flag for e in exp) else "fail"
+            cases.append((task_id, build(mbpp[task_id])))
+            plan.append((task_id, "%s(expecteds_all_%s)" % (name, "False" if bad_flag is None else "True"), want))
     normal = [t for t, p in mbpp.items()
               if p["entry_point"] not in MBPP_OUTPUT_NOT_NONE_TASKS
               and p["entry_point"] not in MBPP_OUTPUT_SET_EQ_TASKS
               and p["entry_point"] != "are_equivalent"][:3]
-    cases, plan = [], []
-    for task_id in bypass:
-        cases.append((task_id, mbpp[task_id]["prompt"] + "    return object()\n"))
-        plan.append((task_id, "wrong_body_on_bypass_oracle", "pass"))
     for task_id in normal:
-        cases.append((task_id, mbpp[task_id]["prompt"] + "    return object()\n"))
+        cases.append((task_id, wrong_object(mbpp[task_id])))
         plan.append((task_id, "wrong_body_on_normal_oracle", "fail"))
     per_task, hist = score("mbpp", mbpp, cases, workdir, "mbpp")
     check(per_task, plan, "mbpp")
