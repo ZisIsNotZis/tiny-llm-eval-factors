@@ -1,0 +1,591 @@
+{
+ "generated_by": "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py",
+ "models": {
+  "Bonsai-27B-Q1_0.gguf": {
+   "paths": {
+    "m86-bonsai27b-q1": "/home/z/hf/mscache/prism-ml/Bonsai-27B-gguf/Bonsai-27B-Q1_0.gguf"
+   },
+   "vendors": [
+    "prism-ml"
+   ]
+  },
+  "GLM-4.7-Flash-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m94-glm47flash-q2kxl": "/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "GLM-4.7-Flash-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m98-glm47flash-q3kxl": "/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "GLM-4.7-Flash-UD-TQ1_0.gguf": {
+   "paths": {
+    "m88-glm47flash-tq1": "/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-TQ1_0.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m89-lfm25-8b-a1b-q2kxl": "/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m99-lfm25-8b-a1b-q3kxl": "/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "LFM2.5-8B-A1B-m55-Q3_K_M.gguf": {
+   "paths": {
+    "m102-lfm25-8b-a1b-m55-q3km": "/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf",
+    "m132-m55-uniform": "/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf"
+   },
+   "vendors": [
+    "local"
+   ]
+  },
+  "LFM2.5-8B-A1B-m55-exq2.gguf": {
+   "paths": {
+    "m133-m55-exq2": "/home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf",
+    "m92-lfm25-8b-a1b-m55-exq2": "/home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf"
+   },
+   "vendors": [
+    "local"
+   ]
+  },
+  "LFM2.5-8B-A1B-m55-exq4.gguf": {
+   "paths": {
+    "m109-lfm25-8b-a1b-m55-exq4": "/home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf",
+    "m134-m55-exq4": "/home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf"
+   },
+   "vendors": [
+    "local"
+   ]
+  },
+  "Llama-3.2-3B-Instruct-Q2_K.gguf": {
+   "paths": {
+    "m97-llama32-3b-q2k": "/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q2_K.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Llama-3.2-3B-Instruct-Q3_K_M.gguf": {
+   "paths": {
+    "m107-llama32-3b-q3km": "/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q3_K_M.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "MiniCPM5-2B-Q2_K.gguf": {
+   "paths": {
+    "m95-minicpm5-2b-q2k": "/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q2_K.gguf"
+   },
+   "vendors": [
+    "bartowski"
+   ]
+  },
+  "MiniCPM5-2B-Q3_K_M.gguf": {
+   "paths": {
+    "m104-minicpm5-2b-q3km": "/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q3_K_M.gguf"
+   },
+   "vendors": [
+    "bartowski"
+   ]
+  },
+  "NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m111-nemotron-4b-q2kxl": "/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m113-nemotron-4b-q3kxl": "/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Ornith-1.5-9B-Q4_K_M.gguf": {
+   "paths": {
+    "m110-ornith-9b-q4km": "/home/z/hf/models--ornith-ai--Ornith-1.5-9B-GGUF/blobs/70c112196e0b7023803c9762752e46d29e612a92c83f995bc3ba1ceb07e8fab6"
+   },
+   "vendors": [
+    "ornith-ai"
+   ]
+  },
+  "Ornith-1.5-9B-Q5_K_M.gguf": {
+   "paths": {
+    "m114-ornith-9b-q5km": "/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf"
+   },
+   "vendors": [
+    "ornith-ai"
+   ]
+  },
+  "Phi-4-mini-instruct-Q2_K.gguf": {
+   "paths": {
+    "m115-phi4mini-q2k": "/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf",
+    "m76-phi4mini-q2k": "/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Phi-4-mini-instruct-Q3_K_M.gguf": {
+   "paths": {
+    "m116-phi4mini-q3km": "/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf",
+    "m77-phi4mini-q3km": "/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-0.8B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m108-qwen-0.8b-q2kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-0.8B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m112-qwen-0.8b-q3kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-0.8B-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m125-spec-0.8b": "/home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/blobs/2da9c6ba82ffe7d2a01bdfebd4357662582e48a7f36e8708661207a9edd022f4"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-2B-UD-IQ2_M.gguf": {
+   "paths": {
+    "m62-qwen-2b-iq2m": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_M.gguf",
+    "m62gs-gsm8k": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_M.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-2B-UD-IQ2_XXS.gguf": {
+   "paths": {
+    "m61-qwen-2b-iq2xxs": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_XXS.gguf",
+    "m61gs-gsm8k": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_XXS.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-2B-UD-IQ3_XXS.gguf": {
+   "paths": {
+    "m63-qwen-2b-iq3xxs": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf",
+    "m63gs-gsm8k": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-2B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m64-qwen-2b-q2kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "m64gs-gsm8k": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-2B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m130-kv": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263",
+    "m131-sampling": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263",
+    "m65-qwen-2b-q3kxl": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263",
+    "m65gs-gsm8k": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-2B-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m126-spec-2b": "/home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/blobs/9f7b15d04cf2d5878c8122a7c181dbc09f050cd66080ce3374576e734ccb0910",
+    "m66-qwen-2b-q4kxl": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35",
+    "m66gs-gsm8k": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-2B-UD-Q5_K_XL.gguf": {
+   "paths": {
+    "m67-qwen-2b-q5kxl": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/67bff9774bc55e44af2eee3c448dc054478b45c0607858fc6df5b336b55f36f4",
+    "m67gs-gsm8k": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/67bff9774bc55e44af2eee3c448dc054478b45c0607858fc6df5b336b55f36f4"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-4B-UD-IQ3_XXS.gguf": {
+   "paths": {
+    "m72-qwen-4b-iq3xxs": "/home/z/hf/mscache/unsloth/Qwen3.5-4B-GGUF/Qwen3.5-4B-UD-IQ3_XXS.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m71-qwen-4b-q2kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-4B-GGUF/Qwen3.5-4B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-4B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m73-qwen-4b-q3kxl": "/home/z/hf/models--unsloth--Qwen3.5-4B-GGUF/blobs/1874727e4bb6ac23fd0cd134ac6562d2759fe44f37fa68c55197b36526da4e37"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-4B-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m127-spec-4b": "/home/z/hf/models--unsloth--Qwen3.5-4B-MTP-GGUF/blobs/d2bfbee4de17c74e6308a4dc750be4c2271f92ae2df1e28f5c5afa0dcdb6fccc"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-9B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m117-qwen9b-q2kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf",
+    "m74-qwen-9b-q2kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-9B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m118-qwen9b-q3kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf",
+    "m75-qwen-9b-q3kxl": "/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.5-9B-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m128-spec-9b": "/home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/blobs/362f85a2d7dbc0259e926d5ac33ca0d0f17fd3753496d65bfd2106384c929d3f"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.6-35B-A3B-UD-IQ4_XS.gguf": {
+   "paths": {
+    "m129-spec-35b": "/home/z/hf/models--unsloth--Qwen3.6-35B-A3B-MTP-GGUF/blobs/df27a780435b7b45c2597536112ea3cb091f8544c3d0c3318d9f4258b31f7adf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m90-qwen36-35b-a3b-q2kxl": "/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m103-qwen36-35b-a3b-q3kxl": "/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf": {
+   "paths": {
+    "m151-qwen38-gsqrco-iq3s": "/home/z/hf/models--ISTA-DASLab--Qwen3.8-27B-GSQ-RCO-GGUF/blobs/58fd826723939933dc86f45b7fe04545cbc2de1c70f6fe2cdd3858c87a98c12f"
+   },
+   "vendors": [
+    "ISTA-DASLab"
+   ]
+  },
+  "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf": {
+   "paths": {
+    "m150-qwen38-gsqrco-iq3xxs": "/home/z/hf/models--ISTA-DASLab--Qwen3.8-27B-GSQ-RCO-GGUF/blobs/63f29a2189a6b4cc31f81e093d3856ad293a5583114439f41ae1ed7af4093262"
+   },
+   "vendors": [
+    "ISTA-DASLab"
+   ]
+  },
+  "Qwen3.8-27B-UD-IQ4_XS.gguf": {
+   "paths": {
+    "m152-qwen38-27b-iq4xs": "/home/z/hf/models--unsloth--Qwen3.8-27B-GGUF/blobs/40fac4050e940397dbf13087afd50f4734a11805bf9d65ef8ddd7483470e6199"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.8-27B-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m91-qwen38-27b-q2kxl": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen3.8-27B-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m100-qwen38-27b-q3kxl": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf": {
+   "paths": {
+    "m87-qwen35-35b-a3b-iq1m": "/home/z/hf/mscache/Manojb/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf"
+   },
+   "vendors": [
+    "Manojb"
+   ]
+  },
+  "Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf": {
+   "paths": {
+    "m101-qwen36-35b-a3b-q3km": "/home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf"
+   },
+   "vendors": [
+    "bartowski"
+   ]
+  },
+  "Ternary-Bonsai-1.7B-Q2_0_g64.gguf": {
+   "paths": {
+    "m85-bonsai-1.7b-q2": "/home/z/hf/mscache/prism-ml/Ternary-Bonsai-1.7B-gguf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf"
+   },
+   "vendors": [
+    "prism-ml"
+   ]
+  },
+  "Ternary-Bonsai-27B-Q2_g64.gguf": {
+   "paths": {
+    "m124-bonsai-27b-q2": "/home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb",
+    "m82-bonsai-27b-q2": "/home/z/hf/models--prism-ml--Ternary-Bonsai-27B-gguf/blobs/59a45d1ecef702b14531b06d22949f33b25c1897da31a8c0b298e01e4d9138eb"
+   },
+   "vendors": [
+    "prism-ml"
+   ]
+  },
+  "Ternary-Bonsai-4B-Q2_0_g64.gguf": {
+   "paths": {
+    "m84-bonsai-4b-q2": "/home/z/hf/mscache/prism-ml/Ternary-Bonsai-4B-gguf/Ternary-Bonsai-4B-Q2_0_g64.gguf"
+   },
+   "vendors": [
+    "prism-ml"
+   ]
+  },
+  "Ternary-Bonsai-8B-Q2_0_g64.gguf": {
+   "paths": {
+    "m123-bonsai-8b-q2": "/home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf",
+    "m83-bonsai-8b-q2": "/home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf"
+   },
+   "vendors": [
+    "prism-ml"
+   ]
+  },
+  "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m140-qat-gemma12b-q4": "/home/z/hf/models--unsloth--gemma-4-12B-it-qat-GGUF/blobs/90fd44e29e0d7cffeb0fd00dc73cfdab9ed0b0e95306ecf7821ea634c940c370"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-12b-it-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m93-gemma-12b-q2kxl": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-12b-it-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m105-gemma-12b-q3kxl": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-12b-it-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m141-native-gemma12b-q4": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m96-gemma-26b-a4b-q2kxl": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m106-gemma-26b-a4b-q3kxl": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m144-qat-gemma26b-a4b-q4": "/home/z/hf/models--unsloth--gemma-4-26B-A4B-it-qat-GGUF/blobs/a7c5bc715f5ff8e99a3e8901ce7d2b42b402c669bf24f7c5250747633d0f5891"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E2B-it-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m119-gemma-e2b-q2kxl": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+    "m78-gemma-e2b-q2kxl": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E2B-it-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m120-gemma-e2b-q3kxl": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+    "m79-gemma-e2b-q3kxl": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E2B-it-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m148-native-gemma-e2b-q4": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q4_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m146-qat-gemma-e2b-q2": "/home/z/hf/models--unsloth--gemma-4-E2B-it-qat-GGUF/blobs/0a5bbc20f91f92da96ab4870fa71b356c45b8500a7b8b9c3e0eb48359b72da28"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m147-qat-gemma-e2b-q4": "/home/z/hf/models--unsloth--gemma-4-E2B-it-qat-GGUF/blobs/e531007218dfab990486a5de7676a6932d6ea8dea233d1f698d7c21cf8a16889"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E4B-it-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m121-gemma-e4b-q2kxl": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+    "m80-gemma-e4b-q2kxl": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E4B-it-UD-Q3_K_XL.gguf": {
+   "paths": {
+    "m122-gemma-e4b-q3kxl": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+    "m81-gemma-e4b-q3kxl": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E4B-it-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m156-native-gemma-e4b-q4": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q4_K_XL.gguf"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf": {
+   "paths": {
+    "m149-qat-gemma-e4b-q2": "/home/z/hf/models--unsloth--gemma-4-E4B-it-qat-GGUF/blobs/79dde517866cfbb5c00230b530de17910fc7fc78f8827554d0e14281ce5faf03"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf": {
+   "paths": {
+    "m155-qat-gemma-e4b-q4": "/home/z/hf/models--unsloth--gemma-4-E4B-it-qat-GGUF/blobs/df0fd4ee07072c607c29a0a1cb4f98918426cca12f45a2776bdd6ee6d09a4de3"
+   },
+   "vendors": [
+    "unsloth"
+   ]
+  },
+  "granite-4.1-3b-Q2_K.gguf": {
+   "paths": {
+    "m68-granite-3b-q2k": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q2_K.gguf",
+    "m68gs-gsm8k": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q2_K.gguf"
+   },
+   "vendors": [
+    "ibm-granite"
+   ]
+  },
+  "granite-4.1-3b-Q3_K_M.gguf": {
+   "paths": {
+    "m69-granite-3b-q3km": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q3_K_M.gguf"
+   },
+   "vendors": [
+    "ibm-granite"
+   ]
+  },
+  "granite-4.1-3b-Q4_K_M.gguf": {
+   "paths": {
+    "m70-granite-3b-q4km": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q4_K_M.gguf"
+   },
+   "vendors": [
+    "ibm-granite"
+   ]
+  }
+ },
+ "source": ".wrapup/mres/<run_tag>/{evalplus,lmeval_panel,*}.json 的 model 字段；run_tag 与 experiments.run_tag 同键",
+ "vendor_rule": "mscache/<vendor>/… → vendor；models--<vendor>--… → vendor；/home/z/hf/<file>.gguf → local；其余 unknown"
+}

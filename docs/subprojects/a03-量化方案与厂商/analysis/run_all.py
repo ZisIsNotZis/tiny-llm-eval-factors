@@ -14,6 +14,7 @@
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -124,7 +125,7 @@ def main(argv=()):
 
     bad_iq = bad_v = bad_l = bad_b = 0
     for bench in pairs.BENCH_ORDER:
-        rows = attrib.rows_for(cells, vendors, bench)
+        rows, _excluded = attrib.rows_for(cells, vendors, bench)
         cols, X, y, keep, _dropped = attrib.build(rows)
         beta, se, _dof = attrib.fit(X, y, cols)
         for k in ("IQ", "local", "bartowski", "bpw"):
@@ -145,6 +146,29 @@ def main(argv=()):
     expect("attrib：bartowski 系数九列全部跨 0", bad_b == 9, f"{bad_b}/9 跨 0")
     expect("attrib：位宽斜率九列全部不含 0", bad_v == 0, f"{bad_v} 列不显著")
 
+    cells_n = sum(len(p["cells"]) for p in plists[0.15])
+    with_ci = sum(1 for p in plists[0.15] for b in p["cells"] if pairs.interval(p, b)[1] is not None)
+    sig_n = sum(1 for p in plists[0.15] for b in p["cells"] if sig(p, b))
+    expect("multiplicity：≤0.15 档打印 35 格、有区间 31 格、其中 3 格显著",
+           cells_n == 35 and with_ci == 31 and sig_n == 3,
+           f"{cells_n} 格 / 有区间 {with_ci} / 显著 {sig_n}（{sig_n / with_ci:.1%}）")
+
+    pv45 = find_pair(plists[0.45], "Qwen3.6-35B-A3B", "vendor")
+    flips = []
+    if pv45 is not None:
+        for bench in pairs.BENCH_ORDER:
+            rows, _ex = attrib.rows_for(cells, vendors, bench)
+            if len(rows) < 8 or bench not in pv45["cells"]:
+                continue
+            cols, X, y, keep, _dr = attrib.build(rows)
+            beta, se, _dof = attrib.fit(X, y, cols)
+            if "bartowski" not in beta:
+                continue
+            if beta["bartowski"] * pv45["cells"][bench]["delta"] < 0:
+                flips.append(pairs.SHORT[bench])
+    expect("attrib：bartowski 系数与它唯一来源对的符号相反（外推假象，不得当厂商效应读）",
+           len(flips) >= 1, f"翻转列 {flips}")
+
     cluster = sorted((pairs.BPW_MAP[m], m) for m in cells if pairs.a01.family_of(m) == "Qwen3.5-2B")
     cl = [cluster[0]]                        # 单链聚类：从最低位宽起步，步长 ≤0.45 就继续收
     for bpw, m in cluster[1:]:
@@ -158,17 +182,15 @@ def main(argv=()):
            0.80 < span < 0.90 and budget > 0.10 and len(cl) == 4,
            f"簇 = {len(cl)} 个文件 / 跨度 {span:.3f} bpw / HE+ 实跳 {max(he) - min(he):+.4f} / 预算部分 {budget:+.4f}")
 
-    skip = 0
-    profs = {}
+    alloc_map = json.loads((HERE.parent / "fixtures" / "alloc_map.json").read_text(encoding="utf-8"))["models"]
+    drift = 0
     for label, family, kind in (("alloc-qwen36", "Qwen3.6-35B-A3B", "vendor"),
                                 ("alloc-scheme-4b", "Qwen3.5-4B", "scheme")):
         p = find_pair(plists[0.45], family, kind)
-        paths = [alloc.find_path(p["low"]), alloc.find_path(p["high"])]
-        if p is None or None in paths:
-            print(f"  [{SKIP}] {label}：盘上找不到 gguf，分配轮廓未验证")
-            skip += 1
+        if p is None or p["low"] not in alloc_map or p["high"] not in alloc_map:
+            expect(f"{label}：入库夹具里有这两份文件的实测轮廓", False, "夹具缺项")
             continue
-        a, b = alloc.profile(paths[0]), alloc.profile(paths[1])
+        a, b = alloc_map[p["low"]], alloc_map[p["high"]]
         wsum = dsum = 0.0
         for k in set(a["classes"]) | set(b["classes"]):
             ca = a["classes"].get(k, {"bits": float("nan"), "params": 0})
@@ -181,12 +203,22 @@ def main(argv=()):
         expect(f"{label}：总位宽差 ≤0.05 而参数加权分配差 ≥0.3",
                abs(p["dbpw"]) <= 0.05 and wd >= 0.3,
                f"Δbpw={p['dbpw']:+.3f} 加权|Δ|={wd:.3f}")
+        # 有 live gguf 时顺带比对夹具，防止夹具与盘上文件漂移；clone 里没有就跳过（不是通过）
+        live = [alloc.find_path(p["low"]), alloc.find_path(p["high"])]
+        if all(live):
+            for name, path, fixed in ((p["low"], live[0], a), (p["high"], live[1], b)):
+                got = alloc.profile(path)
+                same = (got["n_params"] == fixed["n_params"]
+                        and set(got["classes"]) == set(fixed["classes"])
+                        and all(abs(got["classes"][k]["bits"] - fixed["classes"][k]["bits"]) < 1e-6
+                                for k in fixed["classes"]))
+                drift += 0 if same else 1
+        else:
+            print(f"  [note] {label}：本机没有 live gguf，夹具无法就地比对（漂移检查用 build_fixtures.py --check）")
+    expect("alloc：夹具与盘上 gguf 一致（本机有源时才判）", drift == 0, f"{drift} 份漂移")
 
     failed = [n for n, ok, _d in results if not ok]
     print()
-    if skip:
-        print(f"{len(results) - len(failed)} 条成立 / {len(failed)} 条不成立 / {skip} 条未验证")
-        return 2
     print(f"{len(results)} 条全部成立" if not failed else f"失败 {len(failed)} 条：{failed}")
     return 0 if not failed else 1
 

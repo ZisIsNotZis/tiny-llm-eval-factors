@@ -6,15 +6,24 @@
 
 ## 证据绑定（读这一层之前先看这里）
 
-本层的数字在 `experiments.sqlite` sha256 = `885383dc86e3eff3ae35e5393618eca33dbc7a46925e0ca42b78406a3cfa7bd8`、
-`.wrapup/bpw_map.json` sha256 = `4f490813cf5fd45caf608fae91cfd37b9648cddc1c8ef05fc54e5e4b94b2dacf`、
-`HEAD` = `56cca5baeefed302f1652baa8f2918b0e21aa8e7` 这个工作树状态上算出。
-`experiments.sqlite` 由多个子项目并发写入，所以**任何一条事实是否仍然成立，用 `analysis/run_all.py` 判定**：
-预期逐条成立时本层的事实全部复核通过。
+本层的数字只由四个入库产物的内容决定，绑定到它们的 sha256：
 
-复算装置：`analysis/pairs.py`（同字节配对 + 区间）、`analysis/attrib.py`（方案/来源归因 + 混杂诊断）、
-`analysis/alloc.py`（从 gguf 头读实测比特分配轮廓）、`analysis/run_all.py`（全部检查，退出码即结论）。
-本层**只读** `experiments.sqlite`，不写库、不改 `report.html`、不加载权重、不占 GPU。
+| 产物 | sha256 | 作用 |
+|---|---|---|
+| `experiments.sqlite` | `885383dc86e3eff3ae35e5393618eca33dbc7a46925e0ca42b78406a3cfa7bd8` | 全部分数格 |
+| `.wrapup/bpw_map.json` | `4f490813cf5fd45caf608fae91cfd37b9648cddc1c8ef05fc54e5e4b94b2dacf` | 有效位宽 |
+| `analysis/fixtures/vendor_map.json` | `2af86ab237b500811c927a006a37d2a0e174e18dde4c82e7f812cb4fd9220662` | 来源（厂商/上传者）证据 |
+| `analysis/fixtures/alloc_map.json` | `139209a974c0e9a81a20956c1ecb828883a2f2631d03e83bf2ea23a7f129705e` | 比特分配轮廓 |
+
+代码 revision 用一条能解析的命令读，不在正文里写死（写死的 revision 必然落后）：
+`git log -1 --format=%H -- "docs/subprojects/a03-量化方案与厂商"`。
+`experiments.sqlite` 由多个子项目并发写入，所以**任何一条事实是否仍然成立，用 `analysis/run_all.py` 判定**：
+21 条预期逐条成立时本层的事实全部复核通过。
+
+复算装置：`analysis/pairs.py`（同字节配对 + 区间）、`analysis/attrib.py`（方案/来源归因 + 识别来源与探测下限）、
+`analysis/alloc.py`（从 gguf 头读实测比特分配轮廓）、`analysis/build_fixtures.py`（重建/核对两份入库夹具）、
+`analysis/run_all.py`（全部检查，退出码即结论）。本层**只读** `experiments.sqlite`，不写库、不改 `report.html`、
+不加载权重、不占 GPU。
 
 本层全部配对都是**单次运行**：区间只含逐题二项项（同一格的多行取 `n_items` 最大者，`pairs.py` 会打印 101 处），
 **不含跨 run 项**。`i01::res29` 记录未记录的输入差能移动一格 ±16/161（≈0.10），所以本层任何小于 0.05 的差
@@ -22,14 +31,14 @@
 
 ## 一、配对装置与总体（`kind: measured`）
 
-### population :: 进入本层分析的是 66 个有有效位宽、且有标准面板格的文件，分属 30 个族；来源按面板写入的模型路径分成 unsloth 47 / prism-ml 5 / local 3 / bartowski 3 / ibm-granite 3 / ornith-ai 2 / ISTA-DASLab 2 / Manojb 1 / 路径自相矛盾 1（合计 67，因为有一个文件被两个面板写成不同来源），量化族按文件名分成 K 54 / IQ 6 / TQ 1 / 其它 5。
+### population :: 进入本层分析的是 66 个有有效位宽、且有标准面板格的文件，分属 30 个族；来源按面板写入的模型路径分成 unsloth 47 / prism-ml 5 / bartowski 3 / ibm-granite 3 / local 3 / ornith-ai 2 / ISTA-DASLab 2 / Manojb 1（合计 66，每个文件恰好一个有证据的来源，没有不可归因的行），量化族按文件名分成 K 54 / IQ 6 / TQ 1 / 其它 5。
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
-- evidence: `analysis/pairs.py --inventory` 的清单；来源取自 `.wrapup/mres/<run_tag>/{evalplus,lmeval_panel}.json` 的 `model` 字段（`mscache/<vendor>/…` 或 `models--<vendor>--…`），run_tag 与库内 `experiments.run_tag` 同键
-- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --inventory`
-- 说明：**IQ 文件只有 6 个、只落在 3 个族里**（Qwen3.5-2B 三个、Qwen3.5-4B 一个、Qwen3.8-27B 一个），这是本轴识别「方案」的全部证据量。`Phi-4-mini-instruct-Q2_K.gguf` 的两个面板分别写了裸文件名与 `mscache/unsloth/…`，按 `ambiguous` 处理，不进任何来源系数。
+- evidence: `analysis/fixtures/vendor_map.json` 的 `models`（每个文件带 `paths: {run_tag: 模型绝对路径}`，来源由路径按 `mscache/<vendor>/…`、`models--<vendor>--…`、`/home/z/hf/*.gguf → local` 三条规则抽出）；面板元数据本身不入库，夹具是它的冻结版，重建与漂移检查见 `build_fixtures.py`
+- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --inventory`；`python3 "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py" --check`
+- 说明：**IQ 文件只有 6 个、只落在 3 个族里**（Qwen3.5-2B 三个、Qwen3.5-4B 一个、Qwen3.8-27B 一个），这是本轴识别「方案」的全部证据量。
 
 ### pair-device :: 在匹配字节的三档判据下，族内配对分别是 |Δbpw| ≤ 0.45 → 10 对、≤ 0.15 → 4 对、≤ 0.05 → 2 对，且≤0.05 的两对正好是本轴的两条 AC 各自的最小样本（Qwen3.5-4B 的方案对 Δ=+0.016、Qwen3.6-35B-A3B 的厂商对 Δ=+0.025）；四对在 ≤0.15 档里逐基准的 `protocol / n_items / ctx_size / parallel_slots / temp / reasoning` 全部相等，没有一格判「不可比」。
 - author: measurement
@@ -48,6 +57,15 @@
 - evidence: `analysis/pairs.py --slopes`
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --slopes`
 - 说明：这是本层判「比特预算能买多少分」的尺子。报告的 `MATCH_BPW = 0.45` 等于允许组内先有 0.45×0.1779 ≈ **0.080** 的 HumanEval+ 分差（GSM8K 0.090、MBPP+ 0.060），与本轴要检的方案差同量级；`≤0.05` 那一档的预算上限只有 0.0089（HumanEval+），所以那一档的差不可能由比特解释。这里给的是 `pairs.py --slopes` 的独立斜率；`attrib.py` 里同一个量作为系数是 HE+ +0.1863（多了两个标签哑变量），两者在区间内一致；TruthfulQA 的 `acc` 是概率质量均值（`i01::res26`），它的斜率只作参照、不作判断。
+
+### fixtures :: 本层有两条结论依赖仓库外的东西——来源（面板元数据里的模型路径，`.wrapup/mres/*` 不入库）与比特分配（gguf 头，`*.gguf` 不入库）——所以它们各自被冻结成入库夹具 `analysis/fixtures/vendor_map.json`（66 个有证据的文件，每个带 `paths: {run_tag: 绝对路径}`）与 `analysis/fixtures/alloc_map.json`（51 个文件的实测轮廓：参数数、文件字节、逐类 bits/参数）；干净 clone 里 `run_all.py` 不读任何仓库外文件，因此 21 条断言在那里同样成立。
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- evidence: 两个夹具的 sha256 见本节开头的绑定表；重建与漂移检查 `analysis/build_fixtures.py --check`（本机有源时逐模型比对，输出 `[ok] … 与源一致`）
+- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py" --check`
+- 说明：这条是为修一条复核阻塞项而生的——上一版 `run_all.py` 直接扫 `.wrapup/mres/*/*.json`，而 `.gitignore` 把那个目录排除了（只放行 `*_eval.json`），于是干净 clone 里来源全丢、「跨上传者受控对」与两个系数的九列检查全部 FAIL。判据是：**承载断言的证据必须随仓库走**；能重建的（分配轮廓）用生成器 + 漂移检查，不能重建的（面板元数据）用带证据行的冻结夹具。
 
 ## 二、方案差（IQ 系列 vs K 系列，同厂商内、同字节）
 
@@ -102,19 +120,19 @@
 - status: current
 - kind: measured
 - evidence: `analysis/pairs.py --bound 0.15`；文件路径 `/home/z/hf/LFM2.5-8B-A1B-m55-*.gguf`（本仓自建）与 `/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/*`
-- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --bound 0.15`
+- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --bound 0.45`（Δ=0.154 那一对超出 0.15 判据，只在 0.45 档打印；Δ=0.099 那一对在 0.15 档也打印）
 - 说明：「来源」在这里等于「本仓自己的分配配方」，`alloc-m55` 给出这两份文件的分配差有多大；所以这一对不能读成厂商效应。
 
-### attrib :: 同族 + 同比特预算 + 族固定效应下，**没有任何标签系数在 9 个基准上站得住**：IQ 系数九列全跨 0（最大 ARC-c +0.1031 [−0.0103,+0.2165]）、bartowski 系数九列全跨 0（区间半宽 0.23–0.57，只由 Qwen3.6 一族识别）、本仓 `local` 配方系数九列全跨 0；唯一九列都不含 0 的是位宽斜率本身（+0.104 至 +0.197）。
+### attrib :: 同族 + 同比特预算 + 族固定效应下，三个标签系数在 9 个基准上**全部跨 0，且这个「跨 0」得按各自的半宽读**：IQ 效应半宽 0.104–0.273（由 Qwen3.5-2B / Qwen3.5-4B / Qwen3.8-27B 三族、6 个 IQ 文件里的 5 个识别）、本仓 `local` 配方半宽 0.158–0.366（只由 LFM2.5-8B-A1B 一族识别）、`bartowski` 半宽 0.212–0.489（只由 Qwen3.6-35B-A3B 一族识别）；唯一九列都不含 0 的是位宽斜率（+0.1152 至 +0.2042，20 个族有族内位宽差）。所以正确说法是**本设计探测不到各自半宽以内的效应**，不是「没有效应」。
 - author: measurement
 - from: result.slopes
 - scope: general
 - status: current
 - kind: measured
-- evidence: `analysis/attrib.py` 的逐基准系数与识别族清单（IQ 由 Qwen3.5-2B / Qwen3.5-4B / Qwen3.8-27B 三族识别，`local` 只由 LFM2.5-8B-A1B 识别，`bartowski` 只由 Qwen3.6-35B-A3B 识别，其余来源在族内取值恒定、与族固定效应共线，直接判为不可识别）
+- evidence: `analysis/attrib.py` 的逐基准系数 + 「识别来源与探测下限」汇总块（每个系数打印识别基准数、识别族、95% 半宽范围与点估计方向）；`其他来源` 哑变量因「没有任何族同时含两个取值」被判不可识别并从模型剔除；来源不可归因的行（`ambiguous`/`unknown`）不进回归并在同一块打印
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/attrib.py"`
-- 说明：这是「换厂商测不出差异」这句话能用区间说的最强形式，但它同时说明**它的证据只有一族**；把它写成普适结论是超出证据的，见 `an4`。
-- 会推翻它：出现第二个同族跨来源对后 `bartowski` 或 `local` 系数的区间不含 0；或 IQ 文件补到能给出更窄区间的族。
+- 说明：`bartowski` 系数**不能当厂商效应读**——它由单对识别、又拿汇总斜率外推，逐基准比符号有 3/9 列与它唯一来源的那一对相反（ARC-c、TQA、GSM8K），属外推假象；厂商结论因此由逐对区间承担（`vendor-qwen36`，那一对逐列半宽 0.019–0.134）。脚本每次运行都打印这个翻转计数，`run_all.py` 把它作为一条断言。
+- 会推翻它：出现第二个同族跨来源对后 `bartowski`/`local` 系数的区间不含 0；或 IQ 文件补到能给出更窄区间的族。
 
 ### label-audit :: 文件名里的厂商/方案标签不可靠，实测反例是 `Phi-4-mini-instruct-Q2_K.gguf` 与 `Llama-3.2-3B-Instruct-Q3_K_M.gguf`：两者都没有 `UD-` 前缀（`mktables.scheme_class` 会把它们判成「原生 K」），但面板记录的实际来源是 `mscache/unsloth/…`。
 - author: measurement
@@ -128,7 +146,7 @@
 
 ## 四、比特分配：标签到底代理了什么（`kind: measured`）
 
-### alloc-qwen36 :: 那对跨上传者的文件总位宽只差 0.025 比特/参数，分配轮廓却差到参数加权平均 0.381 比特/参数：unsloth 的 UD-Q3_K_XL 把 attn 放到 8.500、embed 8.500、专家 3.542，bartowski 的 Q3_K_M 是 attn 4.936、embed 3.438、专家 3.734（专家占 93.0% 参数，稠密 FFN 11.812 vs 10.559）。
+### alloc-qwen36 :: 那对跨上传者的文件总位宽只差 0.025 比特/参数，分配轮廓却差到参数加权平均 0.381 比特/参数：unsloth 的 UD-Q3_K_XL 把 attn 放到 8.500、embed 8.500、专家 3.542，bartowski 的 Q3_K_M 是 attn 4.936、embed 3.438、专家 3.734。分层看：`attn`（4.936 vs 8.500）与 `embed`（3.438 vs 8.500）是**纯桶**，差是真的；`ffn-shexp`（共享专家，占 0.4% 参数）是 7.053 vs 8.515；`router` 是 31.610 对 31.610（f32，两边完全相同）；`ffn-dense` 这一桶在这两个 MoE 文件里是空的——先前版本写的「稠密 FFN 11.812 vs 10.559」是把共享专家与 router 混进同一桶造成的假象，已随 `tensor_class` 拆桶（`_exps` / `_shexp` / `ffn_gate_inp` / 其余）修正。
 - author: measurement
 - from: result.vendor-qwen36
 - scope: specific
@@ -136,7 +154,7 @@
 - kind: measured
 - evidence: `.wrapup/mres/{m101,m103}/…gguf` 实测；逐张量元素数与字节数取自 gguf 张量信息段（字节数 = 相邻张量 offset 之差，末张量到文件尾），校验 `Σ字节×8 ÷ Σ参数` 复现 `bpw_map.json` 的值（3.855 vs 3.857、3.879 vs 3.882）
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/alloc.py" --pair bartowski`
-- 说明：这条是「厂商标签是分配的代理」的直接度量——标签不同对应的是**大得多的分配差**，而九列分数差都测不出。
+- 说明：这条是「厂商标签是分配的代理」的直接度量——标签不同对应的是**大得多的分配差**（0.025 → 0.381 比特/参数），而九列分数差都落在各自半宽（0.019–0.134）以内。
 
 ### alloc-scheme :: 两对方案对照在总位宽几乎相同的情况下也各自带着大分配差：Qwen3.5-4B（Δbpw +0.016）的参数加权平均 |Δ| = 0.337 比特/参数（embed 5.500 vs 6.562、attn 3.039 vs 2.849、稠密 FFN 3.124 vs 3.016），Qwen3.5-2B（Δbpw +0.148）是 0.427（embed 5.500 vs 6.562、attn 3.047 vs 2.808）。
 - author: measurement
@@ -146,7 +164,7 @@
 - kind: measured
 - evidence: 两文件同参数量（4,205,751,296 / 1,881,825,088），逐类比特/参数来自 gguf 头测量
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/alloc.py" --pair unsloth/unsloth`
-- 说明：所以「IQ vs K」不是一个纯机制开关，它本身也是**一种分配约定**：IQ 侧把比特从 embed 挪到 attn/FFN。这解释了为什么它的效应只出现在少数几格、而不是一条水平移动。
+- 说明：所以「IQ vs K」不是一个纯机制开关，它本身也是**一种分配约定**：IQ 侧把比特从 embed 挪到 attn/FFN。这解释为什么它的效应只落在少数几格：换的不是一个开关，而是每类层各挪了 0.19–1.06 比特。至于是不是「没有水平位移」，本层只能说到不可分辨（见 `attrib` 的半宽）。
 
 ### alloc-m55 :: 同一套 base 权重的两条自建配方把这件事推到极端：m55-exq4（4.483 比特/权重）是专家 4.500 / attn 3.031 / 稠密 FFN 3.365，m55-exq2（2.918）是专家 2.625 / attn 5.535 / 稠密 FFN 6.275——总比特多 1.565 的那份把非专家层压掉 2–3 比特，而 `a01::m55-exq-inversion` 已测它在四个基准上显著更低。
 - author: measurement
@@ -158,38 +176,39 @@
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/alloc.py" /home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf /home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf`
 - 说明：这是按指令要「解释而不是重复」的那条线索在本轴上的读法——`exq2`/`exq4` 是**分配标签**，不是方案名或厂商名；总比特不能给质量排序，因为比特放在哪里会改写排序。策略本身的结论归 `a04`。
 
-### multiplicity :: 在 ≤0.15 档的 4 对 × 9 列 = 36 个格里只有 3 格区间不含 0（Qwen3.5-2B 的 HE 与 HE+、Qwen3.5-4B 的 MMLU），占 8%，与 95% 名义水平下的偶然命中率同量级；且同一对内部的显著格方向彼此不一致（LFM 那对 MBPP −0.103 与 MMLU +0.114）。
+### multiplicity :: 在 ≤0.15 档打印的 4 对 × 各列共 **35 个格**（Qwen3.5-4B 那一对没有 GSM8K 格），其中 **31 个有区间**（4 个 TruthfulQA 是概率质量均值、不套二项区间），区间不含 0 的只有 **3 个**（Qwen3.5-2B 的 HE 与 HE+、Qwen3.5-4B 的 MMLU），即 **3/31 = 9.7%**——在 95% 名义水平下这个命中率与纯偶然同量级。
 - author: measurement
-- from: result.scheme-2b, result.scheme-4b, result.vendor-lfm
+- from: result.scheme-2b, result.scheme-4b
 - scope: general
 - status: current
 - kind: measured
-- evidence: `analysis/pairs.py --bound 0.15` 的逐格区间
+- evidence: `analysis/pairs.py --bound 0.15` 的逐格区间；`analysis/run_all.py` 的 `multiplicity` 一条把这三个数写成断言
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --bound 0.15`
-- 说明：这条决定本层怎么说话：**匹配字节下的方案差不是水平移动**；把它写成「换方案分数会变（+X）」需要一个跨族一致的方向，而数据没有给出。
+- 说明：这条决定本层怎么说话：匹配字节下能分得开的格是**少数派且逐格独立**，本设计的功效不足以判定是否存在一个跨族一致的水平位移；「同一对内部方向相反」的例子在 Δ=0.154 的 LFM 那一对（`vendor-lfm`），它只在 `--bound 0.45` 下打印。
 
 ## 五、本轴的两条总结事实（写入 meta 层的 `res7` / `an4` 位置）
 
-### res7 :: 同字节下换量化方案（IQ 系列 vs K 系列）与换上传者这两个标签，**在把比特预算与家族固定住以后都测不出水平差**：IQ 系数九列全跨 0、bartowski 系数九列全跨 0、本仓配方系数九列全跨 0，只有位宽斜率九列全不含 0；逐对比较里能分得开的只有 3 格（Qwen3.5-2B 的 HE/HE+ −0.1341、Qwen3.5-4B 的 MMLU +0.0592），且同一对内部方向不一致。唯一跨上传者受控对（Qwen3.6-35B-A3B，Δbpw +0.025）九列全跨 0。
+### res7 :: 同字节下换量化方案（IQ 系列 vs K 系列）或换上传者，**在本设计下都不可分辨**（undetermined at this precision）：把家族与比特预算固定住后，三个标签系数的区间在 9 个基准上全部跨 0，而它们的半宽分别是 IQ 0.104–0.273、本仓 `local` 配方 0.158–0.366、`bartowski`（厂商，单族识别）0.212–0.489——也就是说这两种标签的效应用这份数据只能排除到「大于上述半宽」，不能排除「不存在」。逐对比较里区间不含 0 的只有 3/31 格（Qwen3.5-2B 的 HE/HE+ −0.1341、Qwen3.5-4B 的 MMLU +0.0592），唯一跨上传者受控对（Qwen3.6-35B-A3B，Δbpw +0.025，逐列半宽 0.019–0.134）九列全部跨 0。
 - author: measurement
-- from: result.attrib, result.scheme-4b, result.vendor-qwen36, result.multiplicity
+- from: result.attrib, result.multiplicity, result.scheme-4b, result.vendor-qwen36
 - scope: general
 - status: current
 - kind: measured
-- evidence: `analysis/attrib.py`、`analysis/pairs.py`
-- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/attrib.py"`；`python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --bound 0.15`
-- retracted: 迁移前 `res7` 的措辞「换方案分数有差，合并约 +0.056（95% CI [+0.008,+0.104]）；换厂商标签测不出差异（约 +0.009，95% CI [−0.058,+0.077]）」撤回——它的 origin `.scratch/originals/L2-结果.md` 已退役、区间类型（是否逐题二项、是否跨族合并）没有记录，用本层装置复算得不到这两个数：方案差不是「合并 +0.056」而是一个明显的族效应（2B 的 −0.1341 与 4B 的 +0.0592，不同基准、不同方向），厂商差在原措辞里只有一族证据。
-- 会推翻它：补出第二个跨上传者同分配对照后 `bartowski`/`local` 系数区间不含 0；或 IQ 文件补到能给出更窄区间；或复现负控显示单次运行的抖动大于 0.05。
+- evidence: `analysis/attrib.py`（系数 + 识别族 + 半宽）、`analysis/pairs.py`（逐对区间）
+- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/attrib.py"`；`python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --bound 0.05`
+- retracted: 迁移前 `res7` 的措辞「换方案分数有差，合并约 +0.056（95% CI [+0.008,+0.104]）；换厂商标签测不出差异（约 +0.009，95% CI [−0.058,+0.077]）」撤回——它的 origin `.scratch/originals/L2-结果.md` 已退役、区间类型（是否逐题二项、是否跨族合并）没有记录，用本层装置复算得不到这两个数；且「测不出差异」是无区间的断言，现在改成有半宽的「不可分辨」。
+- 说明：旧措辞与本条的差别就是这次复核的要害——「测不出」被读成「不存在」。本条把功效写进结论：要判厂商效应，至少要有第二个同族跨来源对，把 `bartowski` 半宽压到 0.1 以下。
+- 会推翻它：补出第二个跨上传者同分配对照后系数区间不含 0；或 IQ 文件补到能给出更窄区间；或复现负控显示单次运行的抖动大于 0.05。
 
-### an4 :: 「换方案 / 换厂商」这两个标签在本库里都不是独立于比特预算的变量，它们代理的是**比特分配**：总位宽几乎相同的配对里分配轮廓相差 0.34–0.43 比特/参数（`alloc-qwen36`、`alloc-scheme`），而分数差在这几对上测不出；相反，把分配推到极端的自建配方（`alloc-m55`）能改写排序。所以挑量化文件该比的是「字节 + 比特落在哪类层上」，不是档位名、不是厂商名；按厂商名挑，等于按一个与分配高度相关、但在这个库里无法与分配分开的标签挑。
+### an4 :: 「换方案 / 换厂商」这两个标签在本库里都不是独立于比特预算的变量，它们代理的是**比特分配**：总位宽几乎相同的配对里，实测分配轮廓相差 0.337–0.427 比特/参数（`alloc-qwen36`、`alloc-scheme`），而分数差在这些配对上测不出（`res7`）；相反，把分配推到极端的自建配方（`alloc-m55`）能改写排序。所以挑量化文件该比的是「字节 + 比特落在哪类层上」，不是档位名、不是厂商名。**但这不是「标签无效」**：本设计只能把标签效应排除到各自半宽（厂商 0.21–0.49、方案 0.10–0.27），要断言「厂商标签没有作用」需要更强设计。
 - author: agent
 - from: result.res7, result.alloc-qwen36, result.alloc-scheme, result.alloc-m55, result.label-audit
 - scope: general
 - status: provisional
 - kind: analysis
 - evidence: 四条 `kind: measured` 事实的机器读数
-- repro: 见 `res7` 的复算命令；分配轮廓见 `alloc.py`
-- 说明：`provisional` 的理由有两处：一是跨上传者对照只有一族（Qwen3.6-35B-A3B），二是「分配能改写排序」的直接证据来自自建配方（a04 的轴），本层只把它当混杂变量读。「比特分配」这个机制本身归 `a04`，本层不越过它下结论。
+- repro: 见 `res7` 的复算命令；分配轮廓见 `alloc.py` 与 `analysis/fixtures/alloc_map.json`
+- 说明：`provisional` 的理由有两条：跨上传者对照只有一族（Qwen3.6-35B-A3B），且该族的厂商系数符号与逐对差相反；「分配能改写排序」的直接证据来自自建配方（a04 的轴），本层只把它当混杂变量读。「比特分配」这个机制本身归 `a04`。
 - 会推翻它：找到一对同分配、不同上传者的文件并测出显著的分数差（那时厂商就是真变量）；或找到一对分配轮廓差 ≥0.3 比特/参数、总位宽相同而分数差稳定出现的配对（那时标签代理的是分配且分配有效，本条的第二步要改写）。
 
 ## 六、报告第三节的 § 组口径（`kind: measured`）

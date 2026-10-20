@@ -1,0 +1,2035 @@
+{
+ "generated_by": "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py",
+ "models": {
+  "Bonsai-27B-Q1_0.gguf": {
+   "bpw_file": 1.131307,
+   "classes": {
+    "attn": {
+     "bits": 1.125,
+     "bytes": 802160640,
+     "params": 5704253440
+    },
+    "embed": {
+     "bits": 1.125,
+     "bytes": 178790400,
+     "params": 1271398400
+    },
+    "ffn-dense": {
+     "bits": 1.125,
+     "bytes": 2406481920,
+     "params": 17112760320
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2678784,
+     "params": 669696
+    },
+    "other": {
+     "bits": 1.164625,
+     "bytes": 223537152,
+     "params": 1535513088
+    },
+    "output": {
+     "bits": 1.125124,
+     "bytes": 178810880,
+     "params": 1271403520
+    }
+   },
+   "n_bytes": 3803452480,
+   "n_params": 26895998464,
+   "source_path": "/home/z/hf/mscache/prism-ml/Bonsai-27B-gguf/Bonsai-27B-Q1_0.gguf"
+  },
+  "GLM-4.7-Flash-UD-Q2_K_XL.gguf": {
+   "bpw_file": 3.176329,
+   "classes": {
+    "attn": {
+     "bits": 6.384613,
+     "bytes": 816132096,
+     "params": 1022623744
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 178421760,
+     "params": 317194240
+    },
+    "ffn-dense": {
+     "bits": 4.5,
+     "bytes": 35389440,
+     "params": 62914560
+    },
+    "ffn-expert": {
+     "bits": 2.965127,
+     "bytes": 10297540608,
+     "params": 27783069696
+    },
+    "ffn-shexp": {
+     "bits": 4.910326,
+     "bytes": 266452992,
+     "params": 434110464
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1010688,
+     "params": 252672
+    },
+    "other": {
+     "bits": 32.0,
+     "bytes": 11776,
+     "params": 2944
+    },
+    "output": {
+     "bits": 6.562664,
+     "bytes": 260206592,
+     "params": 317196288
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 24117248,
+     "params": 6029312
+    }
+   },
+   "n_bytes": 11888759136,
+   "n_params": 29943393920,
+   "source_path": "/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q2_K_XL.gguf"
+  },
+  "GLM-4.7-Flash-UD-Q3_K_XL.gguf": {
+   "bpw_file": 3.682149,
+   "classes": {
+    "attn": {
+     "bits": 6.396405,
+     "bytes": 817639424,
+     "params": 1022623744
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 178421760,
+     "params": 317194240
+    },
+    "ffn-dense": {
+     "bits": 4.5,
+     "bytes": 35389440,
+     "params": 62914560
+    },
+    "ffn-expert": {
+     "bits": 3.506793,
+     "bytes": 12178685952,
+     "params": 27783069696
+    },
+    "ffn-shexp": {
+     "bits": 5.105525,
+     "bytes": 277045248,
+     "params": 434110464
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1010688,
+     "params": 252672
+    },
+    "other": {
+     "bits": 32.0,
+     "bytes": 11776,
+     "params": 2944
+    },
+    "output": {
+     "bits": 6.562664,
+     "bytes": 260206592,
+     "params": 317196288
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 24117248,
+     "params": 6029312
+    }
+   },
+   "n_bytes": 13782004064,
+   "n_params": 29943393920,
+   "source_path": "/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-Q3_K_XL.gguf"
+  },
+  "GLM-4.7-Flash-UD-TQ1_0.gguf": {
+   "bpw_file": 2.225801,
+   "classes": {
+    "attn": {
+     "bits": 6.005976,
+     "bytes": 767731712,
+     "params": 1022623744
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 178421760,
+     "params": 317194240
+    },
+    "ffn-dense": {
+     "bits": 4.25,
+     "bytes": 33423360,
+     "params": 62914560
+    },
+    "ffn-expert": {
+     "bits": 1.95471,
+     "bytes": 6788481024,
+     "params": 27783069696
+    },
+    "ffn-shexp": {
+     "bits": 4.941123,
+     "bytes": 268124160,
+     "params": 434110464
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1010688,
+     "params": 252672
+    },
+    "other": {
+     "bits": 32.0,
+     "bytes": 11776,
+     "params": 2944
+    },
+    "output": {
+     "bits": 6.562664,
+     "bytes": 260206592,
+     "params": 317196288
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 24117248,
+     "params": 6029312
+    }
+   },
+   "n_bytes": 8331004256,
+   "n_params": 29943393920,
+   "source_path": "/home/z/hf/mscache/unsloth/GLM-4.7-Flash-GGUF/GLM-4.7-Flash-UD-TQ1_0.gguf"
+  },
+  "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 2.764117,
+   "classes": {
+    "attn": {
+     "bits": 5.7125,
+     "bytes": 44924928,
+     "params": 62914560
+    },
+    "embed": {
+     "bits": 5.500207,
+     "bytes": 180232192,
+     "params": 262146048
+    },
+    "ffn-dense": {
+     "bits": 5.854167,
+     "bytes": 64454656,
+     "params": 88080384
+    },
+    "ffn-expert": {
+     "bits": 2.60322,
+     "bytes": 2522218496,
+     "params": 7751073792
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 396288,
+     "params": 99072
+    },
+    "other": {
+     "bits": 2.635822,
+     "bytes": 99535616,
+     "params": 302101184
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 5767168,
+     "params": 1441792
+    }
+   },
+   "n_bytes": 2925768288,
+   "n_params": 8467856832,
+   "source_path": "/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q2_K_XL.gguf"
+  },
+  "LFM2.5-8B-A1B-UD-Q3_K_XL.gguf": {
+   "bpw_file": 3.781939,
+   "classes": {
+    "attn": {
+     "bits": 8.5,
+     "bytes": 66846720,
+     "params": 62914560
+    },
+    "embed": {
+     "bits": 8.500184,
+     "bytes": 278536192,
+     "params": 262146048
+    },
+    "ffn-dense": {
+     "bits": 8.5,
+     "bytes": 93585408,
+     "params": 88080384
+    },
+    "ffn-expert": {
+     "bits": 3.529356,
+     "bytes": 3419537408,
+     "params": 7751073792
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 396288,
+     "params": 99072
+    },
+    "other": {
+     "bits": 3.448023,
+     "bytes": 130206464,
+     "params": 302101184
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 5767168,
+     "params": 1441792
+    }
+   },
+   "n_bytes": 4003114592,
+   "n_params": 8467856832,
+   "source_path": "/home/z/hf/mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf"
+  },
+  "LFM2.5-8B-A1B-m55-Q3_K_M.gguf": {
+   "bpw_file": 3.881405,
+   "classes": {
+    "attn": {
+     "bits": 4.002083,
+     "bytes": 31473664,
+     "params": 62914560
+    },
+    "embed": {
+     "bits": 6.562699,
+     "bytes": 215048192,
+     "params": 262146048
+    },
+    "ffn-dense": {
+     "bits": 3.958333,
+     "bytes": 43581440,
+     "params": 88080384
+    },
+    "ffn-expert": {
+     "bits": 3.791667,
+     "bytes": 3673686016,
+     "params": 7751073792
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 396288,
+     "params": 99072
+    },
+    "other": {
+     "bits": 3.448023,
+     "bytes": 130206464,
+     "params": 302101184
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 5767168,
+     "params": 1441792
+    }
+   },
+   "n_bytes": 4108397920,
+   "n_params": 8467856832,
+   "source_path": "/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf"
+  },
+  "LFM2.5-8B-A1B-m55-exq2.gguf": {
+   "bpw_file": 2.918161,
+   "classes": {
+    "attn": {
+     "bits": 5.535417,
+     "bytes": 43532288,
+     "params": 62914560
+    },
+    "embed": {
+     "bits": 6.562699,
+     "bytes": 215048192,
+     "params": 262146048
+    },
+    "ffn-dense": {
+     "bits": 5.854167,
+     "bytes": 64454656,
+     "params": 88080384
+    },
+    "ffn-expert": {
+     "bits": 2.625,
+     "bytes": 2543321088,
+     "params": 7751073792
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 396288,
+     "params": 99072
+    },
+    "other": {
+     "bits": 5.509763,
+     "bytes": 208063232,
+     "params": 302101184
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 5767168,
+     "params": 1441792
+    }
+   },
+   "n_bytes": 3088821600,
+   "n_params": 8467856832,
+   "source_path": "/home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf"
+  },
+  "LFM2.5-8B-A1B-m55-exq4.gguf": {
+   "bpw_file": 4.482539,
+   "classes": {
+    "attn": {
+     "bits": 3.03125,
+     "bytes": 23838720,
+     "params": 62914560
+    },
+    "embed": {
+     "bits": 6.562699,
+     "bytes": 215048192,
+     "params": 262146048
+    },
+    "ffn-dense": {
+     "bits": 2.895833,
+     "bytes": 31883264,
+     "params": 88080384
+    },
+    "ffn-expert": {
+     "bits": 4.5,
+     "bytes": 4359979008,
+     "params": 7751073792
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 396288,
+     "params": 99072
+    },
+    "other": {
+     "bits": 2.635822,
+     "bytes": 99535616,
+     "params": 302101184
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 5767168,
+     "params": 1441792
+    }
+   },
+   "n_bytes": 4744686944,
+   "n_params": 8467856832,
+   "source_path": "/home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf"
+  },
+  "Llama-3.2-3B-Instruct-Q2_K.gguf": {
+   "bpw_file": 3.396307,
+   "classes": {
+    "attn": {
+     "bits": 3.03125,
+     "bytes": 266993664,
+     "params": 704643072
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 323205120,
+     "params": 394002432
+    },
+    "ffn-dense": {
+     "bits": 2.895833,
+     "bytes": 765198336,
+     "params": 2113929216
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 688128,
+     "params": 172032
+    },
+    "other": {
+     "bits": 32.0,
+     "bytes": 256,
+     "params": 64
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 12288,
+     "params": 3072
+    }
+   },
+   "n_bytes": 1363935680,
+   "n_params": 3212749888,
+   "source_path": "/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q2_K.gguf"
+  },
+  "Llama-3.2-3B-Instruct-Q3_K_M.gguf": {
+   "bpw_file": 4.201159,
+   "classes": {
+    "attn": {
+     "bits": 3.977679,
+     "bytes": 350355456,
+     "params": 704643072
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 323205120,
+     "params": 394002432
+    },
+    "ffn-dense": {
+     "bits": 3.803571,
+     "bytes": 1005060096,
+     "params": 2113929216
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 688128,
+     "params": 172032
+    },
+    "other": {
+     "bits": 32.0,
+     "bytes": 256,
+     "params": 64
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 12288,
+     "params": 3072
+    }
+   },
+   "n_bytes": 1687159232,
+   "n_params": 3212749888,
+   "source_path": "/home/z/hf/mscache/unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q3_K_M.gguf"
+  },
+  "MiniCPM5-2B-Q2_K.gguf": {
+   "bpw_file": 3.224215,
+   "classes": {
+    "attn": {
+     "bits": 3.190476,
+     "bytes": 158072832,
+     "params": 396361728
+    },
+    "embed": {
+     "bits": 3.4375,
+     "bytes": 114892800,
+     "params": 267386880
+    },
+    "ffn-dense": {
+     "bits": 2.952381,
+     "bytes": 585105408,
+     "params": 1585446912
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 688128,
+     "params": 172032
+    },
+    "output": {
+     "bits": 4.500211,
+     "bytes": 150413312,
+     "params": 267388928
+    }
+   },
+   "n_bytes": 1014320352,
+   "n_params": 2516756480,
+   "source_path": "/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q2_K.gguf"
+  },
+  "MiniCPM5-2B-Q3_K_M.gguf": {
+   "bpw_file": 3.92914,
+   "classes": {
+    "attn": {
+     "bits": 4.20172,
+     "bytes": 208175104,
+     "params": 396361728
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 150405120,
+     "params": 267386880
+    },
+    "ffn-dense": {
+     "bits": 3.639385,
+     "bytes": 721256448,
+     "params": 1585446912
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 688128,
+     "params": 172032
+    },
+    "output": {
+     "bits": 4.500211,
+     "bytes": 150413312,
+     "params": 267388928
+    }
+   },
+   "n_bytes": 1236085984,
+   "n_params": 2516756480,
+   "source_path": "/home/z/hf/mscache/bartowski/MiniCPM5-2B-GGUF/MiniCPM5-2B-Q3_K_M.gguf"
+  },
+  "NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 5.041364,
+   "classes": {
+    "attn": {
+     "bits": 4.057292,
+     "bytes": 78174208,
+     "params": 154140672
+    },
+    "embed": {
+     "bits": 6.0,
+     "bytes": 308281344,
+     "params": 411041792
+    },
+    "ffn-dense": {
+     "bits": 4.016544,
+     "bytes": 671511680,
+     "params": 1337491456
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1171968,
+     "params": 292992
+    },
+    "other": {
+     "bits": 4.821793,
+     "bytes": 1000247808,
+     "params": 1659544992
+    },
+    "output": {
+     "bits": 8.500179,
+     "bytes": 436744448,
+     "params": 411044928
+    }
+   },
+   "n_bytes": 2504018208,
+   "n_params": 3973556832,
+   "source_path": "/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf"
+  },
+  "NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf": {
+   "bpw_file": 5.400957,
+   "classes": {
+    "attn": {
+     "bits": 4.625,
+     "bytes": 89112576,
+     "params": 154140672
+    },
+    "embed": {
+     "bits": 6.0,
+     "bytes": 308281344,
+     "params": 411041792
+    },
+    "ffn-dense": {
+     "bits": 4.617647,
+     "bytes": 772007936,
+     "params": 1337491456
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1171968,
+     "params": 292992
+    },
+    "other": {
+     "bits": 5.145608,
+     "bytes": 1067420928,
+     "params": 1659544992
+    },
+    "output": {
+     "bits": 8.500179,
+     "bytes": 436744448,
+     "params": 411044928
+    }
+   },
+   "n_bytes": 2682625952,
+   "n_params": 3973556832,
+   "source_path": "/home/z/hf/mscache/unsloth/NVIDIA-Nemotron-3-Nano-4B-GGUF/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf"
+  },
+  "Ornith-1.5-9B-Q5_K_M.gguf": {
+   "bpw_file": 5.777951,
+   "classes": {
+    "attn": {
+     "bits": 5.759209,
+     "bytes": 1250066432,
+     "params": 1736441856
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 699269120,
+     "params": 1017118720
+    },
+    "ffn-dense": {
+     "bits": 5.682449,
+     "bytes": 3539337216,
+     "params": 4982833152
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1161216,
+     "params": 290304
+    },
+    "other": {
+     "bits": 5.547105,
+     "bytes": 307369984,
+     "params": 443287040
+    },
+    "output": {
+     "bits": 6.562602,
+     "bytes": 834371584,
+     "params": 1017122816
+    }
+   },
+   "n_bytes": 6642544576,
+   "n_params": 9197093888,
+   "source_path": "/home/z/hf/mscache/ornith-ai/Ornith-1.5-9B-GGUF/Ornith-1.5-9B-Q5_K_M.gguf"
+  },
+  "Phi-4-mini-instruct-Q2_K.gguf": {
+   "bpw_file": 3.509127,
+   "classes": {
+    "attn": {
+     "bits": 2.929688,
+     "bytes": 294912000,
+     "params": 805306368
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 504161280,
+     "params": 614596608
+    },
+    "ffn-dense": {
+     "bits": 2.895833,
+     "bytes": 874512384,
+     "params": 2415919104
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 786432,
+     "params": 196608
+    },
+    "other": {
+     "bits": 32.0,
+     "bytes": 384,
+     "params": 96
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 12288,
+     "params": 3072
+    }
+   },
+   "n_bytes": 1682635744,
+   "n_params": 3836021856,
+   "source_path": "/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q2_K.gguf"
+  },
+  "Phi-4-mini-instruct-Q3_K_M.gguf": {
+   "bpw_file": 4.416101,
+   "classes": {
+    "attn": {
+     "bits": 4.5,
+     "bytes": 452984832,
+     "params": 805306368
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 504161280,
+     "params": 614596608
+    },
+    "ffn-dense": {
+     "bits": 3.8125,
+     "bytes": 1151336448,
+     "params": 2415919104
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 786432,
+     "params": 196608
+    },
+    "other": {
+     "bits": 32.0,
+     "bytes": 384,
+     "params": 96
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 12288,
+     "params": 3072
+    }
+   },
+   "n_bytes": 2117532640,
+   "n_params": 3836021856,
+   "source_path": "/home/z/hf/mscache/unsloth/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q3_K_M.gguf"
+  },
+  "Qwen3.5-0.8B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 4.441493,
+   "classes": {
+    "attn": {
+     "bits": 2.815524,
+     "bytes": 68640768,
+     "params": 195035136
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 208588800,
+     "params": 254279680
+    },
+    "ffn-dense": {
+     "bits": 3.056424,
+     "bytes": 100954112,
+     "params": 264241152
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 218112,
+     "params": 54528
+    },
+    "other": {
+     "bits": 5.848297,
+     "bytes": 28350720,
+     "params": 38781504
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 4096,
+     "params": 1024
+    }
+   },
+   "n_bytes": 417718528,
+   "n_params": 752393024,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q2_K_XL.gguf"
+  },
+  "Qwen3.5-0.8B-UD-Q3_K_XL.gguf": {
+   "bpw_file": 5.233611,
+   "classes": {
+    "attn": {
+     "bits": 4.381048,
+     "bytes": 106807296,
+     "params": 195035136
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 208588800,
+     "params": 254279680
+    },
+    "ffn-dense": {
+     "bits": 3.987847,
+     "bytes": 131719168,
+     "params": 264241152
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 218112,
+     "params": 54528
+    },
+    "other": {
+     "bits": 6.996569,
+     "bytes": 33917184,
+     "params": 38781504
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 4096,
+     "params": 1024
+    }
+   },
+   "n_bytes": 492216576,
+   "n_params": 752393024,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-UD-Q3_K_XL.gguf"
+  },
+  "Qwen3.5-2B-UD-IQ2_M.gguf": {
+   "bpw_file": 3.655418,
+   "classes": {
+    "attn": {
+     "bits": 2.765457,
+     "bytes": 134840320,
+     "params": 390070272
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 349634560,
+     "params": 508559360
+    },
+    "ffn-dense": {
+     "bits": 2.729167,
+     "bytes": 309067776,
+     "params": 905969664
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 414720,
+     "params": 103680
+    },
+    "other": {
+     "bits": 5.698093,
+     "bytes": 54929664,
+     "params": 77120064
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 8192,
+     "params": 2048
+    }
+   },
+   "n_bytes": 859857152,
+   "n_params": 1881825088,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_M.gguf"
+  },
+  "Qwen3.5-2B-UD-IQ2_XXS.gguf": {
+   "bpw_file": 3.266066,
+   "classes": {
+    "attn": {
+     "bits": 2.272177,
+     "bytes": 110788608,
+     "params": 390070272
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 349634560,
+     "params": 508559360
+    },
+    "ffn-dense": {
+     "bits": 2.216146,
+     "bytes": 250970112,
+     "params": 905969664
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 414720,
+     "params": 103680
+    },
+    "other": {
+     "bits": 4.719133,
+     "bytes": 45492480,
+     "params": 77120064
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 8192,
+     "params": 2048
+    }
+   },
+   "n_bytes": 768270592,
+   "n_params": 1881825088,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_XXS.gguf"
+  },
+  "Qwen3.5-2B-UD-IQ3_XXS.gguf": {
+   "bpw_file": 3.961362,
+   "classes": {
+    "attn": {
+     "bits": 3.047379,
+     "bytes": 148586496,
+     "params": 390070272
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 349634560,
+     "params": 508559360
+    },
+    "ffn-dense": {
+     "bits": 3.144965,
+     "bytes": 356155392,
+     "params": 905969664
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 414720,
+     "params": 103680
+    },
+    "other": {
+     "bits": 6.85296,
+     "bytes": 66062592,
+     "params": 77120064
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 8192,
+     "params": 2048
+    }
+   },
+   "n_bytes": 931823872,
+   "n_params": 1881825088,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ3_XXS.gguf"
+  },
+  "Qwen3.5-2B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 4.108919,
+   "classes": {
+    "attn": {
+     "bits": 2.807964,
+     "bytes": 136912896,
+     "params": 390070272
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 417177600,
+     "params": 508559360
+    },
+    "ffn-dense": {
+     "bits": 3.056424,
+     "bytes": 346128384,
+     "params": 905969664
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 414720,
+     "params": 103680
+    },
+    "other": {
+     "bits": 5.698093,
+     "bytes": 54929664,
+     "params": 77120064
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 8192,
+     "params": 2048
+    }
+   },
+   "n_bytes": 966533376,
+   "n_params": 1881825088,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf"
+  },
+  "Qwen3.5-4B-UD-IQ3_XXS.gguf": {
+   "bpw_file": 3.707396,
+   "classes": {
+    "attn": {
+     "bits": 3.039062,
+     "bytes": 398336000,
+     "params": 1048576000
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 437043200,
+     "params": 635699200
+    },
+    "ffn-dense": {
+     "bits": 3.124349,
+     "bytes": 884551680,
+     "params": 2264924160
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 684032,
+     "params": 171008
+    },
+    "other": {
+     "bits": 6.785427,
+     "bytes": 217454592,
+     "params": 256378368
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 1949047968,
+   "n_params": 4205751296,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-4B-GGUF/Qwen3.5-4B-UD-IQ3_XXS.gguf"
+  },
+  "Qwen3.5-4B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 3.691755,
+   "classes": {
+    "attn": {
+     "bits": 2.84875,
+     "bytes": 373391360,
+     "params": 1048576000
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 521472000,
+     "params": 635699200
+    },
+    "ffn-dense": {
+     "bits": 3.016276,
+     "bytes": 853954560,
+     "params": 2264924160
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 684032,
+     "params": 171008
+    },
+    "other": {
+     "bits": 5.627459,
+     "bytes": 180344832,
+     "params": 256378368
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 1940825248,
+   "n_params": 4205751296,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-4B-GGUF/Qwen3.5-4B-UD-Q2_K_XL.gguf"
+  },
+  "Qwen3.5-9B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 3.682709,
+   "classes": {
+    "attn": {
+     "bits": 2.83625,
+     "bytes": 594804736,
+     "params": 1677721600
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 572129280,
+     "params": 1017118720
+    },
+    "ffn-dense": {
+     "bits": 3.016276,
+     "bytes": 1821769728,
+     "params": 4831838208
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1077248,
+     "params": 269312
+    },
+    "other": {
+     "bits": 5.597028,
+     "bytes": 286660608,
+     "params": 409732608
+    },
+    "output": {
+     "bits": 6.562602,
+     "bytes": 834371584,
+     "params": 1017122816
+    }
+   },
+   "n_bytes": 4121781472,
+   "n_params": 8953803264,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q2_K_XL.gguf"
+  },
+  "Qwen3.5-9B-UD-Q3_K_XL.gguf": {
+   "bpw_file": 4.515475,
+   "classes": {
+    "attn": {
+     "bits": 4.310625,
+     "bytes": 904003584,
+     "params": 1677721600
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 572129280,
+     "params": 1017118720
+    },
+    "ffn-dense": {
+     "bits": 3.949219,
+     "bytes": 2385248256,
+     "params": 4831838208
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1077248,
+     "params": 269312
+    },
+    "other": {
+     "bits": 6.756333,
+     "bytes": 346036224,
+     "params": 409732608
+    },
+    "output": {
+     "bits": 6.562602,
+     "bytes": 834371584,
+     "params": 1017122816
+    }
+   },
+   "n_bytes": 5053834464,
+   "n_params": 8953803264,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.5-9B-GGUF/Qwen3.5-9B-UD-Q3_K_XL.gguf"
+  },
+  "Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 2.833187,
+   "classes": {
+    "attn": {
+     "bits": 5.552435,
+     "bytes": 732135424,
+     "params": 1054867456
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 349634560,
+     "params": 508559360
+    },
+    "ffn-expert": {
+     "bits": 2.611789,
+     "bytes": 10779361280,
+     "params": 33017561088
+    },
+    "ffn-shexp": {
+     "bits": 5.903931,
+     "bytes": 95244288,
+     "params": 129058816
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 734208,
+     "params": 183552
+    },
+    "other": {
+     "bits": 7.095901,
+     "bytes": 235019776,
+     "params": 264963968
+    },
+    "output": {
+     "bits": 4.500111,
+     "bytes": 286072832,
+     "params": 508561408
+    },
+    "router": {
+     "bits": 31.609756,
+     "bytes": 84934656,
+     "params": 21495808
+    }
+   },
+   "n_bytes": 12574128416,
+   "n_params": 35505251456,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf"
+  },
+  "Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf": {
+   "bpw_file": 3.881695,
+   "classes": {
+    "attn": {
+     "bits": 8.5,
+     "bytes": 1120796672,
+     "params": 1054867456
+    },
+    "embed": {
+     "bits": 8.5,
+     "bytes": 540344320,
+     "params": 508559360
+    },
+    "ffn-expert": {
+     "bits": 3.542175,
+     "bytes": 14619246592,
+     "params": 33017561088
+    },
+    "ffn-shexp": {
+     "bits": 8.515036,
+     "bytes": 137367552,
+     "params": 129058816
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 734208,
+     "params": 183552
+    },
+    "other": {
+     "bits": 8.936106,
+     "bytes": 295968256,
+     "params": 264963968
+    },
+    "output": {
+     "bits": 6.562602,
+     "bytes": 417185792,
+     "params": 508561408
+    },
+    "router": {
+     "bits": 31.609756,
+     "bytes": 84934656,
+     "params": 21495808
+    }
+   },
+   "n_bytes": 17227569440,
+   "n_params": 35505251456,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.6-35B-A3B-MTP-GGUF/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf"
+  },
+  "Qwen3.8-27B-UD-Q2_K_XL.gguf": {
+   "bpw_file": 2.878106,
+   "classes": {
+    "attn": {
+     "bits": 2.896717,
+     "bytes": 2103418880,
+     "params": 5809111040
+    },
+    "embed": {
+     "bits": 2.625,
+     "bytes": 417177600,
+     "params": 1271398400
+    },
+    "ffn-dense": {
+     "bits": 2.716026,
+     "bytes": 5900615680,
+     "params": 17380147200
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2783232,
+     "params": 695808
+    },
+    "other": {
+     "bits": 3.419811,
+     "bytes": 678807552,
+     "params": 1587941888
+    },
+    "output": {
+     "bits": 4.500111,
+     "bytes": 715182080,
+     "params": 1271403520
+    }
+   },
+   "n_bytes": 9828981664,
+   "n_params": 27320697856,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q2_K_XL.gguf"
+  },
+  "Qwen3.8-27B-UD-Q3_K_XL.gguf": {
+   "bpw_file": 3.849504,
+   "classes": {
+    "attn": {
+     "bits": 3.895138,
+     "bytes": 2828410880,
+     "params": 5809111040
+    },
+    "embed": {
+     "bits": 3.4375,
+     "bytes": 546304000,
+     "params": 1271398400
+    },
+    "ffn-dense": {
+     "bits": 3.690064,
+     "bytes": 8016732160,
+     "params": 17380147200
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2783232,
+     "params": 695808
+    },
+    "other": {
+     "bits": 4.368219,
+     "bytes": 867059712,
+     "params": 1587941888
+    },
+    "output": {
+     "bits": 5.500107,
+     "bytes": 874106880,
+     "params": 1271403520
+    }
+   },
+   "n_bytes": 13146393504,
+   "n_params": 27320697856,
+   "source_path": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf"
+  },
+  "Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf": {
+   "bpw_file": 1.994985,
+   "classes": {
+    "attn": {
+     "bits": 4.310587,
+     "bytes": 553697280,
+     "params": 1027604480
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 286064640,
+     "params": 508559360
+    },
+    "ffn-expert": {
+     "bits": 1.773438,
+     "bytes": 7140802560,
+     "params": 32212254720
+    },
+    "ffn-shexp": {
+     "bits": 6.516591,
+     "bytes": 102563840,
+     "params": 125911040
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 691200,
+     "params": 172800
+    },
+    "other": {
+     "bits": 3.588463,
+     "bytes": 115088896,
+     "params": 256575360
+    },
+    "output": {
+     "bits": 5.500107,
+     "bytes": 349642752,
+     "params": 508561408
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 83886080,
+     "params": 20971520
+    }
+   },
+   "n_bytes": 8643426848,
+   "n_params": 34660610688,
+   "source_path": "/home/z/hf/mscache/Manojb/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf"
+  },
+  "Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf": {
+   "bpw_file": 3.856996,
+   "classes": {
+    "attn": {
+     "bits": 4.936382,
+     "bytes": 650903552,
+     "params": 1054867456
+    },
+    "embed": {
+     "bits": 3.4375,
+     "bytes": 218521600,
+     "params": 508559360
+    },
+    "ffn-expert": {
+     "bits": 3.73374,
+     "bytes": 15409872896,
+     "params": 33017561088
+    },
+    "ffn-shexp": {
+     "bits": 7.052573,
+     "bytes": 113774592,
+     "params": 129058816
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 734208,
+     "params": 183552
+    },
+    "other": {
+     "bits": 6.371692,
+     "bytes": 211033600,
+     "params": 264963968
+    },
+    "output": {
+     "bits": 6.562602,
+     "bytes": 417185792,
+     "params": 508561408
+    },
+    "router": {
+     "bits": 31.609756,
+     "bytes": 84934656,
+     "params": 21495808
+    }
+   },
+   "n_bytes": 17117951616,
+   "n_params": 35505251456,
+   "source_path": "/home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf"
+  },
+  "Ternary-Bonsai-1.7B-Q2_0_g64.gguf": {
+   "bpw_file": 2.279795,
+   "classes": {
+    "attn": {
+     "bits": 2.25,
+     "bytes": 99090432,
+     "params": 352321536
+    },
+    "embed": {
+     "bits": 2.25,
+     "bytes": 87361344,
+     "params": 310618112
+    },
+    "ffn-dense": {
+     "bits": 2.25,
+     "bytes": 297271296,
+     "params": 1056964608
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 487424,
+     "params": 121856
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 8192,
+     "params": 2048
+    }
+   },
+   "n_bytes": 490163968,
+   "n_params": 1720028160,
+   "source_path": "/home/z/hf/mscache/prism-ml/Ternary-Bonsai-1.7B-gguf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf"
+  },
+  "Ternary-Bonsai-4B-Q2_0_g64.gguf": {
+   "bpw_file": 2.263287,
+   "classes": {
+    "attn": {
+     "bits": 2.25,
+     "bytes": 265420800,
+     "params": 943718400
+    },
+    "embed": {
+     "bits": 2.25,
+     "bytes": 109201696,
+     "params": 388272640
+    },
+    "ffn-dense": {
+     "bits": 2.25,
+     "bytes": 756449280,
+     "params": 2689597440
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 774144,
+     "params": 193536
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 1137806656,
+   "n_params": 4021784576,
+   "source_path": "/home/z/hf/mscache/prism-ml/Ternary-Bonsai-4B-gguf/Ternary-Bonsai-4B-Q2_0_g64.gguf"
+  },
+  "Ternary-Bonsai-8B-Q2_0_g64.gguf": {
+   "bpw_file": 2.256933,
+   "classes": {
+    "attn": {
+     "bits": 2.25,
+     "bytes": 424673280,
+     "params": 1509949440
+    },
+    "embed": {
+     "bits": 2.25,
+     "bytes": 174722688,
+     "params": 621236224
+    },
+    "ffn-dense": {
+     "bits": 2.25,
+     "bytes": 1528823808,
+     "params": 5435817984
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1216512,
+     "params": 304128
+    },
+    "output": {
+     "bits": 2.250196,
+     "bytes": 174739072,
+     "params": 621240320
+    }
+   },
+   "n_bytes": 2310125920,
+   "n_params": 8188548096,
+   "source_path": "/home/z/hf/mscache/prism-ml/Ternary-Bonsai-8B-gguf/Ternary-Bonsai-8B-Q2_0_g64.gguf"
+  },
+  "gemma-4-12b-it-UD-Q2_K_XL.gguf": {
+   "bpw_file": 3.131793,
+   "classes": {
+    "attn": {
+     "bits": 3.047028,
+     "bytes": 916577280,
+     "params": 2406481920
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 566231040,
+     "params": 1006632960
+    },
+    "ffn-dense": {
+     "bits": 2.976128,
+     "bytes": 3159705600,
+     "params": 8493465600
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 3063808,
+     "params": 765952
+    },
+    "other": {
+     "bits": 67.368421,
+     "bytes": 2560,
+     "params": 304
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 15360,
+     "params": 3840
+    }
+   },
+   "n_bytes": 4661419840,
+   "n_params": 11907350576,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf"
+  },
+  "gemma-4-12b-it-UD-Q3_K_XL.gguf": {
+   "bpw_file": 4.046364,
+   "classes": {
+    "attn": {
+     "bits": 4.133323,
+     "bytes": 1243345920,
+     "params": 2406481920
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 566231040,
+     "params": 1006632960
+    },
+    "ffn-dense": {
+     "bits": 3.950521,
+     "bytes": 4194201600,
+     "params": 8493465600
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 3063808,
+     "params": 765952
+    },
+    "other": {
+     "bits": 67.368421,
+     "bytes": 2560,
+     "params": 304
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 15360,
+     "params": 3840
+    }
+   },
+   "n_bytes": 6022684480,
+   "n_params": 11907350576,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf"
+  },
+  "gemma-4-12b-it-UD-Q4_K_XL.gguf": {
+   "bpw_file": 4.94916,
+   "classes": {
+    "attn": {
+     "bits": 4.813521,
+     "bytes": 1447956480,
+     "params": 2406481920
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 692060160,
+     "params": 1006632960
+    },
+    "ffn-dense": {
+     "bits": 4.904948,
+     "bytes": 5207500800,
+     "params": 8493465600
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 3063808,
+     "params": 765952
+    },
+    "other": {
+     "bits": 67.368421,
+     "bytes": 2560,
+     "params": 304
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 15360,
+     "params": 3840
+    }
+   },
+   "n_bytes": 7366423360,
+   "n_params": 11907350576,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf"
+  },
+  "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf": {
+   "bpw_file": 3.343835,
+   "classes": {
+    "attn": {
+     "bits": 5.838961,
+     "bytes": 810287104,
+     "params": 1110179840
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 507510784,
+     "params": 738197504
+    },
+    "ffn-dense": {
+     "bits": 6.523611,
+     "bytes": 436482816,
+     "params": 535265280
+    },
+    "ffn-expert": {
+     "bits": 3.058338,
+     "bytes": 8730786816,
+     "params": 22837989120
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2437120,
+     "params": 609280
+    },
+    "other": {
+     "bits": 55.496503,
+     "bytes": 1984,
+     "params": 286
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 11264,
+     "params": 2816
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 43591680,
+     "params": 10897920
+    }
+   },
+   "n_bytes": 10546934240,
+   "n_params": 25233142046,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf"
+  },
+  "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf": {
+   "bpw_file": 4.092167,
+   "classes": {
+    "attn": {
+     "bits": 8.5,
+     "bytes": 1179566080,
+     "params": 1110179840
+    },
+    "embed": {
+     "bits": 8.5,
+     "bytes": 784334848,
+     "params": 738197504
+    },
+    "ffn-dense": {
+     "bits": 8.5,
+     "bytes": 568719360,
+     "params": 535265280
+    },
+    "ffn-expert": {
+     "bits": 3.612505,
+     "bytes": 10312793088,
+     "params": 22837989120
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2437120,
+     "params": 609280
+    },
+    "other": {
+     "bits": 55.496503,
+     "bytes": 1984,
+     "params": 286
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 11264,
+     "params": 2816
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 43591680,
+     "params": 10897920
+    }
+   },
+   "n_bytes": 12907280096,
+   "n_params": 25233142046,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf"
+  },
+  "gemma-4-E2B-it-UD-Q2_K_XL.gguf": {
+   "bpw_file": 4.13752,
+   "classes": {
+    "attn": {
+     "bits": 3.202381,
+     "bytes": 118996992,
+     "params": 297271296
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 226492416,
+     "params": 402653184
+    },
+    "ffn-dense": {
+     "bits": 2.991667,
+     "bytes": 582303744,
+     "params": 1557135360
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1162240,
+     "params": 290560
+    },
+    "other": {
+     "bits": 4.882924,
+     "bytes": 1458833504,
+     "params": 2390098211
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 6144,
+     "params": 1536
+    }
+   },
+   "n_bytes": 2403614816,
+   "n_params": 4647450147,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf"
+  },
+  "gemma-4-E2B-it-UD-Q3_K_XL.gguf": {
+   "bpw_file": 5.032923,
+   "classes": {
+    "attn": {
+     "bits": 4.18254,
+     "bytes": 155418624,
+     "params": 297271296
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 226492416,
+     "params": 402653184
+    },
+    "ffn-dense": {
+     "bits": 3.968561,
+     "bytes": 772448256,
+     "params": 1557135360
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1162240,
+     "params": 290560
+    },
+    "other": {
+     "bits": 5.865649,
+     "bytes": 1752434784,
+     "params": 2390098211
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 6144,
+     "params": 1536
+    }
+   },
+   "n_bytes": 2923782240,
+   "n_params": 4647450147,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf"
+  },
+  "gemma-4-E2B-it-UD-Q4_K_XL.gguf": {
+   "bpw_file": 5.48171,
+   "classes": {
+    "attn": {
+     "bits": 4.792659,
+     "bytes": 178089984,
+     "params": 297271296
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 276824064,
+     "params": 402653184
+    },
+    "ffn-dense": {
+     "bits": 4.932955,
+     "bytes": 960159744,
+     "params": 1557135360
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 1162240,
+     "params": 290560
+    },
+    "other": {
+     "bits": 5.865649,
+     "bytes": 1752434784,
+     "params": 2390098211
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 6144,
+     "params": 1536
+    }
+   },
+   "n_bytes": 3184496736,
+   "n_params": 4647450147,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q4_K_XL.gguf"
+  },
+  "gemma-4-E4B-it-UD-Q2_K_XL.gguf": {
+   "bpw_file": 3.998281,
+   "classes": {
+    "attn": {
+     "bits": 3.333673,
+     "bytes": 267632640,
+     "params": 642252800
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 377487360,
+     "params": 671088640
+    },
+    "ffn-dense": {
+     "bits": 2.987599,
+     "bytes": 1233510400,
+     "params": 3303014400
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2251776,
+     "params": 562944
+    },
+    "other": {
+     "bits": 5.130936,
+     "bytes": 1860700480,
+     "params": 2901147946
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 3757419648,
+   "n_params": 7518069290,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf"
+  },
+  "gemma-4-E4B-it-UD-Q3_K_XL.gguf": {
+   "bpw_file": 4.882573,
+   "classes": {
+    "attn": {
+     "bits": 4.311735,
+     "bytes": 346152960,
+     "params": 642252800
+    },
+    "embed": {
+     "bits": 4.5,
+     "bytes": 377487360,
+     "params": 671088640
+    },
+    "ffn-dense": {
+     "bits": 3.956845,
+     "bytes": 1633689600,
+     "params": 3303014400
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2251776,
+     "params": 562944
+    },
+    "other": {
+     "bits": 6.102473,
+     "bytes": 2213022016,
+     "params": 2901147946
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 4588440704,
+   "n_params": 7518069290,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf"
+  },
+  "gemma-4-E4B-it-UD-Q4_K_XL.gguf": {
+   "bpw_file": 5.454919,
+   "classes": {
+    "attn": {
+     "bits": 4.96148,
+     "bytes": 398315520,
+     "params": 642252800
+    },
+    "embed": {
+     "bits": 5.5,
+     "bytes": 461373440,
+     "params": 671088640
+    },
+    "ffn-dense": {
+     "bits": 4.93006,
+     "bytes": 2035507200,
+     "params": 3303014400
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 2251776,
+     "params": 562944
+    },
+    "other": {
+     "bits": 6.102473,
+     "bytes": 2213022016,
+     "params": 2901147946
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 5126306944,
+   "n_params": 7518069290,
+   "source_path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q4_K_XL.gguf"
+  },
+  "granite-4.1-3b-Q2_K.gguf": {
+   "bpw_file": 3.224222,
+   "classes": {
+    "attn": {
+     "bits": 3.119792,
+     "bytes": 245350400,
+     "params": 629145600
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 210739200,
+     "params": 256901120
+    },
+    "ffn-dense": {
+     "bits": 2.895833,
+     "bytes": 910950400,
+     "params": 2516582400
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 819200,
+     "params": 204800
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 1371437664,
+   "n_params": 3402836480,
+   "source_path": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q2_K.gguf"
+  },
+  "granite-4.1-3b-Q3_K_M.gguf": {
+   "bpw_file": 4.056799,
+   "classes": {
+    "attn": {
+     "bits": 3.972917,
+     "bytes": 312442880,
+     "params": 629145600
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 210739200,
+     "params": 256901120
+    },
+    "ffn-dense": {
+     "bits": 3.808333,
+     "bytes": 1197998080,
+     "params": 2516582400
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 819200,
+     "params": 204800
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 1725577824,
+   "n_params": 3402836480,
+   "source_path": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q3_K_M.gguf"
+  },
+  "granite-4.1-3b-Q4_K_M.gguf": {
+   "bpw_file": 4.935886,
+   "classes": {
+    "attn": {
+     "bits": 4.585938,
+     "bytes": 360652800,
+     "params": 629145600
+    },
+    "embed": {
+     "bits": 6.5625,
+     "bytes": 210739200,
+     "params": 256901120
+    },
+    "ffn-dense": {
+     "bits": 4.84375,
+     "bytes": 1523712000,
+     "params": 2516582400
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 819200,
+     "params": 204800
+    },
+    "output": {
+     "bits": 32.0,
+     "bytes": 10240,
+     "params": 2560
+    }
+   },
+   "n_bytes": 2099501664,
+   "n_params": 3402836480,
+   "source_path": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q4_K_M.gguf"
+  }
+ },
+ "source": "每个 gguf 的张量信息段：元素数 = 维度连乘，字节数 = 相邻 offset 之差（末张量到文件尾）；bits/参数 = 8×字节÷元素数，不查类型表",
+ "tensor_class": "embed / attn / ffn-expert(_exps) / ffn-shexp(_shexp) / router(ffn_gate_inp) / ffn-dense / norm / output / other"
+}

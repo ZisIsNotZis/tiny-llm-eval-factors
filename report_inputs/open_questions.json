@@ -6,13 +6,25 @@
    "subproject": "a02-模型规模",
    "path": "docs/subprojects/a02-模型规模/PLAN.md",
    "heading": "未解问题",
-   "text": "plan5 :: MoE 的「总参 + 激活参」双变量回归是否可识别——总参与激活参在可用模型集里是否共线，只能用相关/VIF/设计矩阵裁决，不能用一次拟合的系数正负裁决（`WP3`，证据见 `RESULT.md::size-not-one-thing` 与 `RESULT.md::moe-vif-not-identified`）。答完即改写或删除。"
+   "text": "an3 :: 「小模型低比特时困难 agentic 任务整体触底」这条 analysis 的证据链是否牢——它引的是 `result.res1`（a01 的位宽事实），本层只能判「在规模轴上是否复现」，判不了位宽轴本身（`WP4`）。"
   },
   {
    "subproject": "a02-模型规模",
    "path": "docs/subprojects/a02-模型规模/PLAN.md",
    "heading": "未解问题",
-   "text": "an3 :: 「小模型低比特时困难 agentic 任务整体触底」这条 analysis 的证据链是否牢——它引的是 `result.res1`（a01 的位宽事实），本层只能判「在规模轴上是否复现」，判不了位宽轴本身（`WP4`）。"
+   "text": "缺受控对 :: 要让 `plan5` 的双变量回归可识别，需要至少两对「同总参、不同激活」的受控点（同一 MoE 权重换 `expert_used`，或同总参的稠密/MoE 对）；库内一对也没有，本轮记未测，补测要 GPU 窗口（`WP3` 已写明最小补测）。"
+  },
+  {
+   "subproject": "a03-量化方案与厂商",
+   "path": "docs/subprojects/a03-量化方案与厂商/PLAN.md",
+   "heading": "未解问题",
+   "text": "**厂商效应是否存在，本库答不了。** 唯一跨上传者受控对只有一族（Qwen3.6-35B-A3B，Δbpw 0.025），逐列半宽 0.019–0.134、九列全跨 0；`attrib.py` 的厂商系数由这一族单点识别、半宽 0.212–0.489 且符号与其来源对相反（外推假象）。要判定，需要一个**同族内同分配、只换上传者**的配对（本库没有），或第二个独立家族的同尺寸跨来源对。"
+  },
+  {
+   "subproject": "a03-量化方案与厂商",
+   "path": "docs/subprojects/a03-量化方案与厂商/PLAN.md",
+   "heading": "未解问题",
+   "text": "**复现负控未跑，单次运行的跨 run 上限未定。** 本层所有配对都是单次运行，区间只含逐题二项项；`i01::res29` 给出的 ±16/161 是「未记录的输入差」量级，不是本层的噪声地板。作业 `bash .wrapup/a03_repro_retry.sh` 在锁空闲时自动跑两条 2B 代码面板（实测 573–638 s/条），跑成后写成 `RESULT.md` 的 `repro-negative-control`；锁一直被 `i01` 的高优先级测量占着，故登记为未测。"
   },
   {
    "subproject": "i02-测量基础设施",
@@ -49,8 +61,8 @@
   {
    "subproject": "a03-量化方案与厂商",
    "path": "docs/subprojects/a03-量化方案与厂商/PLAN.md",
-   "heading": "未解问题（plan 层的事实；答完即改写或删除）",
-   "count": 0
+   "heading": "未解问题",
+   "count": 2
   },
   {
    "subproject": "i02-测量基础设施",

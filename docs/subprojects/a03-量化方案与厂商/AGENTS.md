@@ -6,13 +6,15 @@
 ## 这个轴的口径（违反一条，结论就作废）
 
 1. **X 是标签，不是一个数**：方案标签（IQ / K / TQ）、来源标签（厂商 / 上传者）都是**类别变量**；它们的效应只能在「同一套 base 权重、同一字节预算、同一协议」的族内配对里读。不得把标签当连续变量或当质量分。
-2. **匹配字节的判据必须写出来**：一律给三档（`|Δbpw| ≤ 0.45 / 0.15 / 0.05`），并说明结论在哪一档成立。`0.45` 是报告第三节的现行口径，不是本层的推荐值——它本身允许约 0.084 的 HumanEval+ 分差（`RESULT.md::slopes`）。
-3. **厂商从路径取，不从文件名推**：`mscache/<vendor>/…`、`models--<vendor>--…` 才算来源证据，且要经 `run_tag` 与库内行对上。`UD-` 前缀说明的是**配方**（动态分配），不是来源；`Phi-4-mini-instruct-Q2_K.gguf` 与 `Llama-3.2-3B-Instruct-Q3_K_M.gguf` 就是反例（非 UD 命名、实际来自 unsloth）。
-4. **一格一协议，不池化**：`_bench` + `protocol` + `ctx_size` + `parallel_slots` + `temp` + `reasoning` 必须逐列相等；不等判「不可比」并打印。语言、协议、基准之间绝不平均，也不跨族把同字节点当受控比较。
-5. **区间用两比例差的 Newcombe method 10**，`n` 取该格自己的 `n_items`；TruthfulQA 的 `acc` 是概率质量均值（`i01::res26`），那一列只报差值。区间是非配对的（逐题结果没落库），所以「跨 0」写「测不出」，不写「相等」。
-6. **先看 `n_items`**：`ifeval/gsm8k/arc_challenge/truthfulqa_mc2` 是 `limit 100` 的子集，`mmlu` 912，`humaneval*` 164，`mbpp*` 378。缺格写「缺」，不写 0。
-7. **分配轮廓用实测**：`alloc.py` 从 gguf 张量信息段算每个张量的字节与元素数（相邻 offset 之差），不查类型表、不加载权重；校验不过（文件位宽与数据段位宽差 > 0.05）就打 WARN 并给逐类比重要打折。
-8. **单次运行**：所有配对只有一次运行，区间不含跨 run 项；小于 0.05 的差只能说「测不出」。`i01::res29` 的量级（±16/161）是引用，不是本层的地板。
+2. **匹配字节的判据必须写出来**：一律给三档（`|Δbpw| ≤ 0.45 / 0.15 / 0.05`），并说明结论在哪一档成立。`0.45` 是报告第三节的现行口径，不是本层的推荐值——它本身允许约 0.080 的 HumanEval+ 分差（`RESULT.md::slopes`）。
+3. **来源与分配只从入库夹具读**：`analysis/fixtures/vendor_map.json`（带 `run_tag`→路径证据）与 `analysis/fixtures/alloc_map.json`（gguf 头的实测轮廓）。仓库外的东西（`.wrapup/mres/*`、`*.gguf`）不能成为断言的唯一来源，否则干净 clone 里断言无法成立；改判据要同时改夹具，`build_fixtures.py --check` 做漂移检查。
+4. **结论必须带探测下限**：跨族归因的「跨 0」不等于「没有效应」，每条都要写出该系数的 95% 半宽（`attrib.py` 的「识别来源与探测下限」块），措辞用「不可分辨 / undetermined at this precision」，不写「没有差」。
+5. **厂商从路径取，不从文件名推**：`mscache/<vendor>/…`、`models--<vendor>--…` 才算来源证据，且要经 `run_tag` 与库内行对上。`UD-` 前缀说明的是**配方**（动态分配），不是来源；`Phi-4-mini-instruct-Q2_K.gguf` 与 `Llama-3.2-3B-Instruct-Q3_K_M.gguf` 就是反例（非 UD 命名、实际来自 unsloth）。
+6. **一格一协议，不池化**：`_bench` + `protocol` + `ctx_size` + `parallel_slots` + `temp` + `reasoning` 必须逐列相等；不等判「不可比」并打印。语言、协议、基准之间绝不平均，也不跨族把同字节点当受控比较。
+7. **区间用两比例差的 Newcombe method 10**，`n` 取该格自己的 `n_items`；TruthfulQA 的 `acc` 是概率质量均值（`i01::res26`），那一列只报差值。区间是非配对的（逐题结果没落库），所以「跨 0」写「不可分辨」并给出半宽，不写「相等」也不写「没有差」。
+8. **先看 `n_items`**：`ifeval/gsm8k/arc_challenge/truthfulqa_mc2` 是 `limit 100` 的子集，`mmlu` 912，`humaneval*` 164，`mbpp*` 378。缺格写「缺」，不写 0。
+9. **分配轮廓用实测**（`_exps` 专家 / `_shexp` 共享专家 / `ffn_gate_inp` router / 其余稠密 FFN 必须分桶，混桶会点错层）：`alloc.py` 从 gguf 张量信息段算每个张量的字节与元素数（相邻 offset 之差），不查类型表、不加载权重；校验不过（文件位宽与数据段位宽差 > 0.05）就打 WARN 并给逐类比重要打折。
+10. **单次运行**：所有配对只有一次运行，区间不含跨 run 项；小于 0.05 的差只能说「测不出」。`i01::res29` 的量级（±16/161）是引用，不是本层的地板。
 
 ## 与 a01 / a04 的分工（别越界）
 

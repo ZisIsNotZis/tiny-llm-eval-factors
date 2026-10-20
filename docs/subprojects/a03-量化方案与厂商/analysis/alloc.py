@@ -60,7 +60,14 @@ def _rval(f, t):
 
 
 def tensor_class(name):
-    """张量分类：问题问的是「比特落在哪一类层上」，所以按功能分类而不是按张量名逐一列。"""
+    """张量分类：问题问的是「比特落在哪类层上」，所以按功能分类而不是按张量名逐一列。
+
+    四个容易混的桶必须分开，否则一句话就会点错层：
+      * `ffn-expert` 是路由到的专家（`*_exps`，MoE 的绝对大头）；
+      * `ffn-shexp` 是**共享专家**（`*_shexp`），每个 token 都走，不是专家池；
+      * `router` 是门控（`ffn_gate_inp`，通常 f32，不参与量化）；
+      * `ffn-dense` 只剩真正的稠密 FFN 权重。
+    """
     n = name
     if n.startswith("token_embd"):
         return "embed"
@@ -70,6 +77,10 @@ def tensor_class(name):
         return "norm"
     if "_exps" in n:
         return "ffn-expert"
+    if "_shexp" in n:
+        return "ffn-shexp"
+    if "ffn_gate_inp" in n or "ffn_up_inp" in n:
+        return "router"
     if ".attn_" in n:
         return "attn"
     if ".ffn_" in n:

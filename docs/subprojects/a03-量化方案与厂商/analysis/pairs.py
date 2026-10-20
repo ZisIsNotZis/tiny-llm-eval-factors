@@ -137,35 +137,23 @@ def vendor_in_path(p):
 
 
 def vendor_of():
-    """{模型文件: {厂商, ...}}，取自面板写入的模型绝对路径，不从文件名猜。
+    """{模型文件: {厂商, ...}}，读入库的 `analysis/fixtures/vendor_map.json`。
 
-    证据 = `.wrapup/mres/<run_tag>/{evalplus,lmeval_panel,...}.json` 的 `model` 字段。
-    面板的 `run_tag` 与库内 `experiments.run_tag` 是同一个键，所以先用 run_tag 对上库里的
-    模型文件名，再挂上路径里的厂商；这样 HF 缓存那种 `blobs/<sha>` 路径也能归属。
-    同一个文件被多个面板测过时取并集，多于一个就说明有面板用了别的来源。
+    为什么读夹具而不是现场扫面板：来源的唯一证据是 `.wrapup/mres/<run_tag>/*.json` 里写入的
+    模型绝对路径，而 `.wrapup/mres/*` 不入库（只放行 `*_eval.json`）——直接扫会让干净 clone
+    里来源全丢、进而让本层的断言无法成立。夹具里每个文件都带着它自己的证据（run_tag → 路径）
+    以及从路径抽厂商的规则，重建与漂移检查在 `analysis/build_fixtures.py`（`--check`）。
     """
-    cc = con()
-    tag_models = {}
-    for tag, model in cc.execute("SELECT DISTINCT run_tag, model FROM experiments WHERE run_tag IS NOT NULL"):
-        tag_models.setdefault(tag, set()).add(model)
-    out = {}
-    for f in sorted((REPO / ".wrapup" / "mres").glob("*/*.json")):
-        try:
-            d = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:               # 面板日志损坏不影响其它面板
-            continue
-        p = d.get("model") or d.get("model_arg")
-        if not isinstance(p, str):
-            continue
-        tag = f.parent.name
-        models = tag_models.get(tag)
-        if not models:                  # 面板没有入库行，就没有可归属的文件
-            continue
-        vendor = vendor_in_path(p)
-        for m in models:
-            base = m if m.endswith(".gguf") else m + ".gguf"
-            out.setdefault(base, set()).add(vendor)
-    return out
+    path = HERE.parent / "fixtures" / "vendor_map.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    return {m: set(e["vendors"]) for m, e in doc["models"].items()}
+
+
+def vendor_evidence(model):
+    """{run_tag: 模型绝对路径}：厂商标签的证据行，写 RESULT 时引这一条。"""
+    path = HERE.parent / "fixtures" / "vendor_map.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    return doc["models"].get(model, {}).get("paths", {})
 
 
 def load(bench_order=BENCH_ORDER):
