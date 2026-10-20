@@ -36,7 +36,16 @@ else
     record FAIL "运行时依赖缺失（见上）"
 fi
 
-# 2) 提示集哈希：模型看到的题目集必须能当场核对
+# 2) CJK 字体：它是被复现条件的一部分——换字体，每张图的字形与度量都变。
+#    路径与期望哈希只有一个家（make_report.py 的常量），这里问它，不另抄一份。
+if font=$(python3 -c "import make_report as m; print(m.CJK_FONT, m.CJK_FONT_SHA256)" 2>/tmp/reproduce_font.$$); then
+    record PASS "CJK 字体 $font（存在且 sha256 匹配）"
+else
+    record FAIL "$(tr '\n' ' ' < /tmp/reproduce_font.$$)"
+fi
+rm -f /tmp/reproduce_font.$$
+
+# 3) 提示集哈希：模型看到的题目集必须能当场核对
 if [ -f .wrapup/prompts/SHA256SUMS ]; then
     if (cd .wrapup/prompts && sha256sum -c SHA256SUMS >/dev/null 2>&1); then
         record PASS "提示集哈希（$(grep -c . .wrapup/prompts/SHA256SUMS) 份文件）"
@@ -47,7 +56,7 @@ else
     record FAIL "提示集清单缺失：.wrapup/prompts/SHA256SUMS"
 fi
 
-# 3) 报告输入是否随仓库分发；这里的输入不在了就什么都别谈
+# 4) 报告输入是否随仓库分发；这里的输入不在了就什么都别谈
 missing_inputs=0
 for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json \
          report_inputs/open_questions.json docs/subprojects/i02-测量基础设施/non_measurements.tsv \
@@ -72,7 +81,7 @@ else
     record WARN "eval_status.json 与落盘产物不一致：python3 report_inputs/build_eval_status.py"
 fi
 
-# 4) 数据库
+# 5) 数据库
 if python3 checks/db_check.py >/tmp/reproduce_db_check.$$ 2>&1; then
     record PASS "数据库完整性与清洁度（$(grep -o '[0-9]* rows' /tmp/reproduce_db_check.$$ | head -1)）"
 else
@@ -80,14 +89,21 @@ else
 fi
 rm -f /tmp/reproduce_db_check.$$
 
-# 5) 陈旧绝对根路径
+# 6) 陈旧绝对根路径
 if python3 checks/stale_roots.py >/dev/null 2>&1; then
     record PASS "没有可执行脚本硬编码已退役的绝对根路径"
 else
     record FAIL "仍有脚本硬编码退役根路径：python3 checks/stale_roots.py"
 fi
 
-# 6) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+# 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/open_questions_negative_control.py >/tmp/reproduce_oq.$$ 2>&1; then
+    record PASS "未解问题索引的负控（工作包标题与围栏里的标题都不算一节）"
+else
+    record FAIL "未解问题索引的负控未通过：python3 checks/open_questions_negative_control.py"
+fi
+rm -f /tmp/reproduce_oq.$$
+
 if python3 checks/docs_schema_negative_control.py >/tmp/reproduce_negrun.$$ 2>&1; then
     record PASS "docs 检查的负控（缺必填字段 / 枚举外取值都以 1 退出并点名）"
 else
@@ -95,7 +111,7 @@ else
 fi
 rm -f /tmp/reproduce_negrun.$$
 
-# 7) 文档检查：schema 标准缺失是外部阻断，不等同于通过，也不等同于失败
+# 8) 文档检查：schema 标准缺失是外部阻断，不等同于通过，也不等同于失败
 out=$(python3 docs/check_docs.py 2>&1); rc=$?
 case "$rc" in
     0) record PASS "docs/check_docs.py" ;;
@@ -103,7 +119,7 @@ case "$rc" in
     *) record FAIL "docs/check_docs.py 退出 $rc：$(printf '%s' "$out" | grep -m3 '  - ' | tr '\n' ' ')" ;;
 esac
 
-# 8) 从库重建报告，并与仓库里那份逐字节对比
+# 9) 从库重建报告，并与仓库里那份逐字节对比
 if [ -f report.html ]; then
     before=$(sha256sum report.html | cut -d' ' -f1)
 else
@@ -120,7 +136,7 @@ else
     record FAIL "报告构建失败（见 /tmp/reproduce_report.$$）"
 fi
 
-# 9) 报告与产物一致
+# 10) 报告与产物一致
 if python3 checks/report_check.py >/tmp/reproduce_repchk.$$ 2>&1; then
     record PASS "报告与产物一致（行标签唯一、题量取自产物、非测量登记册在场）"
 else

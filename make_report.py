@@ -24,13 +24,35 @@ CON = sqlite3.connect("file:experiments.sqlite?mode=ro", uri=True)
 FIGDIR = "figures/report"
 os.makedirs(FIGDIR, exist_ok=True)
 
-_CJK = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
-try:
-    fm.fontManager.addfont(_CJK)
-    plt.rcParams["font.sans-serif"] = [fm.FontProperties(fname=_CJK).get_name(), "DejaVu Sans"]
-    plt.rcParams["axes.unicode_minus"] = False
-except Exception:
-    pass
+# CJK 字体是被复现条件的一部分：换成别的字体，每张图的字形与度量都变，报告就不再逐字节相同。
+# 所以它不静默回退——缺了就失败并说清装什么，且核对 sha256，字体换了版本也当场说出来。
+CJK_FONT = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
+CJK_FONT_SHA256 = "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+CJK_FONT_PACKAGE = "fonts-noto-cjk"
+
+
+def _require_cjk_font():
+    """字体存在且 sha256 匹配；否则终止并给出安装命令与期望哈希。"""
+    import hashlib
+    if not os.path.exists(CJK_FONT):
+        raise SystemExit(
+            f"报告无法构建：缺少 CJK 字体 {CJK_FONT}\n"
+            f"  安装：sudo apt-get install -y {CJK_FONT_PACKAGE}\n"
+            f"  期望 sha256：{CJK_FONT_SHA256}\n"
+            f"  不静默换字体：换字体后每张图都变，报告不再逐字节可复现。")
+    digest = hashlib.sha256(open(CJK_FONT, "rb").read()).hexdigest()
+    if digest != CJK_FONT_SHA256:
+        raise SystemExit(
+            f"报告无法构建：CJK 字体版本不是被复现的那个\n"
+            f"  文件：{CJK_FONT}\n  实际 sha256：{digest}\n  期望 sha256：{CJK_FONT_SHA256}\n"
+            f"  要么装回 {CJK_FONT_PACKAGE} 的对应版本，要么确认新字体后同时更新本常量与 RESULT.md。")
+    return digest
+
+
+CJK_FONT_DIGEST = _require_cjk_font()
+fm.fontManager.addfont(CJK_FONT)
+plt.rcParams["font.sans-serif"] = [fm.FontProperties(fname=CJK_FONT).get_name(), "DejaVu Sans"]
+plt.rcParams["axes.unicode_minus"] = False
 
 # 全局图表风格：统一字号 / 网格 / 边框，保证全文观感一致
 try:
@@ -989,7 +1011,13 @@ def table_mpl_langs():
             counts = collections.Counter(sc for _p, sc, _n in vals)
             if len(counts) > 1:
                 pick = counts.most_common(1)[0][0]
-                ambiguous.append((model, label, lang, pick, sorted(counts)))
+                ambiguous.append({
+                    "model": model, "label": label, "lang": lang,
+                    "shown": pick, "rows": len(vals),
+                    "protocols": len({p for p, _s, _n in vals}),
+                    "rows_shown": counts[pick],
+                    "others": [(v, counts[v]) for v in sorted(counts) if v != pick],
+                })
             else:
                 pick = vals[0][1]
             n = (vals[0][2] if vals[0][2] is not None
@@ -1038,11 +1066,13 @@ def mpl_ambiguous_note():
     if not ambiguous:
         return ""
     items = []
-    for model, label, lang, pick, values in ambiguous:
-        others = "、".join(f"{v:.4f}" for v in values if v != pick)
-        items.append(f"<code>{html.escape(model.replace('.gguf', ''))}</code> 的 "
-                     f"{html.escape(label)} · {MPL_LANG_LBL.get(lang, lang)}：表中取 {pick:.4f}"
-                     f"（测量次数较多），同一条协议串下还存着 {others}")
+    for a in ambiguous:
+        others = "、".join(f"{v:.4f}（{c} 行）" for v, c in a["others"])
+        items.append(f"<code>{html.escape(a['model'].replace('.gguf', ''))}</code> 的 "
+                     f"{html.escape(a['label'])} · {MPL_LANG_LBL.get(a['lang'], a['lang'])}："
+                     f"这个行标签下有 {a['rows']} 行测量（来自 {a['protocols']} 条协议串），"
+                     f"其中 {a['rows_shown']} 行是 {a['shown']:.4f}，"
+                     f"表中就显示它；另外还印出 {others}")
     return ("<li><b>行键无法区分的格（数据缺陷，逐条列出而不静默取其一）：</b>"
             + "；".join(items) + "。这些格来自 m31 的 top_k 扫描：它把 K=1（贪心地板）与 K=200（不截断）"
             "两种取值写进了同一条协议串，库内没有列说明哪一行属于哪个取值；"
@@ -1279,6 +1309,20 @@ def non_measurements_html():
             "也不出现在任何图上——空白不等于 0，也不等于「跑完但得分低」。</p>" + "".join(out))
 
 
+# 已退役的来源根：它们不再是「持有事实的家」，所以报告不把它们当作可打开的来源来引用。
+RETIRED_ORIGINS = (".scratch/", "/tmp/MultiPL-E/", "/home/z/hf/")
+
+
+def _source_label(fact):
+    """一句话的来源：退役原件明说未迁移，派生事实优先给出它的 producer/evidence。"""
+    origin = str(fact.get("origin") or "")
+    live = fact.get("producer") or fact.get("evidence") or ""
+    if any(root in origin for root in RETIRED_ORIGINS):
+        return ("已退役历史原件（该子项目尚未迁移到当前家）"
+                + (f"；可核对的产物：{live}" if live else "")), True
+    return (live or origin), False
+
+
 def render_fact_list(facts, kinds=None):
     items = []
     for fid, f in sorted(facts.items()):
@@ -1287,7 +1331,7 @@ def render_fact_list(facts, kinds=None):
         d = f.get("domain") or {}
         if kinds and d.get("kind") not in kinds:
             continue
-        src = f.get("origin", "")
+        src, _retired = _source_label(f)
         status = f.get("status", "")
         tag = f" <span class='tag'>{html.escape(d.get('kind',''))}</span>" if d.get("kind") else ""
         prov = f" <span class='nr'>（{html.escape(str(status))}；来源：{html.escape(str(src))[:120]}）</span>" if src else ""
@@ -1677,7 +1721,9 @@ def main():
 
     H.append("<h2>附录：本报告用到的全部模型文件与来源</h2>")
     H.append("<p class='def'>下表把正文各节引用的每一个 gguf 文件列出，并给出它的机构（供应商）与仓库，"
-             "用于复现与区分“同名档位、不同供应商 / 不同方案”。本地路径为实际加载入口的解析结果。</p>")
+             "用于复现与区分“同名档位、不同供应商 / 不同方案”。最后一列是测量当时实际加载入口的解析结果："
+             "它记录的是那一轮的运行条件，<b>这些路径（<code>/home/z/hf/…</code>）在采集机上已不存在</b>，"
+             "不能当成本机可打开的文件；权重本身不在仓库里，见 README「clone 不能重建什么」。</p>")
     H.append(render_repro(repro_rows(all_tables), title="全部模型文件"))
 
     H.append("<h2>结论与显著性总结</h2>")
@@ -1700,7 +1746,9 @@ def main():
              "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>量化位宽至少约 4 比特/权重，再往上除非能测出收益否则不必多花比特</b>。</p>")
     H.append("</body></html>")
     open("report.html", "w").write("\n".join(H))
-    print("wrote report.html", sum(len(x) for x in H), "bytes; figures:", len([1 for _ in os.listdir(FIGDIR)]))
+    print("wrote report.html", os.path.getsize("report.html"), "bytes;",
+          "figures:", len([1 for _ in os.listdir(FIGDIR)]),
+          "; cjk font: %s sha256=%s" % (CJK_FONT, CJK_FONT_DIGEST))
 
 
 if __name__ == "__main__":

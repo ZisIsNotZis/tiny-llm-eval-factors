@@ -161,6 +161,24 @@ def check_registry(html):
     return len(body), problems
 
 
+# 只把「我们不再持有、却被当成来源引用」的根算缺陷。`/home/z/hf/…` 仍会出现在模型来源附录里，
+# 那是测量当时的运行条件；对应的事实是：报告必须同时声明它在采集机上已不存在。
+RETIRED_ROOTS = (".scratch/originals", "/tmp/MultiPL-E")
+RETIRED_PATH_NOTE = "在采集机上已不存在"
+
+
+def check_no_retired_sources(plain):
+    """(6) 报告不得把已退役的路径当作来源引用。"""
+    problems = []
+    for root in RETIRED_ROOTS:
+        n = plain.count(root)
+        if n:
+            problems.append(f"报告仍引用已退役来源 {root}（{n} 处）")
+    if "/home/z/hf" in plain and RETIRED_PATH_NOTE not in plain:
+        problems.append("报告出现 /home/z/hf 路径，却没有声明它在采集机上已不存在")
+    return problems
+
+
 def check_exception_counts(html):
     """(4) 「全 Exception」段的份数 / 格数与产物一致。"""
     m = re.search(r"有 <b>(\d+)</b> 份文件，来自 <b>(\d+)</b> 个格", html)
@@ -219,6 +237,7 @@ def main(argv):
     plain = htmllib.unescape(html)
     n_amb, p = check_ambiguous_cells(plain)
     problems += p
+    problems += check_no_retired_sources(plain)
 
     print(f"report: {os.path.relpath(path, REPO)}")
     print(f"  tables                : {len(parsed)} (row-label check on {n_tables})")

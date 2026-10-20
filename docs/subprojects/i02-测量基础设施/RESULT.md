@@ -57,7 +57,7 @@
 
 - kind: measured
 - status: current
-- evidence: 修复前按 `(model, protocol)` 分组得到 83 行，其中 3 组两行同标签；现在 80 行，行标签唯一。3 个格的同一条协议串下存着两个不同分数（m31 的 top_k 扫描把 K=1 与 K=200 写进同一串），报告把两个值都印出来并在该节逐条说明，不静默取其一。
+- evidence: 修复前按 `(model, protocol)` 分组得到 83 行，其中 3 组两行同标签；现在 80 行，行标签唯一。3 个格的行标签下有 6 行测量（来自 2 条协议串），分数有两个值（m31 的 top_k 扫描把 K=1 与 K=200 写进同一串）；表里显示其中出现行数较多的那一个，并在该节写明「这个行标签下有 6 行测量（来自 2 条协议串），其中 5 行是 X，表中就显示它；另外还印出 Y（1 行）」，两个值都印出、规则也写清，不静默取其一。
 - producer: `python3 checks/report_check.py`（行标签唯一性 + 多值格的两个值都必须出现）
 
 ## res29 :: 标准基准列不再把 MultiPL-E 的 C++ 与 Python 池化：基准列 10→11、整表 12→13 列，轴 A/B/C 等 8 张表各多一条 series。
@@ -93,5 +93,19 @@
 
 - kind: citation
 - status: current
-- evidence: 索引由 `report_inputs/build_open_questions.py` 扫各子项目 `PLAN.md` 里标题以「未解 / 未决 / 待解 / 开放问题 / open question」开头的一节生成；每条带子项目 id 与来源路径，没有这一节的文件被跳过并计数（当前跳过 2 个：a12、i01），连跑两次字节相同；报告据它渲染「未解问题」节，索引缺失时构建失败。
+- evidence: 索引由 `report_inputs/build_open_questions.py` 扫各子项目 `PLAN.md` 生成，只认**二级标题**（`## `）且标题文字本身以「未解 / 未决 / 待解 / 开放问题 / open question」开头，代码围栏里的行一律跳过（`## wp98 :: 未解决的…` 这类工作包标题不算一节）；每条带子项目 id 与来源路径，没有这一节的文件被跳过并计数（当前跳过 2 个：a12、i01），连跑两次字节相同；报告据它渲染「未解问题」节，索引缺失时构建失败。
 - producer: `python3 report_inputs/build_open_questions.py --check`
+
+## res34 :: CJK 字体是被复现条件的一部分：缺它或版本不对时构建直接失败，不静默换字体。
+
+- kind: measured
+- status: current
+- evidence: 字体 `/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc`（`fonts-noto-cjk`），sha256 `b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a`；换掉它 86 张图的字形与度量全变、报告从 10280329 字节变成另一个哈希。构建末行印出真字节数与字体指纹。
+- producer: `python3 -c "import make_report as m; print(m.CJK_FONT, m.CJK_FONT_SHA256)"`；`./reproduce.sh` 的「CJK 字体」一步（把 `make_report.py` 的 `CJK_FONT` 改成不存在的路径时，该步失败并念出字体名、安装命令与期望哈希）
+
+## res35 :: 报告不再把已退役路径当作来源引用；仍有 89 条事实的来源是 `.scratch/originals`，它们由各自的持有层迁移。
+
+- kind: measured
+- status: current
+- evidence: `make_report.py` 的 `render_fact_list` 对退役根（`.scratch/`、`/tmp/MultiPL-E/`、`/home/z/hf/`）改成显示「已退役历史原件（该子项目尚未迁移到当前家）」并优先给出该事实自己的 `producer`/`evidence`；`checks/report_check.py` 断言报告里没有退役根的字符串。规模：19 个文件 89 条事实仍带该来源，其中共享层 65 条（method 43、product 15、architecture 6、need 1）、子项目 24 条（a01 8、a02 3、a03 2、a09 2、a04 2、a05 2、a06 2、a07 1、a10 1、a13 1）。
+- producer: `python3 -c "import yaml,glob,collections;c=collections.Counter();[c.update({p:sum(1 for k,v in (yaml.safe_load(open(p,encoding='utf-8')) or {}).items() if isinstance(v,dict) and '.scratch/originals' in str(v.get('origin','')))}) for p in glob.glob('docs/**/*.yaml',recursive=True)];print(sum(c.values()),len([k for k,v in c.items() if v]))"`；`python3 checks/report_check.py`

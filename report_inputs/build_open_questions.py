@@ -28,10 +28,11 @@ OUT = os.path.join(HERE, "open_questions.json")
 SOURCE_GLOB = os.path.join(REPO, "docs", "subprojects", "*", "PLAN.md")
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
-# 标题以这些词开头才算「未解问题」一节；标题里只是提到这几个字的（例如工作包标题
-# 「wp13 :: 报告的『未解问题』改由索引提供」）不算，所以先剥掉 `id :: ` 前缀再比开头。
-HEADING_ID_RE = re.compile(r"^[A-Za-z][\w.-]*\s*::\s*")
+# 只认二级标题（`## `），且标题文字本身必须以这些词开头：`## wp98 :: 未解决的…` 是工作包、
+# 不是这一节，`# 未解问题` 是文件标题层级之外的写法，都不算。代码围栏里的 `# …` 一律跳过。
 OPEN_RE = re.compile(r"^(未解|未决|待解|开放问题|open\s*questions?)", re.I)
+LEVEL2_RE = re.compile(r"^##\s+(?!#)(.*)$")
+FENCE_RE = re.compile(r"^\s*(```|~~~)")
 ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(.+?)\s*$")
 
 
@@ -42,15 +43,20 @@ def scan():
         sub = os.path.basename(os.path.dirname(path))
         rel = os.path.relpath(path, REPO)
         lines = open(path, encoding="utf-8").read().split("\n")
-        heading, level, items = None, 0, []
+        heading, items, in_fence = None, [], False
         for line in lines:
-            m = HEADING_RE.match(line)
+            if FENCE_RE.match(line):
+                in_fence = not in_fence       # 围栏内的 # 不是标题
+                continue
+            if in_fence:
+                continue
+            m = LEVEL2_RE.match(line)
             if m:
                 if heading:
-                    break                       # 这一节结束
-                title = HEADING_ID_RE.sub("", m.group(2).strip())
-                if OPEN_RE.search(title):
-                    heading, level = title, len(m.group(1))
+                    break                       # 这一节到下一个二级标题为止
+                title = m.group(1).strip()
+                if OPEN_RE.match(title):
+                    heading = title
                 continue
             if heading:
                 it = ITEM_RE.match(line)

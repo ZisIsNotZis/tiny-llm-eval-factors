@@ -5,8 +5,9 @@ This repository is a reproducible research workbench for measuring local languag
 ## Run it from a clean clone
 
 ```bash
+sudo apt-get install -y fonts-noto-cjk       # 图表字体：被复现条件的一部分，见下
 python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测，含 matplotlib 依赖）
-./reproduce.sh                               # 核对输入并从库重建报告，约 50 秒
+./reproduce.sh                               # 核对输入并从库重建报告，约 40 秒
 ```
 
 `./reproduce.sh` 依次核对运行时依赖、提示集 SHA256（`.wrapup/prompts/SHA256SUMS`）、报告输入、数据库
@@ -15,8 +16,13 @@ python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测
 `OK：报告可从库重建…` 是完成信号；`BLOCKED` 行表示该项未验证（当前是 `docs@1` schema 标准不在本机）。
 本机实测：报告构建约 35 s；`./reproduce.sh` 全流程 41.1 / 49.9 / 60.2 s（干净 clone，12 核 CPU、无 GPU；差异来自字体缓存与负载）。
 
+**CJK 字体是被复现条件的一部分**：`/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc`
+（来自 `fonts-noto-cjk`，sha256 `b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a`）。
+缺它或版本不对时构建**直接失败**并说明装什么，不静默换字体——换字体后 86 张图的字形与度量都变，
+报告就不再逐字节相同。`./reproduce.sh` 会把这一条当单独一步核对。
+
 它不能重建的东西：模型权重（`.gguf` 不在仓库内，也不在 `artifacts.tsv` 里，因为原始权重文件已不在本机）、
-`/tmp/MultiPL-E` 提示缓存、以及评测运行本身（需要 GPU 与模型文件）。`.wrapup/mres/*_eval.json` 是逐题
+`/tmp/MultiPL-E` 提示缓存、CJK 字体（系统包，按上面的命令装）、以及评测运行本身（需要 GPU 与模型文件）。`.wrapup/mres/*_eval.json` 是逐题
 落盘产物、不入库，其所需的判读摘要随仓库分发在 `report_inputs/eval_status.json`，所以干净 clone 得到的
 报告与本机相同。
 
