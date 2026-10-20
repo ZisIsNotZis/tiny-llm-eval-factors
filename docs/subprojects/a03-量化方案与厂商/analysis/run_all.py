@@ -146,6 +146,23 @@ def main(argv=()):
     expect("attrib：bartowski 系数九列全部跨 0", bad_b == 9, f"{bad_b}/9 跨 0")
     expect("attrib：位宽斜率九列全部不含 0", bad_v == 0, f"{bad_v} 列不显著")
 
+    # 文档/报告引的单值必须与脚本的「逐基准最大半宽」同源：这一条把两处焊在一起。
+    env = {}
+    for bench in pairs.BENCH_ORDER:
+        rows, _ex = attrib.rows_for(cells, vendors, bench)
+        if len(rows) < 8:
+            continue
+        cols, X, y, keep, _dr = attrib.build(rows)
+        beta, se, _dof = attrib.fit(X, y, cols)
+        for k in ("IQ", "local", "bartowski"):
+            if k in beta and se[k] == se[k]:
+                env[k] = max(env.get(k, 0.0), 1.96 * se[k])
+    quoted = {"IQ": 0.27, "local": 0.37, "bartowski": 0.49}
+    off = {k: round(env.get(k, float("nan")), 3) for k in quoted
+           if abs(env.get(k, float("nan")) - quoted[k]) > 0.01}
+    expect("attrib：逐基准最大半宽与 RESULT/PLAN 引用的 0.27 / 0.37 / 0.49 一致",
+           not off, f"脚本 {({k: round(float(v), 3) for k, v in env.items()})} vs 文档 {quoted}" + (f"；偏差 {off}" if off else ""))
+
     cells_n = sum(len(p["cells"]) for p in plists[0.15])
     with_ci = sum(1 for p in plists[0.15] for b in p["cells"] if pairs.interval(p, b)[1] is not None)
     sig_n = sum(1 for p in plists[0.15] for b in p["cells"] if sig(p, b))

@@ -36,7 +36,6 @@ sys.path.insert(0, str(HERE.parent))
 
 import pairs  # noqa: E402  —— 数据装载与家族/方案/来源定义只有一个 home
 
-# 真实来源类别。`ambiguous`/`unknown`/`?` 不在表里 ⇒ 该行不进回归（不能归因的行不参与估计）。
 # 真实来源类别。`ambiguous`/`unknown`/`?` 是不可归因（面板没写出可用路径），这些行
 # **不进回归**并打印；其余真实但非 unsloth/local/bartowski 的来源归作「其他来源」。
 SRC = ("unsloth", "local", "bartowski")
@@ -154,10 +153,14 @@ def main():
         by_fam_bpw.setdefault(pairs.a01.family_of(m), set()).add(pairs.BPW_MAP[m])
     n_fam_within = sum(1 for v in by_fam_bpw.values() if len(v) > 1)
     print("\n识别来源与探测下限（跨 9 个基准汇总；「不可分辨」= 该量级以内的效应本设计探测不到）：")
-    print(f"  {'系数':<10} {'识别基准数':>6} {'识别的族（并集）':<44} {'95% 半宽范围':<18} 点估计方向")
+    print("  口径：半宽 = 该列自己的 95% 半宽（1.96·se）。引**一个**数时引「逐基准最大」这一列，")
+    print("        它是探测下限的最小值（能排除的最小效应量级），**不是** 9 列同时成立的联合区间；")
+    print("        论文/报告里的 0.27 / 0.37 / 0.49 就是这一列，与本表同源。")
+    print(f"  {'系数':<10} {'识别基准数':>6} {'识别的族（并集）':<42} {'逐基准半宽':<15} "
+          f"{'逐基准最大':>8} 点估计方向")
     for k in ("bpw", "IQ", "local", "bartowski"):
         if k not in halfw:
-            print(f"  {k:<10} {0:>6} {'—':<44} {'—':<18} 不可识别")
+            print(f"  {k:<10} {0:>6} {'—':<42} {'—':<15} {'—':>8} 不可识别")
             continue
         fams = sorted({fam for who in ident.get(k, {}).values() for fam in who})
         if k == "bpw":
@@ -165,8 +168,12 @@ def main():
         hw = [h for _b, h in halfw[k]]
         pts = [v for v in betas.get(k, {}).values()]
         sign = "全正" if all(p > 0 for p in pts) else ("全负" if all(p < 0 for p in pts) else "混合")
-        print(f"  {k:<10} {len(ident.get(k, {})):>6} {', '.join(fams):<44} "
-              f"{min(hw):.3f}–{max(hw):.3f}{'':<6} {sign}")
+        print(f"  {k:<10} {len(ident.get(k, {})):>6} {', '.join(fams):<42} "
+              f"{min(hw):.3f}–{max(hw):.3f}{'':<4} {max(hw):>8.3f} {sign}")
+    env = {k: max(h for _b, h in v) for k, v in halfw.items()}
+    if env:
+        print("  逐基准最大半宽（探测下限，文档与报告只引这一组）："
+              + "，".join(f"{k} {env[k]:.3f}" for k in ("IQ", "local", "bartowski") if k in env))
     for name, why in sorted(dropped_any.items()):
         print(f"  不可识别：{name}——{why}")
     if excluded:

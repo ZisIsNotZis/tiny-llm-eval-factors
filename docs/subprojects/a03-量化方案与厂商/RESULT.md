@@ -18,7 +18,7 @@
 代码 revision 用一条能解析的命令读，不在正文里写死（写死的 revision 必然落后）：
 `git log -1 --format=%H -- "docs/subprojects/a03-量化方案与厂商"`。
 `experiments.sqlite` 由多个子项目并发写入，所以**任何一条事实是否仍然成立，用 `analysis/run_all.py` 判定**：
-21 条预期逐条成立时本层的事实全部复核通过。
+22 条预期逐条成立时本层的事实全部复核通过。
 
 复算装置：`analysis/pairs.py`（同字节配对 + 区间）、`analysis/attrib.py`（方案/来源归因 + 识别来源与探测下限）、
 `analysis/alloc.py`（从 gguf 头读实测比特分配轮廓）、`analysis/build_fixtures.py`（重建/核对两份入库夹具）、
@@ -58,13 +58,13 @@
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --slopes`
 - 说明：这是本层判「比特预算能买多少分」的尺子。报告的 `MATCH_BPW = 0.45` 等于允许组内先有 0.45×0.1779 ≈ **0.080** 的 HumanEval+ 分差（GSM8K 0.090、MBPP+ 0.060），与本轴要检的方案差同量级；`≤0.05` 那一档的预算上限只有 0.0089（HumanEval+），所以那一档的差不可能由比特解释。这里给的是 `pairs.py --slopes` 的独立斜率；`attrib.py` 里同一个量作为系数是 HE+ +0.1863（多了两个标签哑变量），两者在区间内一致；TruthfulQA 的 `acc` 是概率质量均值（`i01::res26`），它的斜率只作参照、不作判断。
 
-### fixtures :: 本层有两条结论依赖仓库外的东西——来源（面板元数据里的模型路径，`.wrapup/mres/*` 不入库）与比特分配（gguf 头，`*.gguf` 不入库）——所以它们各自被冻结成入库夹具 `analysis/fixtures/vendor_map.json`（66 个有证据的文件，每个带 `paths: {run_tag: 绝对路径}`）与 `analysis/fixtures/alloc_map.json`（51 个文件的实测轮廓：参数数、文件字节、逐类 bits/参数）；干净 clone 里 `run_all.py` 不读任何仓库外文件，因此 21 条断言在那里同样成立。
+### fixtures :: 本层有两条结论依赖仓库外的东西——来源（面板元数据里的模型路径，`.wrapup/mres/*` 不入库）与比特分配（gguf 头，`*.gguf` 不入库）——所以它们各自被冻结成入库夹具 `analysis/fixtures/vendor_map.json`（66 个有证据的文件，每个带 `paths: {run_tag: 绝对路径}`）与 `analysis/fixtures/alloc_map.json`（51 个文件的实测轮廓：参数数、文件字节、逐类 bits/参数）；干净 clone 里 `run_all.py` 不读任何仓库外文件，因此 22 条断言在那里同样成立。
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
 - evidence: 两个夹具的 sha256 见本节开头的绑定表；重建与漂移检查 `analysis/build_fixtures.py --check`（本机有源时逐模型比对，输出 `[ok] … 与源一致`）
-- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py" --check`（有源的机器上做漂移检查）；干净 clone 证明：`git clone --depth 1 file://$PWD /tmp/a03clone && cd /tmp/a03clone && python3 "docs/subprojects/a03-量化方案与厂商/analysis/run_all.py"`（退出 0，21 条）；再把仓库外源一并断掉也退出 0：`python3 -c "import sys;sys.path.insert(0,'docs/subprojects/a03-量化方案与厂商/analysis');import alloc;alloc.find_path=lambda n:None;import run_all;sys.exit(run_all.main(()))"`
+- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py" --check`（有源的机器上做漂移检查）；干净 clone 证明：`git clone --depth 1 file://$PWD /tmp/a03clone && cd /tmp/a03clone && python3 "docs/subprojects/a03-量化方案与厂商/analysis/run_all.py"`（退出 0，22 条）；再把仓库外源一并断掉也退出 0：`python3 -c "import sys;sys.path.insert(0,'docs/subprojects/a03-量化方案与厂商/analysis');import alloc;alloc.find_path=lambda n:None;import run_all;sys.exit(run_all.main(()))"`
 - 说明：这条是为修一条复核阻塞项而生的——上一版 `run_all.py` 直接扫 `.wrapup/mres/*/*.json`，而 `.gitignore` 把那个目录排除了（只放行 `*_eval.json`），于是干净 clone 里来源全丢、「跨上传者受控对」与两个系数的九列检查全部 FAIL。判据是：**承载断言的证据必须随仓库走**；能重建的（分配轮廓）用生成器 + 漂移检查，不能重建的（面板元数据）用带证据行的冻结夹具。
 
 ## 二、方案差（IQ 系列 vs K 系列，同厂商内、同字节）
@@ -123,14 +123,15 @@
 - repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --bound 0.45`（Δ=0.154 那一对超出 0.15 判据，只在 0.45 档打印；Δ=0.099 那一对在 0.15 档也打印）
 - 说明：「来源」在这里等于「本仓自己的分配配方」，`alloc-m55` 给出这两份文件的分配差有多大；所以这一对不能读成厂商效应。
 
-### attrib :: 同族 + 同比特预算 + 族固定效应下，三个标签系数在 9 个基准上**全部跨 0，且这个「跨 0」得按各自的半宽读**：IQ 效应半宽 0.104–0.273（由 Qwen3.5-2B / Qwen3.5-4B / Qwen3.8-27B 三族、6 个 IQ 文件里的 5 个识别）、本仓 `local` 配方半宽 0.158–0.366（只由 LFM2.5-8B-A1B 一族识别）、`bartowski` 半宽 0.212–0.489（只由 Qwen3.6-35B-A3B 一族识别）；唯一九列都不含 0 的是位宽斜率（+0.1152 至 +0.2042，20 个族有族内位宽差）。所以正确说法是**本设计探测不到各自半宽以内的效应**，不是「没有效应」。
+### attrib :: 同族 + 同比特预算 + 族固定效应下，三个标签系数在 9 个基准上**全部跨 0，且这个「跨 0」得按各自的半宽读**：IQ 效应逐基准半宽 0.104–0.273、**逐基准最大 0.27**（由 Qwen3.5-2B / Qwen3.5-4B / Qwen3.8-27B 三族、6 个 IQ 文件里的 5 个识别）、本仓 `local` 配方逐基准 0.158–0.366、**最大 0.37**（只由 LFM2.5-8B-A1B 一族识别）、`bartowski` 逐基准 0.212–0.489、**最大 0.49**（只由 Qwen3.6-35B-A3B 一族识别）；唯一九列都不含 0 的是位宽斜率（+0.1152 至 +0.2042，20 个族有族内位宽差）。所以正确说法是**本设计探测不到各自半宽以内的效应**，不是「没有效应」。
 - author: measurement
 - from: result.slopes
 - scope: general
 - status: current
 - kind: measured
 - evidence: `analysis/attrib.py` 的逐基准系数 + 「识别来源与探测下限」汇总块（每个系数打印识别基准数、识别族、95% 半宽范围与点估计方向）；`其他来源` 哑变量因「没有任何族同时含两个取值」被判不可识别并从模型剔除；来源不可归因的行（`ambiguous`/`unknown`）不进回归并在同一块打印
-- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/attrib.py"`
+- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/attrib.py"`（末尾打印「逐基准最大半宽（探测下限，文档与报告只引这一组）」一行，本段引的就是它）
+- 口径：半宽 = 该列自己的 95% 半宽（1.96·se）；**引一个数时引逐基准最大**（IQ 0.27 / local 0.37 / bartowski 0.49），它是探测下限的最小值，**不是** 9 列同时成立的联合区间。改口径要同时改脚本那一行与本段，否则又是同一个事实两个数。
 - 说明：`bartowski` 系数**不能当厂商效应读**——它由单对识别、又拿汇总斜率外推，逐基准比符号有 3/9 列与它唯一来源的那一对相反（ARC-c、TQA、GSM8K），属外推假象；厂商结论因此由逐对区间承担（`vendor-qwen36`，那一对逐列半宽 0.019–0.134）。脚本每次运行都打印这个翻转计数，`run_all.py` 把它作为一条断言。
 - 会推翻它：出现第二个同族跨来源对后 `bartowski`/`local` 系数的区间不含 0；或 IQ 文件补到能给出更窄区间的族。
 
@@ -188,7 +189,7 @@
 
 ## 五、本轴的两条总结事实（写入 meta 层的 `res7` / `an4` 位置）
 
-### res7 :: 同字节下换量化方案（IQ 系列 vs K 系列）或换上传者，**在本设计下都不可分辨**（undetermined at this precision）：把家族与比特预算固定住后，三个标签系数的区间在 9 个基准上全部跨 0，而它们的半宽分别是 IQ 0.104–0.273、本仓 `local` 配方 0.158–0.366、`bartowski`（厂商，单族识别）0.212–0.489——也就是说这两种标签的效应用这份数据只能排除到「大于上述半宽」，不能排除「不存在」。逐对比较里区间不含 0 的只有 3/31 格（Qwen3.5-2B 的 HE/HE+ −0.1341、Qwen3.5-4B 的 MMLU +0.0592），唯一跨上传者受控对（Qwen3.6-35B-A3B，Δbpw +0.025，逐列半宽 0.019–0.134）九列全部跨 0。
+### res7 :: 同字节下换量化方案（IQ 系列 vs K 系列）或换上传者，**在本设计下都不可分辨**（undetermined at this precision）：把家族与比特预算固定住后，三个标签系数的区间在 9 个基准上全部跨 0，而它们的逐基准半宽是 IQ 0.104–0.273（最大 0.27）、本仓 `local` 配方 0.158–0.366（最大 0.37）、`bartowski`（厂商，单族识别）0.212–0.489（最大 0.49）——也就是说这两种标签的效应用这份数据只能排除到「大于上述半宽」，不能排除「不存在」。逐对比较里区间不含 0 的只有 3/31 格（Qwen3.5-2B 的 HE/HE+ −0.1341、Qwen3.5-4B 的 MMLU +0.0592），唯一跨上传者受控对（Qwen3.6-35B-A3B，Δbpw +0.025，逐列半宽 0.019–0.134）九列全部跨 0。
 - author: measurement
 - from: result.attrib, result.multiplicity, result.scheme-4b, result.vendor-qwen36
 - scope: general
@@ -200,7 +201,7 @@
 - 说明：旧措辞与本条的差别就是这次复核的要害——「测不出」被读成「不存在」。本条把功效写进结论：要判厂商效应，至少要有第二个同族跨来源对，把 `bartowski` 半宽压到 0.1 以下。
 - 会推翻它：补出第二个跨上传者同分配对照后系数区间不含 0；或 IQ 文件补到能给出更窄区间；或复现负控显示单次运行的抖动大于 0.05。
 
-### an4 :: 「换方案 / 换厂商」这两个标签在本库里都不是独立于比特预算的变量，它们代理的是**比特分配**：总位宽几乎相同的配对里，实测分配轮廓相差 0.337–0.427 比特/参数（`alloc-qwen36`、`alloc-scheme`），而分数差在这些配对上测不出（`res7`）；相反，把分配推到极端的自建配方（`alloc-m55`）能改写排序。所以挑量化文件该比的是「字节 + 比特落在哪类层上」，不是档位名、不是厂商名。**但这不是「标签无效」**：本设计只能把标签效应排除到各自半宽（厂商 0.21–0.49、方案 0.10–0.27），要断言「厂商标签没有作用」需要更强设计。
+### an4 :: 「换方案 / 换厂商」这两个标签在本库里都不是独立于比特预算的变量，它们代理的是**比特分配**：总位宽几乎相同的配对里，实测分配轮廓相差 0.337–0.427 比特/参数（`alloc-qwen36`、`alloc-scheme`），而分数差在这些配对上测不出（`res7`）；相反，把分配推到极端的自建配方（`alloc-m55`）能改写排序。所以挑量化文件该比的是「字节 + 比特落在哪类层上」，不是档位名、不是厂商名。**但这不是「标签无效」**：本设计只能把标签效应排除到各自半宽（逐基准最大：厂商 0.49、方案 0.27、本仓配方 0.37），要断言「厂商标签没有作用」需要更强设计。
 - author: agent
 - from: result.res7, result.alloc-qwen36, result.alloc-scheme, result.alloc-m55, result.label-audit
 - scope: general
