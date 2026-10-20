@@ -1653,24 +1653,51 @@ def ingest_variant(con):
 
 
 def numbered_backup(path=DB):
-    """变更前先复制出下一个未占用的编号备份 `experiments.sqlite.bakN`。
+    """变更前先产生下一个编号备份 `experiments.sqlite.bakN`，并断言它真的可用。
 
-    备份是变更的前置条件而不是事后步骤：没有它就不能开始写库。
+    库是 WAL 模式：只 `copy2` 主文件会漏掉还没检查点的那一段（-wal 里约 1.8 MB），备份会
+    回到一个**不是**变更前状态的库。所以用 SQLite 的在线备份 API（`Connection.backup()`）
+    把已提交内容整体取出来，再打开备份逐项核对：integrity ok、行数与主库一致，并打印
+    备份时的行数与 sha256，供事后比对。
+
+    备份是变更的前置条件而不是事后步骤：核不过就不往下走。
     """
-    import shutil
+    import hashlib
     n = 1
     while os.path.exists(f"{path}.bak{n}"):
         n += 1
     dst = f"{path}.bak{n}"
-    shutil.copy2(path, dst)
-    return dst
+    src = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    out = sqlite3.connect(dst)
+    try:
+        src.backup(out)                        # 在线备份：把已提交内容整体写进 dst
+    finally:
+        out.close()
+        src.close()
+
+    probe = sqlite3.connect(f"file:{dst}?mode=ro", uri=True)
+    try:
+        ic = probe.execute("PRAGMA integrity_check").fetchone()[0]
+        rows = probe.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
+    finally:
+        probe.close()
+    with open(dst, "rb") as fh:
+        digest = hashlib.sha256(fh.read()).hexdigest()
+    print(f"  backup: {dst} rows={rows} integrity={ic} sha256={digest[:16]}…")
+    if ic != "ok":
+        raise SystemExit(f"备份不可用：{dst} 的 integrity_check 返回 {ic}")
+    return dst, rows
 
 
 def main():
-    print(f"== backup: {numbered_backup()} ==")
+    print("== backup ==")
+    _dst, backup_rows = numbered_backup()
     con = sqlite3.connect(DB)
     con.execute("PRAGMA foreign_keys=ON")
     before = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
+    if backup_rows != before:
+        raise SystemExit(f"备份与主库行数不一致：备份 {backup_rows}，主库 {before}；"
+                         f"不在这种状态下改库")
     print("== migrating schema ==")
     migrate_schema(con)
     print("== repairing duplicate bare cells ==")

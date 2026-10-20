@@ -116,3 +116,25 @@
 - status: current
 - evidence: 构建成功后置 `BUILD_OK=1` 才跑 `checks/report_check.py`；把 CJK 字体路径改成不存在的路径强制构建失败时，`reproduce.sh` 打印 `FAIL 报告构建失败` 与 `SKIP 报告与产物一致（第 9 步没有产出本次报告，不拿仓库里那份旧文件比对）`，整体 FAILED。
 - producer: `./reproduce.sh`（强制构建失败一次，观察第 9、10 步）
+
+## res37 :: 备份改成 SQLite 在线备份并自证可用：只复制主文件会漏掉 WAL 里已提交的行。
+
+- kind: measured
+- status: current
+- evidence: `migrate_db.py::numbered_backup()` 用 `Connection.backup()` 把已提交内容整体写进 `experiments.sqlite.bakN`，随后打开备份核对 `integrity_check` 与行数，并打印备份时的行数与 sha256；行数与主库不一致就不往下改库。负控在库副本上制造「已提交行只存在于 -wal」的状态：`shutil.copy2` 主文件得到 3233 行（少一条），在线备份得到 3234 行 = 变更前状态。
+- producer: `python3 checks/backup_wal_negative_control.py`
+
+## res38 :: `n_items` 从产物回填：已评分行的 NULL 从 2297 降到 35，剩下降级为显式原因，没有任何默认值。
+
+- kind: measured
+- status: current
+- evidence: `migrations/backfill_n_items.py` 逐族回填并有可证伪判据——`humaneval`/`mbpp` 只在分数恰好等于 `k/164`、`k/378` 时认（1141/1142、756/757 满足，各 1 行不满足则留空）；`humaneval-multipl-e` 用 `eval_status.n_for` 配产物（242/244，2 行产物无法唯一配对）；`bfcl` 用 run 汇总的 `per_category[类别].n`（99 全中）；`testfrac` 用 `m41_summary.jsonl` 的 `mean_frac`（24 全中）。仍为 NULL 的 35 行：`bfcl-multiturn` 24（多轮类别不在任何 summary 的 `per_category` 里）、`fa-probe` 6、空 family 1、两族各 1 行分数不是 k/n、MPL 2 行产物无法唯一配对。逐行溯源在 `audits/n_items_backfill.tsv`；连跑两次第二次改动 0 行；前后各一次在线备份（`bak5`/`bak6`），`checks/db_check.py` 绿。
+- producer: `python3 migrations/backfill_n_items.py --dry-run`；`sqlite3 experiments.sqlite "select bench_family,count(*) from experiments where _score is not null and n_items is null group by 1"`
+
+## res39 :: BFCL 只有类别级题量，micro 不可得——不是用 macro 代替。
+
+- kind: citation
+- status: current
+- evidence: 回填只能拿到每个类别自己的 `n`（`per_category[cat].n`，如 `simple_python` 400、`multiple` 200、`live_multiple` 1053）；micro 需要逐题正确数，`*_summary.jsonl` 只存类别级 `acc`/`n`，逐题结果不在库也不在产物里，因此 micro 无法从现有数据算出。
+- producer: `python3 migrations/backfill_n_items.py --dry-run`（`per_category[...].n` 行）
+
