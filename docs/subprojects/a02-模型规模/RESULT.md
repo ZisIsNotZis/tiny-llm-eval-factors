@@ -152,6 +152,29 @@
 - repro: `python3 -c "import re;h=open('report.html',encoding='utf-8').read();t=re.sub(r'<[^>]+>',' ',h);[print(m.group(0).strip()[:150]) for m in re.finditer(r'[^。\n]{0,60}(参数量|规模)[^。\n]{0,100}。',t)]" | sort -u`
 - 给 i02 的建议文本（不由本层改 `make_report.py`）：「X = 实测参数量（GGUF 张量求和）」；把 E2B/E4B 两档的行从 §2 面板剔除或在表头注明其标签是有效参数量；删掉「13B 回折」那句，改为「gemma-4 的 Q2_K_XL 档里 12B 这一格低于同档 4B（54.3% vs 74.4%，n=164），与同模型 Q3_K_XL 档的 93.9% 相差 39.6pp，属该配方格的问题」。
 
+### size-curve-inventory :: 用实测参数量当 X、每个基准钉死一个协议、每格用自己的 `n_items` 做分母，库内能画出 63 条「同族 + 同配方 + 同基准 + 同语言」的规模曲线（至少 2 个 rung）；其中 40 条完全单调，23 条有反向步；反向步里只有 4 处既超出二项噪声又不能由已知 harness 缺陷解释，全部是 gemma-4 的 Q2_K_XL 档在 7.518B→11.907B 上（gsm8k −19.0pp、Humaneval+ −18.9pp、Humaneval −20.1pp、MBPP −10.3pp）。
+
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- from: result.size-axis-verdict, result.gemma4-q2kxl-inversion
+- origin: `analysis/size_curves.py`（`PROTOCOL_OF` 把每个基准钉到一个协议；Wilson 区间 n = 该格 `n_items`）
+- evidence: 曲线数 63、单调 40、有反向 23、超出噪声 4；其余 19 处反向里 16 处的区间与前一档重叠（判「测不出」，最大是 Ternary-Bonsai 的 −6.2pp），3 处是已知 harness 失败（见 `gemma4-mpl-harness`）。被跳过的格子只有 12 个「无配方名」的，没有一例是因为缺 `n_items`。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_curves.py" | head -8`
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_curves.py" --check`（实跑输出：`7 expected true, 0 false`）
+
+### gemma4-mpl-harness :: gemma-4 在 MultiPL-E raw 补全协议上的两处大幅反向（Q2_K_XL 档 26B-A4B 比 4B 低 41.6pp、Q3_K_XL 档低 71.4pp）是已记录的 harness 失败，不是规模效应——同一批文件在探针里 0/40，完成物是 markdown 推理散文而非代码。
+
+- author: measurement
+- scope: specific
+- status: current
+- kind: measured
+- from: result.size-curve-inventory
+- origin: `.wrapup/moe_structure_analysis.py::HARNESS_INVALID`（该表由 40 题探针与完成物形状判定）+ 本轮 `size_curves.py` 的 `harness_suspect` 标记
+- evidence: `size_curves.json` 里 `gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf` 与 `..._Q3_K_XL.gguf` 在 `humaneval-cpp`/`humaneval-py` 两条线上的反向被标 `harness_explained: true`，故不计入「超出噪声」。i01 的 `res18`/`res19` 记录同一现象（raw 补全下 gemma-4 写散文，0/161）。
+- repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_curves.json'));[print(r['lineage'],r['recipe'],r['bench'],i) for r in d['curves'] for i in r['inversions'] if i['harness_explained']]"`
+
 ## plan5：双变量回归的可识别性
 
 ### moe-vif-unresolved :: 既往那份 `log(总参) + log(激活参)` 联合回归（`.wrapup/moe_structure_analysis.py` 及其输出 `.wrapup/moe_structure.json`）给出 VIF=1.93、`total_only` 调整 R²=0.668、`total+active`=0.750、`total+moe`=0.765，但它既不足以证明可识别、也不足以判不可识别：它只覆盖 `multipl-e-raw-greedy-768` 一个协议、把每格题数硬编码为 322、且成文于 `n_items` 回填之前，所以结论仍是未定，由 `WP3` 在 WP2 判定的行集上重算。

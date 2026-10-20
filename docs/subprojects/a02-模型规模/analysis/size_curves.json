@@ -1,0 +1,3686 @@
+{
+ "curves": [
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "IQ3_XXS",
+   "bench": "humaneval-cpp",
+   "language": "cpp",
+   "n": 2,
+   "points": [
+    {
+     "model": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.1801,
+     "n_items": 161,
+     "ci": [
+      0.1284,
+      0.2467
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.3789,
+     "n_items": 161,
+     "ci": [
+      0.3076,
+      0.4558
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "IQ3_XXS",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.372,
+     "n_items": 164,
+     "ci": [
+      0.3017,
+      0.4481
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.689,
+     "n_items": 164,
+     "ci": [
+      0.6145,
+      0.7549
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "IQ3_XXS",
+   "bench": "humaneval-py",
+   "language": "py",
+   "n": 2,
+   "points": [
+    {
+     "model": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.1988,
+     "n_items": 161,
+     "ci": [
+      0.1445,
+      0.2671
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.4099,
+     "n_items": 161,
+     "ci": [
+      0.3369,
+      0.4871
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "IQ3_XXS",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.3902,
+     "n_items": 164,
+     "ci": [
+      0.3189,
+      0.4666
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.7195,
+     "n_items": 164,
+     "ci": [
+      0.6463,
+      0.7826
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "IQ3_XXS",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.5,
+     "n_items": 100,
+     "ci": [
+      0.4038,
+      0.5962
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.77,
+     "n_items": 100,
+     "ci": [
+      0.6785,
+      0.8416
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "IQ3_XXS",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.2857,
+     "n_items": 378,
+     "ci": [
+      0.2425,
+      0.3332
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.5794,
+     "n_items": 378,
+     "ci": [
+      0.529,
+      0.6281
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "IQ3_XXS",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.3333,
+     "n_items": 378,
+     "ci": [
+      0.2877,
+      0.3823
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.6799,
+     "n_items": 378,
+     "ci": [
+      0.6313,
+      0.7249
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.08,
+     "n_items": 100,
+     "ci": [
+      0.0411,
+      0.15
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.44,
+     "n_items": 100,
+     "ci": [
+      0.3467,
+      0.5377
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.82,
+     "n_items": 100,
+     "ci": [
+      0.7333,
+      0.883
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval-cpp",
+   "language": "cpp",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.0435,
+     "n_items": 161,
+     "ci": [
+      0.0212,
+      0.087
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.1118,
+     "n_items": 161,
+     "ci": [
+      0.0719,
+      0.1698
+     ],
+     "replicates": 3
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.3416,
+     "n_items": 161,
+     "ci": [
+      0.2728,
+      0.4178
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.4348,
+     "n_items": 161,
+     "ci": [
+      0.3606,
+      0.512
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.0854,
+     "n_items": 164,
+     "ci": [
+      0.0515,
+      0.1382
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.2378,
+     "n_items": 164,
+     "ci": [
+      0.1791,
+      0.3085
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.6829,
+     "n_items": 164,
+     "ci": [
+      0.6082,
+      0.7493
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.7622,
+     "n_items": 164,
+     "ci": [
+      0.6915,
+      0.8209
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval-py",
+   "language": "py",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.0683,
+     "n_items": 161,
+     "ci": [
+      0.0386,
+      0.1182
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.1366,
+     "n_items": 161,
+     "ci": [
+      0.092,
+      0.1982
+     ],
+     "replicates": 3
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.354,
+     "n_items": 161,
+     "ci": [
+      0.2844,
+      0.4305
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.3478,
+     "n_items": 161,
+     "ci": [
+      0.2786,
+      0.4242
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.2058,
+     "to_b": 8.9538,
+     "from": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "to": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "drop_pp": -0.62,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.0915,
+     "n_items": 164,
+     "ci": [
+      0.0562,
+      0.1454
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.2561,
+     "n_items": 164,
+     "ci": [
+      0.1954,
+      0.3279
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.7195,
+     "n_items": 164,
+     "ci": [
+      0.6463,
+      0.7826
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.7988,
+     "n_items": 164,
+     "ci": [
+      0.7309,
+      0.853
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.24,
+     "n_items": 100,
+     "ci": [
+      0.1669,
+      0.3323
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.4,
+     "n_items": 100,
+     "ci": [
+      0.3094,
+      0.498
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.68,
+     "n_items": 100,
+     "ci": [
+      0.5834,
+      0.7633
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.755,
+     "n_items": 100,
+     "ci": [
+      0.6623,
+      0.8288
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.0794,
+     "n_items": 378,
+     "ci": [
+      0.0562,
+      0.111
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.2725,
+     "n_items": 378,
+     "ci": [
+      0.2301,
+      0.3195
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.5688,
+     "n_items": 378,
+     "ci": [
+      0.5184,
+      0.6178
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.5767,
+     "n_items": 378,
+     "ci": [
+      0.5264,
+      0.6255
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q2_K_XL",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q2_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.0952,
+     "n_items": 378,
+     "ci": [
+      0.0696,
+      0.129
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.3598,
+     "n_items": 378,
+     "ci": [
+      0.313,
+      0.4094
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.6878,
+     "n_items": 378,
+     "ci": [
+      0.6394,
+      0.7325
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.6799,
+     "n_items": 378,
+     "ci": [
+      0.6313,
+      0.7249
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.2058,
+     "to_b": 8.9538,
+     "from": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
+     "to": "Qwen3.5-9B-UD-Q2_K_XL.gguf",
+     "drop_pp": -0.79,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.44,
+     "n_items": 100,
+     "ci": [
+      0.3467,
+      0.5377
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.65,
+     "n_items": 100,
+     "ci": [
+      0.5525,
+      0.7364
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.94,
+     "n_items": 100,
+     "ci": [
+      0.8752,
+      0.9722
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval-cpp",
+   "language": "cpp",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.0683,
+     "n_items": 161,
+     "ci": [
+      0.0386,
+      0.1182
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.2422,
+     "n_items": 161,
+     "ci": [
+      0.1826,
+      0.3139
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.4534,
+     "n_items": 161,
+     "ci": [
+      0.3785,
+      0.5305
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.5839,
+     "n_items": 161,
+     "ci": [
+      0.5066,
+      0.6572
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.2195,
+     "n_items": 164,
+     "ci": [
+      0.163,
+      0.2889
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.5244,
+     "n_items": 164,
+     "ci": [
+      0.4483,
+      0.5994
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.7805,
+     "n_items": 164,
+     "ci": [
+      0.7111,
+      0.837
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.7744,
+     "n_items": 164,
+     "ci": [
+      0.7046,
+      0.8317
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.2058,
+     "to_b": 8.9538,
+     "from": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "to": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "drop_pp": -0.61,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval-py",
+   "language": "py",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.1304,
+     "n_items": 161,
+     "ci": [
+      0.0869,
+      0.1912
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.2671,
+     "n_items": 161,
+     "ci": [
+      0.2047,
+      0.3403
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.5031,
+     "n_items": 161,
+     "ci": [
+      0.4267,
+      0.5794
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.5217,
+     "n_items": 161,
+     "ci": [
+      0.445,
+      0.5975
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.2378,
+     "n_items": 164,
+     "ci": [
+      0.1791,
+      0.3085
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.5732,
+     "n_items": 164,
+     "ci": [
+      0.4966,
+      0.6463
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.8171,
+     "n_items": 164,
+     "ci": [
+      0.7509,
+      0.8688
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.8232,
+     "n_items": 164,
+     "ci": [
+      0.7576,
+      0.874
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.5,
+     "n_items": 100,
+     "ci": [
+      0.4038,
+      0.5962
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.55,
+     "n_items": 100,
+     "ci": [
+      0.4524,
+      0.6439
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.8,
+     "n_items": 100,
+     "ci": [
+      0.7112,
+      0.8666
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.79,
+     "n_items": 100,
+     "ci": [
+      0.7002,
+      0.8583
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.2058,
+     "to_b": 8.9538,
+     "from": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "to": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "drop_pp": -1.0,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.2619,
+     "n_items": 378,
+     "ci": [
+      0.2201,
+      0.3085
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.4444,
+     "n_items": 378,
+     "ci": [
+      0.3952,
+      0.4948
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.627,
+     "n_items": 378,
+     "ci": [
+      0.5772,
+      0.6742
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.6667,
+     "n_items": 378,
+     "ci": [
+      0.6177,
+      0.7123
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Qwen3.5",
+   "recipe": "Q3_K_XL",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "Qwen3.5-0.8B-UD-Q3_K_XL.gguf",
+     "label": "0.8B",
+     "harness_suspect": false,
+     "params_b": 0.7524,
+     "score": 0.3016,
+     "n_items": 378,
+     "ci": [
+      0.2575,
+      0.3497
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+     "label": "2B",
+     "harness_suspect": false,
+     "params_b": 1.8818,
+     "score": 0.582,
+     "n_items": 378,
+     "ci": [
+      0.5317,
+      0.6307
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.2058,
+     "score": 0.7619,
+     "n_items": 378,
+     "ci": [
+      0.7165,
+      0.8021
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Qwen3.5-9B-UD-Q3_K_XL.gguf",
+     "label": "9B",
+     "harness_suspect": false,
+     "params_b": 8.9538,
+     "score": 0.8254,
+     "n_items": 378,
+     "ci": [
+      0.7839,
+      0.8603
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.62,
+     "n_items": 100,
+     "ci": [
+      0.5221,
+      0.709
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.85,
+     "n_items": 100,
+     "ci": [
+      0.7672,
+      0.9069
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.84,
+     "n_items": 100,
+     "ci": [
+      0.7558,
+      0.899
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.0218,
+     "to_b": 8.1885,
+     "from": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "to": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "drop_pp": -1.0,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "humaneval-cpp",
+   "language": "cpp",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.2919,
+     "n_items": 161,
+     "ci": [
+      0.2272,
+      0.3663
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.4907,
+     "n_items": 161,
+     "ci": [
+      0.4146,
+      0.5672
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.5528,
+     "n_items": 161,
+     "ci": [
+      0.4757,
+      0.6275
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.4817,
+     "n_items": 164,
+     "ci": [
+      0.4065,
+      0.5577
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.7805,
+     "n_items": 164,
+     "ci": [
+      0.7111,
+      0.837
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.7317,
+     "n_items": 164,
+     "ci": [
+      0.6592,
+      0.7936
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.0218,
+     "to_b": 8.1885,
+     "from": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "to": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "drop_pp": -4.88,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "humaneval-py",
+   "language": "py",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.4161,
+     "n_items": 161,
+     "ci": [
+      0.3428,
+      0.4934
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.677,
+     "n_items": 161,
+     "ci": [
+      0.6014,
+      0.7444
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.6149,
+     "n_items": 161,
+     "ci": [
+      0.5379,
+      0.6866
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.0218,
+     "to_b": 8.1885,
+     "from": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "to": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "drop_pp": -6.21,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.5427,
+     "n_items": 164,
+     "ci": [
+      0.4663,
+      0.6171
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.8293,
+     "n_items": 164,
+     "ci": [
+      0.7643,
+      0.8792
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.7988,
+     "n_items": 164,
+     "ci": [
+      0.7309,
+      0.853
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 4.0218,
+     "to_b": 8.1885,
+     "from": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "to": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "drop_pp": -3.05,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.69,
+     "n_items": 100,
+     "ci": [
+      0.5937,
+      0.7722
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.68,
+     "n_items": 100,
+     "ci": [
+      0.5834,
+      0.7633
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.77,
+     "n_items": 100,
+     "ci": [
+      0.6785,
+      0.8416
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 1.72,
+     "to_b": 4.0218,
+     "from": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "to": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "drop_pp": -1.0,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.4471,
+     "n_items": 378,
+     "ci": [
+      0.3977,
+      0.4975
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.5741,
+     "n_items": 378,
+     "ci": [
+      0.5237,
+      0.6229
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.5767,
+     "n_items": 378,
+     "ci": [
+      0.5264,
+      0.6255
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "Ternary-Bonsai",
+   "recipe": "Q2_0_g64",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+     "label": "1.7B",
+     "harness_suspect": false,
+     "params_b": 1.72,
+     "score": 0.537,
+     "n_items": 378,
+     "ci": [
+      0.4866,
+      0.5867
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-4B-Q2_0_g64.gguf",
+     "label": "4B",
+     "harness_suspect": false,
+     "params_b": 4.0218,
+     "score": 0.6534,
+     "n_items": 378,
+     "ci": [
+      0.6041,
+      0.6997
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "Ternary-Bonsai-8B-Q2_0_g64.gguf",
+     "label": "8B",
+     "harness_suspect": false,
+     "params_b": 8.1885,
+     "score": 0.6799,
+     "n_items": 378,
+     "ci": [
+      0.6313,
+      0.7249
+     ],
+     "replicates": 2
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q2_K_XL",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.34,
+     "n_items": 100,
+     "ci": [
+      0.2546,
+      0.4372
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.45,
+     "n_items": 100,
+     "ci": [
+      0.3561,
+      0.5476
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.2012,
+     "n_items": 164,
+     "ci": [
+      0.147,
+      0.2691
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.5305,
+     "n_items": 164,
+     "ci": [
+      0.4543,
+      0.6053
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.2195,
+     "n_items": 164,
+     "ci": [
+      0.163,
+      0.2889
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.5488,
+     "n_items": 164,
+     "ci": [
+      0.4724,
+      0.623
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q2_K_XL",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 2,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.42,
+     "n_items": 100,
+     "ci": [
+      0.328,
+      0.5179
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.71,
+     "n_items": 100,
+     "ci": [
+      0.6146,
+      0.7899
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q4_K_XL",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.75,
+     "n_items": 100,
+     "ci": [
+      0.657,
+      0.8245
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.87,
+     "n_items": 100,
+     "ci": [
+      0.7902,
+      0.9224
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "12B",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.95,
+     "n_items": 100,
+     "ci": [
+      0.8882,
+      0.9785
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.96,
+     "n_items": 100,
+     "ci": [
+      0.9016,
+      0.9843
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q4_K_XL",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.7073,
+     "n_items": 164,
+     "ci": [
+      0.6336,
+      0.7716
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.7988,
+     "n_items": 164,
+     "ci": [
+      0.7309,
+      0.853
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "12B",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.9085,
+     "n_items": 164,
+     "ci": [
+      0.8546,
+      0.9438
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.9146,
+     "n_items": 164,
+     "ci": [
+      0.8618,
+      0.9485
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q4_K_XL",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.75,
+     "n_items": 164,
+     "ci": [
+      0.6785,
+      0.81
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.8354,
+     "n_items": 164,
+     "ci": [
+      0.7711,
+      0.8843
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "12B",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.939,
+     "n_items": 164,
+     "ci": [
+      0.8914,
+      0.9665
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.9573,
+     "n_items": 164,
+     "ci": [
+      0.9145,
+      0.9792
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q4_K_XL",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.71,
+     "n_items": 100,
+     "ci": [
+      0.6146,
+      0.7899
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.79,
+     "n_items": 100,
+     "ci": [
+      0.7002,
+      0.8583
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "12B",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.88,
+     "n_items": 100,
+     "ci": [
+      0.8019,
+      0.93
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.81,
+     "n_items": 100,
+     "ci": [
+      0.7222,
+      0.8749
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 11.9074,
+     "to_b": 25.2331,
+     "from": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+     "drop_pp": -7.0,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q4_K_XL",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.5159,
+     "n_items": 378,
+     "ci": [
+      0.4656,
+      0.5658
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.6587,
+     "n_items": 378,
+     "ci": [
+      0.6095,
+      0.7047
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "12B",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.7302,
+     "n_items": 378,
+     "ci": [
+      0.6833,
+      0.7724
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.7698,
+     "n_items": 378,
+     "ci": [
+      0.7248,
+      0.8094
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4-it-qat",
+   "recipe": "Q4_K_XL",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6286,
+     "score": 0.6243,
+     "n_items": 378,
+     "ci": [
+      0.5745,
+      0.6717
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.463,
+     "score": 0.7857,
+     "n_items": 378,
+     "ci": [
+      0.7416,
+      0.8241
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "12B",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.8757,
+     "n_items": 378,
+     "ci": [
+      0.8386,
+      0.9052
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.9021,
+     "n_items": 378,
+     "ci": [
+      0.868,
+      0.9281
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.63,
+     "n_items": 100,
+     "ci": [
+      0.5322,
+      0.7182
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.84,
+     "n_items": 100,
+     "ci": [
+      0.7558,
+      0.899
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.65,
+     "n_items": 100,
+     "ci": [
+      0.5525,
+      0.7364
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.91,
+     "n_items": 100,
+     "ci": [
+      0.8377,
+      0.9519
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 11.9074,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -19.0,
+     "ci_overlap": false,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval-cpp",
+   "language": "cpp",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.2981,
+     "n_items": 161,
+     "ci": [
+      0.2329,
+      0.3728
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.472,
+     "n_items": 161,
+     "ci": [
+      0.3965,
+      0.5489
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": true,
+     "params_b": 25.2331,
+     "score": 0.0559,
+     "n_items": 161,
+     "ci": [
+      0.0297,
+      0.1028
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 25.2331,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -41.61,
+     "ci_overlap": false,
+     "harness_explained": true
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.5122,
+     "n_items": 164,
+     "ci": [
+      0.4363,
+      0.5875
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.6951,
+     "n_items": 164,
+     "ci": [
+      0.6209,
+      0.7604
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.5061,
+     "n_items": 164,
+     "ci": [
+      0.4303,
+      0.5816
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": true,
+     "params_b": 25.2331,
+     "score": 0.939,
+     "n_items": 164,
+     "ci": [
+      0.8914,
+      0.9665
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 11.9074,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -18.9,
+     "ci_overlap": false,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval-py",
+   "language": "py",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.1863,
+     "n_items": 161,
+     "ci": [
+      0.1338,
+      0.2535
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.4969,
+     "n_items": 161,
+     "ci": [
+      0.4206,
+      0.5733
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": true,
+     "params_b": 25.2331,
+     "score": 0.0311,
+     "n_items": 161,
+     "ci": [
+      0.0133,
+      0.0706
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 25.2331,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -46.58,
+     "ci_overlap": false,
+     "harness_explained": true
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.5305,
+     "n_items": 164,
+     "ci": [
+      0.4543,
+      0.6053
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.7439,
+     "n_items": 164,
+     "ci": [
+      0.6721,
+      0.8046
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.5427,
+     "n_items": 164,
+     "ci": [
+      0.4663,
+      0.6171
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.9573,
+     "n_items": 164,
+     "ci": [
+      0.9145,
+      0.9792
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 11.9074,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -20.12,
+     "ci_overlap": false,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.59,
+     "n_items": 100,
+     "ci": [
+      0.492,
+      0.6813
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.77,
+     "n_items": 100,
+     "ci": [
+      0.6785,
+      0.8416
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.7,
+     "n_items": 100,
+     "ci": [
+      0.6041,
+      0.7811
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.87,
+     "n_items": 100,
+     "ci": [
+      0.7902,
+      0.9224
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 11.9074,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -7.0,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.4339,
+     "n_items": 378,
+     "ci": [
+      0.3848,
+      0.4842
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.582,
+     "n_items": 378,
+     "ci": [
+      0.5317,
+      0.6307
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.5132,
+     "n_items": 378,
+     "ci": [
+      0.463,
+      0.5632
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.7354,
+     "n_items": 378,
+     "ci": [
+      0.6888,
+      0.7774
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 11.9074,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -6.88,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q2_K_XL",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.4974,
+     "n_items": 378,
+     "ci": [
+      0.4472,
+      0.5475
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.6931,
+     "n_items": 378,
+     "ci": [
+      0.6449,
+      0.7375
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.5899,
+     "n_items": 378,
+     "ci": [
+      0.5397,
+      0.6384
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.8704,
+     "n_items": 378,
+     "ci": [
+      0.8327,
+      0.9005
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 11.9074,
+     "from": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+     "to": "gemma-4-12b-it-UD-Q2_K_XL.gguf",
+     "drop_pp": -10.32,
+     "ci_overlap": false,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.78,
+     "n_items": 100,
+     "ci": [
+      0.6893,
+      0.85
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.86,
+     "n_items": 100,
+     "ci": [
+      0.7786,
+      0.9147
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.93,
+     "n_items": 100,
+     "ci": [
+      0.8625,
+      0.9657
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.93,
+     "n_items": 100,
+     "ci": [
+      0.8625,
+      0.9657
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval-cpp",
+   "language": "cpp",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.5342,
+     "n_items": 161,
+     "ci": [
+      0.4572,
+      0.6095
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.7391,
+     "n_items": 161,
+     "ci": [
+      0.6663,
+      0.8008
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": true,
+     "params_b": 25.2331,
+     "score": 0.0248,
+     "n_items": 161,
+     "ci": [
+      0.0097,
+      0.0621
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 25.2331,
+     "from": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "drop_pp": -71.43,
+     "ci_overlap": false,
+     "harness_explained": true
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.6402,
+     "n_items": 164,
+     "ci": [
+      0.5644,
+      0.7097
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.7805,
+     "n_items": 164,
+     "ci": [
+      0.7111,
+      0.837
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.9146,
+     "n_items": 164,
+     "ci": [
+      0.8618,
+      0.9485
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": true,
+     "params_b": 25.2331,
+     "score": 0.8841,
+     "n_items": 164,
+     "ci": [
+      0.8261,
+      0.9246
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 11.9074,
+     "to_b": 25.2331,
+     "from": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "drop_pp": -3.05,
+     "ci_overlap": true,
+     "harness_explained": true
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval-py",
+   "language": "py",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.3478,
+     "n_items": 161,
+     "ci": [
+      0.2786,
+      0.4242
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.6398,
+     "n_items": 161,
+     "ci": [
+      0.5631,
+      0.7099
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": true,
+     "params_b": 25.2331,
+     "score": 0.0435,
+     "n_items": 161,
+     "ci": [
+      0.0212,
+      0.087
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 7.5181,
+     "to_b": 25.2331,
+     "from": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "drop_pp": -59.63,
+     "ci_overlap": false,
+     "harness_explained": true
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.6768,
+     "n_items": 164,
+     "ci": [
+      0.6019,
+      0.7437
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.8171,
+     "n_items": 164,
+     "ci": [
+      0.7509,
+      0.8688
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.939,
+     "n_items": 164,
+     "ci": [
+      0.8914,
+      0.9665
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.9146,
+     "n_items": 164,
+     "ci": [
+      0.8618,
+      0.9485
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 11.9074,
+     "to_b": 25.2331,
+     "from": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "drop_pp": -2.44,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.65,
+     "n_items": 100,
+     "ci": [
+      0.5525,
+      0.7364
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.83,
+     "n_items": 100,
+     "ci": [
+      0.7445,
+      0.8911
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.87,
+     "n_items": 100,
+     "ci": [
+      0.7902,
+      0.9224
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.85,
+     "n_items": 100,
+     "ci": [
+      0.7672,
+      0.9069
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": false,
+   "inversions": [
+    {
+     "from_b": 11.9074,
+     "to_b": 25.2331,
+     "from": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "to": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "drop_pp": -2.0,
+     "ci_overlap": true,
+     "harness_explained": false
+    }
+   ]
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.4921,
+     "n_items": 378,
+     "ci": [
+      0.442,
+      0.5423
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.6164,
+     "n_items": 378,
+     "ci": [
+      0.5664,
+      0.664
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.7302,
+     "n_items": 378,
+     "ci": [
+      0.6833,
+      0.7724
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.7672,
+     "n_items": 378,
+     "ci": [
+      0.722,
+      0.807
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q3_K_XL",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 4,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.6085,
+     "n_items": 378,
+     "ci": [
+      0.5584,
+      0.6563
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.746,
+     "n_items": 378,
+     "ci": [
+      0.6998,
+      0.7873
+     ],
+     "replicates": 2
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q3_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.8598,
+     "n_items": 378,
+     "ci": [
+      0.8212,
+      0.8912
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+     "label": "26B-A4B",
+     "harness_suspect": false,
+     "params_b": 25.2331,
+     "score": 0.8942,
+     "n_items": 378,
+     "ci": [
+      0.8591,
+      0.9213
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q4_K_XL",
+   "bench": "gsm8k",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.79,
+     "n_items": 100,
+     "ci": [
+      0.7002,
+      0.8583
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.82,
+     "n_items": 100,
+     "ci": [
+      0.7333,
+      0.883
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.93,
+     "n_items": 100,
+     "ci": [
+      0.8625,
+      0.9657
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q4_K_XL",
+   "bench": "humaneval-plus",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.7012,
+     "n_items": 164,
+     "ci": [
+      0.6272,
+      0.766
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.7622,
+     "n_items": 164,
+     "ci": [
+      0.6915,
+      0.8209
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.9146,
+     "n_items": 164,
+     "ci": [
+      0.8618,
+      0.9485
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q4_K_XL",
+   "bench": "humaneval",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.75,
+     "n_items": 164,
+     "ci": [
+      0.6785,
+      0.81
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.8049,
+     "n_items": 164,
+     "ci": [
+      0.7375,
+      0.8583
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.9451,
+     "n_items": 164,
+     "ci": [
+      0.899,
+      0.9709
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q4_K_XL",
+   "bench": "ifeval",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.73,
+     "n_items": 100,
+     "ci": [
+      0.6357,
+      0.8073
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.84,
+     "n_items": 100,
+     "ci": [
+      0.7558,
+      0.899
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.9,
+     "n_items": 100,
+     "ci": [
+      0.8256,
+      0.9448
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q4_K_XL",
+   "bench": "mbpp-plus",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.4815,
+     "n_items": 378,
+     "ci": [
+      0.4316,
+      0.5318
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.6032,
+     "n_items": 378,
+     "ci": [
+      0.5531,
+      0.6512
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.7407,
+     "n_items": 378,
+     "ci": [
+      0.6943,
+      0.7823
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  },
+  {
+   "lineage": "gemma-4",
+   "recipe": "Q4_K_XL",
+   "bench": "mbpp",
+   "language": "python",
+   "n": 3,
+   "points": [
+    {
+     "model": "gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+     "label": "E2B",
+     "harness_suspect": false,
+     "params_b": 4.6475,
+     "score": 0.5794,
+     "n_items": 378,
+     "ci": [
+      0.529,
+      0.6281
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+     "label": "E4B",
+     "harness_suspect": false,
+     "params_b": 7.5181,
+     "score": 0.7407,
+     "n_items": 378,
+     "ci": [
+      0.6943,
+      0.7823
+     ],
+     "replicates": 1
+    },
+    {
+     "model": "gemma-4-12b-it-UD-Q4_K_XL.gguf",
+     "label": "12b",
+     "harness_suspect": false,
+     "params_b": 11.9074,
+     "score": 0.873,
+     "n_items": 378,
+     "ci": [
+      0.8357,
+      0.9029
+     ],
+     "replicates": 1
+    }
+   ],
+   "monotone": true,
+   "inversions": []
+  }
+ ],
+ "skipped_cells": {
+  "no recipe": 12
+ },
+ "protocol_of": {
+  "humaneval": "evalplus-0.3.1-openai-chat-greedy-base",
+  "humaneval-plus": "evalplus-0.3.1-openai-chat-greedy-plus",
+  "mbpp": "evalplus-0.3.1-openai-chat-greedy-base",
+  "mbpp-plus": "evalplus-0.3.1-openai-chat-greedy-plus",
+  "mmlu": "lmeval-0.4.13-chat-reasoning-off",
+  "arc_challenge": "lmeval-0.4.13-chat-reasoning-off",
+  "truthfulqa_mc2": "lmeval-0.4.13-chat-reasoning-off",
+  "gsm8k": "lmeval-0.4.13-chat-reasoning-off",
+  "ifeval": "lmeval-0.4.13-chat-reasoning-off",
+  "humaneval-cpp": "multipl-e-raw-greedy-768",
+  "humaneval-py": "multipl-e-raw-greedy-768"
+ },
+ "caveat": {
+  "truthfulqa_mc2": "acc 不是命中率，是归一化后的真答案概率质量（地板 0.4484）",
+  "gsm8k": "入库用 flexible-extract（取完成物里最后一个数字）",
+  "ifeval": "prompt_level_strict_acc，通用废话地板约 9%",
+  "mmlu": "似然打平静默取下标 0；无逐题样本",
+  "arc_challenge": "入库是 acc_norm；似然打平静默取下标 0",
+  "humaneval": "EvalPlus 不做后处理（围栏不过即判错）",
+  "humaneval-plus": "EvalPlus 不做后处理；全部超时的格与真 0 在库里不可区分",
+  "mbpp": "MBPP+ 有 1 题可被 `return None` 通过（属 plus 集）",
+  "mbpp-plus": "有 1 题可被 `return None` 通过",
+  "humaneval-cpp": "MultiPL-E 判分是「程序退出码 0」，`exit(0)` 可白拿（历史语料 0 发生）",
+  "humaneval-py": "MultiPL-E 判分是「程序退出码 0」，`sys.exit(0)` 可白拿（历史语料 0 发生）"
+ }
+}
