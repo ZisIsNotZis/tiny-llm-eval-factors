@@ -1200,57 +1200,20 @@ def section(H, title, definition, tables, figures, analysis_html):
     H.append("</section>")
 
 
-MD_FACT_RE = re.compile(r"^#{2,6}\s+([A-Za-z][\w.-]*)\s+::\s+(\S.*)$")
-MD_FIELD_RE = re.compile(r"^[-*]\s+(\w+)\s*:\s*(\S.*)$")
-
-
 def load_docs():
     """读取研究文档 SSOT 的 facts。
 
-    plan / result 归各子项目所有：`docs/subprojects/<id>-<name>/<layer>.{yaml,md}`。
-    尚未迁移的子项目仍是 yaml，已迁移的是 Markdown 事实文件，两种都读。
+    plan / result 归各子项目所有：`docs/subprojects/<id>-<name>/<layer>.yaml`。
+    子项目的 `PLAN.md` / `RESULT.md` 是工作文档，报告不解析它们；读者需要的「未解问题」
+    由 `report_inputs/open_questions.json` 这个派生索引提供（见 open_questions_html）。
     """
     out = {}
     for layer in ("plan", "result"):
         facts = {}
         for path in sorted(glob.glob(os.path.join("docs", "subprojects", "*", f"{layer}.yaml"))):
             facts.update(_yaml_load(path) or {})
-        for path in sorted(glob.glob(os.path.join("docs", "subprojects", "*", "*.md"))):
-            if os.path.basename(path)[:-len(".md")].lower() != layer:
-                continue      # PLAN.md / RESULT.md 与大写无关，其余 Markdown 不是事实文件
-            facts.update(_md_facts(path) or {})
         out[layer] = facts
     return out
-
-
-def _md_facts(path):
-    """Markdown 事实文件 → {fact_id: fact}。
-
-    `## <id> :: <一行事实>` 是事实本身（`_text`），其下的 `- key: value` bullet 是坐标；
-    不带 ` :: ` 的 `##` 是普通小节，不进 facts。事实写在一行，因为标题就是它的全部正文。
-    """
-    facts, cur = {}, None
-    with open(path, encoding="utf-8") as f:
-        for line in f:
-            m = MD_FACT_RE.match(line.rstrip("\n"))
-            if m:
-                cur = {"_text": m.group(2)}
-                facts[m.group(1)] = cur
-                continue
-            if line.startswith("#"):
-                cur = None
-                continue
-            if cur is None:
-                continue
-            fld = MD_FIELD_RE.match(line.rstrip("\n"))
-            if not fld:
-                continue
-            key, value = fld.group(1), fld.group(2)
-            if key == "kind":
-                cur.setdefault("domain", {})["kind"] = value
-            else:
-                cur[key] = value
-    return facts
 
 
 def _yaml_load(path):
@@ -1263,6 +1226,36 @@ def _yaml_load(path):
 
 
 NON_MEASUREMENTS = "docs/subprojects/i02-测量基础设施/non_measurements.tsv"
+
+
+OPEN_QUESTIONS = "report_inputs/open_questions.json"
+
+
+def open_questions_html():
+    """渲染各子项目「未解问题」的派生索引（`report_inputs/build_open_questions.py` 生成）。
+
+    报告不解析子项目的 Markdown 工作文档；这里读的是那个派生索引，每条自带子项目 id 与
+    来源路径，读者可以回到原文。索引缺失时构建失败，不静默少一节。
+    """
+    if not os.path.exists(OPEN_QUESTIONS):
+        raise SystemExit(f"报告输入缺失：{OPEN_QUESTIONS}"
+                         f"（由 report_inputs/build_open_questions.py 生成）。")
+    doc = json.load(open(OPEN_QUESTIONS, encoding="utf-8"))
+    if not doc["items"]:
+        return "<p class='nr'>（各子项目当前都没有登记未解问题）</p>"
+    out = ["<ul>"]
+    for it in doc["items"]:
+        out.append(f"<li><span class='tag'>{html.escape(it['subproject'])}</span> "
+                   f"{html.escape(it['text'])} "
+                   f"<span class='nr'>（来源：<code>{html.escape(it['path'])}</code>"
+                   f" · {html.escape(it['heading'])}）</span></li>")
+    out.append("</ul>")
+    skipped = doc.get("skipped") or []
+    note = (f"<p class='nr'>索引由各子项目的 PLAN.md 生成；{len(doc['sections'])} 个子项目登记了"
+            f"「未解问题」一节，另有 {len(skipped)} 个子项目没有这一节（已跳过："
+            + "、".join(f"<code>{html.escape(os.path.basename(os.path.dirname(p)))}</code>"
+                        for p in skipped) + "）。</p>")
+    return "".join(out) + note
 
 
 def non_measurements_html():
@@ -1671,7 +1664,10 @@ def main():
     H.append(render_fact_list(docs.get("result", {}), kinds={"analysis"}))
     H.append("<h3>引用与规模（非结论）</h3>")
     H.append(render_fact_list(docs.get("result", {}), kinds={"citation"}))
-    H.append("<h3>待分析：尚未跑的假设与未决问题（引自计划 L1）</h3>")
+    H.append("<h3>未解问题（各子项目 PLAN.md 的派生索引）</h3>")
+    H.append(open_questions_html())
+
+    H.append("<h3>待分析：尚未跑的假设（引自各子项目的计划）</h3>")
     H.append(render_fact_list(docs.get("plan", {})))
 
     H.append("<h2>附录：全部研究批次（run_tag）清单</h2>")

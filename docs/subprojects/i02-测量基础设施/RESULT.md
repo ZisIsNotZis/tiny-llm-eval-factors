@@ -81,17 +81,17 @@
 - evidence: 在库副本上连跑两次，两次都打印 `rows 3231 -> 3231`、`integrity: ok | fk issues: 0`，且两次运行后的数据逐行相同（按 rowid 排序的整表摘要相同）；每次运行前自动生成 `experiments.sqlite.bak1`、`.bak2`。
 - producer: `python3 migrate_db.py`（在库副本目录里跑）；`python3 checks/db_check.py`
 
-## res32 :: 文档检查的 schema 标准缺失是外部阻断：`/home/z/vibe/AGENTS.docs.schema.yaml` 不存在，`docs/check_docs.py` 因此不能宣称通过，但它把不依赖 schema 的集合级不变量真跑并打印。
+## res32 :: `docs@1` 标准落进本仓库 `docs/docs.schema.yaml`，`docs/check_docs.py` 因此能真做 schema 校验并以 0 退出；它有负控证明自己会失败。
 
 - kind: citation
 - status: current
-- evidence: 各层 schema 以 `$ref: "docs@1"` 引用该标准，仓库内没有任何副本。不依赖它的集合级不变量照常跑并打印：id 在文件内唯一、每个 `from` 可解析、`_text` 互不相同且非空。
-- producer: `python3 docs/check_docs.py` → 打印不变量结果并以退出码 2 点名缺失路径
-- 需要谁的授权: 该标准属于 `/home/z/vibe` 的策略层，不在本仓库内；解除需要 meta 决定是补上该文件，还是授权把 `docs@1` 的当前内容落到本仓库并改写 `RESEARCH_DOCS_STANDARD` 的默认值。
+- evidence: 解析顺序是 `RESEARCH_DOCS_STANDARD` → 仓库内 `docs/docs.schema.yaml` → 旧的共享路径 `/home/z/vibe/AGENTS.docs.schema.yaml`；若共享路径以后重新出现这份标准，本仓库改为指向它并删除本地副本（同一事实不许有两份）。各层 refinement schema 仍以 `allOf: [{$ref: "docs@1"}, …]` 引用它，标准本身约束必填坐标（`_text`/`author`/`origin`/`scope`/`status`）、`author`/`scope`/`status` 的取值域、`from` 的 `layer.fact` 书写形式，并禁止未声明的坐标；`_text` 必须是一行。
+- producer: `python3 docs/check_docs.py`（PASS）；`python3 checks/docs_schema_negative_control.py`（未改动副本 PASS，删掉 `author` 与写成 `status: bogus` 各以 1 退出并点名）
+- 顺带修掉的真实违规: `docs/method/method.yaml::m48` 的 `_text` 里两处 `\n` 被 YAML 双引号解释成真换行，事实因此跨了两行；已改回字面量。
 
-## res33 :: 各子项目的 Markdown 事实形状尚未统一，因此只有 i02 的 `PLAN.md`/`RESULT.md` 的节点会进入报告；另有四个文件（`a12`、`i01` 各两份）不提供可解析的事实。
+## res33 :: 报告不解析子项目的 `PLAN.md` / `RESULT.md`，读者需要的「未解问题」改由派生索引 `report_inputs/open_questions.json` 提供。
 
 - kind: citation
 - status: current
-- evidence: `docs/check_docs.py` 的 `shape not parsed` 一行逐文件点名；报告「待分析」一节的节点数因此少于各子项目实际登记的节点数。
-- producer: `python3 docs/check_docs.py`
+- evidence: 索引由 `report_inputs/build_open_questions.py` 扫各子项目 `PLAN.md` 里标题以「未解 / 未决 / 待解 / 开放问题 / open question」开头的一节生成；每条带子项目 id 与来源路径，没有这一节的文件被跳过并计数（当前跳过 2 个：a12、i01），连跑两次字节相同；报告据它渲染「未解问题」节，索引缺失时构建失败。
+- producer: `python3 report_inputs/build_open_questions.py --check`

@@ -107,14 +107,13 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 - budget: 无外部算力，报告重建一次
 - 状态: 完成
 
-### wp13 :: 统一各子项目 Markdown 事实形状
+### wp13 :: 报告的「未解问题」改由派生索引提供（替代原来的「统一 Markdown 事实形状」）
 
-- owner: meta
-- AC: 所有子项目的 `PLAN.md`/`RESULT.md` 用同一种事实形状（当前 i02 的形状是 `## <id> :: <一行事实>` 加 `- key: value` 坐标），使 `make_report.py` 能读全各家的节点，或明确决定报告只读 yaml。
-- 证据: `python3 docs/check_docs.py` 的 `shape not parsed` 一行当前点名 4 个文件（`a12`、`i01` 各两份）。
-- deps: 无（这是 meta 层的格式裁决，i02 只提供解析器与证据）
-- budget: 一轮裁决
-- 状态: 待派
+- owner: i02 主控（决定由 meta 作出：报告不解析子项目 Markdown）
+- AC: `report_inputs/build_open_questions.py` 扫 `docs/subprojects/*/PLAN.md` 的「未解问题」一节生成 `report_inputs/open_questions.json`，每条带子项目 id 与来源路径，没有这一节的文件被跳过并计数，连跑两次字节相同；报告据它渲染「未解问题」节；`make_report.py` 不再解析任何子项目 Markdown 事实。
+- deps: 无
+- budget: 无外部算力，报告重建一次
+- 状态: 完成
 
 ### wp11 :: 独立复核与落地
 
@@ -123,6 +122,12 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 - deps: wp1–wp13
 - budget: 一轮复核
 - 状态: 待派（阻断项：本子项目运行时没有可用的递归派工工具，无法自行派出 reviewer）
+
+## 未解问题
+
+- 独立复核未派：本子项目运行时没有递归派工工具，`wp11` 的 reviewer 要由 meta 派出；在此之前 M1 不得宣称达成。
+- `m31` 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，库内没有列区分——报告已把两个值都印出，但处置归入库侧（协议串应带上实际 top_k）。
+- 长上下文的 KV 精度结论只覆盖短上下文，长上下文仍属未测；它由 a05 拥有，本子项目只保证「未测 ≠ 0」在报告里可见。
 
 ## 读法：还剩哪些、当前在哪、下一个派给谁
 

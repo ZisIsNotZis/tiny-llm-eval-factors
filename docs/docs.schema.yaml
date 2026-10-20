@@ -1,0 +1,64 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "docs@1"
+title: "研究文档集标准（docs@1）"
+description: >
+  研究文档集里每一条事实（fact）的形状。仓库内每个层级文件 `docs/<layer>/<layer>.yaml` 的
+  refinement schema 都以 `allOf: [{"$ref": "docs@1"}, <该层的 domain 形状>]` 引用本文件，
+  因此这里是「一条事实必须带哪些坐标」的唯一家。
+
+  解析顺序（`docs/check_docs.py`）：`RESEARCH_DOCS_STANDARD` 环境变量 → 本仓库 `docs/docs.schema.yaml`
+  → 旧的共享路径 `/home/z/vibe/AGENTS.docs.schema.yaml`。若共享路径以后重新出现这份标准，本仓库
+  改为指向它并**删除**本地副本：同一个事实不许有两份，本地这份要么是唯一家，要么不存在。
+
+  坐标来自策略里的 @fact_record：`from`（它由哪条事实推出）、`end`（它为什么存在，本层用 `domain.kind`
+  与 `scope` 表达）、`author`（谁说的）、`origin`（在什么场合说的）、`scope`（一般/具体）、
+  `status`（当前/暂定/有争议）、`evidence`、以及派生事实的 `producer`。
+type: object
+minProperties: 1
+propertyNames:
+  description: 事实 id：小写字母开头的标识符，文件内唯一（重复键由检查器的加载器拒绝）。
+  pattern: "^[a-z][a-z0-9_]*$"
+additionalProperties:
+  $ref: "#/$defs/fact"
+$defs:
+  fact:
+    type: object
+    description: 一条事实。它写在一行里（`_text` 不得含换行），坐标写在同级字段上。
+    required: [_text, author, origin, scope, status]
+    additionalProperties: false
+    properties:
+      _text:
+        description: 事实本身，一句话、一行；不含换行（行内换行由阅读器决定，不写进文件）。
+        type: string
+        minLength: 4
+        pattern: "^[^\\n\\r]+$"
+      author:
+        description: 谁说的。
+        enum: [user, agent, measurement, third-party]
+      origin:
+        description: 这个事实是在什么场合得到的（文件、查询、面板、裁决）。它必须能被读者打开或重跑。
+        type: string
+        minLength: 3
+      scope:
+        description: 一般规则还是具体场合。
+        enum: [general, specific]
+      status:
+        description: 当前 / 暂定 / 有争议。
+        enum: [current, provisional, disputed]
+      evidence:
+        description: 支撑这条事实的观测（日志、行数、哈希、命令输出）。
+        type: string
+        minLength: 1
+      producer:
+        description: 派生事实的生产者：给出数字的那个查询或脚本。
+        type: string
+        minLength: 1
+      from:
+        description: 它由哪条事实推出；以 `layer.fact_id` 书写，多条用逗号分隔。
+        type: string
+        pattern: >-
+          ^(pain|need|product|architecture|method|plan|result)\.[a-z][a-z0-9_]*(\s*,\s*(pain|need|product|architecture|method|plan|result)\.[a-z][a-z0-9_]*)*$
+      domain:
+        description: 该层的切分键（层级 refinement schema 在这里收紧）。
+        type: object
+        minProperties: 1

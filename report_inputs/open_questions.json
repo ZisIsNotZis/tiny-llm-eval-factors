@@ -1,0 +1,36 @@
+{
+ "source": "docs/subprojects/*/PLAN.md",
+ "rule": "标题含「未解/未决/待解/开放问题」或 open question；其下的列表项是条目",
+ "items": [
+  {
+   "subproject": "i02-测量基础设施",
+   "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
+   "heading": "未解问题",
+   "text": "独立复核未派：本子项目运行时没有递归派工工具，`wp11` 的 reviewer 要由 meta 派出；在此之前 M1 不得宣称达成。"
+  },
+  {
+   "subproject": "i02-测量基础设施",
+   "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
+   "heading": "未解问题",
+   "text": "`m31` 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，库内没有列区分——报告已把两个值都印出，但处置归入库侧（协议串应带上实际 top_k）。"
+  },
+  {
+   "subproject": "i02-测量基础设施",
+   "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
+   "heading": "未解问题",
+   "text": "长上下文的 KV 精度结论只覆盖短上下文，长上下文仍属未测；它由 a05 拥有，本子项目只保证「未测 ≠ 0」在报告里可见。"
+  }
+ ],
+ "sections": [
+  {
+   "subproject": "i02-测量基础设施",
+   "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
+   "heading": "未解问题",
+   "count": 3
+  }
+ ],
+ "skipped": [
+  "docs/subprojects/a12-多语言代码 MultiPL-E/PLAN.md",
+  "docs/subprojects/i01-判分与基准有效性/PLAN.md"
+ ]
+}

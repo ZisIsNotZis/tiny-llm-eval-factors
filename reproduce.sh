@@ -50,13 +50,19 @@ fi
 # 3) 报告输入是否随仓库分发；这里的输入不在了就什么都别谈
 missing_inputs=0
 for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json \
-         docs/subprojects/i02-测量基础设施/non_measurements.tsv; do
+         report_inputs/open_questions.json docs/subprojects/i02-测量基础设施/non_measurements.tsv \
+         docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
 if [ "$missing_inputs" = 0 ]; then
-    record PASS "报告输入（mktables / bpw_map / eval_status / 非测量登记册）"
+    record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 report_inputs/build_open_questions.py --check >/dev/null 2>&1; then
+    record PASS "open_questions.json 与各子项目 PLAN.md 的「未解问题」一节一致"
+else
+    record WARN "open_questions.json 与 PLAN.md 不一致：python3 report_inputs/build_open_questions.py"
 fi
 if python3 report_inputs/build_eval_status.py --check >/dev/null 2>&1; then
     record PASS "eval_status.json 与现有落盘产物一致"
@@ -81,7 +87,15 @@ else
     record FAIL "仍有脚本硬编码退役根路径：python3 checks/stale_roots.py"
 fi
 
-# 6) 文档检查：schema 标准缺失是外部阻断，不等同于通过，也不等同于失败
+# 6) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/docs_schema_negative_control.py >/tmp/reproduce_negrun.$$ 2>&1; then
+    record PASS "docs 检查的负控（缺必填字段 / 枚举外取值都以 1 退出并点名）"
+else
+    record FAIL "docs 检查的负控未通过：python3 checks/docs_schema_negative_control.py"
+fi
+rm -f /tmp/reproduce_negrun.$$
+
+# 7) 文档检查：schema 标准缺失是外部阻断，不等同于通过，也不等同于失败
 out=$(python3 docs/check_docs.py 2>&1); rc=$?
 case "$rc" in
     0) record PASS "docs/check_docs.py" ;;
@@ -89,7 +103,7 @@ case "$rc" in
     *) record FAIL "docs/check_docs.py 退出 $rc：$(printf '%s' "$out" | grep -m3 '  - ' | tr '\n' ' ')" ;;
 esac
 
-# 7) 从库重建报告，并与仓库里那份逐字节对比
+# 8) 从库重建报告，并与仓库里那份逐字节对比
 if [ -f report.html ]; then
     before=$(sha256sum report.html | cut -d' ' -f1)
 else
@@ -106,7 +120,7 @@ else
     record FAIL "报告构建失败（见 /tmp/reproduce_report.$$）"
 fi
 
-# 8) 报告与产物一致
+# 9) 报告与产物一致
 if python3 checks/report_check.py >/tmp/reproduce_repchk.$$ 2>&1; then
     record PASS "报告与产物一致（行标签唯一、题量取自产物、非测量登记册在场）"
 else
