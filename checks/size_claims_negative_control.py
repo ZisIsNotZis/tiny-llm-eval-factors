@@ -49,9 +49,32 @@ def main():
         if not changed:
             print("FAIL: 区间改成重叠后正文仍断言反驳——说明文字写死了"); print(text[:400])
             return 1
+        # 3) 「291 行确实带 size」改成 0：文字必须跟着变（而不是照样印 291）
+        bent = json.loads(json.dumps(honest))
+        bent["protocol_rows"]["with_size"] = 0
+        p2 = tmp / "nosize.json"
+        p2.write_text(json.dumps(bent, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        t2 = rendered(p2)
+        changed = "<b>291</b> 行确实带 size" in base and "291</b> 行确实带 size" not in t2
+        print(f"3) with_size set to 0     : text drops 291: {changed}")
+        if not changed:
+            print("FAIL: 把 291 改成 0 后正文没变——说明这个数写死了"); print(t2[:400])
+            return 1
+
+        # 4) 「76 个不同模型文件」改成 169：文字必须跟着变
+        bent = json.loads(json.dumps(honest))
+        bent["truth"]["files"] = 169
+        p3 = tmp / "files169.json"
+        p3.write_text(json.dumps(bent, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        t3 = rendered(p3)
+        changed = "76 个不同模型文件" in base and "169 个不同模型文件" in t3
+        print(f"4) files 76 -> 169       : text follows: {changed}")
+        if not changed:
+            print("FAIL: 把 76 改成 169 后正文没变"); print(t3[:400])
+            return 1
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
-    print("PASS: 反驳/分不出的措辞由区间是否重叠决定")
+    print("PASS: 反驳/分不出的措辞由区间是否重叠决定；291 与 76 两个数都由索引决定")
     return 0
 
 

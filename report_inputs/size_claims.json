@@ -25,9 +25,35 @@
   "total_rows": 3233
  },
  "truth": {
-  "models": 169,
+  "groups": 169,
+  "files": 76,
   "rows": 1970,
   "of_total_rows": 3233
+ },
+ "protocol_rows": {
+  "total": 1352,
+  "with_size": 291,
+  "null": 1061,
+  "with_size_by_protocol": [
+   {
+    "protocol": "multipl-e-raw-greedy-768",
+    "rows": 178
+   },
+   {
+    "protocol": "bfcl-native-tools-nothink-greedy",
+    "rows": 74
+   },
+   {
+    "protocol": "bfcl-prompt-nothink-greedy",
+    "rows": 20
+   },
+   {
+    "protocol": "evalplus-0.3.1-openai-chat",
+    "rows": 19
+   }
+  ],
+  "lmeval_total": 479,
+  "lmeval_null": 479
  },
  "skipped_no_recipe": 12,
  "curves": {

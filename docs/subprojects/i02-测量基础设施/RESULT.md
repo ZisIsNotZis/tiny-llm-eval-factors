@@ -195,10 +195,11 @@
 - producer: `python3 report_inputs/build_scheme_effects.py --check`；`python3 checks/scheme_effects_negative_control.py`（把 IQ 的 ARC-c 区间改成显著 → 正文改口成「探测到了」；把所有区间加宽一倍 → 精度数字从 0.48 变 0.95）
 - 口径差异（以脚本为准）: a03 的散文写「区间半宽 0.23–0.57」，脚本当前输出按逐基准最大半宽算出来是 0.27 / 0.36 / 0.48（min 侧 0.06–0.13）；报告用脚本值。
 
-## res48 :: 报告第二节的 X 不再是「参数量」：改为实测参数量并限定在同族同 tokenizer 同配方内比较，两句话按配方加限定，删掉「13B 回折」。
+## res48 :: 报告第二节的 X 是实测参数量（同族同 tokenizer 同配方内可比），带协议行与模型文件数按库当场算，两句话按配方加限定。
 
 - kind: measured
 - status: current
-- evidence: 第二节由 `report_inputs/size_claims.json` 生成，而该索引由 `a02` 的 `analysis/size_provenance.json` 与 `size_curves.json`（脚本产物）算出：3233 行里可信的规模标签只有 659 行、`size-null` 1061（恰是全部带协议的新面板行）、`undecidable` 1112、其余 401 行是「等于文件字节数 / 两倍字节 / 至少大 8 倍 / 低于张量总数」；实测参数量覆盖 169 个模型文件 / 1970 行（60%），另有 12 个格没有配方后缀。「越大越高」在 Q3_K_XL 成立，在 gemma-4 Q2_K_XL 被反驳（E4B 74.4% [67.2–80.5] → 12B 54.3% [46.6–61.7]，−20.1 pp，区间不重叠），同一个 12B 在 Q3_K_XL 是 93.9%（+39.6 pp），所以「13B 回折」那句删掉；「小模型差距更大」在 Q2_K_XL 不成立（最大正向步 1.88B→4.21B 的 +46.3 pp）；MultiPL-E cpp 的两步（Q2_K_XL −41.6 pp、Q3_K_XL −71.4 pp）标明是 harness 失效。
-- producer: `python3 report_inputs/build_size_claims.py --check`；`python3 checks/size_claims_negative_control.py`（把反例两步区间改成重叠 → 正文从「被反驳」变「分不出（区间重叠）」）
+- evidence: 第二节由 `report_inputs/size_claims.json` 生成（`report_inputs/build_size_claims.py` 读 `a02` 的 `size_provenance.json`/`size_curves.json` 两个脚本产物，并对库直接查带协议行）：3233 行里可信的规模标签 659、`size-null` 1061（这 1061 行**全部**是带协议行，lm-eval 479/479 无 size；但带协议行共 1352，其中 **291** 行确实带 size——multipl-e-raw-greedy-768 178、bfcl-native-tools 74、bfcl-prompt 20、evalplus 19）、`undecidable` 1112、其余 401 行是与参数量无关的通道；实测参数量覆盖 **76 个不同模型文件**（169 个 (model,size) 组）/ 1970 行（60%），另有 12 个格无配方后缀。「越大越高」在 Q3_K_XL 成立、在 gemma-4 Q2_K_XL 被反驳（E4B 74.4% [67.2–80.5] → 12B 54.3% [46.6–61.7]，−20.1 pp，区间不重叠；同一个 12B 在 Q3_K_XL 是 93.9%，+39.6 pp，所以「13B 回折」删除）；「小模型差距更大」在 Q2_K_XL 不成立（最大正向步 1.88B→4.21B 的 +46.3 pp）；MultiPL-E cpp 的 −41.6/−71.4 pp 标明是 harness 失效。
+- producer: `python3 report_inputs/build_size_claims.py --check`；`python3 checks/size_claims_negative_control.py`（区间改重叠→「分不出」；291→0 与 76→169 两个数改掉时正文跟着变）
+- 与 a02 产物的口径: 上面两条修正（1352/291、76 vs 169）与库对得上（`select count(*) from experiments where protocol<>'' [and __size is not null]` → 1352 / 291），但 `a02` 的 `size_provenance.json` 目前只给出 169 条 gguf-tensors 组、不拆「带协议行」这一维，所以这两条由本子项目直接查库得到；等 `a02` 的真值 fixture 落地后改为读它（保持一个家）。
 

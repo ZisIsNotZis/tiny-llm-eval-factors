@@ -42,6 +42,30 @@ def steps(curve):
         yield a, b, round(b["score"] - a["score"], 4), not (a["ci"][1] < b["ci"][0] or b["ci"][1] < a["ci"][0])
 
 
+def protocol_rows():
+    """带协议的行里有多少真带规模——「size-null 恰好等于带协议的行」是个错说法，这里当场算。
+
+    直接查库（可复算），因为 a02 的 size_provenance.json 还没把这条拆出来。
+    """
+    import sqlite3
+    con = sqlite3.connect(f"file:{os.path.join(REPO, 'experiments.sqlite')}?mode=ro", uri=True)
+    try:
+        total, with_size = con.execute(
+            "SELECT count(*), sum(__size IS NOT NULL) FROM experiments "
+            "WHERE protocol IS NOT NULL AND protocol<>''").fetchone()
+        by_proto = con.execute(
+            "SELECT protocol, count(*) FROM experiments WHERE protocol IS NOT NULL "
+            "AND protocol<>'' AND __size IS NOT NULL GROUP BY 1 ORDER BY 2 DESC").fetchall()
+        lmeval_total, lmeval_null = con.execute(
+            "SELECT count(*), sum(__size IS NULL) FROM experiments "
+            "WHERE protocol LIKE 'lmeval%'").fetchone()
+    finally:
+        con.close()
+    return {"total": total, "with_size": with_size, "null": total - with_size,
+            "with_size_by_protocol": [{"protocol": p, "rows": n} for p, n in by_proto],
+            "lmeval_total": lmeval_total, "lmeval_null": lmeval_null}
+
+
 def build():
     prov, cur = load()
     ch_rows = collections.Counter()
@@ -53,6 +77,8 @@ def build():
     # 再加一次会把总数翻倍。
     truth_models = [r for r in prov["rows"] if r.get("truth_source") == "gguf-tensors"]
     truth_rows = sum(r["rows"] for r in truth_models)
+    # 169 是「(model,size) 组」的条数，不是模型文件数：同一个文件在不同 db_size 下会出现多条。
+    truth_files = len({r["model"] for r in truth_models})
     total_rows = sum(r["rows"] for r in prov["rows"])
 
     q2 = [c for c in cur["curves"] if c["recipe"] == "Q2_K_XL"]
@@ -113,8 +139,9 @@ def build():
     return {
         "sources": [os.path.relpath(PROV, REPO), os.path.relpath(CURVES, REPO)],
         "channels": {"rows": dict(ch_rows), "models": dict(ch_models), "total_rows": total_rows},
-        "truth": {"models": len(truth_models), "rows": truth_rows,
+        "truth": {"groups": len(truth_models), "files": truth_files, "rows": truth_rows,
                   "of_total_rows": total_rows},
+        "protocol_rows": protocol_rows(),
         "skipped_no_recipe": cur["skipped_cells"].get("no recipe", []),
         "curves": {"q2": len(q2), "q3": len(q3), "all": len(cur["curves"])},
         "inversion": inv,
@@ -141,11 +168,11 @@ def main(argv):
             print(f"FAIL: {os.path.relpath(OUT, REPO)} is stale against a02's artefacts; "
                   f"rerun without --check", file=sys.stderr)
             return 1
-        print(f"size_claims.json: up to date (truth {doc['truth']['models']} models / "
+        print(f"size_claims.json: up to date (truth {doc['truth']['files']} files / "
               f"{doc['truth']['rows']} rows; inversion {doc['inversion']['delta']:+.3f})")
         return 0
     open(OUT, "w", encoding="utf-8").write(text)
-    print(f"wrote {os.path.relpath(OUT, REPO)}: truth {doc['truth']['models']} models / "
+    print(f"wrote {os.path.relpath(OUT, REPO)}: truth {doc['truth']['files']} files / "
           f"{doc['truth']['rows']} rows; inversion {doc['inversion']['delta']:+.3f}; "
           f"harness failures {[h['delta'] for h in doc['harness_failures']]}")
     return 0

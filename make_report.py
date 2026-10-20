@@ -1321,6 +1321,7 @@ def size_claims_html():
                          f"（由 report_inputs/build_size_claims.py 生成）。")
     d = json.load(open(SIZE_CLAIMS, encoding="utf-8"))
     ch, truth, inv = d["channels"]["rows"], d["truth"], d["inversion"]
+    pr = d["protocol_rows"]
     same = d["same_model_q3"]
     q2max = d["q2_max_step"]
     harness = d["harness_failures"]
@@ -1334,12 +1335,15 @@ def size_claims_html():
     out = ["<li><b>这一节的 X 不是「参数量」。</b>"
            f"库内 {d['channels']['total_rows']} 行里，作为规模的数字标签真正能被信任的只有 "
            f"<b>{ch.get('token-rounded', 0)}</b> 行；<b>{ch.get('size-null', 0)}</b> 行根本没有规模"
-           f"（恰好是全部带协议的新面板行：lm-eval 与 EvalPlus 一个不落），"
+           f"（这 {ch.get('size-null', 0)} 行<b>全部</b>是带协议的行——lm-eval {pr['lmeval_total']}/{pr['lmeval_total']} 行都没有 size；"
+           f"但反过来不成立：带协议的行共 {pr['total']} 行，其中 <b>{pr['with_size']}</b> 行确实带 size"
+           f"（{'、'.join(f'{x['protocol']} {x['rows']}' for x in pr['with_size_by_protocol'][:4])}）），"
            f"<b>{ch.get('undecidable', 0)}</b> 行不可判，其余 "
            f"{ch.get('clamped-to-file-bytes', 0) + ch.get('two-times-file-bytes', 0) + ch.get('size-too-large-for-file', 0) + ch.get('label-below-total', 0)}"
            f" 行是「标签 = 文件字节数 / 两份文件字节 / 至少大 8 倍 / 低于张量总数」这类与参数量无关的通道。"
            f"所以读这一节时请把 X 理解成<b>实测参数量</b>：由 GGUF 张量求和得到，"
-           f"当前覆盖 <b>{truth['models']} 个模型文件 / {truth['rows']} 行</b>（{truth['rows'] * 100 // truth['of_total_rows']}% 的行），"
+           f"当前覆盖 <b>{truth['files']} 个不同模型文件</b>（{truth['groups']} 个 (model, size) 组）/ "
+           f"{truth['rows']} 行（{truth['rows'] * 100 // truth['of_total_rows']}% 的行），"
            f"且<b>只能在同一家族 + 同一 tokenizer + 同一配方内比较</b>——跨家族比较无论如何都无效；"
            f"另有 {d['skipped_no_recipe']} 个格没有配方后缀，无法归入任何配方内比较。</li>"]
 
