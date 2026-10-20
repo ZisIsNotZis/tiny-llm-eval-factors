@@ -13,7 +13,7 @@ python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测
 完整性与清洁度、是否还有脚本硬编码退役路径、文档检查，然后从 `experiments.sqlite` 重建 `report.html`
 并与仓库里那份**逐字节**对比，最后用 `checks/report_check.py` 核对报告与产物一致。最后一行
 `OK：报告可从库重建…` 是完成信号；`BLOCKED` 行表示该项未验证（当前是 `docs@1` schema 标准不在本机）。
-本机实测：报告构建约 35 s；`./reproduce.sh` 全流程 49.9 s / 60.2 s 两次（干净 clone，12 核 CPU、无 GPU；较慢一次含首次字体缓存）。
+本机实测：报告构建约 35 s；`./reproduce.sh` 全流程 41.1 / 49.9 / 60.2 s（干净 clone，12 核 CPU、无 GPU；差异来自字体缓存与负载）。
 
 它不能重建的东西：模型权重（`.gguf` 不在仓库内，也不在 `artifacts.tsv` 里，因为原始权重文件已不在本机）、
 `/tmp/MultiPL-E` 提示缓存、以及评测运行本身（需要 GPU 与模型文件）。`.wrapup/mres/*_eval.json` 是逐题

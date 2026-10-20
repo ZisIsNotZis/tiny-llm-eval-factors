@@ -29,7 +29,7 @@
 
 - kind: measured
 - status: current
-- evidence: 在 `git clone` 出的空树里 `./reproduce.sh` 退出 0，重建的 `report.html` 与仓库里那份逐字节相同（10281006 字节、86 张图）；本机实测报告构建约 35 s；全流程两次实测 49.9 s 与 60.2 s（后者含首次 matplotlib 字体缓存），12 核 CPU、无 GPU。唯一的 BLOCKED 行是 `docs@1` 标准不在本机（见 res32）。
+- evidence: 在 `git clone` 出的空树里 `./reproduce.sh` 退出 0，重建的 `report.html` 与仓库里那份逐字节相同（10281006 字节、86 张图）；本机实测报告构建约 35 s；全流程三次实测 41.1 / 49.9 / 60.2 s（差异来自 matplotlib 字体缓存与机器负载），12 核 CPU、无 GPU。唯一的 BLOCKED 行是 `docs@1` 标准不在本机（见 res32）。
 - producer: `git clone <repo> x && cd x && ./reproduce.sh`
 
 ## res25 :: 报告除数据库外的输入是有限的、都随仓库分发；缺任何一个都让构建失败或让检查变红，不会渲染出 0。
