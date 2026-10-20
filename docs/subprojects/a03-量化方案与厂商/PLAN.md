@@ -16,7 +16,7 @@
 - 在办：`WP6` 收口——`analysis/run_all.py` 现在 17 条预期全部成立、`--selftest` 能翻红 3 条（退出码 1）；剩下两件：把 `report.html` 第三节的建议文本写进 `PLAN.md`，以及 `RESULT.md` 的数字与 `run_all.py` 的断言逐条对齐。
 - 下一个派给谁：本层编排者收 `WP6`；收完请 **meta 派 fresh-context reviewer** 做 `WP7`（本层运行时没有派孙工具，不得自评通过）。
 - **递归不可用（运行时不提供 subagent 接口）**：本层编排者只有 shell/读写工具，没有派孙工具，所以分析、脚本与测量由编排者自己执行。这与派工契约里「可派孙」不一致，按 `@fail_loud` 写在这里而不是假装派过；独立复核因此必须由 meta 派。
-- 未测（不是 0）：`WP6` 的复现负控（同一格重跑）没跑——GPU 被别的仓占着（见下面「GPU 队列」）。所有配对都是**单次运行**，区间只含逐题二项项，不含跨 run 项；这一条在 `RESULT.md` 的每条事实里都写着。
+- 未测（不是 0）：`WP6` 的复现负控（同一格重跑）已挂成排队作业 `bash .wrapup/a03_repro_retry.sh`（锁当时被别的面板持着，见下面「GPU 队列」）。所有配对都是**单次运行**，区间只含逐题二项项，不含跨 run 项；这一条在 `RESULT.md` 的每条事实里都写着。
 
 ## 工作包
 
@@ -79,7 +79,11 @@
 
 | 排队项 | 配置 | 判据 | 预算 | 继续触发的条件 |
 |---|---|---|---|---|
-| WP6 复现负控 | Qwen3.5-4B：`UD-Q2_K_XL` 与 `UD-IQ3_XXS` 各跑一次 HumanEval+（164 题），同一脚本同一协议（`evalplus-0.3.1-openai-chat-greedy-plus`，`ctx 8192`、`np 1`、`temp 0.0`、`reasoning off`） | 两格各自复现入库值（MMLU 那 0.0592 与其余列的 0.00–0.01）⇒ 单次运行的差不是运行抖动；出现 >0.05 的偏离 ⇒ 该族配对降级为 provisional | ≤25 GPU 分钟 | `nvidia-smi` 的 `memory.free` ≥ 计算出的需求（4B Q4 ≈ 2.6 GB 权重 + KV ≈ 1 GB，取 6 GB 余量）且 `bash .wrapup/gpu_locked.sh` 拿到锁；起服后断言 server 自报 `n_slots = 1` |
+| WP6 复现负控 | Qwen3.5-2B 的 `UD-IQ3_XXS` 与 `UD-Q2_K_XL` 各跑一遍代码面板：`bash .wrapup/codepanel.sh <gguf> a03-repro-{iq3xxs,q2kxl}`（冻结协议：`--jinja --reasoning off --reasoning-format none`、`-c 8192 -np 1 -ngl 99`、贪心、EvalPlus 0.3.1 全量 164+378；该脚本自己用 `flock -n` 拿 `/tmp/llama_gpu.lock`，拿不到就退出 3，所以不能再套一层 `gpu_locked.sh`） | 两格的 HumanEval+/MBPP+ 复现入库值（0.3720 / 0.2857 与 0.2378 / 0.2725）⇒ `scheme-2b` 的 22 题不是运行抖动；出现 >0.05 的偏离 ⇒ `scheme-2b` 降为 provisional | 每条 573–638 s（实测，见 `.wrapup/mres/m{63,64}-*/evalplus.json` 的 `timings_s`），合计 ≤25 分钟 | 现在：锁被别的面板持着（`nvidia-smi` 空 15.6 GiB，不是显存不够）——按 `@scheduling.queue_behind` 挂了等待器 `bash .wrapup/a03_repro_retry.sh`（每 60 s 试一次、最多 12 次，拿不到就写「未测」并退出 3；日志 `.wrapup/a03_repro.log`） |
+
+显存需求按实测算，不用固定阈值：权重 922 MiB（文件大小）+ KV f16 @8192 一槽 768 MiB（由 gguf 头 `qwen35.block_count 24 / head_count_kv 2 / key_length 256 / value_length 256` 算出）+ compute buffer 余量 700 MiB ≈ **2.4 GB**。起服后断言 server 自报 `n_slots = 1`（`codepanel.sh` 传 `-np 1`），不符即作废该次测量。
+
+结果落在 `.wrapup/mres/a03-repro-{iq3xxs,q2kxl}/evalplus.json` 与同目录 `codegen/`；跑成之后由下一会话把两个数写成 `RESULT.md` 的 `repro-negative-control` 事实并改写 `unmeasured`。
 
 ## 跨子项目依赖（不由本层修，必须让 meta 知道）
 
