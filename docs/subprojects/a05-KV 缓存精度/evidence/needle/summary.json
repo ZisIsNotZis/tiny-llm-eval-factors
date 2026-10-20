@@ -1,0 +1,115 @@
+{
+ "run_tag": "a05-needle-kv-ctx",
+ "design": "needle at 10/50/90% depth, answer-only instruction, prompt = ctx-1024 tokens",
+ "gate": {
+  "ctx": 32768,
+  "kv": "f16/f16",
+  "hits": 7,
+  "n": 20,
+  "window": [
+   8,
+   19
+  ],
+  "passed": false
+ },
+ "control": {
+  "cell": "a05-needle-ctx8192-kvf16_f16-control-absent",
+  "hits": 0,
+  "n": 20,
+  "passed": true
+ },
+ "cells": [
+  {
+   "cell": "a05-needle-ctx32768-kvf16_f16",
+   "ctx": 32768,
+   "kv": "f16/f16",
+   "hits": 7,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvf16_f16",
+   "ctx": 8192,
+   "kv": "f16/f16",
+   "hits": 9,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvq8_0_f16",
+   "ctx": 8192,
+   "kv": "q8_0/f16",
+   "hits": 9,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvf16_q8_0",
+   "ctx": 8192,
+   "kv": "f16/q8_0",
+   "hits": 10,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvq8_0_q8_0",
+   "ctx": 8192,
+   "kv": "q8_0/q8_0",
+   "hits": 9,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvf16_f16",
+   "ctx": 16384,
+   "kv": "f16/f16",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvq8_0_f16",
+   "ctx": 16384,
+   "kv": "q8_0/f16",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvf16_q8_0",
+   "ctx": 16384,
+   "kv": "f16/q8_0",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvq8_0_q8_0",
+   "ctx": 16384,
+   "kv": "q8_0/q8_0",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx32768-kvq8_0_f16",
+   "ctx": 32768,
+   "kv": "q8_0/f16",
+   "hits": 6,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx32768-kvf16_q8_0",
+   "ctx": 32768,
+   "kv": "f16/q8_0",
+   "hits": 7,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx32768-kvq8_0_q8_0",
+   "ctx": 32768,
+   "kv": "q8_0/q8_0",
+   "hits": 7,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvf16_f16-control-absent",
+   "ctx": 8192,
+   "kv": "f16/f16",
+   "hits": 0,
+   "n": 20
+  }
+ ],
+ "verdict": "void-dynamic-range"
+}
