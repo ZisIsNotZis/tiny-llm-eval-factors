@@ -23,6 +23,12 @@
  ],
  "sections": [
   {
+   "subproject": "a01-量化位宽",
+   "path": "docs/subprojects/a01-量化位宽/PLAN.md",
+   "heading": "未解问题（plan 层的事实；答完即改写或删除）",
+   "count": 0
+  },
+  {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",

@@ -507,6 +507,16 @@
    }
   },
   {
+   "file": "m163-g12b-q3-cpp-chat_eval.json",
+   "n": 161,
+   "pass": 117,
+   "status": {
+    "Exception": 17,
+    "OK": 117,
+    "SyntaxError": 27
+   }
+  },
+  {
    "file": "m2-qwen9b-q2-cpp_eval.json",
    "n": 161,
    "pass": 70,
