@@ -53,9 +53,12 @@ srv=""
 stop_server() { [ -n "$srv" ] && { kill "$srv" 2>/dev/null; wait "$srv" 2>/dev/null; srv=""; }; }
 trap stop_server EXIT INT TERM
 
-# the same server flags the panel runner uses for a chat task with reasoning off
+# The same server flags the panel runner uses for a chat task (`--reasoning off`).
+# Without it an instruct model spends the generation budget inside reasoning_content and
+# the scored `content` comes back empty: the first i01 run omitted the flag and every
+# gsm8k response was ``[invalid]`` -- repeatable, but not the production cell.
 llama-server -m "$MODEL" --port "$PORT" --host 127.0.0.1 -ngl 99 -c "$CTX" \
-  --cache-type-k q8_0 --cache-type-v q8_0 --jinja \
+  --cache-type-k q8_0 --cache-type-v q8_0 --jinja --reasoning off \
   --top-p 0.95 --top-k 40 --min-p 0.05 >> "$LOG" 2>&1 &
 srv=$!
 for _ in $(seq 1 120); do
@@ -65,7 +68,9 @@ for _ in $(seq 1 120); do
 done
 say "server up: $(grep -o 'n_slots = [0-9]*, n_ctx_slot = [0-9]*' "$LOG" | tail -1)"
 
+ONLY=${ONLY:-gsm8k,bfcl}
 for rep in 1 2; do
+  case ",$ONLY," in *,gsm8k,*) ;; *) continue ;; esac
   d=$OUT/gsm8k-r$rep
   mkdir -p "$d"
   say "lm-eval gsm8k rep=$rep start $(date +%H:%M:%S)"
@@ -78,6 +83,7 @@ for rep in 1 2; do
 done
 
 for rep in 1 2; do
+  case ",$ONLY," in *,bfcl,*) ;; *) continue ;; esac
   say "bfcl simple_python rep=$rep start $(date +%H:%M:%S)"
   timeout 1200 python3 .wrapup/bfcl_run.py gen --categories simple_python --mode tools \
     --limit 40 --samples "$OUT/bfcl-r$rep.jsonl" --base_url "$BASE" \

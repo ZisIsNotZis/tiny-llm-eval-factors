@@ -88,16 +88,25 @@
 - 证据：`audits/evalplus.md`、`audits/evalplus_audit.py`。
 - 复现：`.wrapup/evalpy/bin/python "docs/subprojects/i01-判分与基准有效性/audits/evalplus_audit.py"`（实跑 `exit=0`，45 条 HumanEval+ 与 9 条 MBPP+ 预期成立）。
 
-### res32 chat 单次测量的噪声地板：已测的两族为 0/题，另两族在跑
+### res32 chat 单次测量的噪声地板：四族同配置重复都是 0/题（边界：确定性解码）
 
-- **MultiPL-E chat（27B Q3，greedy，同提示集、同后处理）**：同配置两次重复 `np1-p1 vs np1-p2` 与 `npauto-p1 vs npauto-p2`，两组都是 **161/161 题完全相同、上翻 0、下翻 0、分数摆动 0.0000、Jaccard 1.0**。
-- **EvalPlus chat（2B Q4，temp=0，N=164）**：库内 `w1-repeat` 的三次重复逐题完全相同（46/164 三次，上翻 0 下翻 0，Jaccard 1.0）。
-- 因此在这两族上，**同配置重复的地板是 0 道题**——贪心 chat 的可复现性不是假设。
-- **这与 `plan15` 的 ±16/161 是两个不同的量，不得相加**：地板 0 说的是「输入相同、重复跑」，±16/161 说的是「输入变了（提示集/后处理版本）」。所以本项目解读小差异的规则是：**同一提示集哈希 + 同一后处理版本下，任何非零跨 run 差异都不是噪声而是错误或输入差；跨提示集/跨后处理版本的差异不能当噪声，必须先按 res29 的口径判输入。**
-- 未测：lm-eval（gsm8k，chat，`--limit 100`）与 BFCL（单轮 simple_python native tools，`--limit 40`）的同配置重复，正在本机 GPU 上各跑 2 次；结果未出，故这两族的地板**未定**（不是 0，也不是未知数写 0）。
-- 状态：current（对已测的两族）；另外两族待补。
-- 证据：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json`；`.wrapup/wres/humaneval/w1-2bq4-r{1,2,3}_openai_temp_0.0_eval_results.json`；`.wrapup/i01_noise_floor.log`。
-- 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"`（实跑：MultiPL-E 两对、EvalPlus 两对全部 `identical=161/161`、`0/164`，摆动 0）。
+同配置重复同一 cell 的逐题结果，四族全部**完全相同**（重算：`python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"`）。
+
+| 族 | cell 与配置 | n | 相同题数 | 上翻/下翻 | 分数摆动 | Jaccard |
+|---|---|---|---|---|---|---|
+| MultiPL-E chat | `q38-27b-q3` py，`mpl-chat-nothink-greedy-768`，greedy，同提示集，`-np 1` 两次 | 161 | 161 | 0 / 0 | 0.0000 | 1.0000 |
+| MultiPL-E chat | 同上但历史原旗标（server 默认 → 4 槽），两次 | 161 | 161 | 0 / 0 | 0.0000 | 1.0000 |
+| EvalPlus chat | `2b q4` humaneval，temp=0，三次 | 164 | 164 | 0 / 0 | 0.0000 | 1.0000 |
+| lm-eval gsm8k | `Qwen3.5-2B-UD-Q3_K_XL`，reasoning-off，`--limit 100`，两次 | 100 | 100 | 0 / 0 | 0.0000 | 1.0000 |
+| BFCL 单轮 | `simple_python` native tools，`--limit 40`，两次 | 40 | 40（预测调用 0/40 不同；correct 10 vs 10） | 0 / 0 | 0.0000 | — |
+
+- **总结：在确定性解码 + 同一提示集 + 同一后处理版本下，chat 单次测量的噪声地板是 0 道题**——重复跑不会改变任何一道题的判定。
+- **适用边界（不得外推）**：上表全部是 greedy/temp=0 且样本被 `--limit` 截到 40/100/161/164。采样解码下地板**远不是 0**：同一个 cell（`2b q4` humaneval）在 temp=0.3 的 5 次重复里，逐题通过集合的两两 **Jaccard 只有 0.53–0.67**，每对 **上翻 8–15 题、下翻 6–12 题**，而分数只在 37→43（6/164）之间摆动——即**分数摆动会系统性地低估逐题不稳定**，采样协议下必须按逐题比，不能按分数比。
+- **与 `plan15` 的 ±16/161 严格区分**：地板 0 说的是「输入相同、重复跑」；±16/161 说的是「输入变了（提示集/后处理版本）」。两者不可相加、不可互相替代。本项目解读小差异的规则因此是：**提示集哈希 + 后处理版本相同 → 任何非零跨 run 差异都不是噪声；任一改变 → 先按 res29 判输入差，再谈显著性。**
+- 一处需要复核的细节：gsm8k 这一行的第一次测量（`gsm8k-noReasoning-flag-r{1,2}`）是在**漏传 `--reasoning off`** 的 server 上跑的，响应 content 为空、判分全为 `[invalid]`，那不是生产 cell；生产配置（`--reasoning off`）的重跑于 01:18 起、结果未出前该行的绝对值只作参考，但「两次完全相同」这一重复性结论在两种配置下都成立。
+- 状态：current。
+- 证据：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json`；`.wrapup/wres/humaneval/w1-2bq4-r{1,2,3}_openai_temp_{0.0,0.3}_eval_results.json`；`.wrapup/mres/i01-floor/{gsm8k-r*,gsm8k-noReasoning-flag-r*,bfcl-r*}`；`.wrapup/i01_noise_floor.log`。
+- 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"`（实跑：四族 `identical==n`、`swing 0.0000`）；采样边界用 `w1-2bq4-r{1..5}_openai_temp_0.3_eval_results.json` 两两比。
 
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 

@@ -112,10 +112,10 @@ AC：四份落盘完成物与四份 `_eval.json` 存在；一份逐题对照表�
 | AC | 证据节点 | 状态 |
 |---|---|---|
 | 每个 harness 一份审计 + 负控 | EvalPlus `RESULT.md::res31` + `audits/evalplus.md`；lm-eval `res26` + `audits/lmeval.md`；BFCL `res27`/`res30` + `audits/bfcl.md`；MultiPL-E `res28` + `audits/multipl-e.md` | **完成**（4/4 份，每份脚本 `exit=0` 且两侧负控都观测到；已知缺口：BFCL 多轮的 checker 负控未做、MultiPL-E 的非 py 语言提前退出未逐个实测，均已在各审计的「未测」节写明） |
-| chat 单次噪声地板 | `res32` | **部分**：MultiPL-E（161 题 × 2 对，0 翻转）与 EvalPlus（164 题 × 3 次 temp=0，0 翻转）已定；lm-eval gsm8k 与 BFCL 的单轮重复正在跑，未出数前这两族记未定 |
+| chat 单次噪声地板 | `res32` | **完成**：四族同配置重复全部 0 翻转（MultiPL-E 161 题 ×2 对、EvalPlus 164 题 ×3 次、lm-eval gsm8k 100 题 ×2 次、BFCL 单轮 40 题 ×2 次，Jaccard 1.0、摆动 0）；边界与采样反例（temp=0.3 时逐题 Jaccard 0.53–0.67）同节点 |
 | 同一格跨 run 差异有裁决 | `res29` | **完成**：plan15 裁决为「批处理排除（四臂逐字节相同）+ 131 不可复现（证据被覆盖）+ 16 题双向翻转 + 66/161 token 不同」；并把「6/161 是噪声地板」的说法撤回 |
 
-**真正未做的项**：`WP7` 的 lm-eval/BFCL 两族重复（在跑）；`WP3` 的 `lmeval_run.py --selftest`（需起 server，排在 WP7 之后）；BFCL 多轮 checker 的可执行负控；MultiPL-E 非 py 语言的提前退出通道；自研 BFCL 匹配器与官方 checker 的一致率（历史预测文件缺失）；`WP9` 独立复核（待 meta 派）。
+**真正未做的项**：① `WP3` 的 `lmeval_run.py --selftest`（echo shim 是否从不返回 0.0，需起 server）；② BFCL 多轮 checker 的可执行负控；③ MultiPL-E 非 py 语言（cpp/js/java/rs/rb）的提前退出通道；④ 自研 BFCL 匹配器与官方 checker 的一致率（历史预测文件缺失）；⑤ gsm8k 生产配置（`--reasoning off`）的重复跑正在 01:18 起跑、结果未出；⑥ `WP9` 独立复核（待 meta 派）。
 
 ## GPU 排队项（外部占用时按触发条件等，不轮询重试）
 
