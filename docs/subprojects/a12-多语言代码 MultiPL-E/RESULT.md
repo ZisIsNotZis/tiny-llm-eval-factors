@@ -7,6 +7,7 @@
 
 - 审计：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`，退出 0 = 谱系、全 Exception、协议设置、提示集哈希、报告行归属五项全绿。
 - 负控：`bash "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_negative_control.sh"`，退出 0 = 干净报告通过、两处人为篡改都被拒。
+- 已存捕获（文件名带短 revision）：`evidence/audit-7025d71-worktree.txt`（工作树，退出 0）、`evidence/audit-7025d71-head-report.txt`（HEAD 报告，退出 1，见「HEAD 的报告有两处缺陷」）、`evidence/negative-control-7025d71.txt`（退出 0）。
 
 ## 审计的负控能力：两处篡改都被拒
 
@@ -23,6 +24,7 @@
 
 ## 报告：报告印出的每个格都属于它自己那一行协议，且是库中已存的格
 
+- 前提：本节的数字来自工作树里的 `report.html`（i02 的未提交改动已重生成它）；捕获 `evidence/audit-7025d71-worktree.txt` 的首部把这三个未提交文件逐个列了出来。对 HEAD 里那份报告跑同一审计的结果见「HEAD 的报告有两处缺陷」。
 - 结论：`report.html` 第十三节（多语言代码）逐语言表现有 80 行（= 模型 × 协议标签）、186 个有值格，全部通过 `[7]` 的行归属检查（值在该行协议标签下存在、题量等于产物题量）；缺的格数为 0。
 - 结论：库中按 (模型, 协议串, 语言) 有 192 个键、按 (模型, 协议标签, 语言) 有 186 个键，差的 6 个是标签碰撞：m31-topk 的协议串（`mpl-raw-t0.3-768;topk-set=…`）与 m27 的 `multipl-e-raw-t0.3-768` 渲染成同一个标签 `raw·temp=0.3`，于是 3 个模型 × 2 语言各有一行被并掉。其中 3 个键的两条记录值不同（m31 的 `top_k=1` 锚点等于贪心地板值），被并掉的那条值不再出现在报告里，见「表里被并掉的格」。
 - 证据：报告覆盖行自报 cpp 79 / py 66 / js 21 / java 12 / rs 8 / rb 6，合计 186。
@@ -69,15 +71,22 @@
 
 ## 两语言分歧：拆列的依据
 
-- 结论：51 个同时有 cpp 与 py 的模型里，py−cpp 的差值最小 −0.2671、中位数 +0.0186、最大 +0.1863，其中 29 个模型的 |差值|>0.05；两语言对 169/1275 对模型（13.3%）给出严格相反的次序，另有 13 对在至少一种语言上打平。这是 meta 裁决「标准列的 MultiPL-E 格拆成 C++ 与 Python 两列」的依据（`PLAN.md`「已裁决」），拆列已由 i02 落地。
+- 结论：51 个同时有 cpp 与 py 的模型里，py−cpp 的差值最小 −0.2671、中位数 +0.0186、最大 +0.1863，其中 29 个模型的 |差值|>0.05；两语言对 169/1275 对模型（13.3%）给出严格相反的次序，另有 13 对在至少一种语言上打平。这是 meta 裁决「标准列的 MultiPL-E 格拆成 C++ 与 Python 两列」的依据（`PLAN.md`「已裁决」），i02 已在工作树里落地（尚未提交，见「标准列已不池化」）。
 - 证据：169/1275 是按「两个模型在两语言下的差值符号相反」逐对判定得到的；报告第十三节的逐语言表把同一模型的 raw/chat 分成两行、六种语言各占一列，行键是 (模型, 协议)，没有跨语言或跨协议的合并。
 - 复算：审计脚本 `[5]` 段；或直接 `python3 -c "import sqlite3,itertools;con=sqlite3.connect('file:experiments.sqlite?mode=ro',uri=True);d={};[d.setdefault(m,{}).__setitem__(l,s) for m,l,s in con.execute(\"SELECT model,language,_score FROM experiments WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768' AND language IN ('cpp','py') AND _score IS NOT NULL\")];b=[(m,v['cpp'],v['py']) for m,v in d.items() if 'cpp' in v and 'py' in v];sg=lambda x:(x>0)-(x<0);print(len(b),sum(1 for (m1,c1,p1),(m2,c2,p2) in itertools.combinations(b,2) if sg(c1-c2)*sg(p1-p2)<0))"`；行键证据 `grep -n "cells.setdefault((model, proto)" make_report.py`（`table_mpl_langs`）。
 
-## 标准列已不池化：8 个标准表各带 C++ 与 Python 两列
+## 标准列已不池化（i02 的工作树改动；HEAD 仍是池化的）
 
-- 结论：`report.html` 的 8 个标准表现在各带「多语言代码 C++」与「多语言代码 Python」两列，带池化的单列「多语言代码」的标准表为 0 个；两列的格都直接来自库中对应语言的格，不再有 cpp+py 的加权均值。
-- 证据：审计 `[8]` 段按 `<table>` 逐表数表头里含「多语言」的列数，1 列 = 池化、≥2 列 = 已拆。
-- 复算：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 的 `[8]` 段；或 `python3 -c "import re;h=open('report.html',encoding='utf-8').read();print(sorted({x for t in re.findall(r'<table[^>]*>(.*?)</table>',h,re.S) for x in re.findall(r'<th[^>]*>([^<]*多语言[^<]*)</th>',t)}))"`。
+- 结论：工作树里 `report.html` 的 8 个标准表各带「多语言代码 C++」与「多语言代码 Python」两列，带池化单列「多语言代码」的标准表为 0 个；两列的格直接来自库中对应语言的格，不再有 cpp+py 的加权均值。这三处改动（`make_report.py`、`.wrapup/mktables.py`、`report.html`）在 revision `7025d71` 上尚未提交，所以对本 revision 的 HEAD 报告跑同一审计仍报 8 个池化表。
+- 证据：审计 `[8]` 段按 `<table>` 逐表数表头里含「多语言」的列数，1 列 = 池化、≥2 列 = 已拆；`evidence/audit-7025d71-worktree.txt` 是工作树捕获，`evidence/audit-7025d71-head-report.txt` 是把 `git show HEAD:report.html` 当输入跑出的捕获。
+- 复算：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 的 `[8]` 段；或 `python3 -c "import re;h=open('report.html',encoding='utf-8').read();print(sorted({x for t in re.findall(r'<table[^>]*>(.*?)</table>',h,re.S) for x in re.findall(r'<th[^>]*>([^<]*多语言[^<]*)</th>',t)}))"`；对 HEAD 版：`git show HEAD:report.html > /tmp/h.html && python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py" --report /tmp/h.html`。
+
+## HEAD 的报告有两处缺陷：32 个格的题量是编的，8 个标准表仍是池化列
+
+- 结论：对 `git show HEAD:report.html` 跑审计，`[7]` 报 32 个格的题量与产物不符——java 格印 `(161)` 而 java 的满格题数是 158，rs 格印 `(161)` 而 rs 是 155，m30 的六格印 `(161)` 而那批探针只有 60 题。原因是 MPL 行不带 `n_items`，旧报告代码对缺失的题数用了硬编码 161。这 32 格的值本身仍属正确的行，错的是它声称的题量，所以「两个 95% 区间不能按 161 算」这类误读是真实风险。
+- 结论：同一份 HEAD 报告仍是 8 个池化的「多语言代码」单列（见上一条）。
+- 证据：`evidence/audit-7025d71-head-report.txt` 的 `[7]` 段逐格列出 `printed n=161, artefact n=[158]/[155]/[60]`；`[8]` 段报 8 个池化表。
+- 复算：`git show HEAD:report.html > /tmp/h.html && python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py" --report /tmp/h.html`（退出 1）。i02 的工作树改动已把题量改成语言自己的满格数、把带 n 的打印只留给有 n 的格，所以工作树捕获为 0 个不符。
 
 ## 不混协议：行的身份由协议串决定
 
