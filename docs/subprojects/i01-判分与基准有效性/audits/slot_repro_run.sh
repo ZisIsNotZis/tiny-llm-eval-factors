@@ -16,14 +16,16 @@
 #
 # Arms (pinned prompt set, chat, thinking off, greedy, 768 tokens, 2048 ctx per
 # slot -- the protocol every recorded chat cell used):
-#   np1  : one server started with -np 1, two independent generation passes
-#   np4  : one server started with -np 4, two independent generation passes
-#   np4b : a SECOND server started with -np 4, one pass (cross-instance check)
+#   np1      : one server started with `-np 1 -c 2048`, two generation passes
+#   npauto   : one server started with `-c 2048` and no `-np`, which is exactly the
+#              recorded configuration (server default -> n_slots = 4, n_ctx_slot = 2048)
+#   npauto-b : a SECOND server with the same flags, one pass (cross-instance check)
 #
 # The recorded cells ran without an explicit -np: this llama-server build defaults
-# to -np auto and reported `n_slots = 4, n_ctx_slot = 2048`, which is why np4 is
-# the production arm and why -c is scaled per arm (with an explicit -np, -c is the
-# TOTAL; with auto it behaves as the per-slot size).
+# to -np auto and reported `n_slots = 4, n_ctx_slot = 2048` in every load of
+# m26/m160/m161, which is why npauto reproduces it verbatim and why an explicit
+# -np is not used for the production arm (with an explicit -np, -c is the TOTAL and
+# gets divided; with the default it behaves as the per-slot size).
 #
 # Each arm takes the GPU flock for itself, through slot_repro_arm.sh, so a panel
 # queued behind this subproject can start between two arms instead of waiting out
@@ -36,7 +38,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$HERE/../../../.." && pwd)
 cd "$REPO" || exit 1
 
-ARMS=${*:-"np1 np4 np4b"}
+ARMS=${*:-"np1 npauto npauto-b"}
 LOCK="$REPO/.wrapup/gpu_locked.sh"
 for arm in $ARMS; do
   echo "[i01-slot] === dispatching arm=$arm under the GPU flock $(date +%H:%M:%S) ==="

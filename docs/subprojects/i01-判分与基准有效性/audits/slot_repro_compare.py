@@ -38,7 +38,8 @@ import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 MRES = os.path.join(REPO, ".wrapup", "mres")
-ARMS = ["np1-p1", "np1-p2", "np4-p1", "np4-p2", "np4b-p1"]
+# npauto = the historical configuration (server default -np -> 4 slots, -c 2048)
+ARMS = ["np1-p1", "np1-p2", "npauto-p1", "npauto-p2", "npauto-b-p1"]
 
 
 def load(arm):
@@ -70,11 +71,11 @@ def compare(a_name, b_name, a, b):
 
 def verdict(rows):
     np1_same = next(r for r in rows if {r["a"], r["b"]} == {"np1-p1", "np1-p2"})["identical"]
-    np4_same = next(r for r in rows if {r["a"], r["b"]} == {"np4-p1", "np4-p2"})["identical"]
-    np4b_same = next(r for r in rows if {r["a"], r["b"]} == {"np4-p1", "np4b-p1"})["identical"]
-    np1_vs_np4 = next(r for r in rows if {r["a"], r["b"]} == {"np1-p1", "np4-p1"})["identical"]
+    np4_same = next(r for r in rows if {r["a"], r["b"]} == {"npauto-p1", "npauto-p2"})["identical"]
+    np4b_same = next(r for r in rows if {r["a"], r["b"]} == {"npauto-p1", "npauto-b-p1"})["identical"]
+    np1_vs_np4 = next(r for r in rows if {r["a"], r["b"]} == {"np1-p1", "npauto-p1"})["identical"]
     if np1_same and not (np4_same and np4b_same):
-        return ("batching", "4 槽贪心批处理不可复现：np1 内两次逐题相同，np4 内/跨实例出现翻转；"
+        return ("batching", "多槽贪心批处理不可复现：np1 内两次逐题相同，np4 内/跨实例出现翻转；"
                             "plan15 的 6/161 由生成侧批处理解释，噪声地板必须按槽位数分别定。")
     if np1_same and np4_same and np4b_same and np1_vs_np4:
         return ("prompt-set", "四个臂逐题完全相同：当前配置下生成可复现，残余差异只能来自提示集或其他未记录的输入；"
@@ -108,7 +109,8 @@ def main() -> int:
               % (arm, d["n"], d["pass"], d["score"], d["status"],
                  d["meta"].get("llama_reports", "?")))
 
-    pairs = [("np1-p1", "np1-p2"), ("np4-p1", "np4-p2"), ("np4-p1", "np4b-p1"), ("np1-p1", "np4-p1")]
+    pairs = [("np1-p1", "np1-p2"), ("npauto-p1", "npauto-p2"),
+             ("npauto-p1", "npauto-b-p1"), ("np1-p1", "npauto-p1")]
     rows = [compare(a, b, data[a], data[b]) for a, b in pairs]
     print("pairwise per-problem comparison")
     for r in rows:

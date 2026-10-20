@@ -12,7 +12,7 @@
 ## 当前状态
 
 - 已完成：`WP1`（文档归位）、`WP2`（EvalPlus 审计 + 负控）、`WP3`（lm-eval 审计 + 负控）、`WP6` 的 `np1` arm。
-- 在办：`WP6` 的 `np4`/`np4b` arm（23:11:03 起在 GPU 锁后排队，前面是 a12 的 `m163`；驱动 pid 2571952 自己等锁，不占本编排者的回合）。
+- 在办：`WP6` 的 `npauto`/`npauto-b` arm（前两次四槽尝试已诊断作废，见下；新脚本带显存预检与 OOM 单次重试，每 arm 单独持锁）。
 - 下一个派给谁：GPU 空出后先取 `np4`/`np4b` 的结果；CPU 侧下一件是 `WP4`（BFCL 审计），然后 `WP5`（MultiPL-E 审计收尾）。`WP3` 留下的一个 GPU 负控（`lmeval_run.py --selftest`）排在 `np4b` 之后。本会话没有派孙工具，所以 `WP9` 的独立复核必须由 meta 派 fresh-context reviewer，不得自评通过。
 - **`np1` 已把 plan15 的嫌疑压到四槽批处理上**：同一提示集、`-np 1`、贪心、chat 关思考、每槽 2048 ctx，两次独立生成得到逐字节相同的完成物与相同的 145/161（`RESULT.md::res25`）。所以差异不可能来自「贪心生成本身不稳定」；剩下的是 4 槽批处理（`np4`/`np4b` 待测）或提示集（旧集已删，不可测）。
 
@@ -57,12 +57,39 @@ AC：四份落盘完成物与四份 `_eval.json` 存在；一份逐题对照表�
 
 | arm | 配置 | pass 数 | 实测 GPU 占用 | 状态 |
 |---|---|---|---|---|
-| np1 | `-np 1`，`-c 2048`，一个 server | 2 | 22:52→23:06 ≈ 14 分钟（一次模型加载 + 2×5.4 分钟生成） | **完成**：两次都是 145/161 = 0.9006，且完成物逐字节相同（sha256 同值） |
-| np4 | `-np 4`，`-c 8192`（每槽 2048），一个 server | 2 | 预计 ≈13 分钟 | 排队中：23:11:03 起等 GPU 锁（前面是 a12 的 m163） |
-| np4b | `-np 4`，`-c 8192`，第二个 server 实例 | 1 | 预计 ≈8 分钟 | 排队中 |
-| 合计 | 3 次模型加载 + 5 次生成 | — | **≈35 GPU 分钟，单 arm ≤14 分钟；剩约 21 分钟** | — |
+| np1 | `-np 1 -c 2048`，一个 server | 2 | 22:52→23:06 ≈ 14 分钟 | **完成**：两次都是 145/161 = 0.9006，完成物逐字节相同 |
+| npauto | `-c 2048`，**不带 `-np`**（历史配置：server 默认 → `n_slots = 4, n_ctx_slot = 2048`），一个 server | 2 | 预计 ≈13 分钟 | 未开始（前两次失败已诊断，见下） |
+| npauto-b | 同 npauto 的第二个 server 实例 | 1 | 预计 ≈8 分钟 | 未开始 |
+| 合计 | 3 次模型加载 + 5 次生成 | — | ≈35 GPU 分钟；**剩约 21 分钟** | — |
 
-驱动进程：`slot_repro_run.sh np4 np4b`，`setsid nohup` 后台，pid 2571952（前台只 poll `.wrapup/i01_slot_repro2.out`，不再起长前台 bash）。np4 的 `p1` 第一次尝试（23:06:54→23:09:33，rc=143）被编排者自己的 30 分钟硬上限 SIGTERM 掉，**不是模型或 harness 失败**，且那一次带的是错的 ctx 旗标（`-c 2048` 与显式 `-np 4` 一起用意味着每槽 512），已作废且未产出 `_eval.json`，不得记成测量。
+### WP6 四槽臂的三次不成立与诊断（不得当成测量）
+
+1. **23:06:54→23:09:33，`rc=143`**：被编排者自己的 30 分钟硬上限 SIGTERM，不是模型/harness 失败；且那一次带的是错的 ctx 旗标（显式 `-np 4` 时 `-c` 是总 ctx，`-c 2048` 只给每槽 512）。无 `_eval.json`。
+2. **23:48:03，`arm=np4 server DIED`**：显存分配失败，**死在模型加载、不在 KV**。日志原文（`.wrapup/i01_slot_repro.log` 行 3311-3318）：
+
+```
+0.03.345.270 E ggml_backend_cuda_buffer_type_alloc_buffer: allocating 11671.15 MiB on device 0: cudaMalloc failed: out of memory
+0.03.345.429 E alloc_tensor_range: failed to allocate CUDA0 buffer of size 12238090240
+0.04.019.556 E llama_model_load: error loading model: unable to allocate CUDA0 buffer
+0.04.019.576 E srv    load_model: failed to load model, '/home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf'
+0.04.019.579 I srv operator(): operator(): cleaning up before exit...
+```
+
+3. **根因是锁换手时的显存竞争，不是「四槽不可行」**：a12 的 `m163` 面板结束时间戳是 `panel end Tue Oct 20 23:48:03`，与本 arm 的 `start 23:48:03` 同一秒——flock 由 shell 释放，而死进程的 `cudaFree` 还没完成。同一台机器、同一个模型在 23:06 曾成功以 `-np 4` 加载（server 自报 `n_slots = 4, n_ctx_slot = 512`），m161 更有 9 次 `n_slots = 4, n_ctx_slot = 2048` 的成功加载，所以「四槽在 24GB 上装不下」这一假设被直接反例推翻。当时空出来的量：现在整机空闲时 `nvidia-smi --query-gpu=memory.free` = **22381 MiB**（24,564 MiB 总量，两个外部 386 MiB context 常驻），而模型需要 11,671 MiB 权重缓冲 + KV + compute，余量 ~10 GiB。
+
+处置（已写进 `slot_repro_arm.sh`）：
+
+- 每个 arm 开 server 前等 `memory.free ≥ 20000 MiB`（上限 300 s，超时以 exit 4 记「显存被占」而不是当作测量）；
+- 只有在日志尾部确实出现 `cudaMalloc failed: out of memory` 时，才 30 s 后重试一次加载（仍然是一个 arm、一次测量）；其它死法不重试，以 exit 3 报原文；
+- 起 server 后校验 server 自报的 `n_slots` 与 arm 预期一致，不一致以 exit 5 中止（「配置不符」不是测量）。
+
+### 历史那几次的 np / ctx 到底是多少（先回答再跑）
+
+- `m26`、`m160`、`m161` 的日志里，`n_slots = 4, n_ctx_slot = 2048` 分别出现 9 / 13 / 9 次，**没有别的取值**：131（m26）、139（m26 样本重判）、145（m161）三次全部是**四槽 + 每槽 2048 ctx**。
+- 脚本也印证：`run_m26.sh` 与 `run_m161_chat_py.sh` 都是 `llama-server ... -c "$CTX"`（`CTX=2048`）且**不传 `-np`**，四槽来自 server 默认。
+- 所以「四槽能不能复现历史那一次」的答案是**能，只要用历史原旗标**：`-c 2048` 且不传 `-np`。这也修正了之前 `-c 8192 -np 4` 的写法：两者每槽 ctx 都是 2048，但只有前者是逐字复现；现 arm `npauto` 就用原旗标，并断言 server 自报 `n_slots = 4`。
+
+锁粒度：每个 arm 自己持一次 `flock`（`slot_repro_arm.sh <arm>` 由 `gpu_locked.sh` 包住），不是整段实验一次长锁，排在后面的子项目（a12 的 m163）可以在两个 arm 之间插入。理由是 `@machine` 的有限并发与 `@scheduling` 的 queue_behind：一个 arm 是一个可被抢占的完整测量单元，而整段实验不是。
 
 锁粒度：每个 arm 自己持一次 `flock`（`slot_repro_arm.sh <arm>` 由 `gpu_locked.sh` 包住），不是整段实验一次长锁，排在后面的子项目（a12 的 m163）可以在两个 arm 之间插入。理由是 `@machine` 的有限并发与 `@scheduling` 的 queue_behind：一个 arm 是一个可被抢占的完整测量单元，而整段实验不是。
 
