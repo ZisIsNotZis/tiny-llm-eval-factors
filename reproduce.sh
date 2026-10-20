@@ -59,14 +59,19 @@ fi
 # 4) 报告输入是否随仓库分发；这里的输入不在了就什么都别谈
 missing_inputs=0
 for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json \
-         report_inputs/open_questions.json docs/subprojects/i02-测量基础设施/non_measurements.tsv \
-         docs/docs.schema.yaml; do
+         report_inputs/open_questions.json report_inputs/paired_deltas.json \
+         docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
 if [ "$missing_inputs" = 0 ]; then
     record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 report_inputs/build_paired_deltas.py --check >/dev/null 2>&1; then
+    record PASS "paired_deltas.json 与 a01 的配对差事实一致"
+else
+    record WARN "paired_deltas.json 与 a01 的事实不一致：python3 report_inputs/build_paired_deltas.py"
 fi
 if python3 report_inputs/build_open_questions.py --check >/dev/null 2>&1; then
     record PASS "open_questions.json 与各子项目 PLAN.md 的「未解问题」一节一致"
@@ -97,6 +102,13 @@ else
 fi
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/paired_delta_negative_control.py >/tmp/reproduce_pd.$$ 2>&1; then
+    record PASS "配对差叙述的负控（区间全跨 0 时报告改口，不声称掉点）"
+else
+    record FAIL "配对差叙述的负控未通过：python3 checks/paired_delta_negative_control.py"
+fi
+rm -f /tmp/reproduce_pd.$$
+
 if python3 checks/open_questions_negative_control.py >/tmp/reproduce_oq.$$ 2>&1; then
     record PASS "未解问题索引的负控（工作包标题与围栏里的标题都不算一节）"
 else

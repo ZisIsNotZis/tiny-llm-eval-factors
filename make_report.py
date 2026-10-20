@@ -1292,6 +1292,81 @@ def open_questions_html():
     return "".join(out) + note
 
 
+PAIRED_DELTAS = "report_inputs/paired_deltas.json"
+
+
+def cell_point(model_file, bench):
+    """某一格在规范协议下的分数（库里查不到就返回 None，不印）。
+
+    基准在报告里用下划线键（`humaneval_plus`），在库里是连字符（`humaneval-plus`），两种都试。
+    """
+    for name in (bench, bench.replace("_", "-")):
+        proto = CANON.get(name) or CANON.get(name.replace("-", "_"))
+        if not proto:
+            continue
+        r = CON.execute("SELECT _score,n_items FROM experiments WHERE model=? AND protocol=? "
+                        "AND _bench=? AND _score IS NOT NULL",
+                        (model_file, proto, name)).fetchone()
+        if r:
+            return r
+    return None
+
+
+def inversion_callout():
+    """第一节的重点解释：两档之间的配对差有多大、哪些被区间支持。
+
+    点估计来自库，区间来自 a01 的配对差事实（经 report_inputs/paired_deltas.json 索引）。
+    文字是**生成**的：把那条事实的区间改成跨 0，这里就只会说「无显著差异」，不会继续声称掉点；
+    方案差异只作为机制假设出现，并写明什么观察会否证它。
+    """
+    doc = json.load(open(PAIRED_DELTAS, encoding="utf-8"))
+    pair = doc["pair"]
+    low, high = pair["low"], pair["high"]
+    fam = pair["family"]
+    sig = [m for m in doc["metrics"] if m["significant"]]
+    ns = [m for m in doc["metrics"] if not m["significant"]]
+
+    low_file = next((f for f in BPWMAP if f.startswith(fam) and
+                     abs(BPWMAP[f] - low["bpw"]) < 5e-3), None)
+    high_file = next((f for f in BPWMAP if f.startswith(fam) and
+                      abs(BPWMAP[f] - high["bpw"]) < 5e-3), None)
+
+    out = [f"<div class='callout'><b>重点解释：{html.escape(fam)} 在 "
+           f"{low['bpw']:.2f} 与 {high['bpw']:.2f} 比特/权重这两档之间。</b>"
+           f"低档是 <code>{html.escape(low['quant'])}</code>，高档是 "
+           f"<code>{html.escape(high['quant'])}</code>——后者每权重比特更多，"
+           f"但两者是不同<b>方案</b>（动态分配 vs 信息论量化 + imatrix），所以不能假定分数随比特单调。"]
+
+    out.append("<br>逐基准的两比例差（95% 区间，口径：低档 − 高档，来自 "
+               f"<code>{html.escape(doc['source'])}</code> 的 <code>{html.escape(doc['fact'])}</code>）：")
+    rows = []
+    for m in doc["metrics"]:
+        cell_lo = cell_point(low_file, m["key"]) if low_file else None
+        cell_hi = cell_point(high_file, m["key"]) if high_file else None
+        pts = ""
+        if cell_lo and cell_hi:
+            pts = f"（点估计 {cell_lo[0]:.4f} → {cell_hi[0]:.4f}）"
+        verdict = "区间不含 0" if m["significant"] else "区间跨 0"
+        rows.append(f"<li><b>{html.escape(m['metric'])}</b> "
+                    f"{m['delta']:+.4f} [{m['lo']:+.4f}, {m['hi']:+.4f}] → {verdict}{pts}</li>")
+    out.append("<ul style='margin:6px 0 6px 18px'>" + "".join(rows) + "</ul>")
+
+    if sig:
+        names = "、".join(m["metric"] for m in sig)
+        out.append(f"<b>被数据支持的差异只有 {html.escape(names)}</b>；"
+                   f"其余 {len(ns)} 个基准的区间跨 0，即在这些基准上分不出这两档的差别——"
+                   f"不能说它们在两档之间「同时下降」。")
+        out.append("<br><b>机制假设（未证实）：</b>两档用的是不同量化方案（动态分配 vs imatrix），"
+                   "可能因此产生方向反转。否证方式：换一个家族重复同一对方案时若方向不再出现，"
+                   "或同方案同比特差下出现相反方向，这个假设就不成立。")
+    else:
+        out.append("<b>这 6 个基准的区间全部跨 0</b>：在这两档之间，"
+                   "数据分不出差别，因此不声称任何方向上的掉点或提升。")
+        out.append("<br>方案差异仍只是一个候选机制，连点估计的方向都没有被区间支持。")
+    out.append("</div>")
+    return "".join(out)
+
+
 def non_measurements_html():
     """非测量登记册：显存不足 / 门槛失败 / 没跑，逐格列出状态、发生了什么和证据。
 
@@ -1574,17 +1649,7 @@ def main():
         ("一、量化位宽（每个权重平均几个比特）",
          "X = 有效位宽（越大表示每个权重平均比特越多）；Y = 各基准分数；系列 = 模型家族（同家族 = 同一套 base 权重，只换量化文件）。",
          [T["A"]], fig_A(T["A"]),
-         "<div class='callout'><b>重点解释：为什么 Qwen3.5-2B 的曲线在中间“掉”了一下？</b>"
-         "把它的七个文件按有效位宽排好：3.27 = <code>Qwen3.5-2B-UD-IQ2_XXS.gguf</code>、"
-         "3.66 = <code>UD-IQ2_M</code>、3.96 = <code>UD-IQ3_XXS</code>、4.11 = <code>UD-Q2_K_XL</code>、"
-         "4.93 = <code>UD-Q3_K_XL</code>、5.70 = <code>UD-Q4_K_XL</code>、6.24 = <code>UD-Q5_K_XL</code>。"
-         "掉点出现在 <b>3.96 → 4.11</b>：UD-Q2_K_XL 的字节比 UD-IQ3_XXS <b>更多</b>（4.11 &gt; 3.96 比特/权重），"
-         "分数却更低（HumanEval+ 0.372 → 0.238；GSM8K 0.52 → 0.44；MultiPL-E 0.189 → 0.092）。"
-         "原因是这是两个不同<b>方案</b>：unsloth 的 <code>Q2_K_XL</code> 是动态分配——保住少数关键层的高精度、"
-         "把其余层压到极低；<code>IQ3_XXS</code> 是信息论量化 + imatrix，按重要性较均匀地分比特。"
-         "所以<b>“有效位宽”不是质量的充分统计量</b>，同样字节数下换方案可以产生反向——这正是第三节（方案/厂商）的结论。"
-         "对照组：同门的 Qwen3.5-4B 在 3.69（<code>Q2_K_XL</code>）与 3.71（<code>IQ3_XXS</code>）上分数几乎相同，"
-         "说明这个反向是模型相关的，不是普遍规律。</div>"
+         inversion_callout() +
          "<ul>"
          "<li>每条线是一个家族。多数家族在低比特一端分数很低，<b>在约 3–4 比特/权重之间出现明显抬升</b>，再往上（约 4 比特/权重以上）基本走平。</li>"
          "<li>抬升幅度在不同基准上差别很大：代码（HumanEval+/MBPP+）、推理（GSM8K）、指令（IFEval）抬升明显；"

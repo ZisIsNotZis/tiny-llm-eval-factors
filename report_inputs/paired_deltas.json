@@ -1,0 +1,65 @@
+{
+ "source": "docs/subprojects/a01-量化位宽/RESULT.md",
+ "fact": "b1-heplus-only",
+ "pair": {
+  "family": "Qwen3.5-2B",
+  "low": {
+   "bpw": 3.961,
+   "quant": "UD-IQ3_XXS"
+  },
+  "high": {
+   "bpw": 4.109,
+   "quant": "UD-Q2_K_XL"
+  }
+ },
+ "metrics": [
+  {
+   "metric": "HumanEval+",
+   "key": "humaneval_plus",
+   "delta": 0.1341,
+   "lo": 0.0345,
+   "hi": 0.2303,
+   "significant": true
+  },
+  {
+   "metric": "GSM8K",
+   "key": "gsm8k",
+   "delta": 0.08,
+   "lo": -0.0576,
+   "hi": 0.2134,
+   "significant": false
+  },
+  {
+   "metric": "IFEval",
+   "key": "ifeval",
+   "delta": 0.1,
+   "lo": -0.0373,
+   "hi": 0.2321,
+   "significant": false
+  },
+  {
+   "metric": "MBPP+",
+   "key": "mbpp_plus",
+   "delta": 0.0132,
+   "lo": -0.0506,
+   "hi": 0.0769,
+   "significant": false
+  },
+  {
+   "metric": "MMLU",
+   "key": "mmlu",
+   "delta": 0.0099,
+   "lo": -0.0357,
+   "hi": 0.0554,
+   "significant": false
+  },
+  {
+   "metric": "ARC-c",
+   "key": "arc_challenge",
+   "delta": 0.01,
+   "lo": -0.1252,
+   "hi": 0.1447,
+   "significant": false
+  }
+ ]
+}

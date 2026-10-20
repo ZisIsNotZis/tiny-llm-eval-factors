@@ -138,3 +138,10 @@
 - evidence: 回填只能拿到每个类别自己的 `n`（`per_category[cat].n`，如 `simple_python` 400、`multiple` 200、`live_multiple` 1053）；micro 需要逐题正确数，`*_summary.jsonl` 只存类别级 `acc`/`n`，逐题结果不在库也不在产物里，因此 micro 无法从现有数据算出。
 - producer: `python3 migrations/backfill_n_items.py --dry-run`（`per_category[...].n` 行）
 
+## res40 :: 报告第一节的「掉点」叙述不再写死：只有 HumanEval+ 的配对区间支持差异，方案差异降级为机制假设。
+
+- kind: measured
+- status: current
+- evidence: 三个点估计（HumanEval+ 0.3720 → 0.2378 等）改成从库查 `cell_point()`，查不到就不印；区间与显著性来自 `a01` 的 `b1-heplus-only` 事实，经 `report_inputs/build_paired_deltas.py` 抽成 `paired_deltas.json`（6 个基准里只有 HumanEval+ 的区间不含 0，其余 5 个跨 0）。报告据此生成文字：被支持的只有 HumanEval+，其余写「区间跨 0、分不出差别、不能说同时下降」；方案差异写成机制假设并给出否证方式。负控把这条事实的区间全部改成跨 0，报告随即改成「区间全部跨 0、不声称任何方向的掉点」。
+- producer: `python3 report_inputs/build_paired_deltas.py --check`；`python3 checks/paired_delta_negative_control.py`
+
