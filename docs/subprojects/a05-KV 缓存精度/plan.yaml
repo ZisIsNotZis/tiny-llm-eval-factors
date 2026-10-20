@@ -1,0 +1,8 @@
+plan7:
+  _text: 长上下文的 KV 影响未测：现有 KV 精度结论只覆盖约 1–2k tokens 的短上下文。(原 plan7 的其余部分已拆到 a01 的 12B MMLU 复测、i02 的显存阻塞登记、a11 的扩散解码。)
+  author: agent
+  origin: .scratch/originals/L3-分析.md 未决问题; .scratch/originals/BACKLOG.md
+  scope: general
+  status: provisional
+  domain:
+    kind: open_question

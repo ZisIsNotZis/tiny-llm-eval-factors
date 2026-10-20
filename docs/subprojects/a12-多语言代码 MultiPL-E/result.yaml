@@ -1,0 +1,22 @@
+res22:
+  _text: gemma-4-12b chat cpp（m6b 面板，2026-09-30）：Q2 4/161=0.0248、Q3 130/161=0.8075，已按协议串原样入库（run_tag `m6b-chat-gemma12b`，protocol 末尾记着 `;ctx=4096;tmpl=unverified`）。同批 py 格不并入：m6b 是 `ctx=4096` 且没有 `--jinja`、模板路径未核对的一套配置，而 m161 用 `ctx=2048 --jinja` 把这两格重测成了 Q2 77/161=0.4783、Q3 93/161=0.5776（res24），m6b 的 py 值只是另一套配置下的旧记录（.wrapup/m6b_summary.jsonl 记 Q2 75/161=0.4658、Q3 5/161=0.0311），已被 m161 取代；0.0311 是配置差异还是旧后处理造成的，本节点不裁决。所以 m160 的前提「12b 没有任何 cpp/py 数据」不成立，其 cpp 问题已可由 m6b 回答。
+  from: result.res24
+  author: measurement
+  origin: .wrapup/m6b_summary.jsonl; .wrapup/mres/m6b-g12b-q*-{cpp,py}*.json; .wrapup/run_m6b.sh 与 .wrapup/run_m161_chat_py.sh 的启动参数
+  scope: specific
+  status: current
+  evidence: m6b-g12b-q3-cpp_fixed_eval.json OK 130 / Exception 16 / SyntaxError 15；m6b-g12b-q2-cpp_fixed_eval.json OK 4 / SyntaxError 156 / Exception 1；.wrapup/m6b_summary.jsonl 的 g12b-q2 py pass 75（0.4658）、g12b-q3 py pass 5（0.0311）；.wrapup/m6b.log 有 `n_ctx_slot = 4096`，.wrapup/run_m6b.sh 的 start_server 无 `--jinja`，.wrapup/run_m161_chat_py.sh 为 `CTX=2048` 加 `--jinja`
+  producer: '`python3 -c "import json,collections;d=json.load(open(''.wrapup/mres/m6b-g12b-q2-cpp_fixed_eval.json''));print(collections.Counter(x[''status''] for x in d[''details'']))"`（q3 同）；`jq -c ''select(.lang=="py")'' .wrapup/m6b_summary.jsonl`；`grep -n ''n_ctx_slot\|--jinja\|CTX='' .wrapup/m6b.log .wrapup/run_m6b.sh .wrapup/run_m161_chat_py.sh`；库值 `sqlite3 experiments.sqlite "SELECT protocol,round(_score,4) FROM experiments WHERE run_tag=''m6b-chat-gemma12b''"`'
+  domain:
+    kind: measured
+res24:
+  _text: 里程碑 m161 的 7 个 chat cell（`mpl-chat-nothink-greedy-768`，n=161）：q38-27b-q3 cpp 140/161=0.8696（端到端控制格）、q38-27b-q2 py 121/161=0.7516、q38-27b-q3 py 145/161=0.9006、gemma-4-12b Q2 py 77/161=0.4783、gemma-4-12b Q3 py 93/161=0.5776、gemma-4-26B-A4B Q2 py 2/161=0.0124、gemma-4-26B-A4B Q3 py 1/161=0.0062；gemma-4-26B 的两个 py 格是 Exception 主导（159/161、160/161 都是 `Exception`），成因是模型把函数体首行写在第 0 列（harness 不重排缩进，`mpl_run.strip_fences` 只剥行首围栏、保留缩进），每格「首行在第 0 列的完成物条数」与该格 Exception 条数逐格相等（159=159、160=160），所以是模型行为、不是 harness 剥离；同为 py 的 q38-27b-q3 首行列 0 只有 2/161，得分 0.9006。
+  from: result.res21, method.m48
+  author: measurement
+  origin: .wrapup/m161.log（面板 2026-10-19 21:36 启动）; .wrapup/m161_summary.jsonl; .wrapup/mres/m161-*
+  scope: specific
+  status: current
+  evidence: 首行在第 0 列计数 g26b-q2-py=159、g26b-q3-py=160、q38-27b-q3-py=2；对应 eval json 的 Exception 计数 159/160/16；HumanEval_0 的完成物原文为 `for i in range(len(numbers)):` 后接 8 空格缩进的 `for j …`（首行列 0、续行缩进，拼接后必然 IndentationError）
+  producer: '`jq -c ''{model,lang,pass,n,statuses}'' .wrapup/m161_summary.jsonl`；每格首行列 0 条数 `jq -r ''.completion|split("\n")[0]'' .wrapup/mres/m161-<cell>-chat.jsonl | grep -c ''^[^[:space:]]''`（BRE 里 `\t` 是字面 t，写成 `^[^ \t]` 会漏掉以 t 开头的首行）；每格 Exception 条数 `jq -r ''.details[]|select(.status=="Exception")|.name'' .wrapup/mres/m161-<cell>_eval.json | wc -l`'
+  domain:
+    kind: measured

@@ -1,0 +1,37 @@
+plan1:
+  _text: 硬阻塞（未测、非 null）：gemma-4-31B 的 QAT/原生 Q4 对（m142/m143）与 gemma-4-26B-A4B 原生 Q4（m145）记 `BLOCKED-on-VRAM`（权重 17.3/18.8/17.0 GB，另一项目在 :8834 占 ~6.5 GB）；DiffusionGemma-26B-A4B（轴 7）记 `GATE-FAIL`；APEX 量化方案无产物。
+  author: agent
+  origin: .scratch/originals/BACKLOG.md 硬阻塞
+  scope: general
+  status: current
+  evidence: server.log cudaMalloc failed
+  domain:
+    kind: block
+evidence_repair:
+  _text: 研究证据可恢复性待修复：当前 result.yaml 的若干来源仍指向已退役的 .scratch/originals，make_report.py 依赖 .wrapup 支撑输入及本机路径，README 未给出可重放的环境入口；先为一个代表性结果解析数据库行、协议、代码版本、数据与配置来源，再修复可打开的当前引用和报告输入声明，不得把文档数字当成已复现结果。验收是经授权后从只读数据库查询独立重建该表、核对输入哈希并运行文档检查与报告入口；证据缺失保持未知。本工作只登记问题，不授权数据库修改、新模型实验、训练或覆盖既有报告。
+  author: agent
+  origin: 对 README.md、make_report.py 与 docs/result/result.yaml 的静态核对
+  scope: specific
+  status: current
+  evidence: make_report.py::CON/raw_scores/tag_bpw/BPWMAP；docs/result/result.yaml::res1-res15；python3 docs/check_docs.py 已实际执行，因 /home/z/vibe/AGENTS.docs.schema.yaml 缺失退出 2，完整 schema/引用检查仍受阻，不得记为通过
+  domain:
+    kind: open_question
+plan10:
+  _text: 陈旧根路径：`.wrapup/` 下仍有 10+ 个脚本硬编码 `/home/z/hf/research`（该目录已不存在），任何重跑都会像 m160 那样在准备阶段静默失败；按 @migrate_on_touch 改成脚本相对路径，先改下一个被使用的脚本。
+  from: result.res19
+  author: agent
+  origin: grep -rl /home/z/hf/research .wrapup
+  scope: general
+  status: current
+  domain:
+    kind: open_question
+plan16:
+  _text: MultiPL-E 表仍渲染重复行：同一模型的两条协议串——`multipl-e-raw-t0.3-768` 与 `mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation)`——都渲染成同一个行标签 `raw·temp=0.3`，于是 Qwen3.5-2B 的三个量化档各出现两行标签与数值都相同的行，读起来像「同一协议测了两遍」。成因是行键：`make_report.py::table_mpl_langs` 的 cell 以完整 `(model, protocol)` 为键，而标签函数 `mpl_protocol_label` 有意丢掉不参与区分的附加段（只留 `ctx=`/`kv=`/`tmpl=`），键比标签细，两条键落到同一个显示名上。这是表格行键（行怎么分组、同名键怎么合并）的问题，不是标签问题：让标签去区分这两串会与「不参与区分的附加段省掉」的既定规则相冲突。
+  from: result.res22
+  author: agent
+  origin: m161 独立复核的残余观测（对 3eea78f 重生成的 report.html 与库内协议串）
+  scope: specific
+  status: current
+  evidence: 库里同模型的这两串协议渲染同一标签：`multipl-e-raw-t0.3-768` 与 `mpl-raw-t0.3-768;topk-set=…;anchors …`；受影响的 cell 是 Qwen3.5-2B 的 Q2_K/Q3_K/Q4_K_XL 三个量化档，各两行同名同值
+  domain:
+    kind: open_question

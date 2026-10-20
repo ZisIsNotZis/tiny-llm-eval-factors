@@ -7,7 +7,7 @@
 运行：python3 make_report.py  ->  report.html
 """
 from __future__ import annotations
-import base64, collections, html, json, math, os, re, sqlite3, sys
+import base64, collections, glob, html, json, math, os, re, sqlite3, sys
 
 import matplotlib
 matplotlib.use("Agg")
@@ -1122,14 +1122,20 @@ def section(H, title, definition, tables, figures, analysis_html):
 
 
 def load_docs():
-    """读取研究文档 SSOT（docs/<layer>/<layer>.yaml）的 facts。"""
+    """读取研究文档 SSOT 的 facts。
+
+    plan / result 归各子项目所有：`docs/subprojects/<id>-<name>/<layer>.yaml`。
+    保留 `docs/<layer>/<layer>.yaml` 的合并路径，供尚未搬完的层使用。
+    """
     out = {}
     for layer in ("plan", "result"):
-        p = os.path.join("docs", layer, f"{layer}.yaml")
-        try:
-            out[layer] = _yaml_load(p)
-        except Exception:
-            out[layer] = {}
+        facts = {}
+        legacy = os.path.join("docs", layer, f"{layer}.yaml")
+        if os.path.exists(legacy):
+            facts.update(_yaml_load(legacy) or {})
+        for path in sorted(glob.glob(os.path.join("docs", "subprojects", "*", f"{layer}.yaml"))):
+            facts.update(_yaml_load(path) or {})
+        out[layer] = facts
     return out
 
 

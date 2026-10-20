@@ -1,0 +1,8 @@
+res13:
+  _text: 第三方方案 GSQ-RCO：固定 Qwen3.8-27B，其两个档（3.058 / 3.549 比特/权重）对原生阶梯（2.878 / 3.850 / 4.173），与「最近原生档」或「按位宽插值后的原生」比较，所有差值的 95% CI 都跨 0。
+  author: measurement
+  origin: .scratch/originals/L2-结果.md 第三方方案（GSQ-RCO）
+  scope: specific
+  status: current
+  domain:
+    kind: measured

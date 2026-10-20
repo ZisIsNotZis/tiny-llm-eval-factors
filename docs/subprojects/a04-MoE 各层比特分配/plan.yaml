@@ -1,0 +1,8 @@
+plan6:
+  _text: 假设（Tier 1A 专家级/逐张量 MoE 量化）：需要 F16 源（~70 GB）。
+  author: agent
+  origin: .scratch/originals/BACKLOG.md 尚未跑的假设
+  scope: general
+  status: provisional
+  domain:
+    kind: hypothesis

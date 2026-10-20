@@ -1,0 +1,16 @@
+plan2:
+  _text: 假设 B1：三元/极低位宽的「异常点」——三元（Bonsai）与 Q1/Q2 可能根本不在平滑的「更多比特→更高分」曲线上；剩余工作：查 `Q2_0` 加载失败、`PQ2_0`（ggml type 142）需更新的 llama.cpp、同模型内的干净方案对照，用匹配比特/权重而非匹配量化名比较。
+  author: agent
+  origin: .scratch/originals/BACKLOG.md 尚未跑的假设
+  scope: specific
+  status: provisional
+  domain:
+    kind: hypothesis
+plan7b:
+  _text: 12B 原生档的 MMLU 异常需复测确认（原 plan7 的一部分）。
+  author: agent
+  origin: docs/plan/plan.yaml::plan7 拆分
+  scope: specific
+  status: provisional
+  domain:
+    kind: open_question

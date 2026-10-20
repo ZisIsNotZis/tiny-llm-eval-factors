@@ -1,0 +1,17 @@
+res7:
+  _text: 量化方案/厂商：文件字节接近时，换方案（IQ 系列 vs K 系列）分数有差，合并约 +0.056（95% CI [+0.008, +0.104]）；换厂商标签（同一模型、大小差 <1%）测不出差异（约 +0.009，95% CI [−0.058, +0.077]）。
+  author: measurement
+  origin: .scratch/originals/L2-结果.md 量化方案/厂商; 报告表 C/图
+  scope: general
+  status: current
+  domain:
+    kind: measured
+an4:
+  _text: 同文件大小下，比较「方案/字节」比「厂商标签」更重要：IQ 系列与 K 系列有可测差异，厂商标签测不出差异。
+  from: result.res7
+  author: agent
+  origin: .scratch/originals/L3-分析.md 4
+  scope: general
+  status: provisional
+  domain:
+    kind: analysis
