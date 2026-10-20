@@ -188,6 +188,30 @@
 - evidence: 该条由 a01 的位宽事实 `result.res1` 推出，本层只能判它在规模轴上是否复现（`WP4`），判不了位宽轴本身；本次归位未新增测量，状态保持 provisional。
 - repro: 未就位——`WP4` 建好后填入；位宽轴那侧的可复算入口是 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"`
 
+### moe-design-not-identified :: plan5 的双变量回归在本库的模型集里**不可识别**：稠密模型的激活参等于总参（去掉 MoE 点后设计矩阵秩亏），可识别的信息全部来自 15 个 MoE 点，而 MoE 内部总参与激活参同样锁在一起（只看 MoE 时总参系数 +0.122±0.141，与 0 不可分）。
+
+- author: measurement
+- scope: general
+- status: current
+- kind: analysis
+- from: result.moe-active-params-measured, result.size-axis-verdict
+- origin: `analysis/size_regression.py`（X = 实测总参/激活参，Y = `_bench='humaneval'` + `evalplus-0.3.1-openai-chat-greedy-base` 每模型一格，权重 = 1/二项方差）
+- evidence: 65 个可用模型点（稠密 50、MoE 15）。数值共线性并不高（`r(log总参, log激活)=0.628`、VIF=1.65、中心化条件数 2.09），所以**只看 VIF 会误判为可识别**；真正的阻塞是结构：去掉 MoE 点后设计矩阵**秩亏**（稠密点上 log激活 ≡ log总参），而 MoE 子集上总参系数 +0.1222±0.1405（t=0.87）。合并拟合给出 总参 +0.1624±0.0268、激活 +0.0926±0.0311（两个都「显著」），这正是陷阱：它的识别力来自两条互不重叠的点云，而不是来自能同时变动的两个轴。留一族检验（17 族逐一删除）里两个系数都不翻号，说明合并拟合不是被某一族顶住的，这与「不可识别」并不矛盾——不可识别是设计层面的，不是样本量层面的。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_regression.py"`（实跑输出：`identified: False` + `blocking: 去掉 MoE 点后设计矩阵秩亏…`）
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_regression.py" --check`（实跑输出：`9 expected true, 0 false`）
+- 要让它可识别的最小补测：至少两对「同总参、不同激活」的受控点（同一 MoE 权重换 `expert_used`，或同总参的稠密/MoE 对）。本轮没有这类格，记未测。
+
+### size-total-slope :: 在稠密模型上被识别的只有一个合并斜率：实测总参每涨 e 倍，HumanEval 分数涨 0.210±0.023（`total_only` 加权拟合，n=65，adjR²=0.754）；单独用激活参拟合更弱（0.205±0.031，adjR²=0.658）。
+
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- from: result.moe-design-not-identified
+- origin: `analysis/size_regression.py` 的 `fits`
+- evidence: 报告只能说「规模大分数高」的**方向**与这个量级，不能说「总参与激活参各自贡献多少」；`total+active` 的 adjR² 0.782 只比 `total_only` 的 0.754 高 0.028，而这 0.028 完全由 15 个 MoE 点提供。
+- repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_regression.json'));[print(m['name'],round(m['adj_r2'],4),[round(b,4) for b in m['beta']],[round(x,4) for x in m['se']]) for m in d['fits']]"`
+
 ## 报告 §2 现在说的两句话
 
 ### report-s2-claims :: 报告第二节的两条结论不是从库里算出来的，是 `make_report.py` 里的硬编码文本，本轴的 `WP6` 要逐句判它们成立与否。
