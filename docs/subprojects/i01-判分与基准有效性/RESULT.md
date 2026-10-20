@@ -1,0 +1,85 @@
+# i01 判分与基准有效性 — 结果
+
+每条事实一行一个陈述；数字后面必须跟证据路径与一条能重算出它的命令，没有命令的数字不写（`@falsifiable`）。
+未测写「未测」并写原因，不写 0。状态：`current` 为当前值，`provisional` 为暂时，`retracted` 为已撤回但保留其死因。
+判断类结论（analysis）与技术测量分开，analysis 不覆盖任何数字。
+
+## 判分缺陷与修复
+
+### res16 MultiPL-E 旧列不可比（language 覆盖）
+
+- 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
+- 当前规则：标准列只在 cpp 与 py 都测过时产出该单元，否则记缺失（NaN），不画点。
+- 状态：current。
+- 证据：`experiments.sqlite` 的 humaneval-multipl-e 行；`report.html` 数据质量节。
+- 复现：`sqlite3 experiments.sqlite "SELECT model,language FROM experiments WHERE protocol='multipl-e-raw-greedy-768' GROUP BY 1,2 ORDER BY 1,2"`。
+
+### res17 全 Exception 的格曾被写成 score=0
+
+- 扫描 `.wrapup/mres/*_eval.json` 时有多份文件每道题状态都是 `Exception`，却被计为 0；其中含 gemma-4-26B-A4B 的 py（chat 协议），而同模型 cpp 正常。
+- 份数不写在这里：报告数据质量第 2 条按构建时扫描给出当前文件数、其中 `_fixed` 重判份数、5 题探针份数与去重后的格数。
+- 当前规则：这类格必须记缺失（NULL）、不得写 0；对应行已置 NULL（备份 `experiments.sqlite.bak37`）。
+- 状态：current（本条的成因归因已由 res17b 撤回，见下）。
+- 证据：`.wrapup/mres/m26-g26b-q2-py_eval.json` 的 statuses 全为 `Exception`（n=161）。
+- 复现：`jq -r '[.details[].status]|group_by(.)|map({(.[0]):length})|add' .wrapup/mres/m26-g26b-q2-py_eval.json`。
+
+### res17b 撤回 res17 的两个成因归因
+
+- 撤回一：「那些全 Exception 的格是整轮运行报错」——不成立。
+- 撤回二：「旧 `strip_fences` 的 `text.strip()` 破坏首行缩进，所以判失败」——不成立：同一「函数体首行在第 0 列」的签名在修正后的 harness 下依然存在，修 harness 既没有也救不回那些格。
+- 当前成因归到模型行为（res21 的签名计数 + res24 的端到端控制格）。
+- 「却被写成 0、必须记缺失」这一半仍然成立。
+- 状态：current。
+- 证据：`.wrapup/mres/m161-g26b-q2-py-chat_eval.json` 与 `.wrapup/mres/m161-g26b-q3-py-chat_eval.json` 的 statuses 中 `Exception` 各 159、160（n=161）；`.wrapup/mres/m161-g26b-q2-py-chat.jsonl` 首条完成物首行为 `for i in range(len(numbers)):`（列 0）。
+- 复现：`jq -r '.details[]|select(.status=="Exception")|.name' .wrapup/mres/m161-g26b-q2-py-chat_eval.json | wc -l`。
+
+### res18 生成协议改变 MultiPL-E 分数（跨面板比较，不是受控比较）
+
+- 同一模型 gemma-4-26B-A4B、同一语言 cpp：raw 纯补全 9/161 = 0.0559，chat（关思考）134/161 = 0.8323。
+- 方向可信（差 125/161，远超任何已测噪声），但两次来自不同面板（m10 vs m26），不是同一面板内的受控对照；面板内的 raw vs chat 受控复测是 m160 的任务，它没有产出测量（res19），该复测至今未跑。
+- 状态：provisional——「协议改变分数」这一方向成立，「差多少由协议单独造成」尚未受控验证；这个受控复测属于 a12 的协议轴，不在本层 AC 内。
+- 证据：`.wrapup/mres/m10-g26b-q2-cpp_eval.json` 与 `.wrapup/mres/m26-g26b-q2-cpp_eval.json`。
+- 复现：`for f in m10-g26b-q2-cpp m26-g26b-q2-cpp; do jq -c '{n,pass,score}' .wrapup/mres/${f}_eval.json; done`。
+
+### res19 m160 面板没有产出测量（失败形态被记成 CORRUPT）
+
+- 2026-10-14 20:46 启动的 16 个 cell 全部在生成前失败（`/tmp/MultiPL-E/prompts` 已被清理，`FileNotFoundError`），脚本把它记成 `CORRUPT ... empty=999`。
+- 其后一次不经脚本的运行留下 `g12b-q2 cpp raw` 的 0/161；其完成物 151/161 不含 `return`、27/161 只有注释、18/161 带 `<|channel>` 通道 token——是原始补全模式下模型不写函数体，不是提示集坏了。
+- 状态：current。
+- 证据：`.wrapup/m160.log` 行 42–55 `FileNotFoundError: /tmp/MultiPL-E/prompts/humaneval-cpp.jsonl`；`.wrapup/mres/m160-g12b-q2-cpp-raw.jsonl`。
+- 复现：`grep -c 'CORRUPT' .wrapup/m160.log` 与 `grep -c 'FileNotFoundError' .wrapup/m160.log`。
+
+### res20 MultiPL-E chat 判分曾把 Markdown 围栏当语法错误
+
+- 旧 `strip_fences` 只在围栏闭合时才剥离，而数据集停止串把完成物切在闭合围栏之前，于是整格失败。
+- 用磁盘完成物（同一份生成、只补上正确后处理）重算：Qwen3.8-27B cpp chat Q2 0.2174→0.6335、Q3 0.4845→0.8571；py 仅 +0.0435/+0.0497；gemma-4-26B 的完成物无围栏，其 cpp 0.8323 不变。
+- Q3 那一对是**重判值**、不是该格的当前值：q38-27b-q3 cpp chat 现入库值是 0.8696 = 140/161；重判与重跑之差见 PLAN.md 的 WP6。
+- 状态：current。
+- 证据：`.wrapup/mres/m26-*_fixed.jsonl`（由 m26 原始样本经修正后处理生成）；m26-q38-27b-q3-cpp 有 72/161 带围栏且 72/161 失败，重算 pass 78→138。
+- 复现：`python3 .wrapup/mpl_run.py eval --lang cpp --samples .wrapup/mres/m26-q38-27b-q3-cpp_fixed.jsonl`。
+
+### res21 「函数体首行在第 0 列」签名不是后处理造成的，但仍不能救回那些格
+
+- 旧 `strip_fences` 开头 `text.strip()` 确实会抹掉无围栏完成物的首行缩进（m48 已改为只剥行首围栏），但「因此造成 gemma-4-26B-A4B py 那些 Exception」这一因果从句撤回。
+- 落盘完成物普遍带「函数体首行在第 0 列」的签名：m26 的 g26b-q2-py 160/161、g26b-q3-py 161/161，对照格 q38-27b-q3-py 13/161；m161 是在修正后的 harness 下落盘的，同一签名仍在（g26b-q2-py 159/161、g26b-q3-py 160/161 首行列 0）。
+- 修正后的 `strip_fences` 对无围栏完成物只做 `rstrip`、不动缩进，所以该签名不是后处理造成的证据。
+- 仍然为真的另一半：m26 落盘的 py 完成物用修正后处理重判仍是 `pass: 0`，这些格靠重判救不回来。
+- 状态：current。
+- 证据：m26 落盘 py 完成物用修正后处理重判 `.wrapup/mres/m26-g26b-q2-py_fixed_eval.json` 与 `.wrapup/mres/m26-g26b-q3-py_fixed_eval.json` 的 `pass` 均为 0（n=161）。
+- 复现：每格首行列 0 的条数 `jq -r '.completion|split("\n")[0]' <samples.jsonl> | grep -c '^[^[:space:]]'`；重判值 `jq .pass .wrapup/mres/m26-g26b-q2-py_fixed_eval.json`。
+
+## 分析
+
+### an5 不要用 PPL 做决策
+
+- PPL 与任务分约 30% 情况方向相反。
+- 状态：provisional。
+- 来源：`docs/product/product.yaml::prod3` 派生；原始出处已退役（`.scratch` 按 `@scratch` 停用，原件不再可打开），因此这条只有结论没有可重算的证据。
+- 复现：未测——当前没有一条命令能重算那个 30%；在报告里必须按 provisional 呈现，不得当成已复现测量，也不得当成 0。
+
+### an7 换生成协议后必须重测
+
+- 协议本身会改变量化结论的符号，所以换协议等于换一个测量。
+- 状态：provisional（但 res18 已给出同向的强证据：同模型 cpp 的 raw 0.04 对 chat 0.83）。
+- 来源：`docs/method/method.yaml::m23`；原始出处 `.scratch/originals/L3-分析.md` 7。
+- 复现：见 res18 的命令。
