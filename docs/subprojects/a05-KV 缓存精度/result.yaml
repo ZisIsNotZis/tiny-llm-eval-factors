@@ -1,8 +1,0 @@
-res9:
-  _text: KV 缓存精度：f16 / q8_0 / q4_0 三种 KV 精度在短上下文（约 1–2k tokens）下分数无可测差异；长上下文未覆盖。
-  author: measurement
-  origin: .scratch/originals/L2-结果.md KV 缓存精度
-  scope: general
-  status: current
-  domain:
-    kind: measured
