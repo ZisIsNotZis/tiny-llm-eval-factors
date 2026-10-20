@@ -78,6 +78,27 @@
 - 证据：`make_report.py::table_bfcl`（第 1040–1057 行）；`experiments.sqlite` 的 bfcl 行；`.wrapup/m8_summary.jsonl`。
 - 复现：`sqlite3 -readonly experiments.sqlite "SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' AND n_items IS NULL"` 与 `python3 "docs/subprojects/i01-判分与基准有效性/audits/bfcl_audit.py"`（聚合段打印两组数）。
 
+### res31 EvalPlus 的判分器不做后处理，且 MBPP+ 有 1/378 个任务能被空体拿满（见 audits/evalplus.md）
+
+- **判分器 `evalplus.evaluate` 完全不后处理**：它把 samples 里的 `solution` 原样 `exec`；后处理只在写入侧 `evalplus/codegen.py:89` 调一次 `sanitize()`（tree-sitter 按语法有效块抽定义节点），并同时落一份 `.raw.jsonl`。判据不是「剥围栏」而是「按语法找最长有效块」，所以围栏没闭合也能救回，但块里混入非 Python 文本就可能抽错块。
+- **方向两侧都实测**：正确解带围栏直接判分 → `fail`；同一份先过 `sanitize()` → `pass`；空完成物、错函数体、`def` 首行在第 0 列、多缩进一层 → 全部 `fail`。真实数据上（humaneval `w1-2bq4-r1` 的 8 个任务）去掉后处理有 **5/8** 判定翻转（raw fail → sanitized pass），即这条链路上后处理承担了大部分通过量。
+- **MBPP+ 的白拿通道**：3 个任务的 oracle 只检查「输出不是 None」（`Mbpp/737、787、794`）；其中 `Mbpp/787` 的 101 条 plus 期望全为 False，所以一个只 `return None` 的错误函数体 **`plus_status=pass`**（实测）。另有 7 个任务退化为集合相等（顺序不敏感）；源码里 `exact_match or True` 那个 oracle 在本数据集版本中**不存在**（实测空集）。
+- **逐题状态**：`*_eval_results.json` 存每任务 `base_status`/`plus_status`（`pass/fail/timeout`），但不存直方图、**也不存 `pass_at_k`**——库里每个 EvalPlus 分数都是事后由状态重算的。一格全 `timeout` 与真 0 分在文件里只能靠直方图分辨。
+- 状态：current。
+- 证据：`audits/evalplus.md`、`audits/evalplus_audit.py`。
+- 复现：`.wrapup/evalpy/bin/python "docs/subprojects/i01-判分与基准有效性/audits/evalplus_audit.py"`（实跑 `exit=0`，45 条 HumanEval+ 与 9 条 MBPP+ 预期成立）。
+
+### res32 chat 单次测量的噪声地板：已测的两族为 0/题，另两族在跑
+
+- **MultiPL-E chat（27B Q3，greedy，同提示集、同后处理）**：同配置两次重复 `np1-p1 vs np1-p2` 与 `npauto-p1 vs npauto-p2`，两组都是 **161/161 题完全相同、上翻 0、下翻 0、分数摆动 0.0000、Jaccard 1.0**。
+- **EvalPlus chat（2B Q4，temp=0，N=164）**：库内 `w1-repeat` 的三次重复逐题完全相同（46/164 三次，上翻 0 下翻 0，Jaccard 1.0）。
+- 因此在这两族上，**同配置重复的地板是 0 道题**——贪心 chat 的可复现性不是假设。
+- **这与 `plan15` 的 ±16/161 是两个不同的量，不得相加**：地板 0 说的是「输入相同、重复跑」，±16/161 说的是「输入变了（提示集/后处理版本）」。所以本项目解读小差异的规则是：**同一提示集哈希 + 同一后处理版本下，任何非零跨 run 差异都不是噪声而是错误或输入差；跨提示集/跨后处理版本的差异不能当噪声，必须先按 res29 的口径判输入。**
+- 未测：lm-eval（gsm8k，chat，`--limit 100`）与 BFCL（单轮 simple_python native tools，`--limit 40`）的同配置重复，正在本机 GPU 上各跑 2 次；结果未出，故这两族的地板**未定**（不是 0，也不是未知数写 0）。
+- 状态：current（对已测的两族）；另外两族待补。
+- 证据：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json`；`.wrapup/wres/humaneval/w1-2bq4-r{1,2,3}_openai_temp_0.0_eval_results.json`；`.wrapup/i01_noise_floor.log`。
+- 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"`（实跑：MultiPL-E 两对、EvalPlus 两对全部 `identical=161/161`、`0/164`，摆动 0）。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
