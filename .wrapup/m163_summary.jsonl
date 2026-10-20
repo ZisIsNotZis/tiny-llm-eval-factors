@@ -1,0 +1,2 @@
+{"model": "g12b-q2", "lang": "cpp", "n": 161, "pass": 3, "score": 0.018633540372670808, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"SyntaxError": 158, "OK": 3}}
+{"model": "g12b-q3", "lang": "cpp", "n": 161, "pass": 117, "score": 0.7267080745341615, "protocol": "mpl-chat-nothink-greedy-768", "statuses": {"OK": 117, "Exception": 17, "SyntaxError": 27}}
