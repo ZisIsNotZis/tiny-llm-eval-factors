@@ -177,6 +177,13 @@
 
 - kind: measured
 - status: current
-- evidence: `make_report.py` 不再有 `load_docs()` / `_yaml_load()` / `render_fact_list()`，也不再有「客观结果 / 分析结论 / 引用与规模 / 待分析」这四个由 `docs/subprojects/*/{plan,result}.yaml` 支撑的子节；报告现由 20 个二级节组成（研究概述 + 15 个研究分析节 + 数据质量与未解问题 + 2 个附录 + 结论），86 张图。研究成果的对外入口是 `FINDINGS.md`，不是报告里的内部事实清单。
+- evidence: `make_report.py` 不再有 `load_docs()` / `_yaml_load()` / `render_fact_list()`，也不再有「客观结果 / 分析结论 / 引用与规模 / 待分析」这四个由 `docs/subprojects/*/{plan,result}.yaml` 支撑的子节；报告现由 21 个二级节组成（研究概述 + 15 个研究分析节 + 测量可复现性边界 + 数据质量与未解问题 + 2 个附录 + 结论），86 张图。研究成果的对外入口是 `FINDINGS.md`，不是报告里的内部事实清单。
 - producer: `python3 make_report.py`（生成的 `report.html`）；`grep -c "<h2>" report.html`
+
+## res46 :: 报告新增「测量可复现性边界」一节，数字与适用条件都由 i01 的事实生成；BFCL 一节说清 micro/macro 且不给总分。
+
+- kind: measured
+- status: current
+- evidence: 新节由 `report_inputs/reproducibility.json` 渲染（该索引由 `report_inputs/build_reproducibility.py` 从 `i01/RESULT.md` 的 `res32` / `res29` 抽取，2 条事实、2 族地板、1 个幅度）：地板是「同配置重复 161/161、164/164 逐题相同、翻转 0、Jaccard 1.0」，判读规则是「同一提示集哈希 + 同一后处理版本下任何非零跨 run 差异都不是噪声」；输入变更时是「16 题双向翻转（11 上 / 5 下、净 +6）、±16/161 ≈ 0.10、76/161 文本不同、66 题 token 不同」，并写明适用条件（只有提示集哈希 + 后处理版本都钉住才可比，两个数字不得相加）。BFCL 一节新增口径说明：没有唯一总分、本表不给汇总列、面板 micro 与类别列 macro 不可混用；两者在本仓最大差 `0.2028`（`gr3b-q2`：micro 0.3905 vs macro 0.1877，当场从 `m8_summary.jsonl` 算出），并说明多轮 21/123 行仍无题量、micro 不可从库复算。
+- producer: `python3 report_inputs/build_reproducibility.py --check`；`python3 checks/reproducibility_negative_control.py`（幅度改 0 → 正文改口；删适用条件 → 生成失败）
 

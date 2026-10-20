@@ -1281,6 +1281,106 @@ def cell_point(model_file, bench):
     return None
 
 
+def bfcl_aggregation_note():
+    """BFCL 没有唯一的「总分」：这一节只说清口径，也不印任何当作总分用的数。"""
+    gap = bfcl_micro_macro_gap()
+    parts = ["<li><b>BFCL 没有唯一的「总分」，逐类别比较才有意义。</b>本表一行一个"
+             "（模型, 生成协议）、一列一个类别，<b>不提供汇总列</b>：任一列都是该类别自己的通过率，"
+             "把它们平均起来是 macro，按题数加权是 micro，两者不是同一个量。"
+             "面板汇总里记的是按题加权的 micro，而读者从这些类别列能算出来的只有未加权 macro，"
+             "<b>两者不可混用</b>。"]
+    if gap:
+        parts.append(f"本仓库的 BFCL 汇总里，两者相差最多 <b>{gap['gap']:.4f}</b>"
+                     f"（<code>{html.escape(str(gap['model']))}</code>：micro {gap['micro']:.4f} vs "
+                     f"macro {gap['macro']:.4f}，来自 <code>{html.escape(gap['file'])}</code>）。")
+    else:
+        parts.append("本机没有可用的 BFCL 汇总，这一项差多少无法给出。")
+    n_null = CON.execute("SELECT COUNT(*) FROM experiments WHERE _score IS NOT NULL "
+                         "AND n_items IS NULL AND bench_family LIKE 'bfcl%'").fetchone()[0]
+    n_all = CON.execute("SELECT COUNT(*) FROM experiments WHERE _score IS NOT NULL "
+                        "AND bench_family LIKE 'bfcl%'").fetchone()[0]
+    parts.append("题量方面：单轮的题量已按 `per_category` 的类别计数回填，"
+                 f"多轮仍有 {n_null}/{n_all} 行没有题量（汇总里没有匹配「类别 + 分数」的记录）；"
+                 "micro 需要逐题计数，而产物只有类别级 `acc`/`n`，所以 micro 不可从库复算，"
+                 "本报告也不给 BFCL 的任何单一总分数值。</li>")
+    return "".join(parts)
+
+
+def bfcl_micro_macro_gap():
+    """BFCL 汇总里「按题加权 micro」与「类别等权 macro」的最大差（从 run 汇总算，不手抄）。
+
+    面板 summary 的 `score` 是按题加权的 micro；读者从类别列能算出来的只有未加权 macro。
+    两者不是同一个量，差多少取决于类别题量是否均衡，所以这里当场算一遍再写进正文。
+    """
+    import glob
+    best = None
+    for path in glob.glob(os.path.join(".wrapup", "*_summary.jsonl")):
+        for line in open(path, encoding="utf-8", errors="replace"):
+            try:
+                r = json.loads(line)
+            except Exception:
+                continue
+            per = r.get("per_category")
+            if not isinstance(per, dict) or not per or r.get("score") is None:
+                continue
+            accs = [v["acc"] for v in per.values()
+                    if isinstance(v, dict) and v.get("acc") is not None]
+            if not accs:
+                continue
+            macro = sum(accs) / len(accs)
+            gap = abs(r["score"] - macro)
+            if best is None or gap > best["gap"]:
+                best = {"gap": gap, "micro": r["score"], "macro": macro,
+                        "model": r.get("model"), "file": os.path.basename(path)}
+    return best
+
+
+REPRODUCIBILITY = "report_inputs/reproducibility.json"
+
+
+def reproducibility_html():
+    """「测量可复现性边界」一节：地板与输入变更幅度是两件事，分别由 i01 的事实给出。
+
+    数字来自 `report_inputs/reproducibility.json`（由 `i01/RESULT.md` 的 res32/res29 抽出），
+    所以改那两条事实、这一节就跟着变；缺输入或缺适用条件时构建失败，不印一个孤立数字。
+    """
+    if not os.path.exists(REPRODUCIBILITY):
+        raise SystemExit(f"报告输入缺失：{REPRODUCIBILITY}（由 report_inputs/build_reproducibility.py 生成）。")
+    doc = json.load(open(REPRODUCIBILITY, encoding="utf-8"))
+    floor, change = doc["floor"], doc["input_change"]
+    out = ["<p class='def'>这一节回答一个读者一定会问的问题：报告里的分数波动到多大就值得当真。"
+           "答案是两件事，必须分开读——<b>输入相同时地板是 0 道题</b>；"
+           "<b>输入变了则可能翻转十几个题</b>。把后者当前者、或把前者当噪声容忍度，都会读错表。</p>"]
+
+    items = []
+    for h in floor["harnesses"]:
+        extra = f"，通过数 {h['passed']}/{h['n']}" if "passed" in h else ""
+        items.append(f"<li><b>{html.escape(h['name'])}</b>：同配置重复 {h['identical']}/{h['n']} 题逐题相同"
+                     f"（上翻 {h['flips_up']}、下翻 {h['flips_down']}、Jaccard {h['jaccard']}{extra}）</li>")
+    out.append("<h3>一、输入相同时：地板是 0 道题</h3><ul>" + "".join(items) + "</ul>")
+    out.append(f"<p><b>判读规则：</b>{html.escape(floor['rule'])}。"
+               f"因此同一提示集哈希、同一后处理版本下的任何非零跨 run 差异，"
+               f"都不能写成「噪声」——它是错误，或者是你没记录下来的输入差。</p>")
+
+    out.append("<h3>二、输入变了时：幅度可达十几个题</h3>")
+    out.append(f"<p>同一个 cell 在提示集被重建/删除之后重跑，实测出现 "
+               f"<b>{change['flips_up'] + change['flips_down']} 题双向翻转</b>"
+               f"（{change['flips_up']} 上 / {change['flips_down']} 下，净 "
+               f"{change['net']:+d}），即 <b>±{change['amplitude']}/{change['n']} ≈ "
+               f"{change['amplitude_ratio']:.2f}</b> 的量级；完成物在 "
+               f"{change['text_diff']}/{change['n']} 题上文本不同，其中 "
+               f"{change['token_diff']} 题是 token 真的不同。</p>")
+    out.append(f"<p><b>适用条件：</b>{html.escape(doc['condition'])}。"
+               f"换句话说：跨提示集/跨后处理版本的两次 run 不能互为重复测量；"
+               f"两个数字也不得相加（地板 0 说的是重复跑，±{change['amplitude']}/{change['n']} 说的"
+               f"是输入变了）。</p>")
+    out.append(f"<p class='nr'>来源：<code>{html.escape(doc['source'])}</code> 的 "
+               f"<code>{html.escape(floor['fact'])}</code> 与 "
+               f"<code>{html.escape(change['fact'])}</code>；本节的数字由 "
+               f"<code>report_inputs/build_reproducibility.py</code> 抽取，改那两条事实这一节就跟着变。</p>")
+    return "".join(out)
+
+
 def inversion_callout():
     """第一节的重点解释：两档之间的配对差有多大、哪些被区间支持。
 
@@ -1689,6 +1789,7 @@ def main():
          "所以工具调用分数必须连同协议一起读，不能只看一个数。</li>"
          "<li>多轮（base / miss_func / miss_param / long_context）目前只在少数锚点上跑过，覆盖很薄，属于<b>待扩测</b>。</li>"
          "<li><b>看图要点：</b>每张图同一模型的柱子高低 = 协议效应；柱子缺失 = 该协议下未测。</li>"
+         + bfcl_aggregation_note() +
          "</ul>"),
         ("十五、部分给分（每测试通过比例）",
          "X = 模型（三元/极低位宽 vs 原生 K）；Y = 每道题通过的测试比例（不是 pass@1）；行 = 模型文件。",
@@ -1705,6 +1806,9 @@ def main():
     for title, defn, tables, figs, analysis in sections:
         section(H, title, defn, tables, figs, analysis)
         all_tables.extend(tables or [])
+
+    H.append("<h2>测量可复现性边界：多少波动值得当真</h2>")
+    H.append(reproducibility_html())
 
     H.append("<h2>数据质量、可比性与待分析</h2>")
     H.append("<p class='def'>这一节不是结论，而是“哪些数字可信、哪些不可比、哪些还没测”的账本："

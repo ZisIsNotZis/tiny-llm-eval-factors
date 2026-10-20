@@ -60,13 +60,19 @@ fi
 missing_inputs=0
 for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json \
          report_inputs/open_questions.json report_inputs/paired_deltas.json \
+         report_inputs/reproducibility.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
 if [ "$missing_inputs" = 0 ]; then
-    record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / 非测量登记册 / docs@1）"
+    record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 report_inputs/build_reproducibility.py --check >/dev/null 2>&1; then
+    record PASS "reproducibility.json 与 i01 的地板/幅度事实一致"
+else
+    record WARN "reproducibility.json 与 i01 的事实不一致：python3 report_inputs/build_reproducibility.py"
 fi
 if python3 report_inputs/build_paired_deltas.py --check >/dev/null 2>&1; then
     record PASS "paired_deltas.json 与 a01 的配对差事实一致"
@@ -102,6 +108,13 @@ else
 fi
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/reproducibility_negative_control.py >/tmp/reproduce_rp.$$ 2>&1; then
+    record PASS "可复现性边界的负控（幅度改 0 正文改口、删条件后生成失败）"
+else
+    record FAIL "可复现性边界的负控未通过：python3 checks/reproducibility_negative_control.py"
+fi
+rm -f /tmp/reproduce_rp.$$
+
 if python3 checks/ingest_protocol_negative_control.py >/tmp/reproduce_ip.$$ 2>&1; then
     record PASS "入库协议的负控（只有 fa 不同的两行各成一格、缺协议时明说用了默认值）"
 else

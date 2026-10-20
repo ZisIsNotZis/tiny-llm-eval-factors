@@ -1,0 +1,39 @@
+{
+ "source": "docs/subprojects/i01-判分与基准有效性/RESULT.md",
+ "floor": {
+  "fact": "res32",
+  "harnesses": [
+   {
+    "name": "MultiPL-E chat",
+    "n": 161,
+    "identical": 161,
+    "flips_up": 0,
+    "flips_down": 0,
+    "score_swing": 0.0,
+    "jaccard": 1.0
+   },
+   {
+    "name": "EvalPlus chat",
+    "n": 164,
+    "identical": 164,
+    "passed": 46,
+    "flips_up": 0,
+    "flips_down": 0,
+    "jaccard": 1.0
+   }
+  ],
+  "rule": "同一提示集哈希 + 同一后处理版本下，任何非零跨 run 差异都不是噪声"
+ },
+ "input_change": {
+  "fact": "res29",
+  "flips_up": 11,
+  "flips_down": 5,
+  "net": 6,
+  "amplitude": 16,
+  "n": 161,
+  "amplitude_ratio": 0.0994,
+  "text_diff": 76,
+  "token_diff": 66
+ },
+ "condition": "任何两次 run 只有在提示集哈希 + 后处理版本都被钉住并记录时才可比"
+}

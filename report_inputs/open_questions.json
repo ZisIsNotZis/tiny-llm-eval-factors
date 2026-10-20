@@ -3,6 +3,18 @@
  "rule": "标题含「未解/未决/待解/开放问题」或 open question；其下的列表项是条目",
  "items": [
   {
+   "subproject": "a02-模型规模",
+   "path": "docs/subprojects/a02-模型规模/PLAN.md",
+   "heading": "未解问题",
+   "text": "plan5 :: MoE 的「总参 + 激活参」双变量回归是否可识别——总参与激活参在可用模型集里是否共线，只能用相关/VIF/设计矩阵裁决，不能用一次拟合的系数正负裁决（`WP3`，证据见 `RESULT.md::size-not-one-thing` 与 `RESULT.md::moe-vif-not-identified`）。答完即改写或删除。"
+  },
+  {
+   "subproject": "a02-模型规模",
+   "path": "docs/subprojects/a02-模型规模/PLAN.md",
+   "heading": "未解问题",
+   "text": "an3 :: 「小模型低比特时困难 agentic 任务整体触底」这条 analysis 的证据链是否牢——它引的是 `result.res1`（a01 的位宽事实），本层只能判「在规模轴上是否复现」，判不了位宽轴本身（`WP4`）。"
+  },
+  {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
@@ -25,6 +37,18 @@
   {
    "subproject": "a01-量化位宽",
    "path": "docs/subprojects/a01-量化位宽/PLAN.md",
+   "heading": "未解问题（plan 层的事实；答完即改写或删除）",
+   "count": 0
+  },
+  {
+   "subproject": "a02-模型规模",
+   "path": "docs/subprojects/a02-模型规模/PLAN.md",
+   "heading": "未解问题",
+   "count": 2
+  },
+  {
+   "subproject": "a03-量化方案与厂商",
+   "path": "docs/subprojects/a03-量化方案与厂商/PLAN.md",
    "heading": "未解问题（plan 层的事实；答完即改写或删除）",
    "count": 0
   },
