@@ -1,0 +1,48 @@
+{
+ "source": "docs/subprojects/a04-MoE 各层比特分配/analysis/fixtures/pin_feasibility.json",
+ "bound_formula": "(1 - share_expert) / share_expert * layer_swing",
+ "summary": {
+  "n_comparable": 4,
+  "n_families_with_pairs": 4,
+  "n_not_comparable": 18,
+  "n_pairs": 22
+ },
+ "families": [
+  {
+   "family": "GLM-4.7-Flash",
+   "expert_share": 0.927853,
+   "layer_swing": 0.320047,
+   "bound": 0.024886,
+   "files": 3
+  },
+  {
+   "family": "LFM2.5-8B-A1B",
+   "expert_share": 0.915352,
+   "layer_swing": 5.547743,
+   "bound": 0.513029,
+   "files": 6
+  },
+  {
+   "family": "Qwen3.6-35B-A3B",
+   "expert_share": 0.929935,
+   "layer_swing": 3.334573,
+   "bound": 0.251242,
+   "files": 3
+  },
+  {
+   "family": "gemma-4-26B-A4B",
+   "expert_share": 0.905079,
+   "layer_swing": 2.438322,
+   "bound": 0.255721,
+   "files": 2
+  }
+ ],
+ "observed_span_min": 0.0152,
+ "observed_span_max": 1.9119,
+ "over_bound": 18,
+ "over_span_min": 0.5417,
+ "over_span_max": 1.9119,
+ "pinned": {
+  "pairs": 4
+ }
+}

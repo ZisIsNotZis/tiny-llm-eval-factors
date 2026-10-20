@@ -1306,6 +1306,44 @@ def bfcl_aggregation_note():
     return "".join(parts)
 
 
+MOE_FEASIBILITY = "report_inputs/moe_feasibility.json"
+
+
+def moe_feasibility_html():
+    """第四节的可行性前提：钉住总比特时专家桶最多能挪多少，与实测跨度的对照。
+
+    数字来自 `report_inputs/moe_feasibility.json`（由 `a04` 的 `pin_feasibility.json` 派生）：
+    把「18 对不可比」改成 0，这段就会从「多数对无法放在同一总比特上」改口。
+    """
+    if not os.path.exists(MOE_FEASIBILITY):
+        raise SystemExit(f"报告输入缺失：{MOE_FEASIBILITY}"
+                         f"（由 report_inputs/build_moe_feasibility.py 生成）。")
+    d = json.load(open(MOE_FEASIBILITY, encoding="utf-8"))
+    total = d["summary"]["n_pairs"]
+    over = d["over_bound"]
+    fams = "、".join(f"{r['family']} {r['bound']:.3f}" for r in d["families"])
+    out = [f"<li><b>前提：要谈「层分配策略」，先得把总比特钉住。</b>钉住总比特时，专家桶能挪多少有一个"
+           f"由架构决定的上界：<code>{html.escape(str(d['bound_formula']))}</code>。"
+           f"测得的四个 MoE 族上界是 {fams} 比特/参数。</li>"]
+    if over:
+        out.append(f"<li><b>但实测的同基权重跨度在超界的那些对上达到 "
+                   f"{d['over_span_min']:.2f}–{d['over_span_max']:.2f} 比特/参数，远超上界："
+                   f"{total} 对里 <b>{over} 对无法放在同一总比特上</b>（只有 "
+                   f"{d['summary']['n_comparable']} 对可钉住）。所以本节的配方对照——尤其是 "
+                   f"<code>exq2</code> 与 <code>exq4</code>——是<b>预算比较，不是分配比较</b>："
+                   f"它们同时改了总比特，分数差不能归因给「分配策略」。</li>")
+    else:
+        out.append(f"<li>{total} 对同基权重都能放在同一总比特上（实测跨度 "
+                   f"{d['observed_span_min']:.2f}–{d['observed_span_max']:.2f}），因此这些对照可以读成分配比较。</li>")
+    out.append("<li><b>现有语料能给的分配结论到此为止：</b>策略分类是事实"
+               "（非专家优先 12 对 / 均匀 2 对 / 专家优先 1 对），而<b>有区间的钉住对照只有 2 对</b>"
+               "（16 个格全部跨 0、最大半宽 0.135，见 <code>a04</code> 的 <code>pinned-null</code>）——"
+               "那是「不可分辨」，不是「哪种分配更好」。</li>")
+    out.append("<li><b>看图要点：</b>D 图三根柱的总比特不同（3.88 / 2.92 / 4.48），"
+               "所以柱高差里既有分配效应也有预算效应，读的时候不能只归给分配。</li>")
+    return "".join(out)
+
+
 KV_EVIDENCE = "report_inputs/kv_evidence.json"
 
 
@@ -1856,12 +1894,9 @@ def main():
          "X = 哪些层拿低比特（专家层 vs 其余层），固定同一套 base 权重；Y = 各基准分数。",
          [T["D"]], fig_D(T["D"]),
          "<ul>"
-         "<li>三条配方里，把<b>非专家层</b>压到最低的那条分数最低——尽管它的总比特最多（4.48 比特/权重）。</li>"
-         "<li>把<b>专家层</b>压到最低、其余层保持高位的那条，反而保住了大部分能力，且总比特更低（2.92）。</li>"
-         "<li>原因：非专家层（注意力、归一化等）每个 token 每次前向都会用到；单个专家只有一部分 token 会走到，"
-         "MoE 的路由可以绕开被压坏的专家。所以要保护非专家层，专家层是省比特的安全区。</li>"
-         "<li><b>看图要点：</b>D 图三根柱的总比特从左到右是 3.88、2.92、4.48；"
-         "最右边那根比特最多、分数却最低，把“压非专家层代价最大”直接画了出来。</li>"
+         "<li>三条配方里，把<b>非专家层</b>压到最低的那条分数最低——尽管它的总比特最多（4.48 比特/权重）；"
+         "把<b>专家层</b>压到最低、其余层保持高位的那条反而保住大部分能力，且总比特更低（2.92）。</li>"
+         + moe_feasibility_html() +
          "</ul>"),
         ("五、KV 缓存精度",
          "X = KV 缓存的精度（f16 / q8_0 / q4_0），固定模型、权重位宽与上下文；Y = 各基准分数。",

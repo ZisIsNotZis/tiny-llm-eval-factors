@@ -62,7 +62,7 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/open_questions.json report_inputs/paired_deltas.json \
          report_inputs/reproducibility.json report_inputs/scheme_effects.json \
          report_inputs/size_claims.json report_inputs/kv_evidence.json \
-         report_inputs/bfcl_gap.json \
+         report_inputs/bfcl_gap.json report_inputs/moe_feasibility.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -70,6 +70,11 @@ if [ "$missing_inputs" = 0 ]; then
     record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 report_inputs/build_moe_feasibility.py --check >/dev/null 2>&1; then
+    record PASS "moe_feasibility.json 与 a04 的可行性 fixture 一致"
+else
+    record WARN "moe_feasibility.json 与 a04 的 fixture 不一致：python3 report_inputs/build_moe_feasibility.py"
 fi
 if python3 report_inputs/build_bfcl_gap.py --check >/dev/null 2>&1; then
     record PASS "bfcl_gap.json 与现有 BFCL 汇总一致"
@@ -130,6 +135,13 @@ else
 fi
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/moe_feasibility_negative_control.py >/tmp/reproduce_mf.$$ 2>&1; then
+    record PASS "第四节可行性的负控（超界计数改 0 则从「预算比较」变「分配比较」）"
+else
+    record FAIL "第四节可行性的负控未通过：python3 checks/moe_feasibility_negative_control.py"
+fi
+rm -f /tmp/reproduce_mf.$$
+
 if python3 checks/kv_evidence_negative_control.py >/tmp/reproduce_kv.$$ 2>&1; then
     record PASS "第五节 KV 说法的负控（丢/得改 0 则从「逐题在翻」变「无差异」）"
 else

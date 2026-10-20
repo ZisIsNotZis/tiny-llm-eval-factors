@@ -237,3 +237,10 @@
 - evidence: 新增 `checks/venv_shebang.py`（扫 `.wrapup/*/bin`，shebang 里是绝对路径且文件不存在的入口点 → exit 1 并列出路径与解释器；`#!/usr/bin/env …` 不误报）与 `bootstrap_venv.sh`（`./bootstrap_venv.sh .wrapup/lmenv requirements.txt`，用创建时的解释器重建 venv，随后跑同一检查）；两者都已接进 `reproduce.sh`。负控 `checks/venv_shebang_negative_control.py`：造一个 shebang 指向 `/nonexistent/python3` 的假入口点 → FAIL 且点名该入口点、同时不误报 env 入口；只含 env 入口的目录 → PASS。
 - producer: `python3 checks/venv_shebang.py`；`python3 checks/venv_shebang_negative_control.py`
 
+## res53 :: 报告第四节写明「钉住总比特」这个前提与可行性上界：22 对里 18 对同基权重无法放在同一总比特上，配方对照是预算比较而非分配比较。
+
+- kind: measured
+- status: current
+- evidence: 第四节由 `report_inputs/moe_feasibility.json` 渲染，该索引由 `report_inputs/build_moe_feasibility.py` 读 `a04` 的 `analysis/fixtures/pin_feasibility.json` 得出：上界公式 `(1−share_expert)/share_expert × layer_swing`，四族上界 GLM 0.025 / LFM 0.513 / Qwen3.6 0.251 / gemma 0.256；超出上界的那些对实测跨度 0.54–1.91，22 对里 18 对超界（4 对可钉住）；可用结论只到「策略分类是事实（非专家优先 12 / 均匀 2 / 专家优先 1）」与「2 对钉住对照 16 格全跨 0、最大半宽 0.135」，不写成「哪种分配更好」。
+- producer: `python3 report_inputs/build_moe_feasibility.py --check`；`python3 checks/moe_feasibility_negative_control.py`（把 18 改成 0 → 正文从「预算比较」改口成「分配比较」）
+
