@@ -106,13 +106,22 @@ def part_questions(workdir, he, mbpp):
     for task_id in HUMANEVAL_TASKS:
         p = he[task_id]
         correct = p["prompt"] + p["canonical_solution"]
+        # the indentation probes use the same correct statements, mis-indented the
+        # two ways that actually occur: body at column 0 (the MultiPL-E failure mode,
+        # RESULT.md::res21) and one level too deep.
+        body_lines = p["canonical_solution"].split("\n")
+        body_col0 = p["prompt"] + "\n".join(l[4:] if l.startswith("    ") else l for l in body_lines)
+        body_deep = p["prompt"] + "\n".join(("    " + l) if l.strip() else l for l in body_lines)
         for name, solution, want in [
             ("canonical", correct, "pass"),
+            ("body_at_column_0", body_col0, "fail"),
+            ("body_over_indented", body_deep, "fail"),
             ("wrong_body", p["prompt"] + "    return None\n", "fail"),
             ("empty", "", "fail"),
             ("fenced_direct", FENCE + correct + "\n```\n", "fail"),
             ("prose_direct", "Here is the solution:\n\n" + correct, "fail"),
             ("fenced_via_codegen", sanitize(FENCE + correct + "\n```\n", p["entry_point"]), "pass"),
+            ("body_at_column_0_via_codegen", sanitize(body_col0, p["entry_point"]), "fail"),
         ]:
             cases.append((task_id, solution))
             plan.append((task_id, name, want))
@@ -144,11 +153,14 @@ def part_questions(workdir, he, mbpp):
     cases, plan = [], []
     for task_id in not_none:
         exp = expected_out[task_id]["plus"]
-        for name, build, bad_flag in (("wrong_returns_None", wrong_none, None),
+        # `return None` makes `out is not None` False, so it passes exactly where
+        # every expected value is False; `return object()` passes exactly where
+        # every expected value is True.
+        for name, build, bad_flag in (("wrong_returns_None", wrong_none, False),
                                       ("wrong_returns_object", wrong_object, True)):
             want = "pass" if all(e is bad_flag for e in exp) else "fail"
             cases.append((task_id, build(mbpp[task_id])))
-            plan.append((task_id, "%s(expecteds_all_%s)" % (name, "False" if bad_flag is None else "True"), want))
+            plan.append((task_id, "%s(all_plus_expecteds_%s)" % (name, bad_flag), want))
     normal = [t for t, p in mbpp.items()
               if p["entry_point"] not in MBPP_OUTPUT_NOT_NONE_TASKS
               and p["entry_point"] not in MBPP_OUTPUT_SET_EQ_TASKS
@@ -176,18 +188,27 @@ def part_real_data(workdir, he, limit=8):
         return
     rows_raw = [json.loads(l) for l in open(raw)][:limit]
     rows_clean = [json.loads(l) for l in open(clean)][:limit]
-    cases = []
+    cases, pos = [], []          # pos[i] = (task_id, index of that case among its task's cases)
+    per_task_count = {}
     for r in rows_raw:
-        cases.append((r["task_id"], r["solution"]))
+        task = r["task_id"]
+        per_task_count[task] = per_task_count.get(task, 0) + 1
+        pos.append((task, per_task_count[task] - 1))
+        cases.append((task, r["solution"]))
     for r in rows_clean:
-        cases.append((r["task_id"], r["solution"]))
+        task = r["task_id"]
+        per_task_count[task] = per_task_count.get(task, 0) + 1
+        pos.append((task, per_task_count[task] - 1))
+        cases.append((task, r["solution"]))
     per_task, hist = score("humaneval", he, cases, workdir, "real")
     changed = []
     for i, r in enumerate(rows_raw):
-        a = per_task[r["task_id"]][i]
-        b = per_task[r["task_id"]][len(rows_raw) + i]
+        t, k = pos[i]
+        a = per_task[t][k]
+        t2, k2 = pos[len(rows_raw) + i]
+        b = per_task[t2][k2]
         if a != b:
-            changed.append({"task_id": r["task_id"], "raw": a, "sanitized": b})
+            changed.append({"task_id": t, "raw": a, "sanitized": b})
     print("  tasks compared=%d  verdicts changed by post-processing=%d  %s"
           % (len(rows_raw), len(changed), changed))
     print("  status histogram for this batch: %s" % hist)
