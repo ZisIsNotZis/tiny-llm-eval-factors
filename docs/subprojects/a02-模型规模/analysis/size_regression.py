@@ -190,6 +190,10 @@ def ln_active(p):
     return math.log(p["active"])
 
 
+def is_moe(p):
+    return 1.0 if p["is_moe"] else 0.0
+
+
 def ln_experts(p):
     return math.log(1 + (int(p["experts"].split("/")[1]) if p["experts"] else 0))
 
@@ -204,11 +208,18 @@ def main(argv):
     vif = 1.0 / (1.0 - r * r) if abs(r) < 1 else float("inf")
     cond = condition_number([[ln_size(p), ln_active(p)] for p in pts])
     pairs = structural_pairs(pts)
+    # 子集内的共线性：稠密点上是 1.0（激活≡总参），MoE 点上是 reviewer 要求补的那一格。
+    r_dense = pearson([ln_size(p) for p in dense], [ln_active(p) for p in dense]) if len(dense) > 2 else float("nan")
+    r_moe = pearson([ln_size(p) for p in moe], [ln_active(p) for p in moe]) if len(moe) > 2 else float("nan")
+    vif_moe = 1.0 / (1.0 - r_moe ** 2) if abs(r_moe) < 1 else float("inf")
 
     fits = [
         fit_set(pts, [ln_size], "total_only"),
         fit_set(pts, [ln_active], "active_only"),
         fit_set(pts, [ln_size, ln_active], "total+active"),
+        # 加上「是否 MoE」这个指示变量后两个系数会翻号：这就是两团点云的假象，也是
+        # reviewer 复核时用的同一个检验。
+        fit_set(pts, [ln_size, ln_active, is_moe], "total+active+moe_dummy"),
     ]
     # 稳定性：三种点集上的系数
     stab = {
@@ -254,6 +265,9 @@ def main(argv):
         reasons.append(f"同激活不同总参的点对只有 {pairs['same_active_diff_total']} 对")
     if pairs["same_total_diff_active"] < 1:
         reasons.append("没有一对『同总参不同激活』的受控点")
+    if abs(r_moe) > R_MAX:
+        reasons.append(f"MoE 子集内 |r(log总参, log激活)| = {abs(r_moe):.3f}，VIF = {vif_moe:.1f} > {VIF_MAX}"
+                       "（两个变量在 MoE 内部也锁在一起）")
     signs = {}
     for k, m in stab.items():
         if m and not m.get("singular"):
@@ -271,6 +285,7 @@ def main(argv):
         "n_points": len(pts), "n_dense": len(dense), "n_moe": len(moe),
         "points": pts,
         "log_corr": r, "vif": vif, "cond": cond, "pairs": pairs,
+        "log_corr_dense": r_dense, "log_corr_moe": r_moe, "vif_moe": vif_moe,
         "fits": fits, "stability": signs, "leave_one_family_out": loo,
         "identified": identified, "blocking_reasons": reasons,
     }
@@ -279,6 +294,8 @@ def main(argv):
     print(f"points: {len(pts)}  (dense {len(dense)}, MoE {len(moe)})   "
           f"bench={BENCH}/{PROTOCOL} n=164")
     print(f"log(total) vs log(active): r = {r:.3f}   VIF = {vif:.2f}   cond = {cond:.2f}")
+    print(f"  dense-only r = {r_dense:.4f}（激活≡总参，秩亏）   MoE-only r = {r_moe:.3f}  "
+          f"VIF_moe = {vif_moe:.1f}")
     print(f"pairs: {pairs}")
     print("\nfits (WLS, weights = 1/binomial var):")
     for m in fits:
@@ -328,11 +345,16 @@ def main(argv):
         # 判定与理由必须一致
         want(out["identified"] == (not reasons), "identified 与 blocking_reasons 一致")
         want(out["identified"] is False, "plan5 的判定是「不可识别」")
+        want(out["vif_moe"] > VIF_MAX, f"MoE 子集内 VIF > {VIF_MAX}（实际 {out['vif_moe']:.1f}）")
+        want(abs(out["log_corr_dense"] - 1.0) < 1e-9, "稠密子集内 log 总参与 log 激活的 r = 1")
         want(any("秩亏" in x for x in reasons), "不可识别的理由里含「稠密点秩亏」")
         # 陷阱：合并拟合的两个系数都显著为正，只看这个会得出「两个变量都有效」的错误结论。
         both = [m for m in fits if m["name"] == "total+active"][0]
         want(both["beta"][1] > 2 * both["se"][1] and both["beta"][2] > 2 * both["se"][2],
              "合并拟合的两个系数都显著为正（这正是陷阱）")
+        dummy = [m for m in fits if m["name"] == "total+active+moe_dummy"][0]
+        want(dummy["beta"][2] < 0 < both["beta"][2],
+             f"加 MoE 指示变量后激活系数翻号（{both['beta'][2]:+.4f} → {dummy['beta'][2]:+.4f}）")
         rm = stab.get("drop_dense")
         want(rm and abs(rm["beta"][1]) < 2 * rm["se"][1],
              "只看 MoE 点时总参系数与 0 不可分（MoE 内部也无法分离两个变量）")

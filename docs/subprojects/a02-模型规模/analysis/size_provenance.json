@@ -17,6 +17,7 @@
    },
    "truth_params": 7.51806929,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.6103217226400424,
    "label_says_moe": false,
@@ -32,6 +33,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -54,6 +56,7 @@
    },
    "truth_params": 7.463013674,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.5648782039200643,
    "label_says_moe": false,
@@ -76,6 +79,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.6852133146722703,
    "label_says_moe": false,
@@ -98,6 +102,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.6291153014061585,
    "label_says_moe": false,
@@ -120,6 +125,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.6291149192611232,
    "label_says_moe": false,
@@ -142,6 +148,7 @@
    },
    "truth_params": 4.628569635,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.5661293156714061,
    "label_says_moe": false,
@@ -164,6 +171,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.5171900556161039,
    "label_says_moe": false,
@@ -186,6 +194,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.517189582238245,
    "label_says_moe": false,
@@ -201,6 +210,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -216,6 +226,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -238,6 +249,7 @@
    },
    "truth_params": 4.628569635,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "clamped-to-file-bytes",
    "size_over_truth": 0.47232405265520006,
    "label_says_moe": false,
@@ -260,6 +272,7 @@
    },
    "truth_params": 7.51806929,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.5320514943006066,
    "label_says_moe": false,
@@ -282,6 +295,7 @@
    },
    "truth_params": 7.51806929,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.5320514943006066,
    "label_says_moe": false,
@@ -304,6 +318,7 @@
    },
    "truth_params": 7.463013674,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.5359765069083806,
    "label_says_moe": false,
@@ -326,6 +341,7 @@
    },
    "truth_params": 3.40283648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.8816174440447988,
    "label_says_moe": false,
@@ -348,6 +364,7 @@
    },
    "truth_params": 3.40283648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.8816174440447988,
    "label_says_moe": false,
@@ -370,6 +387,7 @@
    },
    "truth_params": 3.40283648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.8816174440447988,
    "label_says_moe": false,
@@ -392,6 +410,7 @@
    },
    "truth_params": 2.51675648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.7946736269056909,
    "label_says_moe": false,
@@ -414,6 +433,7 @@
    },
    "truth_params": 2.51675648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "label-below-total",
    "size_over_truth": 0.7946736269056909,
    "label_says_moe": false,
@@ -436,6 +456,7 @@
    },
    "truth_params": 26.895998464,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -458,6 +479,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -480,6 +502,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -502,6 +525,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -524,6 +548,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -546,6 +571,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -568,6 +594,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -590,6 +617,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -612,6 +640,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -634,6 +663,7 @@
    },
    "truth_params": 3.212749888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -656,6 +686,7 @@
    },
    "truth_params": 3.212749888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -678,6 +709,7 @@
    },
    "truth_params": 2.51675648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -700,6 +732,7 @@
    },
    "truth_params": 2.51675648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -722,6 +755,7 @@
    },
    "truth_params": 3.973556832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -744,6 +778,7 @@
    },
    "truth_params": 3.973556832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -766,6 +801,7 @@
    },
    "truth_params": 9.197093888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -788,6 +824,7 @@
    },
    "truth_params": 9.197093888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -810,6 +847,7 @@
    },
    "truth_params": 3.836021856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -832,6 +870,7 @@
    },
    "truth_params": 3.836021856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -854,6 +893,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -876,6 +916,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -898,6 +939,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -920,6 +962,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -942,6 +985,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -964,6 +1008,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -986,6 +1031,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1008,6 +1054,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1030,6 +1077,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1052,6 +1100,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1074,6 +1123,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1096,6 +1146,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1118,6 +1169,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1140,6 +1192,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1162,6 +1215,7 @@
    },
    "truth_params": 8.953803264,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1184,6 +1238,7 @@
    },
    "truth_params": 8.953803264,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1206,6 +1261,7 @@
    },
    "truth_params": 9.197093888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1228,6 +1284,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1250,6 +1307,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1272,6 +1330,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1294,6 +1353,7 @@
    },
    "truth_params": 27.320697856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1316,6 +1376,7 @@
    },
    "truth_params": 27.320697856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1338,6 +1399,7 @@
    },
    "truth_params": 27.320697856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1360,6 +1422,7 @@
    },
    "truth_params": 27.320697856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1382,6 +1445,7 @@
    },
    "truth_params": 27.320697856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1404,6 +1468,7 @@
    },
    "truth_params": 34.660610688,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1426,6 +1491,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1448,6 +1514,7 @@
    },
    "truth_params": 1.72002816,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1470,6 +1537,7 @@
    },
    "truth_params": 26.895998464,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1492,6 +1560,7 @@
    },
    "truth_params": 4.021784576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1514,6 +1583,7 @@
    },
    "truth_params": 8.188548096,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1536,6 +1606,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1558,6 +1629,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1580,6 +1652,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1602,6 +1675,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1624,6 +1698,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1646,6 +1721,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1668,6 +1744,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1690,6 +1767,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1712,6 +1790,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1734,6 +1813,7 @@
    },
    "truth_params": 4.647450147,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1756,6 +1836,7 @@
    },
    "truth_params": 4.628569635,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1778,6 +1859,7 @@
    },
    "truth_params": 4.628569635,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1800,6 +1882,7 @@
    },
    "truth_params": 7.51806929,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1822,6 +1905,7 @@
    },
    "truth_params": 7.51806929,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1844,6 +1928,7 @@
    },
    "truth_params": 7.51806929,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1866,6 +1951,7 @@
    },
    "truth_params": 7.463013674,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1888,6 +1974,7 @@
    },
    "truth_params": 7.463013674,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1910,6 +1997,7 @@
    },
    "truth_params": 3.40283648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1932,6 +2020,7 @@
    },
    "truth_params": 3.40283648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1954,6 +2043,7 @@
    },
    "truth_params": 3.40283648,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "size-null",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1969,6 +2059,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1984,6 +2075,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -1999,6 +2091,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2014,6 +2107,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2029,6 +2123,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2044,6 +2139,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2059,6 +2155,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2074,6 +2171,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2089,6 +2187,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2104,6 +2203,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2119,6 +2219,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2134,6 +2235,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2149,6 +2251,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2164,6 +2267,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2179,6 +2283,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "size-too-large-for-file",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -2201,6 +2306,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9857696696888307,
    "label_says_moe": true,
@@ -2223,6 +2329,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9857696696888307,
    "label_says_moe": true,
@@ -2245,6 +2352,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9857696696888307,
    "label_says_moe": true,
@@ -2267,6 +2375,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9857696696888307,
    "label_says_moe": true,
@@ -2289,6 +2398,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9857696696888307,
    "label_says_moe": true,
@@ -2311,6 +2421,7 @@
    },
    "truth_params": 34.660610688,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.009791786851508,
    "label_says_moe": true,
@@ -2333,6 +2444,7 @@
    },
    "truth_params": 35.505251456,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9857696696888307,
    "label_says_moe": true,
@@ -2355,6 +2467,7 @@
    },
    "truth_params": 30.697345596,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.009859302103288,
    "label_says_moe": false,
@@ -2377,6 +2490,7 @@
    },
    "truth_params": 26.895998464,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0038668033142255,
    "label_says_moe": false,
@@ -2399,6 +2513,7 @@
    },
    "truth_params": 27.320697856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9882617253157181,
    "label_says_moe": false,
@@ -2421,6 +2536,7 @@
    },
    "truth_params": 27.320697856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9882617253157181,
    "label_says_moe": false,
@@ -2443,6 +2559,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.030390902274557,
    "label_says_moe": true,
@@ -2465,6 +2582,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.030390902274557,
    "label_says_moe": true,
@@ -2487,6 +2605,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.030390902274557,
    "label_says_moe": true,
@@ -2509,6 +2628,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.030390902274557,
    "label_says_moe": true,
@@ -2531,6 +2651,7 @@
    },
    "truth_params": 25.233142046,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.030390902274557,
    "label_says_moe": true,
@@ -2553,6 +2674,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0077808596806364,
    "label_says_moe": false,
@@ -2575,6 +2697,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0077808596806364,
    "label_says_moe": false,
@@ -2597,6 +2720,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0077808596806364,
    "label_says_moe": false,
@@ -2619,6 +2743,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0077808596806364,
    "label_says_moe": false,
@@ -2641,6 +2766,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0077808596806364,
    "label_says_moe": false,
@@ -2663,6 +2789,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0077808596806364,
    "label_says_moe": false,
@@ -2685,6 +2812,7 @@
    },
    "truth_params": 9.197093888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9785699819529776,
    "label_says_moe": false,
@@ -2707,6 +2835,7 @@
    },
    "truth_params": 9.197093888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9785699819529776,
    "label_says_moe": false,
@@ -2729,6 +2858,7 @@
    },
    "truth_params": 8.953803264,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0051594539926672,
    "label_says_moe": false,
@@ -2751,6 +2881,7 @@
    },
    "truth_params": 8.953803264,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0051594539926672,
    "label_says_moe": false,
@@ -2773,6 +2904,7 @@
    },
    "truth_params": 8.953803264,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0051594539926672,
    "label_says_moe": false,
@@ -2795,6 +2927,7 @@
    },
    "truth_params": 8.953803264,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0051594539926672,
    "label_says_moe": false,
@@ -2817,6 +2950,7 @@
    },
    "truth_params": 9.197093888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9785699819529776,
    "label_says_moe": false,
@@ -2839,6 +2973,7 @@
    },
    "truth_params": 9.197093888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9785699819529776,
    "label_says_moe": false,
@@ -2861,6 +2996,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9447490857152933,
    "label_says_moe": true,
@@ -2883,6 +3019,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9447490857152933,
    "label_says_moe": true,
@@ -2905,6 +3042,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9447490857152933,
    "label_says_moe": true,
@@ -2927,6 +3065,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9447490857152933,
    "label_says_moe": true,
@@ -2949,6 +3088,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9447490857152933,
    "label_says_moe": true,
@@ -2971,6 +3111,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9447490857152933,
    "label_says_moe": true,
@@ -2993,6 +3134,7 @@
    },
    "truth_params": 8.467856832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9447490857152933,
    "label_says_moe": true,
@@ -3015,6 +3157,7 @@
    },
    "truth_params": 8.188548096,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9769741724919339,
    "label_says_moe": false,
@@ -3037,6 +3180,7 @@
    },
    "truth_params": 3.973556832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.006654785402098,
    "label_says_moe": false,
@@ -3059,6 +3203,7 @@
    },
    "truth_params": 3.973556832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.006654785402098,
    "label_says_moe": false,
@@ -3081,6 +3226,7 @@
    },
    "truth_params": 3.973556832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.006654785402098,
    "label_says_moe": false,
@@ -3103,6 +3249,7 @@
    },
    "truth_params": 3.973556832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.006654785402098,
    "label_says_moe": false,
@@ -3125,6 +3272,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9510785870301733,
    "label_says_moe": false,
@@ -3147,6 +3295,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9510785870301733,
    "label_says_moe": false,
@@ -3169,6 +3318,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9510785870301733,
    "label_says_moe": false,
@@ -3191,6 +3341,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9510785870301733,
    "label_says_moe": false,
@@ -3213,6 +3364,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9510785870301733,
    "label_says_moe": false,
@@ -3235,6 +3387,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9510785870301733,
    "label_says_moe": false,
@@ -3257,6 +3410,7 @@
    },
    "truth_params": 4.205751296,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9510785870301733,
    "label_says_moe": false,
@@ -3279,6 +3433,7 @@
    },
    "truth_params": 4.021784576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9945833558241783,
    "label_says_moe": false,
@@ -3301,6 +3456,7 @@
    },
    "truth_params": 3.212749888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9337795049671791,
    "label_says_moe": false,
@@ -3323,6 +3479,7 @@
    },
    "truth_params": 3.212749888,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9337795049671791,
    "label_says_moe": false,
@@ -3345,6 +3502,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3367,6 +3525,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3389,6 +3548,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3411,6 +3571,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3433,6 +3594,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3455,6 +3617,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3477,6 +3640,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3499,6 +3663,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3521,6 +3686,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3543,6 +3709,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3565,6 +3732,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3587,6 +3755,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3609,6 +3778,7 @@
    },
    "truth_params": 1.881825088,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.0627980319497154,
    "label_says_moe": false,
@@ -3631,6 +3801,7 @@
    },
    "truth_params": 1.72002816,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9883559115683315,
    "label_says_moe": false,
@@ -3653,6 +3824,7 @@
    },
    "truth_params": 1.080632832,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 0.9253836922104547,
    "label_says_moe": false,
@@ -3675,6 +3847,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.063274079478972,
    "label_says_moe": false,
@@ -3697,6 +3870,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.063274079478972,
    "label_says_moe": false,
@@ -3719,6 +3893,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.063274079478972,
    "label_says_moe": false,
@@ -3741,6 +3916,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.063274079478972,
    "label_says_moe": false,
@@ -3763,6 +3939,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.063274079478972,
    "label_says_moe": false,
@@ -3785,6 +3962,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.063274079478972,
    "label_says_moe": false,
@@ -3807,6 +3985,7 @@
    },
    "truth_params": 0.752393024,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "token-rounded",
    "size_over_truth": 1.063274079478972,
    "label_says_moe": false,
@@ -3822,6 +4001,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -3837,6 +4017,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -3859,6 +4040,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 0.9205372043544222,
    "label_says_moe": false,
@@ -3881,6 +4063,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 0.9205372000796896,
    "label_says_moe": false,
@@ -3896,6 +4079,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -3911,6 +4095,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -3933,6 +4118,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 0.7940822718869671,
    "label_says_moe": false,
@@ -3955,6 +4141,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 0.7940822628031606,
    "label_says_moe": false,
@@ -3970,6 +4157,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -3985,6 +4173,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4000,6 +4189,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4015,6 +4205,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4030,6 +4221,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4045,6 +4237,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4060,6 +4253,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4075,6 +4269,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4090,6 +4285,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4112,6 +4308,7 @@
    },
    "truth_params": 29.94339392,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 0.5564502155138465,
    "label_says_moe": false,
@@ -4127,6 +4324,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4149,6 +4347,7 @@
    },
    "truth_params": 11.907350576,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 1.2398025264961343,
    "label_says_moe": false,
@@ -4164,6 +4363,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4179,6 +4379,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4194,6 +4395,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "two-times-file-bytes",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4216,6 +4418,7 @@
    },
    "truth_params": 3.836021856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 1.1040255136648522,
    "label_says_moe": false,
@@ -4238,6 +4441,7 @@
    },
    "truth_params": 3.836021856,
    "truth_source": "gguf-tensors",
+   "on_disk": true,
    "channel": "two-times-file-bytes",
    "size_over_truth": 0.8772817586365702,
    "label_says_moe": false,
@@ -4253,6 +4457,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4268,6 +4473,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4283,6 +4489,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4298,6 +4505,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4313,6 +4521,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4328,6 +4537,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4343,6 +4553,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4358,6 +4569,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4373,6 +4585,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4388,6 +4601,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4403,6 +4617,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4418,6 +4633,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4433,6 +4649,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4448,6 +4665,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4463,6 +4681,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4478,6 +4697,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4493,6 +4713,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4508,6 +4729,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4523,6 +4745,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4538,6 +4761,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4553,6 +4777,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4568,6 +4793,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4583,6 +4809,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4598,6 +4825,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4613,6 +4841,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4628,6 +4857,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4643,6 +4873,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4658,6 +4889,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4673,6 +4905,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4688,6 +4921,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4703,6 +4937,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4718,6 +4953,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4733,6 +4969,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4748,6 +4985,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4763,6 +5001,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4778,6 +5017,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4793,6 +5033,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4808,6 +5049,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4823,6 +5065,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4838,6 +5081,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4853,6 +5097,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4868,6 +5113,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -4883,6 +5129,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4898,6 +5145,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4913,6 +5161,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4928,6 +5177,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4943,6 +5193,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4958,6 +5209,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4973,6 +5225,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -4988,6 +5241,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5003,6 +5257,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5018,6 +5273,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5033,6 +5289,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5048,6 +5305,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5063,6 +5321,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5078,6 +5337,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5093,6 +5353,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5108,6 +5369,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5123,6 +5385,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5138,6 +5401,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5153,6 +5417,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5168,6 +5433,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5183,6 +5449,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5198,6 +5465,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5213,6 +5481,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5228,6 +5497,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5243,6 +5513,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5258,6 +5529,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5273,6 +5545,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5288,6 +5561,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5303,6 +5577,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5318,6 +5593,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": true,
@@ -5333,6 +5609,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5348,6 +5625,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5363,6 +5641,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5378,6 +5657,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5393,6 +5673,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5408,6 +5689,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5423,6 +5705,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5438,6 +5721,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5453,6 +5737,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5468,6 +5753,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5483,6 +5769,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5498,6 +5785,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5513,6 +5801,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5528,6 +5817,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5543,6 +5833,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5558,6 +5849,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5573,6 +5865,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5588,6 +5881,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5603,6 +5897,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5618,6 +5913,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5633,6 +5929,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5648,6 +5945,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5663,6 +5961,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5678,6 +5977,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5693,6 +5993,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5708,6 +6009,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5723,6 +6025,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5738,6 +6041,7 @@
    "gguf": null,
    "truth_params": null,
    "truth_source": null,
+   "on_disk": false,
    "channel": "undecidable",
    "size_over_truth": null,
    "label_says_moe": false,
@@ -5748,677 +6052,812 @@
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_M.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-IQ1_S.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-IQ2_M.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-IQ2_XXS.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-IQ3_XXS.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-Q2_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-Q3_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "DeepSeek-R1-0528-Qwen3-8B-UD-Q4_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Dolphin3.0-Llama3.1-8B-abliterated.Q3_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Dolphin3.0-Llama3.1-8B-abliterated.Q4_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Dolphin3.0-Llama3.1-8B-abliterated.Q4_K_S.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ1_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ1_S.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ2_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-IQ3_XXS.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-Q2_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-Q3_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-REAP-23B-A3B-UD-Q4_K_XL.gguf",
    "rows": 23,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-UD-IQ1_M.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-UD-IQ1_S.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-UD-IQ2_XXS.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "GLM-4.7-Flash-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-1.2B-Instruct-UD-Q2_K_XL.gguf",
    "rows": 3,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-1.2B-Instruct-UD-Q3_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-1.2B-Instruct-UD-Q4_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-1.2B-Thinking-UD-Q2_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-1.2B-Thinking-UD-Q3_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-1.2B-Thinking-UD-Q4_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-IQ2_M.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-Q2_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-Q3_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-Q4_K_XL.gguf",
    "rows": 24,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-Q5_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-Q6_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-230M-UD-Q8_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-IQ1_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-IQ2_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-IQ3_S.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-IQ4_NL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-IQ4_XS.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-Q3_K_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-Q4_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-Q4_K_S.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-8B-A1B-UD-Q4_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-VL-1.6B-UD-Q2_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-VL-1.6B-UD-Q3_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "LFM2.5-VL-1.6B-UD-Q4_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "MiniCPM5-1B-Agentic-Tooluse-Nemotron-DPO.Q4_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "MiniCPM5-1B-Claude-Opus-Fable5-Thinking-Q4_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-4B-UD-IQ2_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-4B-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-4B-UD-Q4_K_XL.gguf",
    "rows": 8,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ2_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ3_S.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-IQ4_XS.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-Q2_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-Q3_K_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "NVIDIA-Nemotron-3-Nano-Omni-30B-A3B-Reasoning-UD-Q3_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-IQ1_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-IQ2_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-IQ3_S.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-Q2_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-Q3_K_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "North-Mini-Code-1.0-UD-Q3_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.5-0.8B-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.5-4B-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.5-9B-DeepSeek-V4-Flash-Q3_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.5-9B-DeepSeek-V4-Flash-Q4_K_M.gguf",
    "rows": 3,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.5-9B-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.5-9B-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-27B-UD-IQ2_M.gguf",
    "rows": 105,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-27B-UD-IQ2_XXS.gguf",
    "rows": 84,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-27B-UD-IQ3_XXS.gguf",
    "rows": 88,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-27B-UD-Q2_K_XL.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-27B-UD-Q3_K_XL.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-27B-UD-Q4_K_XL.gguf",
    "rows": 89,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-IQ1_M.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-IQ2_M.gguf",
    "rows": 98,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-IQ2_XXS.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-IQ3_S.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf",
    "rows": 90,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-IQ4_NL.gguf",
    "rows": 89,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-Q3_K_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwen3.6-35B-A3B-UD-Q4_K_XL.gguf",
    "rows": 91,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "Qwythos-9B-v2-MTP-Q4_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "ThinkingCap-Qwen3.6-27B-Q4_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "functiongemma-270m-it-UD-IQ2_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "functiongemma-270m-it-UD-IQ2_XXS.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "functiongemma-270m-it-UD-IQ3_XXS.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "functiongemma-270m-it-UD-Q2_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "functiongemma-270m-it-UD-Q3_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "functiongemma-270m-it-UD-Q4_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "functiongemma-270m-it-UD-Q5_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-12b-it-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-12b-it-UD-IQ3_XXS.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-26B-A4B-it-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-26B-A4B-it-UD-IQ2_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-26B-A4B-it-UD-IQ3_S.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-26B-A4B-it-UD-IQ3_XXS.gguf",
    "rows": 5,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-26B-A4B-it-UD-Q3_K_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-31B-it-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-31B-it-UD-IQ2_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-31B-it-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-31B-it-UD-Q2_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-31B-it-UD-Q3_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-E2B-it-UD-IQ2_M.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-E2B-it-UD-IQ3_XXS.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-E2B-it-UD-Q5_K_XL.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma-4-E4B-it-UD-IQ3_XXS.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma4-coding-Q2_K.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma4-coding-Q3_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma4-coding-Q4_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "gemma4-v2-Q3_K_M.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-3b-UD-IQ2_M.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-3b-UD-IQ3_XXS.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-3b-UD-Q2_K_XL.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-3b-UD-Q3_K_XL.gguf",
    "rows": 10,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-3b-UD-Q4_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-8b-UD-IQ2_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-8b-UD-IQ3_XXS.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-8b-UD-Q2_K_XL.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-8b-UD-Q3_K_XL.gguf",
    "rows": 6,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "granite-4.1-8b-UD-Q4_K_XL.gguf",
    "rows": 2,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "ornith-1.0-35b-Q4_K_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   },
   {
    "model": "ornith-1.0-9b-Q4_K_M.gguf",
    "rows": 4,
-   "in_bpw_map": false
+   "in_bpw_map": false,
+   "in_fixture": false
   }
  ]
 }

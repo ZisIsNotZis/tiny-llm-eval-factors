@@ -33,7 +33,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]  # analysis -> a02-模型规模 -> subprojects -> docs -> repo
 DB = REPO / "experiments.sqlite"
-HF = Path("/home/z/hf")
+# 真值的第二来源：入库的 fixture（GGUF 本身不入 git）。`A02_HF_ROOT` 只为负控——
+# 指向一个不存在的目录就等价于「干净 clone 里没有 GGUF」，此时检查必须靠 fixture 仍然全绿。
+HF = Path(os.environ.get("A02_HF_ROOT", "/home/z/hf"))
+FIXTURE = HERE / "fixtures" / "gguf_truth.json"
 OUT = HERE / "size_provenance.json"
 CACHE = HERE / "gguf_cache.json"      # 每个 GGUF 的 (size, mtime) → 张量统计；文件变了就重读
 BPW_MAP = REPO / ".wrapup" / "bpw_map.json"
@@ -144,21 +147,34 @@ def attribute(size, filesize, truth):
 def build():
     bpw = json.loads(BPW_MAP.read_text(encoding="utf-8")) if BPW_MAP.is_file() else {}
     cache = json.loads(CACHE.read_text(encoding="utf-8")) if CACHE.is_file() else {}
+    fixture = (json.loads(FIXTURE.read_text(encoding="utf-8"))["models"]
+               if FIXTURE.is_file() else {})
     per_row = []
     missing = []
     for r in read_rows():
         p = HF / r["model"]
         st = None
+        source = None
         if p.is_file():
             st = gguf_structure_cached(p, cache)
             source = "gguf-tensors"
         else:
             missing.append({"model": r["model"], "rows": r["n"],
-                            "in_bpw_map": r["model"] in bpw})
-            source = None
+                            "in_bpw_map": r["model"] in bpw,
+                            "in_fixture": r["model"] in fixture})
         truth = st["n_params"] / 1e9 if st else None   # 统一到「十亿参数」，与 __size 同单位
+        if truth is None and r["model"] in fixture:
+            # 现场没有 GGUF 就退回入库的 fixture（同一批头解析结果，见 build_fixtures.py）。
+            truth = fixture[r["model"]]["n_params"] / 1e9
+            st = {"n_params": fixture[r["model"]]["n_params"],
+                  "expert_params": fixture[r["model"]]["expert_params"],
+                  "active_params": fixture[r["model"]]["active_params"],
+                  "expert_count": fixture[r["model"]]["expert_count"],
+                  "expert_used": fixture[r["model"]]["expert_used"],
+                  "arch": fixture[r["model"]]["arch"]}
+            source = "fixture"
         if truth is None and r["model"] in bpw and r["_file_size"]:
-            # GGUF 已被删掉时退回 bpw_map：bpw = 8 × 字节数 ÷ 参数量，反过来解出参数量。
+            # fixture 也没有时退回 bpw_map：bpw = 8 × 字节数 ÷ 参数量，反过来解出参数量。
             truth = 8.0 * r["_file_size"] / bpw[r["model"]]
             source = "bpw-map"
         channel = attribute(r["__size"], r["_file_size"], truth)
@@ -167,6 +183,7 @@ def build():
             "db_size": r["__size"], "db_active": r["__activation_size"],
             "file_size_gb": r["_file_size"], "gguf": st,
             "truth_params": truth, "truth_source": source,
+            "on_disk": p.is_file(),
             "channel": channel,
             "size_over_truth": (r["__size"] / truth) if (truth and r["__size"]) else None,
             "label_says_moe": (r["__activation_size"] is not None and r["__size"] is not None
@@ -182,8 +199,9 @@ def report(per_row, missing):
     ch = Counter()
     for d in per_row:
         ch[d["channel"]] += d["rows"]
-    print(f"rows in DB with a file under {HF}: {sum(d['rows'] for d in per_row)}"
-          f" over {len(per_row)} (model, size) groups; missing files: {len(missing)}")
+    on_disk = sum(d["rows"] for d in per_row if d["on_disk"])
+    print(f"rows: {sum(d['rows'] for d in per_row)} over {len(per_row)} (model, size) groups;"
+          f" GGUF on disk for {on_disk} rows ({len(missing)} groups absent from {HF})")
     print("\nchannel by rows / groups:")
     for k, v in ch.most_common():
         print(f"  {k:24s} {v:5d} rows / {sum(1 for d in per_row if d['channel'] == k):3d} groups")
@@ -245,8 +263,30 @@ def check(per_row, missing, tamper=None):
         ch_rows["other"] += 1
     total = sum(ch_rows.values())
     want(total == 3233, f"归位的行数 = 库的总行数（实际 {total}）")
-    want(len(missing) == 0 or True, "")  # 缺文件不算失败，它由 undecidable 计数表达
-    fail -= 0 if True else 0
+    # 真值来源与通道必须自洽：有真值的组不能判「不可判」，判「不可判」的组必须没有真值。
+    # 这条在干净 clone（没有 GGUF、只靠 fixture）与现场（有 GGUF）两种情形下都必须成立。
+    with_truth = [d for d in per_row if d["truth_params"] is not None]
+    undec = [d for d in per_row if d["channel"] == "undecidable"]
+    want(not [d for d in with_truth if d["channel"] == "undecidable"],
+         f"有真值的组不得判 undecidable（实际 {len([d for d in with_truth if d['channel'] == 'undecidable'])}）")
+    want(all(d["truth_params"] is None for d in undec),
+         "判 undecidable 的组必须真的没有真值")
+    # 没有真值时只有三条与文件字节数有关的通道还能判（它们不需要真值），其余只能叫 undecidable。
+    NO_TRUTH_OK = {"undecidable", "two-times-file-bytes", "clamped-to-file-bytes",
+                   "size-too-large-for-file"}
+    leak = [d for d in per_row if d["truth_params"] is None and d["channel"] not in NO_TRUTH_OK]
+    want(not leak, "没有真值的组不得被判成需要真值的通道（token-rounded / label-below-total / other）："
+                   f"实际 {[(d['model'], d['channel']) for d in leak][:3]}")
+    explained = [d for d in per_row if d["truth_params"] is None and d["channel"] != "undecidable"]
+    want(len(undec) + len(explained) == len([d for d in per_row if d["truth_params"] is None]),
+         f"无真值组 = undecidable + 由字节数解释（{len(undec)} + {len(explained)} vs "
+         f"{len([d for d in per_row if d['truth_params'] is None])}）")
+    want(len(with_truth) >= 160 and sum(d["rows"] for d in with_truth) >= 1900,
+         f"有真值的组 ≥160 且行 ≥1900（实际 {len(with_truth)} 组 / "
+         f"{sum(d['rows'] for d in with_truth)} 行）")
+    unres = [m for m in missing if not (m["in_bpw_map"] or m["in_fixture"])]
+    want(len(missing) - len(unres) == len([m for m in missing if m["in_fixture"]]),
+         "缺文件里已由 fixture 或 bpw_map 兜住的，都真的有来源")
     want(ch_rows["other"] == 0, f"没有『真参数量已知却解释不通』的行（实际 {ch_rows['other']}）")
     want(ch_rows["size-null"] == 1061, f"`__size` 为 NULL 的行 = 1061（实际 {ch_rows['size-null']}）")
     want(ch_rows["token-rounded"] >= 600, f"标签≈张量总数的行 ≥600（实际 {ch_rows['token-rounded']}）")
@@ -268,7 +308,9 @@ def check(per_row, missing, tamper=None):
         for d in hit:
             want(d["channel"] == ch, f"{name}: 通道应为 {ch}（实际 {d['channel']}）")
     glm = [d for d in per_row if d["model"].startswith("GLM-4.7-Flash-UD-") and d["db_size"]]
-    want(len(glm) >= 4, f"GLM-4.7-Flash 非 REAP 档（有规模的）至少 4 个（实际 {len(glm)}）")
+    glm_files = {d["model"] for d in per_row if d["model"].startswith("GLM-4.7-Flash-UD-")}
+    # 文件数写死成 8：文档里这个数出现过 6/7/8 三个值，条款把它钉住。
+    want(len(glm_files) == 8, f"GLM-4.7-Flash 非 REAP 档共 8 个文件（实际 {len(glm_files)}）")
     for d in glm:
         want(d["channel"] == "two-times-file-bytes",
              f"{d['model']}: 通道应为 two-times-file-bytes（实际 {d['channel']}）")

@@ -163,19 +163,28 @@ def verdict(pts):
 
 def main(argv):
     curves, skipped = build()
-    rows = []
+    rows, thin = [], []
     for key, pts in sorted(curves.items()):
         lin, rec, bench, lang = key.split("|")
         if len(pts) < 2:
+            # 只有一个 rung 的组也是结论（「这个族在这个基准上没有规模曲线」），因此记录下来
+            # 而不是丢掉；丢弃口径写在这里，读者可以数得回来。
+            thin.append({"lineage": lin, "recipe": rec, "bench": bench, "language": lang,
+                         "n": len(pts), "reason": "only one measured-parameter rung",
+                         "model": pts[0]["model"], "params_b": pts[0]["params_b"],
+                         "score": pts[0]["score"]})
             continue
         v = verdict(pts)
         rows.append({"lineage": lin, "recipe": rec, "bench": bench, "language": lang,
                      "n": len(pts), "points": pts, **v})
-    out = {"curves": rows, "skipped_cells": skipped,
+    out = {"curves": rows, "thin_curves": thin, "skipped_cells": skipped,
+           "group_counts": {"with_recipe": len(curves), "curve_ge2": len(rows),
+                            "thin_lt2": len(thin)},
            "protocol_of": PROTOCOL_OF, "caveat": CAVEAT}
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False), encoding="utf-8")
 
-    print(f"curves with >=2 rungs: {len(rows)}   (skipped cells: {skipped})")
+    print(f"groups with a recipe: {len(curves)}  ->  curves >=2 rungs: {len(rows)}, "
+          f"no-curve (1 rung): {len(thin)}   (cells skipped before grouping: {skipped})")
     print(f"{'lineage':20s} {'recipe':14s} {'bench':16s} {'lang':7s} n  verdict")
     for r in rows:
         tag = "monotone" if r["monotone"] else (
@@ -202,6 +211,10 @@ def main(argv):
                 print(f"  FAIL  {label}")
 
         want(len(rows) >= 10, f"至少 10 条可画曲线（实际 {len(rows)}）")
+        want(len(rows) + len(thin) == len(curves),
+             f"每条组都被计数：曲线 {len(rows)} + 无曲线 {len(thin)} = 组 {len(curves)}")
+        want(len(thin) >= 200, f"「无曲线」的组被记录而不是丢掉（实际 {len(thin)}）")
+        want(all(t["reason"] for t in thin), "每个无曲线的组都带原因")
         want(all(r["n"] >= 2 for r in rows), "每条曲线至少 2 个 rung")
         want(all(p["n_items"] > 0 for r in rows for p in r["points"]), "每个点都有自己的 n_items")
         want(not any("|" in r["bench"] for r in rows), "基准名里没有协议串（说明匹配上了 PROTOCOL_OF）")

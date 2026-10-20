@@ -19,6 +19,7 @@ REPO = HERE.parents[3]
 PY = sys.executable
 
 STEPS = [
+    ("build_fixtures.py", "入库 fixture 与现场 GGUF 的漂移（没有 GGUF 时 trivially 通过）"),
     ("size_provenance.py", "库的每一行 __size 归到一条取数通道"),
     ("size_ladder.py", "三个候选 X 的逐族可用性"),
     ("size_regression.py", "plan5 双变量回归的可识别性"),

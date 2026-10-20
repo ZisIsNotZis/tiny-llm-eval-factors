@@ -5,15 +5,16 @@
 判断类结论（analysis）与技术测量分开，analysis 不覆盖任何数字。
 本层只读 `experiments.sqlite`；所有命令都在仓库根执行。
 
-### acceptance-entry-point :: 本层的唯一验收入口是一条命令 `python3 "docs/subprojects/a02-模型规模/analysis/run_all.py" --selftest`，它跑五个脚本的 67 条断言并附一次负控（篡改一条取数通道后检查必须失败），当前 5/5 绿且负控按要求失败。
+### acceptance-entry-point :: 本层的唯一验收入口是一条命令 `python3 "docs/subprojects/a02-模型规模/analysis/run_all.py" --selftest`，它跑六个脚本的 79 条断言并附一次负控（篡改一条取数通道后检查必须失败）；`A02_HF_ROOT=/nonexistent` 模拟干净 clone（没有任何 GGUF）时同样全绿。
 
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
 - origin: `analysis/run_all.py`
-- evidence: 逐脚本断言数 provenance 32、ladder 15、regression 9、curves 7、moe_position 4，合计 67；负控输出 `expected failure was seen`。GGUF 头解析带 (size, mtime) 缓存（`analysis/gguf_cache.json`），重复运行 3m52s → 0.08s，文件一改即重算。
-- repro: `python3 "docs/subprojects/a02-模型规模/analysis/run_all.py" --selftest`（实跑输出：`5/5 checks green` + `[PASS] negative control`）
+- evidence: 逐脚本断言数 fixture 漂移检查 1、provenance 37、ladder 15、regression 12、curves 10、moe_position 4，合计 79；负控输出 `expected failure was seen`。真值来自入库 fixture `analysis/fixtures/gguf_truth.json`，所以断言不依赖 `/home/z/hf`；GGUF 头解析带 (size, mtime) 缓存（`analysis/gguf_cache.json`），重复运行 3m52s → 0.08s。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/run_all.py" --selftest`（实跑输出：`6/6 checks green` + `[PASS] negative control`）
+- repro: `A02_HF_ROOT=/nonexistent python3 "docs/subprojects/a02-模型规模/analysis/size_provenance.py" --check`（实跑输出：`37 expected true, 0 false`）
 
 ## 本轴的 X 本身不是一条通道给的数
 
@@ -24,11 +25,11 @@
 - status: current
 - kind: measured
 - origin: `exp.py::double_underscore_fields` 的解析规则 + `experiments.sqlite` 当前值
-- evidence: 解析规则在 `exp.py:44`（`SIZE_RE = -E?([0-9.]+)[MB]\b`，不区分 M/B 单位）、`exp.py:62`（`size = float(...)`）、`exp.py:76-84`（`size < filesize` 时取 `filesize`；`size` 缺失时取 `filesize / 0.5`）。库内证据：`LFM2.5-230M-UD-Q4_K_XL.gguf` 的 `__size=230.0`、`functiongemma-*` 的 `__size=270.0`（两者都 >100，其余行都 <36）；`GLM-4.7-Flash` 六档的 `__size/_file_size` 全为 2.0000。
+- evidence: 解析规则在 `exp.py:44`（`SIZE_RE = -E?([0-9.]+)[MB]\b`，不区分 M/B 单位）、`exp.py:62`（`size = float(...)`）、`exp.py:76-84`（`size < filesize` 时取 `filesize`；`size` 缺失时取 `filesize / 0.5`）。库内证据：`LFM2.5-230M-UD-Q4_K_XL.gguf` 的 `__size=230.0`、`functiongemma-*` 的 `__size=270.0`（两者都 >100，其余行都 <36）；`GLM-4.7-Flash` 的 8 个非 REAP 量化文件里有 8 个的 `__size/_file_size` 等于 2.0000（第 9 个 `UD-TQ1_0` 不在其中：它是 16.662，走的是另一条）。
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT model,__size,__activation_size,count(*) FROM experiments WHERE __size>100 GROUP BY 1,2,3"`（实跑输出：`LFM2.5-230M-UD-Q4_K_XL.gguf|230.0|230.0|53`、`functiongemma-270M-*|270.0|270.0|14`）
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT model,__size,_file_size,round(__size/_file_size,4) r FROM experiments WHERE __model='GLM-4.7' AND __size>17 GROUP BY model ORDER BY __size"`（实跑输出：`GLM-4.7-Flash-UD-IQ1_S`/`IQ1_M`/`IQ2_XXS`/`IQ2_M`/`Q2_K_XL`/`IQ3_XXS`/`Q3_K_XL` 七行的 `r` 全为 `2.0`）
 
-### size-tracks-bits :: 对有上述「2 × 文件字节数」回退的那些行，规模列随量化位宽移动而与参数量无关：`GLM-4.7-Flash` 的七个量化档是同一个模型的同一份权重，参数量按构造是常数，却在 `__size` 上跨 18.50–27.56，即「规模」在那里就是「比特数」。
+### size-tracks-bits :: 对有上述「2 × 文件字节数」回退的那些行，规模列随量化位宽移动而与参数量无关：`GLM-4.7-Flash` 的 8 个非 REAP 量化文件是同一个模型的同一份 29.94B 权重，参数量按构造是常数，却在 `__size` 上跨 18.50–27.56，即「规模」在那里就是「比特数」。
 
 - author: measurement
 - scope: general
@@ -57,30 +58,43 @@
 - kind: measured
 - from: result.size-not-one-thing
 - origin: `analysis/size_provenance.py`（读 `experiments.sqlite` 的 304 个 `(model, __size, _file_size)` 组 + `/home/z/hf/` 的 GGUF 头）
-- evidence: 通道与行数 `size-null` 1061 / `undecidable` 1112 / `token-rounded` 659 / `clamped-to-file-bytes` 190 / `two-times-file-bytes` 86 / `size-too-large-for-file` 67 / `label-below-total` 58，合计 3233，`other` 为 0（真参数量已知却解释不通的行一条也没有）。真参数量来源：169 组 / 1970 行由 GGUF 张量元素求和测得（`truth_source=gguf-tensors`），无一组来自猜测。
+- evidence: 通道与行数 `size-null` 1061 / `undecidable` 1112 / `token-rounded` 659 / `clamped-to-file-bytes` 190 / `two-times-file-bytes` 86 / `size-too-large-for-file` 67 / `label-below-total` 58，合计 3233，`other` 为 0（真参数量已知却解释不通的行一条也没有）。真参数量来源：169 个 `(model, size)` 组 / 76 个模型文件 / 1970 行由 GGUF 张量元素求和测得（`truth_source=gguf-tensors` 或 `fixture`，两者同源），无一组来自猜测。
 - repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_provenance.py" | head -12`（实跑输出：上表七行通道计数）
 - repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_provenance.py" --check`（实跑输出：`32 expected true, 0 false`，退出 0）
 
-### size-null-on-protocol-rows :: 缺规模的那 1061 行不是随机的：`__size` 为 NULL 的行恰好就是所有带 `protocol` 标签的新面板行（lm-eval 两个协议 453 行、EvalPlus 两个协议 294 行、多语言 30 行等），所以任何用 `experiments.__size` 当 X 的查询会静默丢掉整张 lm-eval / EvalPlus 面板，而报告 §2 的规模列走的不是这一列，是 `mktables.py::lineage_and_size` 从文件名取的数字标签。
+### size-null-on-protocol-rows :: 缺规模的 1061 行全部是带 `protocol` 标签的行，但反过来不成立：带协议的行共 1352 行，其中 291 行有规模（`multipl-e-raw-greedy-768` 178、bfcl 系 94、`evalplus-0.3.1-openai-chat` 19）；lm-eval 系协议 563 行则是 563/563 全缺。
 
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
-- origin: `experiments.sqlite` 按 protocol 分组统计 `__size IS NULL`
-- evidence: 按协议：`''`（历史行）1881 行中 0 行为 NULL；`lmeval-0.4.13-gguf-shim-reasoning-off` 227/227、`lmeval-0.4.13-chat-reasoning-off` 226/226、`evalplus-…-base` 147/147、`evalplus-…-plus` 147/147 全为 NULL；`_file_size` 一列 3233 行全部非空，所以这不是缺文件元数据，是插入时没算 `__size`。
-- repro: `sqlite3 -header -column experiments.sqlite "SELECT protocol, count(*) n, sum(__size IS NULL) size_null FROM experiments GROUP BY 1 ORDER BY n DESC LIMIT 6"`
-- repro: `sqlite3 -header -column experiments.sqlite "SELECT sum(__size IS NULL) size_null, sum(_file_size IS NULL) file_null FROM experiments"`（实跑输出：`1061|0`）
+- origin: `experiments.sqlite` 按 protocol 分组统计 `__size`
+- evidence: `protocol IS NOT NULL AND protocol<>''` 1352 行，其中 `__size IS NOT NULL` 291 行、`NULL` 1061 行；1061 个空值全部落在带协议的行上（历史行 1881 个没有一条为空）。`protocol LIKE '%lmeval%'` 563 行全部为空；`evalplus%` 313 行里 294 行为空、19 行有值；`bfcl%` 123 行里 29 行为空；`multipl-e%` 194 行里 16 行为空。`_file_size` 一列 3233 行全部非空，所以这不是缺文件元数据，是插入时没算 `__size`。
+- repro: `sqlite3 -header -column experiments.sqlite "SELECT count(*) n, sum(__size IS NOT NULL) with_size FROM experiments WHERE protocol IS NOT NULL AND protocol<>''"`（实跑输出：`1352|291`）
+- repro: `sqlite3 -header -column experiments.sqlite "SELECT sum(protocol LIKE '%lmeval%') n, sum(protocol LIKE '%lmeval%' AND __size IS NULL) nulls, sum(protocol LIKE 'multipl-e%' AND __size IS NOT NULL) mpl_with, sum(protocol LIKE 'bfcl%' AND __size IS NOT NULL) bfcl_with, sum(protocol LIKE 'evalplus%' AND __size IS NOT NULL) ep_with FROM experiments"`（实跑输出：`563|563|178|94|19`）
+- repro: `sqlite3 -header -column experiments.sqlite "SELECT count(*) null_rows, sum(protocol IS NOT NULL AND protocol<>'') null_with_protocol FROM experiments WHERE __size IS NULL"`（实跑输出：`1061|1061`）
 
-### gguf-truth-coverage :: 真参数量只覆盖 169 个模型文件（1970 行）；另 135 个文件（1263 行）在 `/home/z/hf/` 已不存在且不在 `.wrapup/bpw_map.json` 里，所以它们的「规模」在本轮不可判，只能按「未测」处理，不能假设等于标签。
+### gguf-truth-coverage :: 真参数量覆盖 169 个 `(model, size)` 组 / **76 个不同的模型文件**（库里的 211 个模型文件中只有这 76 个的 GGUF 在盘上）/ 1970 行；另 135 个组（1263 行）的模型文件已从 `/home/z/hf` 消失且不在 `bpw_map` 里，只能记未测。
 
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
-- origin: `analysis/size_provenance.json` 的 `missing` 与 `truth_source` 字段
-- evidence: `/home/z/hf/` 只剩 134 个 `.gguf` 直链（其余模型文件已被清理）；`deepseek-r1-0528-qwen3-8b`、`dolphin3.0`、`glm-4.7-flash-reap-23b-a3b`、`north-mini-code-1.0`、`qwen3.6-27b` 等族全部落在这一档。这与 a01 的位宽轴无关：那轴同样只有 69 个文件的 bpw。
+- origin: `analysis/size_provenance.json` 的 `missing` / `truth_source` 字段 + `analysis/fixtures/gguf_truth.json`
+- evidence: `/home/z/hf` 只剩 134 个 `.gguf` 直链；`deepseek-r1-0528-qwen3-8b`、`dolphin3.0`、`glm-4.7-flash-reap-23b-a3b`、`north-mini-code-1.0`、`qwen3.6-27b` 等族全部落在这一档。76 个文件之所以覆盖 169 个组，是因为同一个模型文件在库里按 `(model, __size, _file_size)` 出现多个组。真值已做成入库 fixture，所以干净 clone 里这条检查不依赖 `/home/z/hf`（见 `fixture-gguf-truth`）。
+- repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_provenance.json'));g=[r for r in d['rows'] if r['truth_source']];print(len(g), len({r['model'] for r in g}), sum(r['rows'] for r in g))"`（实跑输出：`169 76 1970`）
 - repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_provenance.json'));print(len(d['missing']), sum(m['rows'] for m in d['missing']))"`（实跑输出：`135 1263`）
+
+### fixture-gguf-truth :: 实测参数量与逐类比特已做成入库 fixture `analysis/fixtures/gguf_truth.json`（76 个模型文件，含总/专家池/共享参数量、激活参数量、专家数与激活专家数、每文件字节数、按 ggml 类型折算的逐类比特），`build_fixtures.py --check` 负责与现场 GGUF 比对漂移。
+
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- origin: `analysis/build_fixtures.py` 的 `read_gguf()`（张量形状 + 类型表）与 `--check`
+- evidence: 76 条记录，未知 ggml 类型 0；类型表的自检是「按类型折算的张量字节数」对「文件真实大小」，`bpw_tensors` 与 `bpw_file` 的差中位 0.29%、最大 2.95%（差即元数据与对齐开销）。新增的 `Q1_0`(41)=128/18 与 `Q2_0`(42)=64/18 两块大小不是查表得来，而是由「文件字节 ÷ 元素数」反解并用同一条自检验过。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/build_fixtures.py" --check`（实跑输出：`76 个现场 GGUF 在场，0 处与 fixture 不符`）
+- repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/fixtures/gguf_truth.json'))['models'];print(len(d), sum(1 for r in d.values() if r['unknown_ggml_types']))"`（实跑输出：`76 0`）
 
 ### label-honest-families :: 文件名标签在三个家族里就是参数量（误差 ≤10%）：Qwen3.5 的 0.8/2/4/9 实测 0.752/1.882/4.206/8.954，Ternary-Bonsai 的 1.7/4/8 实测 1.72/4.02/8.19，gemma-4-12B 的 12 实测 11.907。
 
@@ -93,7 +107,7 @@
 - evidence: 三族共 76 个组的标签都落在真参数量的 ±10% 内，且同一模型的不同量化档给出**同一个**标签（Qwen3.5-2B 的 Q2/Q3/Q4/IQ2/IQ3 全部 `__size=2.0`、真参 1.882），所以在这三族里「同族内按标签比大小」是可用的。
 - repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_provenance.json'));[print(r['model'],r['db_size'],round(r['truth_params'],3)) for r in d['rows'] if r['channel']=='token-rounded' and r['model'].startswith(('Qwen3.5','Ternary-Bonsai'))]"`
 
-### label-dishonest-cases :: 三个家族的标签不是参数量：gemma-4 的 `E2B`/`E4B` 是厂商的「有效参数量」（张量总和 4.65B / 7.52B），`LFM2.5-230M` 被写成 230（单位错，隐含比特数 8×0.15÷230≈0.005，物理上不可能），`GLM-4.7-Flash` 的七个量化档是同一份 29.94B 权重却给出 18.50–27.56 七个「规模」。
+### label-dishonest-cases :: 三个家族的标签不是参数量：gemma-4 的 `E2B`/`E4B` 是厂商的「有效参数量」（张量总和 4.65B / 7.52B），`LFM2.5-230M` 被写成 230（单位错，隐含比特数 8×0.15÷230≈0.005，物理上不可能），`GLM-4.7-Flash` 的 8 个非 REAP 量化文件是同一份 29.94B 权重，却给出 18.50–27.56 这 8 个不同的「规模」。
 
 - author: measurement
 - scope: specific
@@ -101,7 +115,7 @@
 - kind: measured
 - from: result.size-channel-inventory
 - origin: `size_provenance.json` 的 `label-below-total` / `size-too-large-for-file` / `two-times-file-bytes` 三条通道
-- evidence: gemma-4-E2B-it-UD-Q4_K_XL 真参 4.6475B 而 `__size=3.1845`（恰好等于该文件字节数）；E2B 的八个量化档在 `__size` 上是 2.186/2.291/2.373/2.404/2.620/2.924/3.184/4.294，同一个模型八个「规模」；E4B 真参 7.5181B 而标签 4；`LFM2.5-230M-UD-Q4_K_XL` 的 `_file_size` 使 `8×字节÷230` 远小于 1；GLM-4.7-Flash 七个档 `__size/_file_size` 全为 2.0。
+- evidence: gemma-4-E2B-it-UD-Q4_K_XL 真参 4.6475B 而 `__size=3.1845`（恰好等于该文件字节数）；E2B 的八个量化档在 `__size` 上是 2.186/2.291/2.373/2.404/2.620/2.924/3.184/4.294，同一个模型八个「规模」；E4B 真参 7.5181B 而标签 4；`LFM2.5-230M-UD-Q4_K_XL` 的 `_file_size` 使 `8×字节÷230` 远小于 1；GLM-4.7-Flash 的 8 个非 REAP 文件里，`__size/_file_size` 等于 2.0 的有 8 个（`UD-TQ1_0` 的 16.662 走的是 token 通道）。
 - repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_provenance.json'));[print(r['model'],r['db_size'],r['truth_params'] and round(r['truth_params'],4),r['channel']) for r in d['rows'] if r['channel'] in ('label-below-total','size-too-large-for-file')]"`
 
 ### moe-active-params-measured :: MoE 的激活参数量现在有实测值（专家池张量按 `expert_used/expert_count` 折算）：GLM-4.7-Flash 29.94B/3.90B（4/64 专家）、LFM2.5-8B-A1B 8.47B/1.69B（4/32）、Qwen3.6-35B-A3B 35.51B/3.52B（8/256）、gemma-4-26B-A4B 25.23B/3.82B（8/128）；而库里对应的标签是 8/1、35/3、26/4，GLM-4.7-Flash 更是被记成 27.56/27.56（稠密）。
@@ -170,7 +184,7 @@
 - kind: measured
 - from: result.size-axis-verdict, result.gemma4-q2kxl-inversion
 - origin: `analysis/size_curves.py`（`PROTOCOL_OF` 把每个基准钉到一个协议；Wilson 区间 n = 该格 `n_items`）
-- evidence: 曲线数 63、单调 40、有反向 23、超出噪声 4；其余 19 处反向里 16 处的区间与前一档重叠（判「测不出」，最大是 Ternary-Bonsai 的 −6.2pp），3 处是已知 harness 失败（见 `gemma4-mpl-harness`）。被跳过的格子只有 12 个「无配方名」的，没有一例是因为缺 `n_items`。
+- evidence: 分组口径：带配方的 `(lineage, recipe, bench, language)` 组共 328 个 = 63 条曲线（≥2 rung）+ **265 个只有一个 rung 的组**（记 `thin_curves`，每个带原因，不丢弃）+ 12 个无配方后缀而被跳过的格。「无曲线」的 265 个是结论而不是缺口：那些族在那个基准上只有一个尺寸有实测参数量。曲线数 63、单调 40、有反向 23、超出噪声 4；其余 19 处反向里 16 处的区间与前一档重叠（判「测不出」，最大是 Ternary-Bonsai 的 −6.2pp），3 处是已知 harness 失败（见 `gemma4-mpl-harness`）。被跳过的格子只有 12 个「无配方名」的，没有一例是因为缺 `n_items`。
 - repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_curves.py" | head -8`
 - repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_curves.py" --check`（实跑输出：`7 expected true, 0 false`）
 
@@ -221,7 +235,7 @@
 - evidence: 该条由 a01 的位宽事实 `result.res1` 推出，本层只能判它在规模轴上是否复现（`WP4`），判不了位宽轴本身；本次归位未新增测量，状态保持 provisional。
 - repro: 未就位——`WP4` 建好后填入；位宽轴那侧的可复算入口是 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"`
 
-### moe-design-not-identified :: plan5 的双变量回归在本库的模型集里**不可识别**：稠密模型的激活参等于总参（去掉 MoE 点后设计矩阵秩亏），可识别的信息全部来自 15 个 MoE 点，而 MoE 内部总参与激活参同样锁在一起（只看 MoE 时总参系数 +0.122±0.141，与 0 不可分）。
+### moe-design-not-identified :: plan5 的双变量回归在本库的模型集里**不可识别**：稠密模型的激活参等于总参（稠密子集内 log 总参与 log 激活的 r = 1.0000，去掉 MoE 点后设计矩阵秩亏），MoE 子集内两个变量也锁在一起（r = 0.962、VIF = 13.3 > 10），加上「是否 MoE」指示变量后两个系数翻号（总参 +0.1624→+0.4535、激活 +0.0926→−0.2056），说明合并拟合的两个「显著」系数是两团点云的假象。
 
 - author: measurement
 - scope: general
@@ -229,9 +243,9 @@
 - kind: analysis
 - from: result.moe-active-params-measured, result.size-axis-verdict
 - origin: `analysis/size_regression.py`（X = 实测总参/激活参，Y = `_bench='humaneval'` + `evalplus-0.3.1-openai-chat-greedy-base` 每模型一格，权重 = 1/二项方差）
-- evidence: 65 个可用模型点（稠密 50、MoE 15）。数值共线性并不高（`r(log总参, log激活)=0.628`、VIF=1.65、中心化条件数 2.09），所以**只看 VIF 会误判为可识别**；真正的阻塞是结构：去掉 MoE 点后设计矩阵**秩亏**（稠密点上 log激活 ≡ log总参），而 MoE 子集上总参系数 +0.1222±0.1405（t=0.87）。合并拟合给出 总参 +0.1624±0.0268、激活 +0.0926±0.0311（两个都「显著」），这正是陷阱：它的识别力来自两条互不重叠的点云，而不是来自能同时变动的两个轴。留一族检验（17 族逐一删除）里两个系数都不翻号，说明合并拟合不是被某一族顶住的，这与「不可识别」并不矛盾——不可识别是设计层面的，不是样本量层面的。
-- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_regression.py"`（实跑输出：`identified: False` + `blocking: 去掉 MoE 点后设计矩阵秩亏…`）
-- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_regression.py" --check`（实跑输出：`9 expected true, 0 false`）
+- evidence: 65 个可用模型点（稠密 50、MoE 15）。**全样本**的数值共线性并不高（r=0.628、VIF=1.65、中心化条件数 2.09），所以只看全样本 VIF 会误判为可识别；两条子集判据才是阻塞：稠密子集 r=1.0000（秩亏），MoE 子集 r=0.962、VIF=13.3。合并拟合 总参 +0.1624±0.0268、激活 +0.0926±0.0311（两个都「显著」），但加入 MoE 指示变量后变成 +0.4535±0.1720 与 −0.2056±0.1767；只看 MoE 点时总参系数 +0.1222±0.1405（t=0.87，与 0 不可分）。留一族检验（17 族逐一删除）里两个系数都不翻号，说明合并拟合不是被某一族顶住的——这与「不可识别」不矛盾：不可识别是设计层面的，不是样本量层面的。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_regression.py"`（实跑输出：`dense-only r = 1.0000（激活≡总参，秩亏）   MoE-only r = 0.962  VIF_moe = 13.3` 与 `total+active+moe_dummy … ln_size=+0.4535 ln_active=-0.2056`）
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_regression.py" --check`（实跑输出：`12 expected true, 0 false`）
 - 要让它可识别的最小补测：至少两对「同总参、不同激活」的受控点（同一 MoE 权重换 `expert_used`，或同总参的稠密/MoE 对）。本轮没有这类格，记未测。
 
 ### size-total-slope :: 在稠密模型上被识别的只有一个合并斜率：实测总参每涨 e 倍，HumanEval 分数涨 0.210±0.023（`total_only` 加权拟合，n=65，adjR²=0.754）；单独用激活参拟合更弱（0.205±0.031，adjR²=0.658）。

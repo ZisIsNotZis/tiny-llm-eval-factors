@@ -8,6 +8,11 @@
 `experiments.__size` 与 `__activation_size` 不是测量值，是文件名解析结果（`exp.py::double_underscore_fields`），已知有三条互不相同的通道和一处 1000 倍单位错（见 `RESULT.md::size-not-one-thing`）。
 任何一行进入回归或曲线之前，先说明它的规模来自哪条通道；说不出通道的行只能进「待判」清单，不能进拟合。判据不是「看起来合理」，是「这一行 `__size` 与 GGUF 张量元素求和一致」或「这一行按 `PLAN.md::WP2` 的规则被归到某条通道」。
 
+## 1b. 真值从入库 fixture 读，不从本机目录读
+
+实测参数量与逐类比特在 `analysis/fixtures/gguf_truth.json`（76 个模型文件）。新增要用到参数量的脚本，一律先查它，不要直接 import GGUF 或假设 `/home/z/hf` 存在；`build_fixtures.py --check` 负责漂移。
+判「干净 clone 能不能算」的方法是 `A02_HF_ROOT=/nonexistent` 跑一遍：任何断言因此变红，就说明它偷偷依赖了本机文件。
+
 ## 2. 双变量回归必须先证可识别
 
 `score = f(总参, 激活参)` 只有先给出相关系数、VIF 或设计矩阵结构，才允许报系数。系数符号翻转、或 `total+active` 与 `total+moe` 的调整 R² 差在 0.1 以内，都写成「不可识别」，不写成「激活参有效」。
