@@ -1,0 +1,1 @@
+{"n": 2251, "correct": 879, "score": 0.39049311417147936, "per_category": {"live_simple": {"acc": 0.015503875968992248, "n": 258}, "live_multiple": {"acc": 0.00949667616334283, "n": 1053}, "live_parallel": {"acc": 0.0, "n": 16}, "live_parallel_multiple": {"acc": 0.0, "n": 24}, "live_irrelevance": {"acc": 0.9762443438914027, "n": 884}, "live_relevance": {"acc": 0.125, "n": 16}}}

@@ -1,0 +1,1 @@
+{"n": 1240, "correct": 251, "score": 0.20241935483870968, "per_category": {"simple_python": {"acc": 0.015, "n": 400}, "multiple": {"acc": 0.02, "n": 200}, "parallel": {"acc": 0.01, "n": 200}, "parallel_multiple": {"acc": 0.01, "n": 200}, "irrelevance": {"acc": 0.9875, "n": 240}}}
