@@ -68,6 +68,16 @@
   2. 逐字节：`sha256sum .wrapup/mres/i01-slot-{np1-p1,np1-p2,npauto-p1,npauto-p2}-py-chat.jsonl`（四行同值 `a2f5eb5d…`）。
   3. 131 不可复现：对 `m26-q38-27b-q3-py.jsonl` 原样 / 过旧后处理 / 过新后处理各跑一次 `mpl_run.py eval`，得 139 / 5 / 139。
 
+### res30 BFCL 在报告里没有汇总列，读者能自己算出来的只有 macro（见 audits/bfcl.md）
+
+- 库侧：`experiments` 的 BFCL 行是**每类别一行**（`_bench = bfcl-<category>`），`n_items` **全为 NULL**（实测 123/123），所以库里没有任何字段能把类别重新按题量加权。
+- 报告侧：`make_report.py::table_bfcl` 渲染成「一行一个 (模型, 协议)、一列一个类别」，**没有汇总列**——报告本身不声明单一个 BFCL 数字。
+- 因此读者若把表里的类别列平均起来，得到的是**未加权平均（macro）**；而面板 summary 里那个 `score` 是**按题加权（micro）**。两者实测最大差 **0.2028**（`m8` gr3b-q2：micro 0.3905 / macro 0.1877），方向是 micro 偏高，因为 `live_irrelevance`（884/2251 题，奖励「不调用」）权重大。
+- 推论给读者：看 BFCL 那一节时，**逐类别比较是有意义的，跨模型的「BFCL 总分」没有唯一值**；要复现历史 micro 必须回到 `.wrapup/m*_summary.jsonl`，库里没有。
+- 状态：current。
+- 证据：`make_report.py::table_bfcl`（第 1040–1057 行）；`experiments.sqlite` 的 bfcl 行；`.wrapup/m8_summary.jsonl`。
+- 复现：`sqlite3 -readonly experiments.sqlite "SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' AND n_items IS NULL"` 与 `python3 "docs/subprojects/i01-判分与基准有效性/audits/bfcl_audit.py"`（聚合段打印两组数）。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
