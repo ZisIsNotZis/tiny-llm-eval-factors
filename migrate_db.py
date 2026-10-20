@@ -126,6 +126,9 @@ def insert(con, row):
 # inserted instead of appending a bare duplicate.
 # Consequence: a rerun never refreshes a score.  A corrected score needs an
 # explicit delete-then-reinsert, as ingest_m26 / ingest_m6b / ingest_m161 do.
+# MultiPL-E summary 若某行没有 protocol 字段时退回的协议串；用了它会被明确报出。
+DEFAULT_MPL_PROTOCOL = "multipl-e-raw-greedy-768"
+
 # 本次入库跳过了哪些行：run_tag → {(原因, 名字): 行数}。静默跳过比错数更危险——数据在、结论不在，
 # 却没人知道。每个 ingest_* 在跳过一行时记一笔，main() 在末尾把整张账打出来。
 INGEST_SKIPS = {}
@@ -257,6 +260,7 @@ def ingest_mpl(con, path, run_tag, source, model_map=None):
     n = 0
     skipped = 0
     unknown = collections.Counter()
+    defaulted = collections.Counter()
     for line in open(path):
         line = line.strip()
         if not line:
@@ -267,9 +271,16 @@ def ingest_mpl(con, path, run_tag, source, model_map=None):
             note_skip(run_tag, "unknown_model", r["model"])
             continue
         lang = r["lang"]
+        # 每行自带的协议串原样入库：带因子的面板（m29 的 fa/kv）就是靠它各成一格，
+        # 写成同一个默认值会把不同的格合并成一个，等于静默丢数据。
+        proto = (r.get("protocol") or "").strip()
+        if not proto:
+            proto = DEFAULT_MPL_PROTOCOL
+            defaulted[proto] += 1
+            note_skip(run_tag, "default_protocol_used", proto)
         row = base_row(model_map[r["model"]], f"humaneval-{lang}", 0.0, r["score"], None)
         row.update({"run_tag": run_tag, "rep": 1, "ctx_size": 4096,
-                    "parallel_slots": 1, "protocol": "multipl-e-raw-greedy-768",
+                    "parallel_slots": 1, "protocol": proto,
                     "language": lang, "bench_family": "humaneval-multipl-e",
                     "max_tokens": 768, "source_file": source})
         if measurement_present(con, row):
@@ -283,6 +294,9 @@ def ingest_mpl(con, path, run_tag, source, model_map=None):
     if unknown:
         print(f"  {run_tag}: skipped_rows={sum(unknown.values())} reason=unknown_model "
               f"names={','.join(sorted(unknown))} (在 model_map 里没有这些名字)")
+    if defaulted:
+        print(f"  {run_tag}: {sum(defaulted.values())} row(s) 没有 protocol 字段 → 用了默认协议 "
+              f"{DEFAULT_MPL_PROTOCOL}（该次 summary 未记录协议）")
     return n
 
 

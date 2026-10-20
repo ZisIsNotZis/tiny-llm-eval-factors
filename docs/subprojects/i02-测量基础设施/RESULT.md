@@ -166,10 +166,17 @@
 - evidence: `ingest_mpl` 遇到不在 `model_map` 里的模型名时逐条记入 `INGEST_SKIPS` 并当场打印 `skipped_rows=N reason=unknown_model names=…`（已存在的格记 `reason=already_present`，多轮入库的缺字段记 `reason=missing_field`）；`main()` 末尾统一打印 `== ingest skips ==` 账目，没有跳过时明说 `none`。实测样例：`m29-skip-probe: skipped_rows=24 reason=unknown_model names=q2,q3`（`m29_summary.jsonl` 的 24 行此前因此 0 行入库且无任何提示）。
 - producer: `python3 checks/ingest_skip_negative_control.py`（三种情形：未知名被报出且不入库、配上映射后不再报未知名、全部认识时跳过计数为 0）；`python3 migrate_db.py` 末尾的 `== ingest skips ==` 一节
 
-## res44 :: `ingest_mpl` 把协议写死成规范化那一串，因此带因子面的面板（如 m29 的 fa/kv）不能被它原样收下——m29 是否补录、以什么协议入库，归 a05 判断。
+## res44 :: `ingest_mpl` 逐行尊重 summary 的协议串：带因子的面板（m29 的 fa/kv）因此各成一格。
 
-- kind: citation
+- kind: measured
 - status: current
-- evidence: `ingest_mpl` 生成行时用固定 `protocol="multipl-e-raw-greedy-768"`，忽略 summary 每行自带的 `protocol`/`cell`（`m29_summary.jsonl` 的行带 `mpl-raw-greedy-768;fa=on,kv=q8_0/f16` 这类带因子的串）。在库副本上用一个认识 `q2`/`q3` 的映射试跑 m29：24 行里 20 行按测量身份与库里已有的其它面板格相撞（`already_present`）、只入 4 行——若直接把 m29 映射打开，这些格会被错记成规范化协议下的格。所以本子项目只保证「下次跑入库不会被吞掉」，不替 a05 决定补录；若 a05 要补，需要 `ingest_mpl` 支持逐行协议，短名映射本身是显然的（`.wrapup/run_m29.sh:73` 写着 `q2:Qwen3.5-2B-UD-Q2_K_XL.gguf`、`q3:…Q3_K_XL…`），但没有被确认过、也没有被加进 `migrate_db.py`。
-- producer: `python3 checks/ingest_skip_negative_control.py`（第 2、3 种情形）；`grep -n "protocol" migrate_db.py`（`ingest_mpl` 内写死的 `protocol="multipl-e-raw-greedy-768"`）
+- evidence: 每行的 `protocol` 字段原样入库；字段缺失时才退回 `DEFAULT_MPL_PROTOCOL`，并打印「N row(s) 没有 protocol 字段 → 用了默认协议 …」。测量身份 23 列里含 `protocol`，所以只有 `fa=on`/`fa=off` 不同的两行是两个格而不是一个。负控实测：两行只有 fa 不同 → 入库 2 行、库里分别是 `mpl-raw-greedy-768;fa=off,kv=q8_0/f16` 与 `…;fa=on,…`；同一文件重跑 → 新增 0 行；缺协议字段 → 入库行的协议是默认值且输出明说用了默认协议。
+- producer: `python3 checks/ingest_protocol_negative_control.py`
+
+## res45 :: 报告的内容来源是库、`report_inputs/` 的派生索引与产品层叙述，不含子项目的工作文档；子项目迁 Markdown 不会再改变报告。
+
+- kind: measured
+- status: current
+- evidence: `make_report.py` 不再有 `load_docs()` / `_yaml_load()` / `render_fact_list()`，也不再有「客观结果 / 分析结论 / 引用与规模 / 待分析」这四个由 `docs/subprojects/*/{plan,result}.yaml` 支撑的子节；报告现由 20 个二级节组成（研究概述 + 15 个研究分析节 + 数据质量与未解问题 + 2 个附录 + 结论），86 张图。研究成果的对外入口是 `FINDINGS.md`，不是报告里的内部事实清单。
+- producer: `python3 make_report.py`（生成的 `report.html`）；`grep -c "<h2>" report.html`
 

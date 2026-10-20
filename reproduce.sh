@@ -102,6 +102,13 @@ else
 fi
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/ingest_protocol_negative_control.py >/tmp/reproduce_ip.$$ 2>&1; then
+    record PASS "入库协议的负控（只有 fa 不同的两行各成一格、缺协议时明说用了默认值）"
+else
+    record FAIL "入库协议的负控未通过：python3 checks/ingest_protocol_negative_control.py"
+fi
+rm -f /tmp/reproduce_ip.$$
+
 if python3 checks/ingest_skip_negative_control.py >/tmp/reproduce_is.$$ 2>&1; then
     record PASS "入库跳过报告的负控（未知名逐条报出、认得的名字跳过计数为 0）"
 else

@@ -1231,37 +1231,6 @@ def section(H, title, definition, tables, figures, analysis_html):
     H.append("</section>")
 
 
-def load_docs():
-    """读取研究文档 SSOT 的 facts。
-
-    plan / result 归各子项目所有：`docs/subprojects/<id>-<name>/<layer>.yaml`。
-    子项目的 `PLAN.md` / `RESULT.md` 是工作文档，报告不解析它们；读者需要的「未解问题」
-    由 `report_inputs/open_questions.json` 这个派生索引提供（见 open_questions_html）。
-    """
-    out = {}
-    for layer in ("plan", "result"):
-        facts = {}
-        for path in sorted(glob.glob(os.path.join("docs", "subprojects", "*", f"{layer}.yaml"))):
-            for fid, fact in (_yaml_load(path) or {}).items():
-                if isinstance(fact, dict):
-                    fact["_file"] = path          # 事实自己的家：报告据此给出可查的来源
-                facts[fid] = fact
-        out[layer] = facts
-    return out
-
-
-def _yaml_load(path):
-    try:
-        import yaml
-        with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    except Exception:
-        return {}
-
-
-NON_MEASUREMENTS = "docs/subprojects/i02-测量基础设施/non_measurements.tsv"
-
-
 OPEN_QUESTIONS = "report_inputs/open_questions.json"
 
 
@@ -1367,6 +1336,9 @@ def inversion_callout():
     return "".join(out)
 
 
+NON_MEASUREMENTS = "docs/subprojects/i02-测量基础设施/non_measurements.tsv"
+
+
 def non_measurements_html():
     """非测量登记册：显存不足 / 门槛失败 / 没跑，逐格列出状态、发生了什么和证据。
 
@@ -1390,93 +1362,6 @@ def non_measurements_html():
 
 # 已退役的目录：路径本身仍可能存在（`.scratch` 还在仓库里），但已不再作为「事实的家」。
 # 报告因此照实打印存在的路径并标注这一点，而不是给一条固定文案。
-RETIRED_ORIGINS = (".scratch/", "/tmp/MultiPL-E/", "/home/z/hf/")
-RETIRED_MARK = "该目录已按策略退役"
-
-# origin 里像路径的片段：至少一层目录 + 已知扩展名
-_PATH_RE = re.compile(r"(?:[\w.~-]+/)+[\w\u4e00-\u9fff.~-]+\.(?:yaml|yml|md|json|jsonl|py|sh|log|txt|tsv|csv|gguf)")
-
-
-def recorded_paths(origin):
-    """origin 字段里被记录下来的路径（按出现顺序，去重）。"""
-    seen, out = set(), []
-    for m in _PATH_RE.finditer(str(origin or "")):
-        path = m.group(0)
-        if path not in seen:
-            seen.add(path)
-            out.append(path)
-    return out
-
-
-_TRACKED = {}
-
-
-def tracked_paths():
-    """仓库里被 git 跟踪的路径集合。
-
-    「来源在本仓库里是否存在」必须与机器无关：`.wrapup/mres/*` 之类只在本机存在、被
-    .gitignore 排除，用 `os.path.exists` 判断会让干净 clone 得到不同的报告。
-    """
-    if "set" not in _TRACKED:
-        import subprocess
-        try:
-            out = subprocess.run(["git", "ls-files", "-z"], capture_output=True, text=True,
-                                 check=True).stdout
-            _TRACKED["set"] = {p for p in out.split("\0") if p}
-        except Exception:
-            _TRACKED["set"] = None            # 没有 git：退回文件系统判断
-    return _TRACKED["set"]
-
-
-def path_in_repo(path):
-    tracked = tracked_paths()
-    if tracked is None:
-        return os.path.exists(path)
-    return path in tracked
-
-
-def _source_label(fact):
-    """这条事实的来源：先查记录下来的路径是否存在，查不到才说不存在，并给出它自己的家。
-
-    总是先给事实本体所在的文件（它的家，随仓库分发）；记录下来的路径存在就一并打印，
-    退役目录里的路径按 RETIRED_MARK 标注；一个都不存在时给 producer/evidence，并照实说
-    「来源路径在本仓库不存在」——这是可核对的陈述，不是「尚未迁移」这种断言。
-    """
-    origin = str(fact.get("origin") or "")
-    live = str(fact.get("producer") or fact.get("evidence") or "")
-    home = str(fact.get("_file") or "")
-    paths = recorded_paths(origin)
-    existing = [p for p in paths if path_in_repo(p)]
-    parts = []
-    if home:
-        parts.append(home)                     # 事实本体所在文件：永远可查
-    for p in existing:
-        parts.append(p + (f"（{RETIRED_MARK}）" if any(r in p for r in RETIRED_ORIGINS) else ""))
-    if live and live not in existing:
-        parts.append(live)
-    if paths and not existing:
-        parts.append("来源路径在本仓库不存在")
-    if not parts and origin:
-        parts.append(origin[:100])
-    return "；".join(parts), bool(paths and not existing)
-
-
-def render_fact_list(facts, kinds=None):
-    items = []
-    for fid, f in sorted(facts.items()):
-        if not isinstance(f, dict):
-            continue
-        d = f.get("domain") or {}
-        if kinds and d.get("kind") not in kinds:
-            continue
-        src, _retired = _source_label(f)
-        status = f.get("status", "")
-        tag = f" <span class='tag'>{html.escape(d.get('kind',''))}</span>" if d.get("kind") else ""
-        prov = f" <span class='nr'>（{html.escape(str(status))}；来源：{html.escape(str(src))[:120]}）</span>" if src else ""
-        items.append(f"<li>{html.escape(str(f.get('_text','')))} {tag}{prov}</li>")
-    return "<ul>" + "".join(items) + "</ul>" if items else "<p class='nr'>（无）</p>"
-
-
 def _eval_status_index():
     """按 (语言, 通过数, 题数) 索引每份评测的状态直方图。
 
@@ -1821,26 +1706,18 @@ def main():
         section(H, title, defn, tables, figs, analysis)
         all_tables.extend(tables or [])
 
-    docs = load_docs()
     H.append("<h2>数据质量、可比性与待分析</h2>")
-    H.append("<p class='def'>这一节不是结论，而是“哪些数字可信、哪些不可比、哪些还没测”的账本。"
-             "它把这一轮审计发现的数据缺陷、修复方式，以及文档 SSOT 里登记的未决假设集中在一处。</p>")
+    H.append("<p class='def'>这一节不是结论，而是“哪些数字可信、哪些不可比、哪些还没测”的账本："
+             "构建时从库与产物复核的数据质量问题、非测量登记册，以及各子项目登记的未解问题索引。"
+             "它不引用子项目的工作文档——报告的内容来源是库、<code>report_inputs/</code> 的派生索引"
+             "与产品层叙述，所以子项目把工作文档改成什么格式都不会改变报告。</p>")
     H.append(data_quality_html())
 
     H.append("<h3>非测量登记册（未测 ≠ 0）</h3>")
     H.append(non_measurements_html())
 
-    H.append("<h3>客观结果（引自研究文档 L2，测量）</h3>")
-    H.append(render_fact_list(docs.get("result", {}), kinds={"measured"}))
-    H.append("<h3>分析结论（引自研究文档 L3）</h3>")
-    H.append(render_fact_list(docs.get("result", {}), kinds={"analysis"}))
-    H.append("<h3>引用与规模（非结论）</h3>")
-    H.append(render_fact_list(docs.get("result", {}), kinds={"citation"}))
     H.append("<h3>未解问题（各子项目 PLAN.md 的派生索引）</h3>")
     H.append(open_questions_html())
-
-    H.append("<h3>待分析：尚未跑的假设（引自各子项目的计划）</h3>")
-    H.append(render_fact_list(docs.get("plan", {})))
 
     H.append("<h2>附录：全部研究批次（run_tag）清单</h2>")
     H.append("<p class='def'>报告正文的表格来自标准基准列（<code>mres/%</code>）；其余独立面板也是实际跑过的研究，"
