@@ -13,7 +13,7 @@
 
 - 已完成：`WP1`、`WP2`、`WP3`、`WP4`。
 - 已落地但未提交（i02 在工作树里，HEAD 上还没有）：`WP7` 拆列、`WP9` 题量，见 `RESULT.md`「HEAD 的报告有两处缺陷」与两份按 revision 命名的捕获。
-- 在办：`WP8`（逐语言表 3 个格被同一行标签遮住）归 i02，a12 只提供 `[10]` 段的证据；`WP5` 已由 meta 派出，产物回来由 a12 写进 `RESULT.md`；`WP6` 的首轮结论是 ACCEPT WITH NOTES + 3 个 P1，已修完（见「复核整改」）。
+- 在办：`WP8`（逐语言表 3 个格被同一行标签遮住）归 i02，a12 只提供 `[10]` 段的证据；`WP5` 由 GPU worker 在跑（见 WP5 行），入库步骤尚未做，接手者按该行命令继续。`WP6` 的首轮结论是 ACCEPT WITH NOTES + 3 个 P1，已修完（见「复核整改」）。
 - 下一个派给谁：`WP8` 与 `WP5` 的产物→a12 复核；其余无待派工作。
 
 ## 工作包
@@ -27,7 +27,7 @@
 | WP7 报告标准列拆成 C++ / Python 两列 | i02 | 标准表 11→12 列、轴 A/B/C 各多一条 series；重生成 `report.html` 后无池化列 | WP4 裁决 A | 一次报告改动 | 工作树已落地、未提交（`[8]`：0 池化 / 8 已拆）；HEAD 仍是池化 |
 | WP9 报告不得给格编题数，也不能让探针格看起来像满格 | i02 | 有 n 的格印出的题量等于该语言的满格题数（java 158 / rs 155）；m30 的六格是 60 题探针，题量必须印出来或被显式标成探针——「没有 n 就不印 n」不算修好，因为它让 60 题的结果读成一个 161 题的 0；`[7]` 的「因 n 缺失而跳过」计数必须为 0，或逐个对应已标注的探针 | `[7]` 的 HEAD 捕获与工作树捕获里的跳过计数（当前 6 个） | 一次报告改动 | 工作树把 32 格改对、未提交；6 个探针格仍未标出 |
 | WP8 逐语言表的标签要带上被采样的一维 | i02 | m31 的 `top_k` 格不再与 m27 的 `t0.3` 格撞成同一行；库中 192 个 (模型, 协议串, 语言) 键全部能被单独渲染 | `[10]` 的证据 | 一次报告改动 | 待派 |
-| WP5 补测 gemma-4-12b 的 chat cpp 两格 | GPU worker（meta 已派） | Q2/Q3 两格以 `mpl-chat-nothink-greedy-768`（`ctx=2048`、`--jinja`）入库并留下 `_eval.json`；审计仍退出 0；12b 首次有同协议 cpp+py 对 | 一个 GPU 槽（`bash .wrapup/gpu_locked.sh`）；提示集用 `.wrapup/prompts` 不许重生成 | ≤15 GPU 分钟（m161 实测 7 格 39 分钟） | 已派，待产物 |
+| WP5 补测 gemma-4-12b 的 chat cpp 两格 | GPU worker（meta 已派） | Q2/Q3 两格以 `mpl-chat-nothink-greedy-768`（`ctx=2048`、`--jinja`）入库并留下 `_eval.json`；审计仍退出 0；12b 首次有同协议 cpp+py 对 | 一个 GPU 槽（`bash .wrapup/gpu_locked.sh`）；提示集用 `.wrapup/prompts` 不许重生成 | ≤15 GPU 分钟（m161 实测 7 格 39 分钟） | 在跑：driver `bash .wrapup/gpu_locked.sh bash .wrapup/run_m163_chat_cpp_12b.sh`（log `m163.log`），run_tag `m163-chat-cpp-gemma12b`；两格产物 `mres/m163-g12b-q{2,3}-cpp-chat.jsonl` + `_eval.json`，汇总 `m163_summary.jsonl`；跑完入库 `python3 migrate_db.py`（自带 `bakN` 备份）→ `python3 make_report.py` → 审计 |
 | WP6 独立复核 | fresh-context reviewer（meta 已派） | 对本目录三份文档与审计输出给裁决，指出证据缺口；reviewer 的结论取代本人的自评 | WP1–WP4 | 一次复核 | 已派，待结论 |
 
 ## 已裁决：标准列拆成 C++ / Python 两列（选项 A）
