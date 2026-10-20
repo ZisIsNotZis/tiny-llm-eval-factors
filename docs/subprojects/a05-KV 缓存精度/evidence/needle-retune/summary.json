@@ -2,11 +2,41 @@
  "run_tag": "a05-needle-kv-ctx",
  "design": "needle at a fixed depth per cell (depth is a stratum, not pooled), answer-only instruction, prompt = ctx-1024 tokens, 20 items per cell",
  "control": {
-  "cell": "a05-needle-d0.9-ctx8192-kvf16_f16-control-absent-VOID",
-  "status": "void-absent-veto",
-  "reason": "旧实现用 `hit = (got == needle) and not absent` 一票否决，对照恒为 0，证明不了任何事；证据文件里的 0/20 只是 20 条回答都输出了占位符 12345",
-  "rerun": "bash .wrapup/gpu_locked.sh python3 \"docs/subprojects/a05-KV 缓存精度/analysis/needle_grid.py\" --depths 0.9 --kvs f16:f16,q4_0:q4_0 --outdir \"docs/subprojects/a05-KV 缓存精度/evidence/needle-retune\" --control-only",
-  "rerun_status": "queued; blocked by a04 m164-a04-uni45 holding /tmp/llama_gpu.lock (two queued attempts timed out at 1200 s and 480 s)"
+  "cell": "a05-needle-d0.9-ctx8192-kvf16_f16-control-noinstruction",
+  "status": "measured",
+  "mode": "instruction-removed (needle kept in the prompt)",
+  "criterion": "hit = 完成物里第一个 5 位数字串等于针值（与处理组同一条码路，无 absent 否决）",
+  "n_predict": 192,
+  "stop": [],
+  "hits": 0,
+  "n": 20,
+  "answer_shapes": {
+   "no-5-digit-run": 20
+  },
+  "completion_chars": [
+   801,
+   801
+  ],
+  "needle_as_substring": 0,
+  "passed": true,
+  "can_fail": "命中判据只比数字串与针值，且处理组在同一条码路上记到 17 条命中；若模型在没有指令时复述针，这里就会非 0",
+  "concurrency_exception": {
+   "parallel_with": "a04 m164-a04-uni45 (llama-server pid 3329082 on :9200, 5188 MiB)",
+   "free_before_mib": 18424,
+   "baseline_used_mib": 5684,
+   "peak_used_mib": 9364,
+   "this_job_peak_mib": 3680,
+   "n_slots": "1 (asserted by the script; server log: n_slots = 1, n_ctx_slot = 8192)",
+   "port": 8150,
+   "lock": "not taken (registry concurrency exception: <=3 GPU min, <=3 GB)"
+  },
+  "supersedes": {
+   "cell": "a05-needle-d0.9-ctx8192-kvf16_f16-control-absent-VOID",
+   "status": "void-absent-veto",
+   "reason": "旧实现用 `hit = (got == needle) and not absent` 一票否决，对照恒为 0，证明不了任何事；证据文件里的 0/20 只是 20 条回答都输出了占位符 12345",
+   "rerun": "bash .wrapup/gpu_locked.sh python3 \"docs/subprojects/a05-KV 缓存精度/analysis/needle_grid.py\" --depths 0.9 --kvs f16:f16,q4_0:q4_0 --outdir \"docs/subprojects/a05-KV 缓存精度/evidence/needle-retune\" --control-only",
+   "rerun_status": "queued; blocked by a04 m164-a04-uni45 holding /tmp/llama_gpu.lock (two queued attempts timed out at 1200 s and 480 s)"
+  }
  },
  "strata": {
   "0.9": {

@@ -101,9 +101,9 @@ class Server:
         with urllib.request.urlopen(req, timeout=300) as r:
             return len(json.loads(r.read().decode())["tokens"])
 
-    def complete(self, prompt, n_predict):
+    def complete(self, prompt, n_predict, stop=("\n",)):
         body = {"prompt": prompt, "n_predict": n_predict, "temperature": 0,
-                "cache_prompt": False, "stop": ["\n"]}
+                "cache_prompt": False, "stop": list(stop)}
         req = urllib.request.Request(
             f"http://127.0.0.1:{self.port}/completion",
             data=json.dumps(body).encode(), headers={"Content-Type": "application/json"})
@@ -146,20 +146,21 @@ def first_digits(text):
     return ""
 
 
-def run_cell(cell_id, ctx, ctk, ctv, prompts, outdir, port, logfile, selftest=False):
+def run_cell(cell_id, ctx, ctk, ctv, prompts, outdir, port, logfile, n_predict=32, stop=("\n",)):
     with Server(ctx, ctk, ctv, port, logfile) as srv:
         total, n_ctx = srv.slots()
         if total != 1 or n_ctx != ctx:
             raise RuntimeError(f"slot assertion failed for {cell_id}: total_slots={total} n_ctx={n_ctx} expected 1/{ctx}")
         items = []
         for it in prompts:
-            comp = srv.complete(it["prompt"], 32)
+            comp = srv.complete(it["prompt"], n_predict, stop)
             got = first_digits(comp)
             hit = (got == it["needle"])      # 只比数字：对照的针仍在 prompt 里，所以对照可以非 0
             items.append({"i": it["i"], "depth": it["depth"], "needle": it["needle"],
                           "control": it.get("control"),
                           "completion": comp, "answer": got,
-                          "answer_shape": ("empty" if not got else
+                          "answer_shape": ("empty" if not (comp or "") else
+                                           "no-5-digit-run" if not got else
                                            "placeholder" if len(set(got)) == 1 else
                                            "five-digits"),
                           "hit": hit, "prompt_sha256": it["prompt_sha256"],
@@ -167,6 +168,7 @@ def run_cell(cell_id, ctx, ctk, ctv, prompts, outdir, port, logfile, selftest=Fa
         hits = sum(1 for x in items if x["hit"])
         rec = {"cell": cell_id, "model": Path(MODEL).name, "ctx": ctx,
                "kv": f"{ctk}/{ctv}", "fa": "on", "n_items": len(items), "hits": hits,
+               "n_predict": n_predict, "stop": list(stop),
                "n_slots": total, "n_ctx_slot": n_ctx,
                "prompt_tokens_mean": round(sum(x["prompt_tokens"] for x in items) / len(items), 1),
                "items": items}
@@ -190,6 +192,8 @@ def main():
     ap.add_argument("--logfile", default=str(WR / "a05_needle_server.log"))
     ap.add_argument("--gate-ctx", type=int, default=32768)
     ap.add_argument("--gate-kv", default="f16:f16")
+    ap.add_argument("--control-max-tokens", type=int, default=192,
+                    help="对照格的生成长度；对照不按换行截断，否则模型只吐一个换行、判定拿不到内容")
     ap.add_argument("--control-only", action="store_true",
                     help="只跑阳性对照格（修对照时用，不重跑处理组、不重写 summary.json）")
     args = ap.parse_args()
@@ -245,7 +249,8 @@ def main():
 
     if args.control_only:
         rec = run_cell(f"a05-needle-d{ctl_depth}-ctx{ctl_ctx}-kv{gate0[0]}_{gate0[1]}-control-noinstruction",
-                       ctl_ctx, gate0[0], gate0[1], control, outdir, args.port, args.logfile)
+                       ctl_ctx, gate0[0], gate0[1], control, outdir, args.port, args.logfile,
+                       n_predict=args.control_max_tokens, stop=())
         shapes = collections.Counter(it["answer_shape"] for it in rec["items"])
         print(json.dumps({"control_only": True, "cell": rec["cell"], "hits": rec["hits"],
                           "n": rec["n_items"], "answer_shapes": shapes}, indent=1))
@@ -260,7 +265,7 @@ def main():
         for ctx, (ck, cv) in order:
             cell_id = f"a05-needle-d{depth}-ctx{ctx}-kv{ck}_{cv}"
             cells.append(run_cell(cell_id, ctx, ck, cv, plans[(ctx, depth)],
-                                  outdir, args.port, args.logfile))
+                                  outdir, args.port, args.logfile, n_predict=32, stop=("\n",)))
     cells.append(run_cell(f"a05-needle-d{ctl_depth}-ctx{ctl_ctx}-kv{gate[0]}_{gate[1]}-control-noinstruction",
                           ctl_ctx, gate[0], gate[1], control, outdir, args.port, args.logfile))
 

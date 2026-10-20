@@ -66,12 +66,6 @@
    "subproject": "a05-KV 缓存精度",
    "path": "docs/subprojects/a05-KV 缓存精度/PLAN.md",
    "heading": "未解问题",
-   "text": "**长上下文那条结论还挂着一个未验证的阳性对照。** `kv-long-ctx-needle` 的 32k「未观察到差异」建立在 `f16 14/20 vs q4_0 15/20` 上，但它的阳性对照仍是 `absent` 一票否决的 void 版本（代码已改成「留针、去指令、可非 0」，尚未重跑，`kv_evidence.py` 的 H5 因此是红的）。在对照跑成之前，这条结论的证据等级是「待验证」，读者不能把它当最终态；重跑条件与完成判据在「GPU 队列」的「对照重跑的三要素与完成判据」。"
-  },
-  {
-   "subproject": "a05-KV 缓存精度",
-   "path": "docs/subprojects/a05-KV 缓存精度/PLAN.md",
-   "heading": "未解问题",
    "text": "**短上下文的 KV 差在 lm-eval 三列上没有逐题产物，翻转未测。** m130 面板每配置单次运行，gsm8k/ifeval 是 `--limit 50`、mmlu 是 `--limit 8`/科目；只有 HumanEval 有逐题落盘（`eval_results.json`），lm-eval 三列按 `i01::res26` 不落逐题，所以那三列的差只能报计数（最多 4/50），不能报翻转数、也不能报区间。"
   },
   {
@@ -128,7 +122,7 @@
    "subproject": "a05-KV 缓存精度",
    "path": "docs/subprojects/a05-KV 缓存精度/PLAN.md",
    "heading": "未解问题",
-   "count": 5
+   "count": 4
   },
   {
    "subproject": "i02-测量基础设施",
@@ -138,6 +132,7 @@
   }
  ],
  "skipped": [
+  "docs/subprojects/a06-采样与解码参数/PLAN.md",
   "docs/subprojects/a12-多语言代码 MultiPL-E/PLAN.md",
   "docs/subprojects/i01-判分与基准有效性/PLAN.md"
  ]

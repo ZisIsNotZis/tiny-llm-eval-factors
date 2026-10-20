@@ -319,10 +319,11 @@ def needle():
     for path in sorted(NEEDLE_DIR.glob("a05-needle-d*.json")):
         d = json.load(open(path))
         hits = sum(1 for it in d["items"] if it["answer"] == it["needle"])
-        cells[(d["ctx"], d["kv"], bool(d.get("control")))] = d
+        is_ctl = any(it.get("control") for it in d["items"])      # 对照由逐条的 control 字段认定
+        cells[(d["ctx"], d["kv"], is_ctl)] = d
         print(f"  {path.name}: 重算 {hits}/{d['n_items']}（文件自报 {d['hits']}）"
-              + ("  [对照]" if "control" in path.name else ""))
-        if "control" not in path.name:
+              + ("  [对照]" if is_ctl else ("  [VOID 对照，已作废]" if "control" in path.name else "")))
+        if not is_ctl and "control" not in path.name:
             if hits != d["hits"]:
                 expect("H1 每格 hits 可重算", False, f"{path.name}: {hits} != {d['hits']}")
                 return

@@ -1,0 +1,13 @@
+[07:57:38] tokenizer server: n_slots=1 n_ctx=2048
+[07:57:42] ctx=8192 depth=0.9: 20 prompts, tokens 7169–7169
+[07:57:50] control: 20 prompts, instruction removed (needle kept), tokens 7146–7146
+[07:58:20] a05-needle-d0.9-ctx8192-kvf16_f16-control-noinstruction: hits 0/20  prompt_tokens≈7146.0  -> a05-needle-d0.9-ctx8192-kvf16_f16-control-noinstruction.json
+{
+ "control_only": true,
+ "cell": "a05-needle-d0.9-ctx8192-kvf16_f16-control-noinstruction",
+ "hits": 0,
+ "n": 20,
+ "answer_shapes": {
+  "empty": 20
+ }
+}
