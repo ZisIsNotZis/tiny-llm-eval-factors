@@ -69,7 +69,7 @@
 - status: current
 - kind: measured
 - origin: `experiments.sqlite` 按 protocol 分组统计 `__size`
-- evidence: `protocol IS NOT NULL AND protocol<>''` 1352 行，其中 `__size IS NOT NULL` 291 行、`NULL` 1061 行；1061 个空值全部落在带协议的行上（历史行 1881 个没有一条为空）。`protocol LIKE '%lmeval%'` 563 行全部为空；`evalplus%` 313 行里 294 行为空、19 行有值；`bfcl%` 123 行里 29 行为空；`multipl-e%` 194 行里 16 行为空。`_file_size` 一列 3233 行全部非空，所以这不是缺文件元数据，是插入时没算 `__size`。
+- evidence: `protocol IS NOT NULL AND protocol<>''` 1352 行，其中 `__size IS NOT NULL` 291 行、`NULL` 1061 行；1061 个空值全部落在带协议的行上（历史行 1881 个没有一条为空）。按前缀算 `protocol LIKE 'lmeval%'` 是 479 行、全为空；把以 `-lmeval` 结尾的变体协议（`variant-*-lmeval`、`spec-mtp-*-lmeval` 等）一并算上则是 `%lmeval%` 563 行，也全为空——两个数都对，差别只在口径，报告里用前缀那个 479 是同一事实的窄口径；`evalplus%` 313 行里 294 行为空、19 行有值；`bfcl%` 123 行里 29 行为空；`multipl-e%` 194 行里 16 行为空。`_file_size` 一列 3233 行全部非空，所以这不是缺文件元数据，是插入时没算 `__size`。
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT count(*) n, sum(__size IS NOT NULL) with_size FROM experiments WHERE protocol IS NOT NULL AND protocol<>''"`（实跑输出：`1352|291`）
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT sum(protocol LIKE '%lmeval%') n, sum(protocol LIKE '%lmeval%' AND __size IS NULL) nulls, sum(protocol LIKE 'multipl-e%' AND __size IS NOT NULL) mpl_with, sum(protocol LIKE 'bfcl%' AND __size IS NOT NULL) bfcl_with, sum(protocol LIKE 'evalplus%' AND __size IS NOT NULL) ep_with FROM experiments"`（实跑输出：`563|563|178|94|19`）
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT count(*) null_rows, sum(protocol IS NOT NULL AND protocol<>'') null_with_protocol FROM experiments WHERE __size IS NULL"`（实跑输出：`1061|1061`）
