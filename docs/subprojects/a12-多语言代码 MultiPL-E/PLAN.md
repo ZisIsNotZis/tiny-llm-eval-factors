@@ -5,7 +5,7 @@
 ## 里程碑：研究结束
 
 - 终点状态：a12 的 AC 全部有可复算证据，未测的格都带着理由登记，报告里的每个 model×language 格都能追到落盘产物。
-- done 判据：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 退出 0（谱系、全 Exception 检查、提示集哈希、报告格入库检查四项全绿），且 RESULT.md 的覆盖表把每个空格归入「已测」或「显式未测 + 理由」。
+- done 判据：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 退出 0（谱系、全 Exception、提示集哈希、报告格入库四项全绿），RESULT.md 的覆盖登记把每个空格归入「已测」或「显式未测 + 理由」，且审计 `[8]` 段报告 0 个标准表带 cpp+py 池化列（当前 8 个，等 `WP7` 落地）。
 - 只有这一个里程碑：它是用户同步点，之前不再切分。
 
 ## 当前状态

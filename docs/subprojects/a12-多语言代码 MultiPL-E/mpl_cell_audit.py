@@ -369,6 +369,24 @@ def main() -> int:
               % (int(os.path.getmtime(os.path.join(REPO, "report.html"))),
                  int(os.path.getmtime(DB))))
 
+    print("\n[8] standard-column pooling state in report.html")
+    path = os.path.join(REPO, "report.html")
+    pooled = split = 0
+    if os.path.exists(path):
+        h = open(path, encoding="utf-8").read()
+        for table in re.findall(r"<table[^>]*>(.*?)</table>", h, re.S):
+            heads = [re.sub(r"<[^>]+>", "", x) for x in re.findall(r"<th[^>]*>(.*?)</th>", table, re.S)]
+            mpl = sum(1 for x in heads if "多语言" in x)
+            if mpl == 1:
+                pooled += 1
+            elif mpl >= 2:
+                split += 1
+    print("    standard tables with ONE pooled MultiPL-E column: %d" % pooled)
+    print("    standard tables with per-language MultiPL-E columns: %d" % split)
+    print("    %s" % ("pooled: the standard column averages cpp+py, which the acceptance forbids; "
+                     "the split is i02's work package (PLAN.md WP7)" if pooled else
+                     "no standard table pools cpp+py"))
+
     ok = not untraced and not bad and not drift and not stale
     print("\n%s" % ("PASS: every scored cell traces to a stored artefact, no all-Exception cell "
                     "carries a score, the prompt set matches its pin, and every cell the report "

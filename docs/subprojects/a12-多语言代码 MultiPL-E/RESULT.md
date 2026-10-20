@@ -62,6 +62,12 @@
 - 证据：169/1275 是按「两个模型在两语言下的差值符号相反」逐对判定得到的；报告第十三节的逐语言表把同一模型的 raw/chat 分成两行、六种语言各占一列，行键是 (模型, 协议)，没有跨语言或跨协议的合并，所以逐语言的当前值在报告里本就可读。
 - 复算：审计脚本 `[5]` 段；或直接 `python3 -c "import sqlite3,itertools;con=sqlite3.connect('file:experiments.sqlite?mode=ro',uri=True);d={};[d.setdefault(m,{}).__setitem__(l,s) for m,l,s in con.execute(\"SELECT model,language,_score FROM experiments WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768' AND language IN ('cpp','py') AND _score IS NOT NULL\")];b=[(m,v['cpp'],v['py']) for m,v in d.items() if 'cpp' in v and 'py' in v];sg=lambda x:(x>0)-(x<0);print(len(b),sum(1 for (m1,c1,p1),(m2,c2,p2) in itertools.combinations(b,2) if sg(c1-c2)*sg(p1-p2)<0))"`；行键证据 `grep -n "cells.setdefault((model, proto)" make_report.py`（`table_mpl_langs`）。
 
+## 标准列的池化状态：8 个标准表各带一列池化的「多语言代码」（等 WP7）
+
+- 结论：`report.html` 有 8 个标准表各带一列「多语言代码」，它取的是 cpp+py 的加权均值；带逐语言 MultiPL-E 列的标准表是 0 个。这与 AC「标准列不跨语言池化」冲突，meta 已裁决拆成两列（`PLAN.md`「已裁决」），执行在 i02 的 `WP7`；落地后本节点改为「0 个池化列」，审计 `[8]` 段会直接给出这个数。
+- 证据：审计脚本按 `<table>` 逐表数表头里含「多语言」的列数，1 列 = 池化、≥2 列 = 拆开。
+- 复算：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 的 `[8]` 段。
+
 ## 不混协议：标准列只取 canonical raw-greedy 协议
 
 - 结论：报告的标准列取 MultiPL-E 时只读 `protocol='multipl-e-raw-greedy-768'`（`mktables.py::load_standard`），所以采样温度、长上下文 KV、chat 三种设置都不会进入同一格；轴的取样表也按 (模型, 温度) / (模型, top_k) / (模型, 协议) 建键，库中这三组没有任何一个键跨两个协议（0 个）。标准列的「多语言代码」格仍是 cpp+py 的加权均值，这一项与 AC 字面冲突，已交 meta 裁决（`PLAN.md`「待裁决」）。
