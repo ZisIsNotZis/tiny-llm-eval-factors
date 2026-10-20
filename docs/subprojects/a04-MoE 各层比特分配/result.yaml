@@ -1,8 +1,0 @@
-res8:
-  _text: MoE 各层比特分配（同一套 base 权重，只改哪些层拿低比特）：均匀 3.88 比特/权重 → HumanEval+ 0.335 / MMLU 0.447；专家层压到 IQ2/Q2、其余层高位（2.92）→ 0.287 / 0.427；专家层用 Q4_K、其余层压到 Q2_K（4.48，比特最多）→ 0.134 / 0.287（最差）。
-  author: measurement
-  origin: .scratch/originals/L2-结果.md MoE 各层比特分配
-  scope: specific
-  status: current
-  domain:
-    kind: measured
