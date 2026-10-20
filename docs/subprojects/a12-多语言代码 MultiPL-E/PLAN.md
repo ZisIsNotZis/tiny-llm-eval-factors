@@ -5,14 +5,15 @@
 ## 里程碑：研究结束
 
 - 终点状态：a12 的 AC 全部有可复算证据，未测的格都带着理由登记，报告里的每个 model×language 格都能追到落盘产物。
-- done 判据：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 退出 0（谱系、全 Exception、提示集哈希、报告格入库四项全绿），RESULT.md 的覆盖登记把每个空格归入「已测」或「显式未测 + 理由」，且审计 `[8]` 段报告 0 个标准表带 cpp+py 池化列（当前 8 个，等 `WP7` 落地）。
+- done 判据：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 退出 0（谱系、全 Exception、协议设置、提示集哈希、报告行归属五项全绿，当前已满足），`bash "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_negative_control.sh"` 退出 0（两处篡改都被拒），RESULT.md 的覆盖登记把每个空格归入「已测」或「显式未测 + 理由」，且审计 `[8]` 段报告 0 个标准表带 cpp+py 池化列（当前 0 个池化、8 个已拆）。
+- 未结的 `WP8` 不是 done 判据的一部分：它登记一个报告表示缺陷（3 个被同一行标签遮住的格），修法在 i02 的报告代码里。
 - 只有这一个里程碑：它是用户同步点，之前不再切分。
 
 ## 当前状态
 
-- 已完成：`WP1`、`WP2`、`WP3`、`WP4`（裁决 A 已落，见「已裁决」）。
-- 在办：无。本子项目当前不持有 GPU，也不持有任何后台任务。
-- 下一个派给谁：`WP7`（报告标准列拆 C++/Python 两列）派给 i02，由 meta 派；`WP5`（补测 gemma-4-12b 两格）与 `WP6`（独立复核）已由 meta 直接派出，产物回来由 a12 写进 `RESULT.md` 并复核覆盖结论。
+- 已完成：`WP1`、`WP2`、`WP3`、`WP4`、`WP7`（i02 已把标准列拆成 C++/Python 两列，审计 `[8]` 段现在是 0 个池化表、8 个已拆表）。
+- 在办：`WP8`（逐语言表 3 个格被同一行标签遮住）归 i02，a12 只提供 `[10]` 段的证据；`WP5` 已由 meta 派出，产物回来由 a12 写进 `RESULT.md`；`WP6` 的首轮结论是 ACCEPT WITH NOTES + 3 个 P1，已修完（见「复核整改」）。
+- 下一个派给谁：`WP8` 与 `WP5` 的产物→a12 复核；其余无待派工作。
 
 ## 工作包
 
@@ -22,7 +23,8 @@
 | WP2 单元格谱系审计 | a12 编排者 | `mpl_cell_audit.py` 对库中 248 个格给出「已评分 244 全部追溯、0 未追溯、无全 Exception 格带分数」，退出 0 | WP1 | 0.5 CPU 时 | 完成 |
 | WP3 覆盖缺口登记 | a12 编排者 | 54 个模型 × 6 语言的矩阵、4 个 NULL 格、未测格的理由全部写进 `RESULT.md` | WP2 | 0.5 CPU 时 | 完成 |
 | WP4 协议 / 语言受控审计 | a12 编排者（语言池化的改法落在报告代码，已由 meta 裁决） | 报告的逐语言表行键 =(模型, 协议) 有代码与数据证据；标准列只取 canonical raw-greedy 协议；cpp+py 均值与两语言各自排序的不一致率有具体数 | WP2 | 0.5 CPU 时 | 完成 |
-| WP7 报告标准列拆成 C++ / Python 两列 | i02（meta 派） | 标准表 11→12 列、轴 A/B/C 各多一条 series；重生成 `report.html` 后 192 个 MultiPL-E 格与非池化列一一对应、无池化 | WP4 裁决 A | 一次报告改动 | 待派 |
+| WP7 报告标准列拆成 C++ / Python 两列 | i02 | 标准表 11→12 列、轴 A/B/C 各多一条 series；重生成 `report.html` 后无池化列 | WP4 裁决 A | 一次报告改动 | 完成（`[8]`：0 池化 / 8 已拆） |
+| WP8 逐语言表的标签要带上被采样的一维 | i02 | m31 的 `top_k` 格不再与 m27 的 `t0.3` 格撞成同一行；库中 192 个 (模型, 协议串, 语言) 键全部能被单独渲染 | `[10]` 的证据 | 一次报告改动 | 待派 |
 | WP5 补测 gemma-4-12b 的 chat cpp 两格 | GPU worker（meta 已派） | Q2/Q3 两格以 `mpl-chat-nothink-greedy-768`（`ctx=2048`、`--jinja`）入库并留下 `_eval.json`；审计仍退出 0；12b 首次有同协议 cpp+py 对 | 一个 GPU 槽（`bash .wrapup/gpu_locked.sh`）；提示集用 `.wrapup/prompts` 不许重生成 | ≤15 GPU 分钟（m161 实测 7 格 39 分钟） | 已派，待产物 |
 | WP6 独立复核 | fresh-context reviewer（meta 已派） | 对本目录三份文档与审计输出给裁决，指出证据缺口；reviewer 的结论取代本人的自评 | WP1–WP4 | 一次复核 | 已派，待结论 |
 
@@ -32,8 +34,15 @@
 - 理由：51 个同有 cpp+py 的模型里，两语言对 169/1275 对模型（13.3%）给出相反的次序，py−cpp 从 −0.2671 到 +0.1863（中位数 +0.0186，|差值|>0.05 的 29 个），所以均值会掩盖语言层面的符号反转；而「标准列不跨语言或协议池化」是 AC 里的规则，不是可选项。
 - 拒绝 B（只留 Python）：丢掉 cpp 一整维，覆盖表里 cpp 的 52 个格白测。
 - 拒绝 C（保留均值 + 标注）：只是把违规写清楚，均值本身仍会让读者把两个语言当成一个结论。
-- 现状与证据：`mktables.py::load_standard` 已只取 `protocol='multipl-e-raw-greedy-768'`，所以不混协议；跨语言池化发生在 `query_cells_by` 的 `CANON_MPL=("cpp","py")` 加权均值（轴 A/B/C 当前 41 行有值）。改法落在 `.wrapup/mktables.py` 的 `BENCH`/`query_cells_by` 与 `make_report.py` 的 LBL，归 i02，见 `WP7`。
+- 落地：i02 已改 `.wrapup/mktables.py` 的 `BENCH`/`query_cells_by` 与 `make_report.py` 的 LBL，标准表现在各带「多语言代码 C++」「多语言代码 Python」两列；审计 `[8]` 段现在报告 0 个池化表、8 个已拆表。`load_standard` 取 MultiPL-E 时仍只读 `protocol='multipl-e-raw-greedy-768'`。
 - 复算：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 的 `[5]` 段。
+
+## 复核整改（首轮 WP6：ACCEPT WITH NOTES + 3 个 P1，按 meta 口径不接受）
+
+- P1-a 证据未绑定版本：审计现在在输出首行打印 `git HEAD`、脚本自身 sha256、完整命令与脏路径，捕获存到 `evidence/`，文件名带短 revision；`.tmp` 里的旧捕获作废。
+- P1-b NULL 的证据是假的：`m51_summary.jsonl`/`m54_summary.jsonl` 对这四格记的是 `"score": 0.0`，所以 summary 不能当 NULL 的证据；`RESULT.md` 改成引 per-item eval 的状态直方图（`pan-gemma12b-q{2,3}-{js,rb}_eval.json` 各 `{'Exception': 161}`），审计 `[4]` 段直接打印这个配对。
+- P1-c 审计没有负控能力：`[7]` 现在保留报告行的协议标签并把标签映射回库中该 (模型, 语言) 的协议，再比对值与题量；`mpl_negative_control.sh` 制造两处篡改（把 chat 格的值挪进 raw 行、把 `(161)` 改成 `(160)`），干净报告退出 0、两处篡改各退出 1。
+- P2：删掉随拆列失效的两句话；改正「java 格没有 per-item eval」的说法（`pan-gemma12b-q2-java_eval.json` 存在，158/158 `SyntaxError`）；把 `AGENTS.md` 的规则收窄成「全 Exception 记 NULL，跑过但没通过记 0 并标注成因」；把 `(语言, 通过数, 题数)` 配对的局限写进审计打印与 `RESULT.md`。
 
 ## 非目标
 
