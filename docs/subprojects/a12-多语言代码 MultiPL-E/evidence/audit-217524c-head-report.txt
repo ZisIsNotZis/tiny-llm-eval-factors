@@ -1,8 +1,8 @@
-# captured for revision f60a028 (HEAD), report.html sha256 e97af396da4d26bbd24b5521ba0446a2dc69779a0b528969ffad0a563b2b3295
+# captured for revision 217524c (HEAD), report.html sha256 e97af396da4d26bbd24b5521ba0446a2dc69779a0b528969ffad0a563b2b3295
 # command: python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
-# datetime: 2026-10-21 00:09:54 CST  exit: 0
+# datetime: 2026-10-21 00:10:59 CST  exit: 0
 a12 MultiPL-E cell audit
-  audited revision : f60a0286cc187bef52ad123bc1453b8438ab6f48
+  audited revision : 217524cb21fdbd67440e4a4a3ca63d05473bb771
   script sha256    : c5d4d63ab41e9995084c6792a1793b9832a8413486f3e22e1f378d517e546a94
   command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py
   database         : /home/z/vibe/local_lm_research/experiments.sqlite

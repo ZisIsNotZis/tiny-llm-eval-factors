@@ -7,7 +7,7 @@
 
 - 审计：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`，退出 0 = 谱系、全 Exception、协议设置、提示集哈希、报告行归属五项全绿。
 - 负控：`bash "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_negative_control.sh"`，退出 0 = 干净报告通过、两处人为篡改都被拒。
-- 已存捕获（文件名带短 revision，绑定到被审 revision `f60a028` 与 `report.html` 的 sha256 `e97af396da4d26bb…`）：`evidence/audit-f60a028-head-report.txt`（HEAD 报告，退出 0）、`evidence/negative-control-f60a028.txt`（退出 0，三处篡改全被拒）。
+- 已存捕获（文件名带短 revision，首部记 `report.html` 的 sha256 `e97af396da4d26bb…`）：`evidence/audit-217524c-head-report.txt`（HEAD 报告，退出 0）、`evidence/negative-control-217524c.txt`（退出 0，三处篡改全被拒）。`report.html` 与库自 `f60a028` 起未变，所以同一份捕获对 `f60a028` 起的每个 revision 都成立，判据是 `git diff f60a028 217524c -- report.html experiments.sqlite` 为空。
 
 ## 审计的负控能力：三处篡改都被拒
 
