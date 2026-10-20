@@ -235,6 +235,19 @@
 - evidence: 报告只能说「规模大分数高」的**方向**与这个量级，不能说「总参与激活参各自贡献多少」；`total+active` 的 adjR² 0.782 只比 `total_only` 的 0.754 高 0.028，而这 0.028 完全由 15 个 MoE 点提供。
 - repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_regression.json'));[print(m['name'],round(m['adj_r2'],4),[round(b,4) for b in m['beta']],[round(x,4) for x in m['se']]) for m in d['fits']]"`
 
+### moe-sits-above-same-active-dense :: 同样激活参数量下，三个大 MoE 家族站在稠密曲线的高处而不是旁边：gemma-4-26B-A4B（3.82B 激活）的等效稠密规模 18.4–22.1B、Qwen3.6-35B-A3B（3.52B 激活）18.9–20.4B、GLM-4.7-Flash（3.90B 激活）11.3–11.6B，分别是自身激活参数的 4.8–5.8×、5.4–5.8×、2.9–3.0×；LFM2.5-8B-A1B（1.69B 激活）则是 1.3–1.9B，约等于自身激活参数。
+
+- author: measurement
+- scope: general
+- status: provisional
+- kind: analysis
+- from: result.moe-active-params-measured, result.size-total-slope
+- origin: `analysis/size_moe_position.py`（只在 50 个稠密点上拟 `score = 0.2223 + 0.2375·ln(参数量)`，adjR²=0.716，再对每个 MoE 反解等效稠密规模）
+- evidence: 稠密拟合与 15 个 MoE 锚点逐条见 `moe_position.json`。GLM-4.7-Flash 的 `TQ1_0` 档（2.2 比特）等效 2.90B，是量化效应不是架构效应，所以上面引用的是它的 Q2/Q3 档。15 个锚点里 11 个的等效稠密规模大于自身激活参数。
+- 边界：这是**跨家族**比较（tokenizer、训练数据、代数都不同），只能读成「MoE 锚点落在稠密曲线的哪一侧、差多少」，不能读成「架构增益」；库内没有同家族同权重的稠密/MoE 对（这正是 `moe-design-not-identified` 的成因）。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_moe_position.py"`（实跑输出：稠密拟合 + 15 行锚点表）
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_moe_position.py" --check`（实跑输出：`4 expected true, 0 false`）
+
 ## 报告 §2 现在说的两句话
 
 ### report-s2-claims :: 报告第二节的两条结论不是从库里算出来的，是 `make_report.py` 里的硬编码文本，本轴的 `WP6` 要逐句判它们成立与否。
