@@ -183,7 +183,7 @@ def main(argv=()):
            f"簇 = {len(cl)} 个文件 / 跨度 {span:.3f} bpw / HE+ 实跳 {max(he) - min(he):+.4f} / 预算部分 {budget:+.4f}")
 
     alloc_map = json.loads((HERE.parent / "fixtures" / "alloc_map.json").read_text(encoding="utf-8"))["models"]
-    drift = 0
+    drift = compared = 0
     for label, family, kind in (("alloc-qwen36", "Qwen3.6-35B-A3B", "vendor"),
                                 ("alloc-scheme-4b", "Qwen3.5-4B", "scheme")):
         p = find_pair(plists[0.45], family, kind)
@@ -206,6 +206,7 @@ def main(argv=()):
         # 有 live gguf 时顺带比对夹具，防止夹具与盘上文件漂移；clone 里没有就跳过（不是通过）
         live = [alloc.find_path(p["low"]), alloc.find_path(p["high"])]
         if all(live):
+            compared += 1
             for name, path, fixed in ((p["low"], live[0], a), (p["high"], live[1], b)):
                 got = alloc.profile(path)
                 same = (got["n_params"] == fixed["n_params"]
@@ -215,7 +216,11 @@ def main(argv=()):
                 drift += 0 if same else 1
         else:
             print(f"  [note] {label}：本机没有 live gguf，夹具无法就地比对（漂移检查用 build_fixtures.py --check）")
-    expect("alloc：夹具与盘上 gguf 一致（本机有源时才判）", drift == 0, f"{drift} 份漂移")
+    if compared:
+        expect("alloc：夹具与盘上 gguf 一致（本机有源时才判）", drift == 0, f"{drift} 份漂移 / 比对 {compared} 对")
+    else:
+        print("  [note] 本机没有任何 live gguf：夹具漂移**未验证**（这不是通过；用 "
+              "`build_fixtures.py --check` 在有源的机器上判）")
 
     failed = [n for n, ok, _d in results if not ok]
     print()

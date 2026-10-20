@@ -64,7 +64,7 @@
 - status: current
 - kind: measured
 - evidence: 两个夹具的 sha256 见本节开头的绑定表；重建与漂移检查 `analysis/build_fixtures.py --check`（本机有源时逐模型比对，输出 `[ok] … 与源一致`）
-- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py" --check`
+- repro: `python3 "docs/subprojects/a03-量化方案与厂商/analysis/build_fixtures.py" --check`（有源的机器上做漂移检查）；干净 clone 证明：`git clone --depth 1 file://$PWD /tmp/a03clone && cd /tmp/a03clone && python3 "docs/subprojects/a03-量化方案与厂商/analysis/run_all.py"`（退出 0，21 条）；再把仓库外源一并断掉也退出 0：`python3 -c "import sys;sys.path.insert(0,'docs/subprojects/a03-量化方案与厂商/analysis');import alloc;alloc.find_path=lambda n:None;import run_all;sys.exit(run_all.main(()))"`
 - 说明：这条是为修一条复核阻塞项而生的——上一版 `run_all.py` 直接扫 `.wrapup/mres/*/*.json`，而 `.gitignore` 把那个目录排除了（只放行 `*_eval.json`），于是干净 clone 里来源全丢、「跨上传者受控对」与两个系数的九列检查全部 FAIL。判据是：**承载断言的证据必须随仓库走**；能重建的（分配轮廓）用生成器 + 漂移检查，不能重建的（面板元数据）用带证据行的冻结夹具。
 
 ## 二、方案差（IQ 系列 vs K 系列，同厂商内、同字节）

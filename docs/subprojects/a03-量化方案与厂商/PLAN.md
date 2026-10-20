@@ -29,7 +29,7 @@
 | WP5 比特分配解释力 | 本层编排者 | `analysis/alloc.py` 直接读 gguf 头，按张量类别打印每个文件的实测 bits/参数与分配轮廓；对每组配对给出两份文件的分配轮廓差；写明报告的 `MATCH_BPW = 0.45` 允许的比特预算效应有多大 | WP2 | ≤45 CPU 分钟 | **完成**（`alloc-qwen36` 0.381、`alloc-scheme` 0.337–0.427、`alloc-m55`；位宽尺子见 `slopes`） |
 | WP6 收口与报告建议 | 本层编排者 | `RESULT.md` 每条事实带证据与复算命令；`analysis/run_all.py` 全部预期成立（`--selftest` 能翻红）；`report.html` 第三节的文本建议（`换方案测得出 / 换厂商测不出`）按本层证据给出「保留 / 收窄 / 撤回」与其否证条件；不写库、不改 `report.html` | WP3–WP5 | ≤30 CPU 分钟 | **完成**（`run_all.py` 18 条成立、`--selftest` 翻红 3 条；报告建议见「给 `report.html` 第三节的建议文本」；复现负控是可选加固，见 GPU 队列） |
 | WP7 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令 | WP2–WP8 | ≤30 CPU 分钟/份 | 待派（第一轮已回：BLOCKED） |
-| WP8 复核意见修复 | 本层编排者 | 六条逐条落地：(1) 措辞改「不可分辨」+ 每系数半宽进正文，`bartowski` 标注为外推假象并有断言；(2) 静默的第五个回归项剔除、诊断块打印全部基准与不可归因行；(3) 修 `ffn-dense` 分桶假象并拆桶；(4) 多重比较改真口径（35 格 / 31 有区间 / 3 显著）且 `vendor-lfm` 的 repro 换成能打印它的 `--bound 0.45`；(5) 来源与分配证据入库成 `analysis/fixtures/*.json`，干净 clone 里 `run_all.py` 退出 0；(6) revision 绑定改成可解析读法、`a03-q1`/`a03-q2` 结清 | WP2–WP6 | ≤60 CPU 分钟 | **完成**（`run_all.py` 21 条 + clone 验证，见 `RESULT.md::fixtures`） |
+| WP8 复核意见修复 | 本层编排者 | 六条逐条落地：(1) 措辞改「不可分辨」+ 每系数半宽进正文，`bartowski` 标注为外推假象并有断言；(2) 静默的第五个回归项剔除、诊断块打印全部基准与不可归因行；(3) 修 `ffn-dense` 分桶假象并拆桶；(4) 多重比较改真口径（35 格 / 31 有区间 / 3 显著）且 `vendor-lfm` 的 repro 换成能打印它的 `--bound 0.45`；(5) 来源与分配证据入库成 `analysis/fixtures/*.json`，干净 clone 里 `run_all.py` 退出 0；(6) revision 绑定改成可解析读法、`a03-q1`/`a03-q2` 结清 | WP2–WP6 | ≤60 CPU 分钟 | **完成**（`run_all.py` 21 条；干净 clone 退出 0，且把仓库外源一并断掉（`alloc.find_path → None`）仍退出 0；clone 的 `--selftest` 翻红 3 条 —— 三条命令见 `RESULT.md::fixtures`） |
 
 调度原则：`WP2` 是 `WP3`/`WP4`/`WP5` 的公共装置，先做；三包都是 CPU 只读，重活并发 ≤2。GPU 只在 `WP6` 的复现负控需要（≤25 分钟，见 GPU 队列）。
 
