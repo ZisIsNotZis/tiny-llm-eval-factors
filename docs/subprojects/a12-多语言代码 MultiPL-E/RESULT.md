@@ -21,10 +21,10 @@
 
 - 结论：`protocol='multipl-e-raw-greedy-768'` 下共 54 个模型，324 个 model×language 槽位里 150 个有分数、4 个是 NULL、170 个从未测过。逐语言：cpp 已测 52 / NULL 0 / 未测 2；py 51 / 0 / 3；js 21 / 2 / 31；java 12 / 0 / 42；rs 8 / 0 / 46；rb 6 / 2 / 46。
 - 结论：有 cpp+py 对的 51 个模型；没有对的 3 个是 `Qwen3.5-2B-UD-IQ2_XXS`（只有 cpp）、`gemma-4-12b-it-UD-Q2_K_XL` 与 `gemma-4-12b-it-UD-Q3_K_XL`（raw 协议下只有 java/js/rs/rb，cpp 只在 m6b 的 chat 协议下跑过）。六种语言全测的 4 个是 `Qwen3.5-2B-UD-Q2_K_XL`、`Qwen3.5-2B-UD-Q3_K_XL`、`Qwen3.5-4B-UD-Q2_K_XL`、`Qwen3.5-4B-UD-Q3_K_XL`。
-- 未测的理由（170 个空格）：都是「该模型所在的那些面板没有跑这个语言」，没有产物也没有失败记录，按规则记为显式未测而不是 0；其中 java/rs/rb 的 134 个空格全部落在这个类里，因为绝大多数面板只跑 cpp+py 两种语言，语言扩展面板只有 m1/m2/m3/m5/m6/m10（cpp/py/js/java）与 m38/m42/m51/m54/m56/m57/m60（成对的语言）。
+- 未测的理由（170 个空格）：都是「该模型所在的那些面板没有跑这个语言」，没有产物也没有失败记录，按规则记为显式未测而不是 0。java/rs/rb 的 134 个空格全部落在这个类里：跑过这些语言的面板只有 m1（六语言）、java 的 m6/m38/m51/m56/m57、js 的 m2/m3/m5/m6/m38/m51/m56/m57、rs 与 rb 的 m42/m54/m60；其余面板按设计只跑 cpp+py。
 - 结论：4 个 NULL 空格不是未测而是被测过且整格全 `Exception`（见「4 个 NULL 格」）。
 - 证据：语言集因模型而异的旧列不可比，是 i01 的判分审计节点登记的事实（i01 的 `res16`，其 home 随 i01 迁移到它自己的结果文档）；本节点只提供当前矩阵，不重复那条结论。
-- 复算：审计脚本 `[2]` 段打印逐语言的 scored/NULL/absent 三元组与完整的 54 行矩阵（空格 = 未测，`NULL` = 整格全 Exception 记为缺失，数字 = 通过率）。
+- 复算：审计脚本 `[2]` 段打印逐语言的 scored/NULL/absent 三元组与完整的 54 行矩阵（空格 = 未测，`NULL` = 整格全 Exception 记为缺失，数字 = 通过率）；语言→面板清单 `sqlite3 experiments.sqlite "SELECT DISTINCT language,run_tag FROM experiments WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768' AND language NOT IN ('cpp','py') ORDER BY language"`。
 
 ## 覆盖：chat 协议只覆盖 cpp 与 py，24 个槽位显式未测
 
