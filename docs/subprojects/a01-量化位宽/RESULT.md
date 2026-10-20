@@ -77,66 +77,124 @@
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT run_tag,_bench,_score,n_items FROM experiments WHERE run_tag IN ('m105-gemma-12b-q3kxl','m141-native-gemma12b-q4','m140-qat-gemma12b-q4') AND _bench IN ('mmlu','humaneval-plus','mbpp-plus','gsm8k','ifeval','truthfulqa_mc2') ORDER BY run_tag,_bench"`
 - 说明：这是 `plan7b` 的当前值。MMLU 走 `lmeval-0.4.13-gguf-shim-reasoning-off`（似然打分、912 题），其余六列走 chat 生成；「一个基准跳 22.6 pp、六个不动」本身就指向通道或模板差，`WP5` 要判的就是这个。
 
-## 二、migrated（从退役原稿搬来，暂无可重算命令）
+## 二、B1 反例的裁决材料（plan2 的 E1/E2/E3）
 
-> 这四条没有可重跑的复算命令：它们的 origin 是已退役的 `.scratch/originals/*`。`@falsifiable` 要求每个数字都有命令，所以在 `WP2` 用 `analysis/curves.py` 重算之前，它们只能标 `provisional`，不得被报告当作已复算的结论引用。
-
-### res1 :: 权重量化位宽：同一模型家族内，从较低比特档到下一档（各家族实际跨度不同，典型约 0.8–1.7 比特/权重），7 个标准基准上的分数普遍上升。
+### b1-heplus-only :: 3.961（UD-IQ3_XXS）与 4.109（UD-Q2_K_XL）的逐基准两比例差里，只有 HumanEval+ 的 95% 区间不含 0（+0.1341，[+0.0345, +0.2303]，22 题）；GSM8K +0.0800 [−0.0576, +0.2134]（8 题）、IFEval +0.1000 [−0.0373, +0.2321]（10 题）、MBPP+ +0.0132 [−0.0506, +0.0769]（5 题）、MMLU +0.0099 [−0.0357, +0.0554]（9 题）、ARC-c +0.0100 [−0.1252, +0.1447]（1 题）全部跨 0。
 - author: measurement
-- scope: general
-- status: provisional
-- evidence: `report.html` 第一节表 A（由 `make_report.py` 从库生成）；原 origin `.scratch/originals/L2-结果.md` 已退役
-- repro: 未就位——`WP2` 的 `analysis/curves.py --adjacent` 重算前无命令
-- 说明：`qw2b-panel` 给出一个反例（3.961→4.109 有三列下降），所以「普遍上升」的措辞在 `WP2` 后必须收窄成「多数相邻档对上升，例外逐条列出」。
+- from: result.qw2b-inversion
+- scope: specific
+- status: current
+- kind: measured
+- evidence: 该对文件在每个基准上的 `_score, n_items, run_tag`（`m63-qwen-2b-iq3xxs` 与 `m64-qwen-2b-q2kxl`）
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --pair qwen3.5-2b/IQ3_XXS/Q2_K_XL`
+- 说明：这是 plan2 的 E1 裁决。报告第一节原来把「HumanEval+ 0.372→0.238、GSM8K 0.52→0.44、MultiPL-E 0.189→0.092」并列成同一个掉点，但只有 HumanEval+ 这一列在二项区间下分得开；另两列是「测不出」而不是「测出为负」。TruthfulQA 那一列不套区间：`acc` 是概率质量均值（`i01::res26`），不是逐题通过数。
+- 会推翻它：同一对文件在同样协议下重跑出现与上表不同的题数（T4 的复现负控），或把 n 提到能分开这 8/10 题的量级（GSM8K/IFEval 各 100 题，要分开 8 个百分点大约需要每列 500+ 题）。
 
-### res2 :: 按基准汇总的位宽步长中位数（越大 = 该基准对位宽越敏感）：GSM8K +0.460、HumanEval+ +0.409、IFEval +0.250、MBPP+ +0.235、MMLU +0.146、ARC-c +0.100、TruthfulQA +0.005。
+### q2kxl-iq3-4b :: 同门的 Qwen3.5-4B 在几乎同字节的一对文件上（UD-IQ3_XXS 3.707 vs UD-Q2_K_XL 3.692，Δbpw = +0.016）方向与 2B 一致——IQ3_XXS 每一列都不低于 Q2_K_XL——但只有 MMLU 分得开（+0.0592，[+0.0170, +0.1011]，54 题）；HumanEval+ +0.0061 [−0.0936, +0.1057]、MBPP+ +0.0106 [−0.0596, +0.0807]、ARC-c +0.0500 [−0.0871, +0.1845]、IFEval +0.0900 [−0.0338, +0.2102] 都跨 0，TruthfulQA −0.0034（非伯努利）。
+- author: measurement
+- from: result.b1-heplus-only
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `m*-qwen-4b-*` 面板行；两个文件的有效位宽在 `.wrapup/bpw_map.json`
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --pair qwen3.5-4B/IQ3_XXS/Q2_K_XL`
+- 说明：这是 E3 的裁决材料。报告原来用 4B 这一对当「反向是模型相关、不是普遍规律」的对照，实测并不支持那个措辞：4B 上方向相同（IQ3_XXS ≥ Q2_K_XL），只是 HumanEval+ 的差从 13.4 pp 缩到 0.6 pp，而 MMLU 的差反而显著。也就是说「同字节下 IQ3_XXS 不差于 Q2_K_XL」在两代上一致，**2B 那个 13.4 pp 是幅度上的离群值**。
+- 会推翻它：找到一对同字节文件使 Q2_K_XL 明显高于 IQ3_XXS（方向反转）；或 4B 的 MMLU 差在复测中消失。
+
+### t2-channel-excluded :: 已测的 EvalPlus 判分通道不能解释 HumanEval+ 的那 22 题：两格的原始完成物几乎全部带围栏（164/164 与 164/164），sanitize 后残留围栏 3 vs 1、语法错 3 vs 1、无 `def`/`class` 6 vs 2——**分数更低的那一格（Q2_K_XL）sanitize 后反而更干净**；逐题状态只有 pass/fail，两格都没有一次 timeout。
+- author: measurement
+- from: result.b1-heplus-only
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `.wrapup/mres/{m63-qwen-2b-iq3xxs,m64-qwen-2b-q2kxl}/codegen/humaneval/*.raw.jsonl`、`*.jsonl`、`*_eval_results.json`
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/channel_audit.py"`
+- 会推翻它：出现一格大比例的 timeout、或 sanitize 把某一格的完成物系统性判坏（例如残留围栏数远大于分差题数），或 raw（未 sanitize）路径下的分数排序与入库值不同。
+
+### knee-estimable :: 21 条「家族 × 供应商方案大类」series 里只有 Qwen3.5-2B（7 个位宽点）能估出拐点：HumanEval+ 4.928 [3.655, 4.928]、MBPP+ 3.655 [3.655, 4.928]、MMLU 3.961 [3.655, 4.109]、ARC-c 3.655 [3.655, 5.696]、GSM8K 3.961 [3.655, 4.928]、IFEval 3.961 [3.655, 4.928]（比特/权重）；TruthfulQA 不可估（非伯努利列）；其余 20 条 series 只有 2–3 个位宽点，拐点不可估。
+- author: measurement
+- from: result.qw2b-panel
+- scope: general
+- status: current
+- kind: measured
+- evidence: `analysis/curves.py` 的 `--all` 输出；series 按 `mktables.scheme_class` 切开，同一条曲线绝不混 UD 动态与原生 K
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --all`
+- 说明：轴 AC 的第一条因此只能部分满足——「每家族一条曲线 + 拐点 + 区间」对 Qwen3.5-2B 成立，对其余 series 的正确结论是「不可估，缺 ≥4 个位宽点」。拐点分辨率等于阶梯间距，所以区间宽度普遍只有一两档。
+- 会推翻它：给某家族补到 ≥4 个位宽点后拐点落在这个区间之外。
+
+### adjacent-majority :: 相邻位宽档对的分数变化在多数情况下为正，但每一列都有反例：HumanEval+ 22 升 / 9 降 / 2 平、MBPP+ 24/7/1、MMLU 29/4/0、ARC-c 17/8/5、GSM8K 24/5/1、IFEval 26/5/2（共 33 对相邻档）；每 +1 比特/权重的分数变化中位数为 HumanEval+ 0.0987、GSM8K 0.0775、IFEval 0.0749、MBPP+ 0.0543、MMLU 0.0499、ARC-c 0.0273（TruthfulQA 0.0072，非伯努利仅供参考）。
 - author: measurement
 - from: result.res1
 - scope: general
-- status: provisional
-- evidence: 原 origin 已退役，无可重算命令
-- repro: 未就位——`WP2` 重算或撤回
+- status: current
+- kind: measured
+- evidence: `analysis/curves.py --adjacent`（同一条 series 内相邻位宽点，series = 家族 × 供应方案大类）
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --adjacent`
+- 会推翻它：用同一口径重算得到相反的多数方向，或某列的反例多到超过升的数目。
 
-### res3 :: 每个基准「每 +1 比特/权重 的分数变化」中位数：GSM8K +0.156、IFEval +0.117、HumanEval+ +0.104、MBPP+ +0.065、MMLU +0.054、ARC-c +0.026、TruthfulQA +0.014（约 11 倍跨度）。
-- author: measurement
-- from: result.res1
-- scope: general
-- status: provisional
-- evidence: 原 origin 已退役，无可重算命令
-- repro: 未就位——`WP2` 重算或撤回
+## 三、migrated 与撤回
 
-### res4 :: 家族内配对差（能力型：代码+指令+推理）−（知识型：MMLU+ARC+TruthfulQA）= +0.12 / 比特，95% CI [+0.04, +0.20]，多数家族同向。
+### res1 :: 权重量化位宽：同一模型家族内，从较低比特档到下一档，多数情况下分数上升，但每一列都有反例——33 对相邻档里 HumanEval+ 有 9 对、MBPP+ 7 对、MMLU 4 对、ARC-c 8 对、GSM8K 5 对、IFEval 5 对是下降，「普遍上升」的原措辞已按 `adjacent-majority` 收窄。
 - author: measurement
-- from: result.res2, result.res3
+- from: result.adjacent-majority
 - scope: general
-- status: provisional
-- evidence: 原 origin 已退役；CI 的算法（区间类型、聚类单位）在原稿里没有写，所以即使重算出同一个数也不等于复现
-- repro: 未就位——`WP2` 重算或撤回
+- status: current
+- kind: measured
+- evidence: `analysis/curves.py --adjacent`
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --adjacent`
+- retracted: 原措辞「7 个标准基准上的分数普遍上升」撤回——反例逐列存在，且其中最受关注的一例就是 `qw2b-inversion`。
+
+### res2 :: 已撤回：按基准汇总的位宽步长中位数在原稿里没有记录计算口径（哪些家族、哪些档对、如何聚合都没写），用本层的同一口径重算得到的是另一组数（见 `adjacent-majority`），所以旧值不可复核，不再保留为当前事实。
+- author: measurement
+- scope: general
+- status: retracted
+- kind: measured
+- evidence: 无（原 origin `.scratch/originals/L2-结果.md` 已退役，且口径未记录）
+- repro: 无——已由 `adjacent-majority` 取代
+
+### res3 :: 已撤回：每比特分数变化中位数的旧值同样无可复核的命令，且排序与本层重算不一致（旧值把 IFEval 排在 HumanEval+ 之前，重算为 HumanEval+ 0.0987 > GSM8K 0.0775 > IFEval 0.0749），旧值不再保留为当前事实。
+- author: measurement
+- scope: general
+- status: retracted
+- kind: measured
+- evidence: 无（口径未记录）
+- repro: 无——已由 `adjacent-majority` 取代
+
+### res4 :: 已撤回：「能力型 − 知识型 = +0.12 / 比特，95% CI [+0.04, +0.20]」这一条的区间类型与聚类单位在原稿里没有记录，无法重算，因此这不是一个可以复核的测量结论；它想表达的方向（代码/推理/指令比知识/事实性更吃位宽）在 `adjacent-majority` 里能直接读出，但那里也没有给出该复合量的区间。
+- author: measurement
+- scope: general
+- status: retracted
+- kind: measured
+- evidence: 无（区间算法未记录）
+- repro: 无——方向改由 `adjacent-majority` 与 `an2` 承载
 
 ### res5 :: Qwen3.5-2B 的多语言代码必须按语言分开读：同一对文件上 3.961→4.109 在 cpp 是 0.1801→0.1118、在 py 是 0.1988→0.1366（协议 `multipl-e-raw-greedy-768`，来自不同面板 m23/m50 与 m3，不是受控比较）。
 - author: measurement
 - scope: specific
 - status: current
+- kind: measured
 - evidence: `experiments.sqlite` 的 `model LIKE 'Qwen3.5-2B%' AND protocol='multipl-e-raw-greedy-768'` 行
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT model,language,_score,run_tag FROM experiments WHERE model LIKE 'Qwen3.5-2B%' AND protocol='multipl-e-raw-greedy-768' ORDER BY model,language"`
-- retracted: 原 res5 的跨语言池化列（3.27→0.0062、3.66→0.1387、3.96→0.1894、4.11→0.0920、4.93→0.2184、5.70→0.2836、6.24→0.2774）已撤回：一是把不同语言集平均成一个数（`i01::res16` 已判不可比），二是 0.0920 用库内该模型 multi-e 行的等权平均复算不出来（cpp+js+py = 0.1201、cpp+js+py+rb+rs = 0.0862，两者都不是 0.0920），原值来源不明。
+- retracted: 原 res5 的跨语言池化列（…4.11→0.0920…）已撤回：一是把不同语言集平均成一个数（`i01::res16` 已判不可比），二是 0.0920 用库内该模型 multi-e 行的等权平均复算不出来（cpp+js+py = 0.1201、cpp+js+py+rb+rs = 0.0862）。
 
-## 三、分析（`kind: analysis`，不覆盖任何数字）
+## 四、分析（`kind: analysis`，不覆盖任何数字）
 
-### an1 :: 量化位宽该选多大，取决于该家族自己的曲线拐点：多数家族的主要抬升出现在有效位宽约 4–5 比特/权重之间，granite-4.1-3b 更早（3.22→0.048、4.06→0.391）；应选「分数曲线开始走平」的位宽，没有统一的某档结论。
+### an1 :: 量化位宽该选多大，取决于该家族自己的曲线拐点；但按当前数据只有 Qwen3.5-2B 能估出拐点（3.66–4.93 比特/权重，按基准不同），其余 20 条 series 只有 2–3 个位宽点、拐点不可估，所以「多数家族的主要抬升出现在 4–5 比特/权重」这句话目前没有逐家族的拐点估计支撑，它只来自把各家族的位宽点放在一起看的整体印象。
 - author: agent
-- from: result.res1, result.res5
+- from: result.knee-estimable, result.qw2b-panel
 - scope: general
 - status: provisional
-- evidence: 原 origin 已退役；`qw2b-panel` 与之相容但只有一个家族
-- repro: 未就位——`WP2` 的拐点估计（含「不可估」路径）建好后填入
-- 说明：`qw2b-panel` 给这条加了一个反例方向——小模型的 GSM8K 到 6.235 比特仍在上升（0.44→0.73），所以「4–5 比特以上走平」至少对 2B 模型的推理基准不成立。
+- kind: analysis
+- evidence: `analysis/curves.py --all`
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --all`
+- 会推翻它：补点后某家族的拐点落在 4–5 比特之外；或改一种拐点定义（最大曲率 / 分段线性断点）把 2B 的 3.66–4.93 移出这个范围。
 
-### an2 :: 判断量化够不够，看代码 / 推理 / 指令，不要看知识类基准：知识（MMLU）与事实性（TruthfulQA）在很宽的位宽范围内几乎不动，用它们判断会低估损失。
+### an2 :: 判断量化够不够，看代码 / 推理 / 指令，不要看知识类基准：每 +1 比特/权重 的分数变化中位数在 HumanEval+/GSM8K/IFEval 是 0.099/0.078/0.075，在 MMLU/ARC-c 是 0.050/0.027；TruthfulQA 全列不动（0.007）且它的 `acc` 有 0.4484 的地板，这一列不能用来判断。
 - author: agent
-- from: result.res2, result.res3
+- from: result.adjacent-majority
 - scope: general
 - status: provisional
-- evidence: 由 `mmlu-does-move` 与 `tqa-flat` 收窄
-- repro: 未就位——`WP2` 重算后按 `WP2` 的输出改写
-- 说明：这条现在只剩后半句成立（TruthfulQA 确实不动、且它不动是因为地板，`tqa-flat`），前半句「MMLU 几乎不动」被 `mmlu-does-move` 否证。
+- kind: analysis
+- evidence: `analysis/curves.py --adjacent`；地板值见 `i01::res26`
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --adjacent`
+- 说明：原措辞「MMLU 几乎不动」撤回——`mmlu-does-move` 实测 MMLU 在全区间是 0.3596→0.6239；准确的说法是 MMLU 的敏感度约为代码/推理的一半，不是零。

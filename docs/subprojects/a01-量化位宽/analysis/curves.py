@@ -22,6 +22,7 @@
     python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --panel qwen3.5-2b
     python3 ".../curves.py" --pair qwen3.5-2b/IQ3_XXS/Q2_K_XL
     python3 ".../curves.py" --adjacent
+    python3 ".../curves.py" --all          # 每家族点数、位宽范围、逐基准拐点或不可估
     python3 ".../curves.py" --panel qwen3.5-2b --bench mmlu --json
 """
 from __future__ import annotations
@@ -79,6 +80,16 @@ def bpw_of(model):
 def family_of(model):
     import mktables
     return mktables.family_of(model)
+
+
+def scheme_class(model):
+    """供应商方案大类（UD 动态 / 原生 K / QAT），直接复用 mktables 那一份定义。"""
+    import mktables
+    return mktables.scheme_class(model)
+
+
+def series_key(model):
+    return (family_of(model), scheme_class(model))
 
 
 def quant_of(model):
@@ -141,9 +152,10 @@ def panel(cc, needle, bench_filter=None):
         if b is None:
             warns.append(f"{m}: bpw_map 里没有这一项，跳过")
             continue
-        fams.setdefault(family_of(m), []).append((b, m))
+        fams.setdefault(series_key(m), []).append((b, m))
     out = {"needle": needle, "families": {}, "warn": warns}
     for fam, items in sorted(fams.items()):
+        fam = fam[0] if fam[1] == "UD 动态" else f"{fam[0]} · {fam[1]}"
         pts = {}
         for b, m in sorted(items):
             cell = {"bpw": b, "model": m, "quant": quant_of(m), "scores": {}}
@@ -292,6 +304,53 @@ def show_pair(cc, needle, qa, qb, as_json=False):
         print(json.dumps(out, ensure_ascii=False, indent=1, default=float))
 
 
+def show_all(cc, min_points=2, as_json=False):
+    """全部家族的位宽点数与拐点可估性（轴 AC 的第一条：每家族一条曲线 + 拐点或「不可估」）。"""
+    models = sorted({r[0] for r in cc.execute("SELECT DISTINCT model FROM experiments")})
+    fams = {}
+    for m in models:
+        b = bpw_of(m)
+        if b is not None:
+            fams.setdefault(series_key(m), set()).add(round(b, 3))
+    rng = np.random.default_rng(20261020)
+    out = {}
+    print(f"{'家族':<26}{'点数':>5}{'位宽范围':>20}  拐点（按基准，估不出就写原因）")
+    for key, bs in sorted(fams.items()):
+        bs = sorted(bs)
+        if len(bs) < min_points:
+            continue
+        fam = key[0] if key[1] == "UD 动态" else f"{key[0]} · {key[1]}"
+        res = panel(cc, key[0])
+        pts = res["families"].get(fam, [])
+        knees = {}
+        for bench in BENCH_ORDER:
+            ser = [(p["bpw"], round(p["scores"][bench]["score"] * p["scores"][bench]["n_items"]),
+                    p["scores"][bench]["n_items"]) for p in pts if bench in p["scores"]]
+            if len(ser) < 2:
+                continue
+            if bench in NON_COUNT:
+                knees[bench] = {"knee": None, "reason": "acc 是概率质量均值，不是逐题计数"}
+                continue
+            k, why = knee(ser, rng)
+            if k is None:
+                knees[bench] = {"knee": None, "reason": why}
+            elif isinstance(why, str):
+                knees[bench] = {"knee": k, "reason": why}
+            else:
+                knees[bench] = {"knee": k, "ci": [why[0], why[1]]}
+        out[fam] = {"n_points": len(bs), "bpw": bs, "knees": knees}
+        cells = []
+        for b in BENCH_ORDER:
+            if b not in knees:
+                continue
+            v = knees[b]
+            cells.append(f"{SHORT[b]}={v['knee']:.2f}[{v['ci'][0]:.2f},{v['ci'][1]:.2f}]"
+                         if v["knee"] is not None and "ci" in v else f"{SHORT[b]}=—")
+        print(f"{fam:<26}{len(bs):>5}{f'{bs[0]:.2f}–{bs[-1]:.2f}':>20}  " + " ".join(cells))
+    if as_json:
+        print(json.dumps(out, ensure_ascii=False, indent=1, default=float))
+
+
 def show_adjacent(cc, as_json=False):
     """每个家族每个基准：相邻位宽档之间的分数变化（res1 的重算）。"""
     models = sorted({r[0] for r in cc.execute("SELECT DISTINCT model FROM experiments")})
@@ -299,10 +358,11 @@ def show_adjacent(cc, as_json=False):
     for m in models:
         b = bpw_of(m)
         if b is not None:
-            fams.setdefault(family_of(m), []).append((b, m))
+            fams.setdefault(series_key(m), []).append((b, m))
     stat = {b: {"pos": 0, "neg": 0, "zero": 0, "deltas": [], "per_bit": []} for b in BENCH_ORDER}
     detail = []
-    for fam, items in sorted(fams.items()):
+    for fam_key, items in sorted(fams.items()):
+        fam = fam_key[0] if fam_key[1] == "UD 动态" else f"{fam_key[0]} · {fam_key[1]}"
         items.sort()
         for (b1, m1), (b2, m2) in zip(items, items[1:]):
             for bench in BENCH_ORDER:
@@ -337,10 +397,13 @@ def main(argv=None):
     ap.add_argument("--pair", help="<家族关键字>/<量化 A>/<量化 B>")
     ap.add_argument("--bench", choices=BENCH_ORDER)
     ap.add_argument("--adjacent", action="store_true")
+    ap.add_argument("--all", action="store_true", help="全部家族的曲线点数与拐点可估性")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     cc = con()
-    if a.pair:
+    if a.all:
+        show_all(cc, as_json=a.json)
+    elif a.pair:
         needle, qa, qb = a.pair.split("/")
         show_pair(cc, needle, qa, qb, a.json)
     elif a.adjacent:
@@ -348,7 +411,7 @@ def main(argv=None):
     elif a.panel:
         show_panel(panel(cc, a.panel, a.bench), a.bench, a.json)
     else:
-        ap.error("需要 --panel / --pair / --adjacent 之一")
+        ap.error("需要 --panel / --pair / --adjacent / --all 之一")
     return 0
 
 
