@@ -28,12 +28,17 @@ OUT = os.path.join(HERE, "reproducibility.json")
 SOURCE_GLOB = os.path.join(REPO, "docs", "subprojects", "i01-*", "RESULT.md")
 
 HEAD_RE = re.compile(r"^#{2,6}\s+(res\d+)\b\s*(.*)$")
-# 适用条件：任何两次 run 只有在提示集哈希与后处理版本都被钉住时才可比
-CONDITION_RE = re.compile(r"只有在?\*{0,2}提示集哈希\s*\+\s*后处理版本\*{0,2}都")
-FLOOR_RE = re.compile(r"\*\*(\d+)/\1 题完全相同、上翻 (\d+)、下翻 (\d+)、分数摆动 ([\d.]+)、Jaccard ([\d.]+)\*\*")
-# EvalPlus 那句是「（46/164 三次，上翻 0 下翻 0，Jaccard 1.0）」：46 是通过数，164 才是题数，
-# 所以 identical 取分母。
-EVALPLUS_RE = re.compile(r"（(\d+)/(\d+) 三次，上翻 (\d+) 下翻 (\d+)，Jaccard ([\d.]+)）")
+# 适用条件：任何两次 run 只有在提示集哈希与后处理版本都被钉住时才可比（措辞可变，判据是这两处同时出现）
+CONDITION_RE = re.compile(r"提示集哈希\s*\+\s*后处理版本")
+CONDITION_CUE_RE = re.compile(r"不可相加|才可比")
+# res32 的实测是张表：| 族 | cell 与配置 | n | 相同题数 | 上翻/下翻 | 分数摆动 | Jaccard |
+TABLE_ROW_RE = re.compile(r"^\|([^|]+)\|([^|]+)\|\s*(\d+)\s*\|\s*(\d+)\s*\|([^|]+)\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|")
+FLIP_RE = re.compile(r"(\d+)\s*/\s*(\d+)")
+# 采样解码那一档：Jaccard 只有 0.53–0.67、上翻 8–15 题、下翻 6–12 题、分数只在 37→43（6/164）之间
+SAMP_JACCARD_RE = re.compile(r"Jaccard 只有 ([\d.]+)–([\d.]+)")
+SAMP_FLIP_RE = re.compile(r"上翻 (\d+)–(\d+) 题、下翻 (\d+)–(\d+) 题")
+SAMP_SWING_RE = re.compile(r"分数只在 (\d+)→(\d+)（(\d+)/(\d+)）之间摆动")
+SAMP_TEMP_RE = re.compile(r"temp=([\d.]+) 的 (\d+) 次重复")
 FLOOR_RULE_RE = re.compile(r"同一提示集哈希 \+ 同一后处理版本下，任何非零跨 run 差异都不是噪声")
 FLIPS_RE = re.compile(r"\*\*(\d+) 题翻转（(\d+) 上 / (\d+) 下，净 \+(\d+)）\*\*")
 AMP_RE = re.compile(r"\*\*±(\d+)/(\d+)（≈([\d.]+)）\*\*")
@@ -59,16 +64,45 @@ def read_facts(path):
 
 
 def parse(floor_text, change_text, all_text):
-    if not CONDITION_RE.search(change_text):
-        raise SystemExit("i01 的事实里找不到适用条件（「只有提示集哈希 + 后处理版本都…才可比」）；"
+    if not (CONDITION_RE.search(all_text) and CONDITION_CUE_RE.search(all_text)):
+        raise SystemExit("i01 的事实里找不到适用条件（提示集哈希 + 后处理版本 + 不可相加/才可比）；"
                          "报告不能在没有条件的情况下引用这个幅度")
-    m_floor = FLOOR_RE.search(floor_text)
-    m_eval = EVALPLUS_RE.search(floor_text)
-    if not (m_floor and m_eval):
-        raise SystemExit("i01 的 res32 里找不到两族地板数字（「N/N 题完全相同、上翻 0…」）")
-    rule = FLOOR_RULE_RE.search(floor_text)
-    if not rule:
-        raise SystemExit("i01 的 res32 里找不到判读规则（「同一提示集哈希 + 同一后处理版本下…」）")
+    harnesses = []
+    for line in floor_text.split("\n"):
+        m = TABLE_ROW_RE.match(line)
+        if not m:
+            continue
+        name = m.group(1).strip()
+        n = int(m.group(3))
+        identical = int(m.group(4))
+        fl = FLIP_RE.search(m.group(5))
+        if not fl:
+            continue
+        harnesses.append({"name": name, "cell": m.group(2).strip(), "n": n,
+                          "identical": identical,
+                          "flips_up": int(fl.group(1)), "flips_down": int(fl.group(2)),
+                          "score_swing": float(m.group(6)), "jaccard": float(m.group(7))})
+    if len(harnesses) < 2:
+        raise SystemExit("i01 的 res32 里没有可解析的重复测量表（| 族 | cell | n | 相同 | 翻转 | 摆动 | Jaccard |）")
+
+    js = SAMP_JACCARD_RE.search(all_text)
+    fs = SAMP_FLIP_RE.search(all_text)
+    sw = SAMP_SWING_RE.search(all_text)
+    tp = SAMP_TEMP_RE.search(all_text)
+    if not (js and fs and sw and tp):
+        raise SystemExit("i01 的事实里找不到采样解码那一档（Jaccard 区间 / 上翻下翻 / 分数摆动 / temp 与重复次数）")
+    sampling = {
+        "fact": "res32",
+        "temp": float(tp.group(1)), "repeats": int(tp.group(2)),
+        "jaccard_min": float(js.group(1)), "jaccard_max": float(js.group(2)),
+        "flips_up_min": int(fs.group(1)), "flips_up_max": int(fs.group(2)),
+        "flips_down_min": int(fs.group(3)), "flips_down_max": int(fs.group(4)),
+        "score_min": int(sw.group(1)), "score_max": int(sw.group(2)),
+        "n": int(sw.group(4)),
+        "score_swing_items": int(sw.group(2)) - int(sw.group(1)),
+        "understates": True,
+    }
+
     m_flips = FLIPS_RE.search(change_text)
     m_amp = AMP_RE.search(change_text)
     m_text = TEXT_DIFF_RE.search(change_text)
@@ -80,19 +114,11 @@ def parse(floor_text, change_text, all_text):
         "source": None,
         "floor": {
             "fact": "res32",
-            "harnesses": [
-                {"name": "MultiPL-E chat", "n": int(m_floor.group(1)),
-                 "identical": int(m_floor.group(1)), "flips_up": int(m_floor.group(2)),
-                 "flips_down": int(m_floor.group(3)),
-                 "score_swing": float(m_floor.group(4)),
-                 "jaccard": float(m_floor.group(5))},
-                {"name": "EvalPlus chat", "n": int(m_eval.group(2)),
-                 "identical": int(m_eval.group(2)), "passed": int(m_eval.group(1)),
-                 "flips_up": int(m_eval.group(3)), "flips_down": int(m_eval.group(4)),
-                 "jaccard": float(m_eval.group(5))},
-            ],
-            "rule": "同一提示集哈希 + 同一后处理版本下，任何非零跨 run 差异都不是噪声",
+            "harnesses": harnesses,
+            "rule": "同一提示集哈希 + 同一后处理版本下、且解码是确定性的（greedy/temp=0）时，"
+                    "任何非零跨 run 差异都不是噪声",
         },
+        "sampling": sampling,
         "input_change": {
             "fact": "res29",
             "flips_up": int(m_flips.group(2)), "flips_down": int(m_flips.group(3)),

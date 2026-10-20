@@ -68,9 +68,9 @@ def main():
             print("FAIL: 幅度改成 0 后正文没变——说明数字是写死的")
             ok = False
 
-        # 3) 删掉适用条件 → 生成器必须失败
-        no_cond = text.replace(
-            "所以任何两次 run 只有在**提示集哈希 + 后处理版本**都被钉住并记录时才可比；", "所以：")
+        # 3) 删掉适用条件（两处措辞都去掉）→ 生成器必须失败
+        no_cond = (text.replace("提示集哈希 + 后处理版本", "某个东西")
+                       .replace("不可相加", "无关").replace("才可比", "随便"))
         assert no_cond != text, "条件句没找到，负控无效"
         no_cond_src = tmp / "no_cond.md"
         no_cond_src.write_text(no_cond, encoding="utf-8")
@@ -83,6 +83,19 @@ def main():
             print(f"3) condition removed   : generator refuses -> {exc}")
         finally:
             br.SOURCE_GLOB = saved_glob
+        # 4) 把采样档的 Jaccard 改成 1.0 → 文字必须从「分数低估不稳定」变成「与确定性解码同」
+        bent = json.loads(BASE.read_text(encoding="utf-8"))
+        bent["sampling"]["jaccard_min"] = bent["sampling"]["jaccard_max"] = 1.0
+        p4 = tmp / "sampling1.json"
+        p4.write_text(json.dumps(bent, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        t4 = generated(p4)
+        changed = ("低估逐题不稳定" in baseline and "低估逐题不稳定" not in t4
+                   and "确定性解码同样稳定" in t4)
+        print(f"4) sampling Jaccard set to 1.0 : text no longer claims understatement: {changed}")
+        if not changed:
+            print("FAIL: Jaccard 改成 1.0 后文字仍说分数低估不稳定——说明这段是写死的")
+            print(t4[:400])
+            ok = False
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

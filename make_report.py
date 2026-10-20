@@ -1454,46 +1454,92 @@ REPRODUCIBILITY = "report_inputs/reproducibility.json"
 
 
 def reproducibility_html():
-    """「测量可复现性边界」一节：地板与输入变更幅度是两件事，分别由 i01 的事实给出。
+    """「测量可复现性边界」一节：三档分开写——确定性解码 / 采样解码 / 输入变更。
 
     数字来自 `report_inputs/reproducibility.json`（由 `i01/RESULT.md` 的 res32/res29 抽出），
     所以改那两条事实、这一节就跟着变；缺输入或缺适用条件时构建失败，不印一个孤立数字。
     """
     if not os.path.exists(REPRODUCIBILITY):
-        raise SystemExit(f"报告输入缺失：{REPRODUCIBILITY}（由 report_inputs/build_reproducibility.py 生成）。")
+        raise SystemExit(f"报告输入缺失：{REPRODUCIBILITY}"
+                         f"（由 report_inputs/build_reproducibility.py 生成）。")
     doc = json.load(open(REPRODUCIBILITY, encoding="utf-8"))
-    floor, change = doc["floor"], doc["input_change"]
-    out = ["<p class='def'>这一节回答一个读者一定会问的问题：报告里的分数波动到多大就值得当真。"
-           "答案是两件事，必须分开读——<b>输入相同时地板是 0 道题</b>；"
-           "<b>输入变了则可能翻转十几个题</b>。把后者当前者、或把前者当噪声容忍度，都会读错表。</p>"]
+    floor, change, samp = doc["floor"], doc["input_change"], doc["sampling"]
+    samp_bad = not (samp["jaccard_min"] >= 1.0 and samp["jaccard_max"] >= 1.0)
+    out = ["<p class='def'>这一节回答读者一定会问的问题：报告里的分数波动到多大就值得当真。"
+           "答案分三档，<b>不能互相替代、也不能相加</b>：确定性解码的地板是 0 道题；"
+           + ("采样解码下逐题大幅翻转而分数只小幅摆动；" if samp_bad
+              else "采样解码这一档与确定性解码同样稳定；")
+           + "输入变了则可能翻转十几个题。</p>"]
 
     items = []
     for h in floor["harnesses"]:
-        extra = f"，通过数 {h['passed']}/{h['n']}" if "passed" in h else ""
-        items.append(f"<li><b>{html.escape(h['name'])}</b>：同配置重复 {h['identical']}/{h['n']} 题逐题相同"
-                     f"（上翻 {h['flips_up']}、下翻 {h['flips_down']}、Jaccard {h['jaccard']}{extra}）</li>")
-    out.append("<h3>一、输入相同时：地板是 0 道题</h3><ul>" + "".join(items) + "</ul>")
+        items.append(f"<li><b>{html.escape(h['name'])}</b>（{html.escape(h['cell'])}）："
+                     f"{h['identical']}/{h['n']} 题逐题相同（上翻 {h['flips_up']}、下翻 "
+                     f"{h['flips_down']}、摆动 {h['score_swing']:.4f}、Jaccard {h['jaccard']}）</li>")
+    out.append("<h3>一、确定性解码（greedy / temp=0）：地板 0 道题</h3><ul>" + "".join(items) + "</ul>")
     out.append(f"<p><b>判读规则：</b>{html.escape(floor['rule'])}。"
-               f"因此同一提示集哈希、同一后处理版本下的任何非零跨 run 差异，"
-               f"都不能写成「噪声」——它是错误，或者是你没记录下来的输入差。</p>")
+               "因此在这种 run 之间，任何非零差异都不能写成「噪声」——它是错误，或者是你没记录下来的输入差。</p>")
 
-    out.append("<h3>二、输入变了时：幅度可达十几个题</h3>")
-    out.append(f"<p>同一个 cell 在提示集被重建/删除之后重跑，实测出现 "
-               f"<b>{change['flips_up'] + change['flips_down']} 题双向翻转</b>"
-               f"（{change['flips_up']} 上 / {change['flips_down']} 下，净 "
-               f"{change['net']:+d}），即 <b>±{change['amplitude']}/{change['n']} ≈ "
-               f"{change['amplitude_ratio']:.2f}</b> 的量级；完成物在 "
-               f"{change['text_diff']}/{change['n']} 题上文本不同，其中 "
-               f"{change['token_diff']} 题是 token 真的不同。</p>")
+    if not samp_bad:
+        out.append("<h3>二、采样解码（temp&gt;0）：与确定性解码同</h3>")
+        out.append("<p>这一档的逐题 Jaccard 达到 1.0，即重复跑没有改变任何一道题的判定；"
+                   "此前的低估说法不成立，这里不作那个断言。</p>")
+        return "".join(out)
+    out.append("<h3>二、采样解码（temp&gt;0）：分数摆动系统性低估逐题不稳定</h3>")
+    out.append(f"<p>同一个 cell 在 temp={samp['temp']} 下重复 {samp['repeats']} 次：逐题通过集合的两两 "
+               f"<b>Jaccard 只有 {samp['jaccard_min']}–{samp['jaccard_max']}</b>，每对 <b>上翻 "
+               f"{samp['flips_up_min']}–{samp['flips_up_max']} 题、下翻 {samp['flips_down_min']}–"
+               f"{samp['flips_down_max']} 题</b>，而分数只在 {samp['score_min']}→{samp['score_max']}"
+               f"（{samp['score_swing_items']}/{samp['n']}）之间摆动。<b>所以分数摆动会系统性低估逐题不稳定</b>："
+               f"报告里凡是 temp&gt;0 的格（例如 <code>mpl-raw-t0.3-768</code> 这类协议标签，"
+               f"以及“采样 / 解码参数”一节的表与图），读者不能用「分数差多少」判断「复现性如何」，"
+               f"必须按逐题比。</p>")
+
+    out.append("<h3>三、输入变更（提示集重建/删除、后处理版本改变）：可达十几个题</h3>")
+    out.append(f"<p>同一个 cell 在输入变了之后重跑，实测出现 <b>{change['flips_up'] + change['flips_down']} 题双向翻转</b>"
+               f"（{change['flips_up']} 上 / {change['flips_down']} 下，净 {change['net']:+d}），即 "
+               f"<b>±{change['amplitude']}/{change['n']} ≈ {change['amplitude_ratio']:.2f}</b> 的量级；"
+               f"完成物在 {change['text_diff']}/{change['n']} 题上文本不同，其中 {change['token_diff']} 题是 token 真的不同。</p>")
     out.append(f"<p><b>适用条件：</b>{html.escape(doc['condition'])}。"
-               f"换句话说：跨提示集/跨后处理版本的两次 run 不能互为重复测量；"
-               f"两个数字也不得相加（地板 0 说的是重复跑，±{change['amplitude']}/{change['n']} 说的"
-               f"是输入变了）。</p>")
+               f"三个数字不得相加或互相替代（地板 0 是确定性重复跑，Jaccard 那一档是采样解码，"
+               f"±{change['amplitude']}/{change['n']} 是输入变了）。</p>")
     out.append(f"<p class='nr'>来源：<code>{html.escape(doc['source'])}</code> 的 "
-               f"<code>{html.escape(floor['fact'])}</code> 与 "
-               f"<code>{html.escape(change['fact'])}</code>；本节的数字由 "
-               f"<code>report_inputs/build_reproducibility.py</code> 抽取，改那两条事实这一节就跟着变。</p>")
+               f"<code>{html.escape(floor['fact'])}</code> 与 <code>{html.escape(change['fact'])}</code>；"
+               f"本节的数字由 <code>report_inputs/build_reproducibility.py</code> 抽取，改那两条事实这一节就跟着变；"
+               f"重算命令见该节点的 <code>repro</code> 行（<code>audits/noise_floor_compare.py</code>）。</p>")
     return "".join(out)
+
+
+def bfcl_micro_macro_gap():
+    """BFCL 汇总里「按题加权 micro」与「类别等权 macro」的最大差（从 run 汇总算，不手抄）。
+
+    面板 summary 的 `score` 是按题加权的 micro；读者从类别列能算出来的只有未加权 macro。
+    两者不是同一个量，差多少取决于类别题量是否均衡，所以这里当场算一遍再写进正文。
+    """
+    import glob
+    best = None
+    for path in glob.glob(os.path.join(".wrapup", "*_summary.jsonl")):
+        for line in open(path, encoding="utf-8", errors="replace"):
+            try:
+                r = json.loads(line)
+            except Exception:
+                continue
+            per = r.get("per_category")
+            if not isinstance(per, dict) or not per or r.get("score") is None:
+                continue
+            accs = [v["acc"] for v in per.values()
+                    if isinstance(v, dict) and v.get("acc") is not None]
+            if not accs:
+                continue
+            macro = sum(accs) / len(accs)
+            gap = abs(r["score"] - macro)
+            if best is None or gap > best["gap"]:
+                best = {"gap": gap, "micro": r["score"], "macro": macro,
+                        "model": r.get("model"), "file": os.path.basename(path)}
+    return best
+
+
+REPRODUCIBILITY = "report_inputs/reproducibility.json"
 
 
 def inversion_callout():

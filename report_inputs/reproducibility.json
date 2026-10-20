@@ -5,6 +5,17 @@
   "harnesses": [
    {
     "name": "MultiPL-E chat",
+    "cell": "`q38-27b-q3` py，`mpl-chat-nothink-greedy-768`，greedy，同提示集，`-np 1` 两次",
+    "n": 161,
+    "identical": 161,
+    "flips_up": 0,
+    "flips_down": 0,
+    "score_swing": 0.0,
+    "jaccard": 1.0
+   },
+   {
+    "name": "MultiPL-E chat",
+    "cell": "同上但历史原旗标（server 默认 → 4 槽），两次",
     "n": 161,
     "identical": 161,
     "flips_up": 0,
@@ -14,15 +25,42 @@
    },
    {
     "name": "EvalPlus chat",
+    "cell": "`2b q4` humaneval，temp=0，三次",
     "n": 164,
     "identical": 164,
-    "passed": 46,
     "flips_up": 0,
     "flips_down": 0,
+    "score_swing": 0.0,
+    "jaccard": 1.0
+   },
+   {
+    "name": "lm-eval gsm8k",
+    "cell": "`Qwen3.5-2B-UD-Q3_K_XL`，reasoning-off，`--limit 100`，两次",
+    "n": 100,
+    "identical": 100,
+    "flips_up": 0,
+    "flips_down": 0,
+    "score_swing": 0.0,
     "jaccard": 1.0
    }
   ],
-  "rule": "同一提示集哈希 + 同一后处理版本下，任何非零跨 run 差异都不是噪声"
+  "rule": "同一提示集哈希 + 同一后处理版本下、且解码是确定性的（greedy/temp=0）时，任何非零跨 run 差异都不是噪声"
+ },
+ "sampling": {
+  "fact": "res32",
+  "temp": 0.3,
+  "repeats": 5,
+  "jaccard_min": 0.53,
+  "jaccard_max": 0.67,
+  "flips_up_min": 8,
+  "flips_up_max": 15,
+  "flips_down_min": 6,
+  "flips_down_max": 12,
+  "score_min": 37,
+  "score_max": 43,
+  "n": 164,
+  "score_swing_items": 6,
+  "understates": true
  },
  "input_change": {
   "fact": "res29",

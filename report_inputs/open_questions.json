@@ -18,13 +18,37 @@
    "subproject": "a03-量化方案与厂商",
    "path": "docs/subprojects/a03-量化方案与厂商/PLAN.md",
    "heading": "未解问题",
-   "text": "**厂商效应是否存在，本库答不了。** 唯一跨上传者受控对只有一族（Qwen3.6-35B-A3B，Δbpw 0.025），逐列半宽 0.019–0.134、九列全跨 0；`attrib.py` 的厂商系数由这一族单点识别、半宽 0.212–0.489 且符号与其来源对相反（外推假象）。要判定，需要一个**同族内同分配、只换上传者**的配对（本库没有），或第二个独立家族的同尺寸跨来源对。"
+   "text": "**厂商效应是否存在，本库答不了。** 唯一跨上传者受控对只有一族（Qwen3.6-35B-A3B，Δbpw 0.025），逐列半宽 0.019–0.134、九列全跨 0；`attrib.py` 的厂商系数由这一族单点识别、逐基准半宽 0.212–0.489（最大 0.49）且符号与其来源对相反（外推假象）。要判定，需要一个**同族内同分配、只换上传者**的配对（本库没有），或第二个独立家族的同尺寸跨来源对。"
   },
   {
    "subproject": "a03-量化方案与厂商",
    "path": "docs/subprojects/a03-量化方案与厂商/PLAN.md",
    "heading": "未解问题",
    "text": "**复现负控未跑，单次运行的跨 run 上限未定。** 本层所有配对都是单次运行，区间只含逐题二项项；`i01::res29` 给出的 ±16/161 是「未记录的输入差」量级，不是本层的噪声地板。作业 `bash .wrapup/a03_repro_retry.sh` 在锁空闲时自动跑两条 2B 代码面板（实测 573–638 s/条），跑成后写成 `RESULT.md` 的 `repro-negative-control`；锁一直被 `i01` 的高优先级测量占着，故登记为未测。"
+  },
+  {
+   "subproject": "a04-MoE 各层比特分配",
+   "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
+   "heading": "未解问题",
+   "text": "a04-q1 语料里「总比特钉住」的 MoE 对照有几对、方向如何？（`WP2` 答；当前读数：2 对、`L1_pw` 均 0.381、专家桶都在 3.5–3.8，即极端配置无对照）"
+  },
+  {
+   "subproject": "a04-MoE 各层比特分配",
+   "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
+   "heading": "未解问题",
+   "text": "a04-q2 三策略里哪一个在钉住总比特下更好，差值是否超过半宽？（`WP3` 答）"
+  },
+  {
+   "subproject": "a04-MoE 各层比特分配",
+   "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
+   "heading": "未解问题",
+   "text": "a04-q3 Tier-1A 的 F16 源在盘实测尺寸与量化/评估成本，值不值？（`WP4`/`WP5` 答）"
+  },
+  {
+   "subproject": "a04-MoE 各层比特分配",
+   "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
+   "heading": "未解问题",
+   "text": "a04-q4 「非专家层比专家层更吃比特」这个读法能否在不止一个家族上成立？（`WP3` 答；语料里 MoE 家族只有 LFM2.5-8B-A1B、Qwen3.6-35B-A3B、gemma-4-26B-A4B、GLM-4.7-Flash 少数几个有轮廓+分数）"
   },
   {
    "subproject": "i02-测量基础设施",
@@ -63,6 +87,12 @@
    "path": "docs/subprojects/a03-量化方案与厂商/PLAN.md",
    "heading": "未解问题",
    "count": 2
+  },
+  {
+   "subproject": "a04-MoE 各层比特分配",
+   "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
+   "heading": "未解问题",
+   "count": 4
   },
   {
    "subproject": "i02-测量基础设施",

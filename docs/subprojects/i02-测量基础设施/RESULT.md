@@ -180,6 +180,12 @@
 - evidence: `make_report.py` 不再有 `load_docs()` / `_yaml_load()` / `render_fact_list()`，也不再有「客观结果 / 分析结论 / 引用与规模 / 待分析」这四个由 `docs/subprojects/*/{plan,result}.yaml` 支撑的子节；报告现由 21 个二级节组成（研究概述 + 15 个研究分析节 + 测量可复现性边界 + 数据质量与未解问题 + 2 个附录 + 结论），86 张图。研究成果的对外入口是 `FINDINGS.md`，不是报告里的内部事实清单。
 - producer: `python3 make_report.py`（生成的 `report.html`）；`grep -c "<h2>" report.html`
 
+## res46 :: 报告「测量可复现性边界」一节分三档：确定性解码地板 0、采样解码分数低估不稳定、输入变更 ±16/161；数字与适用条件都由 i01 的事实生成。
+
+- kind: measured
+- status: current
+- evidence: 新节由 `report_inputs/reproducibility.json` 渲染（`report_inputs/build_reproducibility.py` 从 `i01/RESULT.md` 的 `res32`（重复测量表 + 采样边界）与 `res29`（输入变更）抽取）：**一档**确定性解码 4 个族 `identical==n`、翻转 0、Jaccard 1.0；**二档**采样解码（temp=0.3，5 次重复）Jaccard 0.53–0.67、每对上翻 8–15 题 / 下翻 6–12 题、分数只在 37→43（6/164）摆动——**分数摆动系统性低估逐题不稳定**，并点名受影响的协议标签（`mpl-raw-t0.3-768` 与「采样 / 解码参数」一节）；**三档**输入变更 16 题双向翻转（11 上 / 5 下、净 +6）、±16/161≈0.10、76/161 文本不同、66 题 token 不同。三档不得相加或互相替代。
+- producer: `python3 report_inputs/build_reproducibility.py --check`；`python3 checks/reproducibility_negative_control.py`（四例：幅度改 0 → 正文改口；删适用条件 → 生成器拒绝；Jaccard 改 1.0 → 正文改说「与确定性解码同样稳定」、不再声称低估）
 ## res46 :: 报告新增「测量可复现性边界」一节，数字与适用条件都由 i01 的事实生成；BFCL 一节说清 micro/macro 且不给总分。
 
 - kind: measured
