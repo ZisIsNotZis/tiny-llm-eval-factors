@@ -107,6 +107,15 @@ AC：四份落盘完成物与四份 `_eval.json` 存在；一份逐题对照表�
 
 锁粒度：每个 arm 自己持一次 `flock`（`slot_repro_arm.sh <arm>` 由 `gpu_locked.sh` 包住），不是整段实验一次长锁，排在后面的子项目（a12 的 m163）可以在两个 arm 之间插入。理由是 `@machine` 的有限并发与 `@scheduling` 的 queue_behind：一个 arm 是一个可被抢占的完整测量单元，而整段实验不是。
 
+## GPU 排队项（外部占用时按触发条件等，不轮询重试）
+
+| 项 | 所需显存 | 当前空闲（2026-10-21 00:32） | 触发条件 | 预算 |
+|---|---|---|---|---|
+| `WP7` 三族代表 cell 的重复 pass（lm-eval 与 BFCL 各一个；EvalPlus 引用已有 `w1-repeat` 三次复跑） | ≤8 GiB（用 ≤4B 小模型，权重 ≤3 GiB + KV），**不需要 27B 的 16 GiB 门禁** | 12,957 MiB | `memory.free ≥ 8192 MiB` 且拿到 flock | ≤40 GPU 分钟 |
+| `WP3` 遗留负控：`lmeval_run.py --selftest`（echo shim 是否从不返回 0.0） | 同上一行的量级 | 同上 | 同上 | ≤15 GPU 分钟 |
+
+外部占用的来源已确认是**另一个仓库的 `train_sft.py`（用户自己的任务）**，本层不动它、也不为它改别人的进程。上面两项都**不**排 `npauto-b`（已按 meta 裁决放弃：与 `npauto` 同一件事，另一次确定性已由 `np1` 两次覆盖）。
+
 ## 非目标
 
 - 不重生成任何提示集：`.wrapup/prompts` 与 `SHA256SUMS` 是唯一来源；旧 `/tmp` 提示集已删除，逐字节比对登记为不可测，不去复原。
