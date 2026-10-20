@@ -30,25 +30,25 @@
    "subproject": "a04-MoE 各层比特分配",
    "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
    "heading": "未解问题",
-   "text": "a04-q1 语料里「总比特钉住」的 MoE 对照有几对、方向如何？（`WP2` 答；当前读数：2 对、`L1_pw` 均 0.381、专家桶都在 3.5–3.8，即极端配置无对照）"
+   "text": "a04-q1 语料里「总比特钉住」的 MoE 对照有几对、方向如何？——**已答**（`WP2`）：2 对、`L1_pw` 均 0.381、16 格全跨 0（`RESULT.md::pinned-null`）。"
   },
   {
    "subproject": "a04-MoE 各层比特分配",
    "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
    "heading": "未解问题",
-   "text": "a04-q2 三策略里哪一个在钉住总比特下更好，差值是否超过半宽？（`WP3` 答）"
+   "text": "a04-q2 三策略里哪一个在钉住总比特下更好，差值是否超过半宽？——**部分已答**（`WP3`）：均匀 vs 非专家优先不可分辨；均匀 vs 专家优先只有非钉住对照（掉 0.16–0.27）；专家优先的钉住对照由 `WP4` 补齐。"
   },
   {
    "subproject": "a04-MoE 各层比特分配",
    "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
    "heading": "未解问题",
-   "text": "a04-q3 Tier-1A 的 F16 源在盘实测尺寸与量化/评估成本，值不值？（`WP4`/`WP5` 答）"
+   "text": "a04-q3 Tier-1A 的 F16 源在盘实测尺寸与量化/评估成本，值不值？——**成本已测**（`RESULT.md::tier1a-verdict`）：源 16.95 GB、构建 63.8–145.5 s/份、评估 27 分钟/份；值不值仍为「桶内结构在这一维上未测」。"
   },
   {
    "subproject": "a04-MoE 各层比特分配",
    "path": "docs/subprojects/a04-MoE 各层比特分配/PLAN.md",
    "heading": "未解问题",
-   "text": "a04-q4 「非专家层比专家层更吃比特」这个读法能否在不止一个家族上成立？（`WP3` 答；语料里 MoE 家族只有 LFM2.5-8B-A1B、Qwen3.6-35B-A3B、gemma-4-26B-A4B、GLM-4.7-Flash 少数几个有轮廓+分数）"
+   "text": "a04-q4 「非专家层比专家层更吃比特」能否在不止一个家族上成立？——`pinned-null` 只在 2 族（LFM2.5-8B-A1B、Qwen3.6-35B-A3B）上测过，剩 3 族（GLM、gemma-4-26B-A4B、Qwen3.5-35B-A3B）没有钉住对照（`--bounds` 显示 GLM 的上界只有 0.025，几乎不可能有）。"
   },
   {
    "subproject": "i02-测量基础设施",
