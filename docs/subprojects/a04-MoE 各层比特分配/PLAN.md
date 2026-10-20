@@ -14,7 +14,8 @@
 ## 当前状态
 
 - 已完成：`WP1`（三层文档：`plan.yaml`/`result.yaml` 迁入本目录并删除）、`WP2`（`analysis/profiles.py` 与 `analysis/alloc_pairs.py`）、`WP3`（三策略分类 + 钉住对照总账：16 格全跨 0、最大半宽 0.135；架构上界 0.025–0.513 比特/参数）。
-- 在办：`WP4` 的 GPU 部分（已完成：量化与轮廓入库；排队：两个面板 + 入库入库）。
+- 在办：`WP4` 的 GPU 部分（已完成：量化与轮廓入库；排队：两个面板 + 入库）。
+- 验收入口已就位：`python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/run_all.py"` 现在 **9 条断言全绿**（退出 0），`--selftest` 能把负控翻红（篡改专家桶后断言失败）。`WP7` 的其余部分（把面板结果读成第三策略的判定）等 `WP4` 的面板。
 - 下一个派给谁：**本层编排者自己做 `WP2`**，因为运行时不提供 subagent 接口（见下条）；`WP6` 的独立复核由 **meta 派 fresh-context reviewer**。
 - **递归不可用（运行时不提供 subagent 接口）**：本层编排者只有 shell/读写工具，没有派孙工具，所以分析、脚本与测量由编排者自己执行。这与派工契约里「可派孙」不一致，按 `@fail_loud` 写在这里而不是假装派过。
 - 资源额度（由 meta 分配，本层不自行扩张）：GPU 7%、CPU 5%；GPU 一律 `bash .wrapup/gpu_locked.sh`，起服前看 `nvidia-smi` 的 `memory.free` 并用实测需求判断，起服后断言 server 自报 `n_slots`。
