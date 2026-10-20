@@ -41,9 +41,21 @@ def main():
         print(f"2) all counts set to 0     : says 无差异 and drops 翻动: {changed}")
         if not changed:
             print("FAIL: 计数改成 0 后正文仍说逐题在翻——说明这段写死了"); print(t[:400]); return 1
+        # 3) 长上下文那一档：把三档 delta 全改成 0 → 文字不得再说 8k 上有 ≥4 的差
+        d3 = json.loads(BASE.read_text(encoding="utf-8"))
+        for r in d3["long_context"]["rows"]:
+            r["delta"] = 0
+            r["q4_hits"] = r["f16_hits"]
+        p3 = tmp / "lc-zero.json"
+        p3.write_text(json.dumps(d3, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        t3 = rendered(p3)
+        changed = ("唯一 ≥4 的差出现在" in base and "唯一 ≥4 的差出现在" not in t3)
+        print(f"3) long-context deltas -> 0 : text drops the 8k exception: {changed}")
+        if not changed:
+            print("FAIL: 长上下文的 delta 改成 0 后正文仍说 8k 有 ≥4 的差"); print(t3[:400]); return 1
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
-    print("PASS: 逐题翻动/无差异的措辞由丢/得计数决定")
+    print("PASS: 逐题翻动/无差异与长上下文的措辞都由索引里的计数决定")
     return 0
 
 if __name__ == "__main__":

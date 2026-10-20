@@ -1350,8 +1350,24 @@ def kv_evidence_html():
         out.append("<li><b>三种精度的逐题判定完全相同（丢 0 / 得 0）</b>，分数差也只在个位数之内："
                    "在这类任务上测不到 KV 精度的影响。</li>")
     lc = d["long_context"]
-    out.append(f"<li><b>长上下文仍未测：</b>{html.escape(lc['why'])}。"
-               f"所以本节的结论只覆盖短到中等上下文，不得外推。</li>")
+    if lc.get("tested"):
+        rows = "；".join(f"{r['ctx'] // 1024}k 上 f16 {r['f16_hits']}/{r['n']} vs q4_0 "
+                        f"{r['q4_hits']}/{r['n']}（{r['delta']:+d}）" for r in lc["rows"])
+        biggest = max(lc["rows"], key=lambda r: abs(r["delta"]))
+        out.append(f"<li><b>长上下文（检索针，20 题/档）实测：</b>{rows}；"
+                   f"阳性对照 {lc['control']['hits']}/{lc['control']['n']}。"
+                   f"也就是说 <b>32k 上 q4_0 与 f16 不可分辨</b>（{lc['visibility_floor']}），"
+                   + (f"唯一 ≥4 的差出现在<b>最短</b>的 {biggest['ctx'] // 1024}k 上（{biggest['delta']:+d}）——"
+                      f"所以「上下文越长、KV 量化越贵」在本设计的证据里<b>不成立</b>，"
+                      f"不能说长上下文会让 KV 量化更贵。"
+                      if abs(biggest["delta"]) >= 4 else
+                      f"三档的差都在可见性下限以内（最大 {biggest['delta']:+d}），"
+                      f"没有哪一档显示 KV 量化更贵。")
+                   + f"局限：q8_0 这一轮没重跑，"
+                   f"{html.escape(lc['beyond_40k'])}。</li>")
+    else:
+        out.append(f"<li><b>长上下文仍未测：</b>{html.escape(lc['why'])}。"
+                   f"所以本节的结论只覆盖短到中等上下文，不得外推。</li>")
     if not d.get("m29_ingested", True):
         out.append("<li><b>m29（fa × KV）未入库</b>：它的 fa 因子会被报告行标签吞掉、且存在静默合并，"
                    "所以那 24 行留在库外——这属于「未入库」，不等于「KV 没有数据」；"

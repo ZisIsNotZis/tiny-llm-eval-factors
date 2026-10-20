@@ -26,6 +26,48 @@ NUM_RE = re.compile(r"[−+-]?\d+")
 TWO_METRICS_PATH_HINT = "kv-two-metrics"
 
 
+NEEDLE_SUMMARY = os.path.join(REPO, "docs", "subprojects", "a05-KV 缓存精度",
+                              "evidence", "needle-retune", "summary.json")
+
+
+def long_context():
+    """长上下文（检索针）那一轮的实测：每档命中数与 q4_0 相对 f16 的配对差。
+
+    读 a05 的 `evidence/needle-retune/summary.json`（脚本产物），不抄散文。
+    """
+    if not os.path.exists(NEEDLE_SUMMARY):
+        return {"tested": False,
+                "why": "a05 还没有落 needle-retune 的 summary；长上下文仍未测"}
+    d = json.load(open(NEEDLE_SUMMARY, encoding="utf-8"))
+    cells = {}
+    for c in d["cells"]:
+        if "control" in c["cell"]:
+            continue
+        cells[(c["ctx"], c["kv"])] = {"hits": c["hits"], "n": c["n"]}
+    ctxs = sorted({c["ctx"] for c in d["cells"]})
+    rows = []
+    for ctx in ctxs:
+        f = cells.get((ctx, "f16/f16"))
+        q = cells.get((ctx, "q4_0/q4_0"))
+        if f and q:
+            rows.append({"ctx": ctx, "f16_hits": f["hits"], "q4_hits": q["hits"],
+                         "n": f["n"], "delta": q["hits"] - f["hits"]})
+    control = d.get("control", {})
+    strata = d.get("strata", {})
+    verdict = strata.get("0.9", {}).get("verdict", "")
+    return {
+        "tested": True,
+        "verdict": verdict,
+        "rows": rows,
+        "control": {"hits": control.get("hits"), "n": control.get("n"),
+                    "passed": control.get("passed")},
+        "visibility_floor": "单侧 20 条下可见性下限约 4/20",
+        "q8_0_rerun": False,
+        "beyond_40k": "40k 以上未测：每个上下文档要一次完整网格（约 5 GPU 分钟/档），本轮只做到 32k",
+        "source": os.path.relpath(NEEDLE_SUMMARY, REPO),
+    }
+
+
 def parse_two_metrics(facts_text):
     """a05 的 `kv-two-metrics` 表 → 每对的 (分数差, 丢, 得, 翻转合计, 通过集是否相同)。"""
     pairs = {}
@@ -106,11 +148,7 @@ def parse(out):
         "scores": scores,
         "pairs": {"base_f16_to_q4": base, "plus_f16_to_q4": plus, "base_f16_to_q8": q8},
         "checks": checks,
-        "long_context": {
-            "tested": False,
-            "why": "两个 m30 网格都无信息量：一个由构造决定（同一 KV 配置在不同 ctx 上产物逐字节相同），"
-                   "一个是模型在续写填充前言（长前缀格首条完成物不是代码）",
-        },
+        "long_context": long_context(),
         "m29_ingested": False,
     }
 

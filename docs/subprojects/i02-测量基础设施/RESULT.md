@@ -223,3 +223,10 @@
 - evidence: 新增 `report_inputs/bfcl_gap.json` 与生成器 `report_inputs/build_bfcl_gap.py`；`make_report.py::bfcl_micro_macro_gap()` 改为只读该索引（缺索引即 `SystemExit`），不再扫 `.wrapup/*_summary.jsonl`。性质验证：往 `.wrapup/m8_summary.jsonl` 追加一条带 `per_category` 的假记录后重建报告，字节哈希与追加前**完全相同**（`b35f94af…`），还原文件后仍一致——这正是派生索引要买到的：summary 变动要先显式重建索引，报告本身不动。
 - producer: `python3 report_inputs/build_bfcl_gap.py --check`；`./reproduce.sh` 的「bfcl_gap.json 与现有 BFCL 汇总一致」一步
 
+## res51 :: 第五节的长上下文改成实测结论（检索针 8k/16k/32k），并写明「上下文越长 KV 越贵」在本设计里不成立。
+
+- kind: measured
+- status: current
+- evidence: `report_inputs/kv_evidence.json` 的 `long_context` 块由 `report_inputs/build_kv_evidence.py` 读 `a05` 的 `evidence/needle-retune/summary.json` 得出：8k f16 17/20 vs q4_0 13/20（−4）、16k 20/20 vs 20/20（0）、32k 14/20 vs 15/20（+1），阳性对照 0/20，可见性下限约 4/20。报告据此写：32k 上不可分辨、唯一 ≥4 的差出现在**最短**的 8k 上、方向证据不成立；局限写明（q8_0 本轮未重跑、40k 以上未测及代价）。
+- producer: `python3 report_inputs/build_kv_evidence.py --check`；`python3 checks/kv_evidence_negative_control.py`（第三例：把三档 delta 全改成 0 → 正文不再声称 8k 上有 ≥4 的差）
+

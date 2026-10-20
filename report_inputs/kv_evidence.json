@@ -176,8 +176,40 @@
   }
  },
  "long_context": {
-  "tested": false,
-  "why": "两个 m30 网格都无信息量：一个由构造决定（同一 KV 配置在不同 ctx 上产物逐字节相同），一个是模型在续写填充前言（长前缀格首条完成物不是代码）"
+  "tested": true,
+  "verdict": "resolvable",
+  "rows": [
+   {
+    "ctx": 8192,
+    "f16_hits": 17,
+    "q4_hits": 13,
+    "n": 20,
+    "delta": -4
+   },
+   {
+    "ctx": 16384,
+    "f16_hits": 20,
+    "q4_hits": 20,
+    "n": 20,
+    "delta": 0
+   },
+   {
+    "ctx": 32768,
+    "f16_hits": 14,
+    "q4_hits": 15,
+    "n": 20,
+    "delta": 1
+   }
+  ],
+  "control": {
+   "hits": 0,
+   "n": 20,
+   "passed": true
+  },
+  "visibility_floor": "单侧 20 条下可见性下限约 4/20",
+  "q8_0_rerun": false,
+  "beyond_40k": "40k 以上未测：每个上下文档要一次完整网格（约 5 GPU 分钟/档），本轮只做到 32k",
+  "source": "docs/subprojects/a05-KV 缓存精度/evidence/needle-retune/summary.json"
  },
  "m29_ingested": false
 }
