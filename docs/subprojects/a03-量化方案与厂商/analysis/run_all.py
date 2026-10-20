@@ -145,6 +145,19 @@ def main(argv=()):
     expect("attrib：bartowski 系数九列全部跨 0", bad_b == 9, f"{bad_b}/9 跨 0")
     expect("attrib：位宽斜率九列全部不含 0", bad_v == 0, f"{bad_v} 列不显著")
 
+    cluster = sorted((pairs.BPW_MAP[m], m) for m in cells if pairs.a01.family_of(m) == "Qwen3.5-2B")
+    cl = [cluster[0]]                        # 单链聚类：从最低位宽起步，步长 ≤0.45 就继续收
+    for bpw, m in cluster[1:]:
+        if bpw - cl[-1][0] > 0.45:
+            break
+        cl.append((bpw, m))
+    span = cl[-1][0] - cl[0][0]
+    he = [cells[m]["humaneval-plus"]["score"] for _b, m in cl if "humaneval-plus" in cells[m]]
+    budget = span * sl["humaneval-plus"][0]
+    expect("cluster-2b：报告第三节的 2B 组是 0.84 比特宽的一簇，位宽尺子本身就值 > 0.10 分",
+           0.80 < span < 0.90 and budget > 0.10 and len(cl) == 4,
+           f"簇 = {len(cl)} 个文件 / 跨度 {span:.3f} bpw / HE+ 实跳 {max(he) - min(he):+.4f} / 预算部分 {budget:+.4f}")
+
     skip = 0
     profs = {}
     for label, family, kind in (("alloc-qwen36", "Qwen3.6-35B-A3B", "vendor"),
