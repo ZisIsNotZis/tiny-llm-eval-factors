@@ -30,6 +30,18 @@
 - 证据：`audits/lmeval.md`；实跑输出见该文档的复现命令。
 - 复现：`HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 .wrapup/lmenv/bin/python "docs/subprojects/i01-判分与基准有效性/audits/lmeval_audit.py"`（实跑 `exit=0`，18 条预期成立）。
 
+### res27 BFCL 单轮不是官方判分器，且两个合理聚合相差最多 20 个百分点（见 audits/bfcl.md）
+
+- 单轮类别由仓库自研匹配器 `.wrapup/bfcl_run.py::evaluate` 判分，多轮由 bundled 官方 `multi_turn_checker` 判分，所以「BFCL」这个汇总是两套实现的混合。
+- `live_relevance` 的判分退化为「有没有调用」：bundled 数据集无该类的 `possible_answer`（实测 `exists=False`），代码因此写 `ok = len(calls) > 0`，一个不存在的函数名也判 PASS。
+- 匹配器单向宽容（实测 `arg_ok`）：`arg_ok(10,["10"])=True`、`arg_ok("10",[10])=False`、`arg_ok(True,[1])=True`、大小写与首尾空格折叠；且多余参数不检查（`call_ok` 只遍历标准答案的键）→ 这些方向都**向上**。
+- 聚合：summary 的 `score` 是按题加权（micro），库里每类别一行的自然聚合是按类别平均（macro），实测最大差 `m8` gr3b-q2 micro 0.3905 vs macro 0.1877（差 0.2028）；方向是 micro 偏高，因为 `live_irrelevance`（884/2251 题，奖励不调用）权重大。
+- 库里 123 条 BFCL 行的 `n_items` 全为 NULL，**从库本身算不出 micro**。
+- 历史 BFCL 预测文件没有留存（`.wrapup/bfcl_out` 为空），所以自研匹配器与官方 checker 的一致率**未测**，历史分数无法重判。
+- 状态：current。
+- 证据：`audits/bfcl.md`；`audits/bfcl_audit.py`。
+- 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/bfcl_audit.py"`（实跑 `exit=0`，14 条预期成立）。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
