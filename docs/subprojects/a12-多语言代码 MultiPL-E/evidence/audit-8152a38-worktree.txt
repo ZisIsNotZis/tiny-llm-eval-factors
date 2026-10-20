@@ -1,9 +1,10 @@
 a12 MultiPL-E cell audit
-  audited revision : 7025d7166bcc6ec4ae4365c4a51a1099138dd12b
-  script sha256    : cfead840d5ca457f8161d7c565d52491fe83df0d9a65219e4de954412d1539cc
+  audited revision : 8152a383a63511c758505a49f418f60124964c21
+  script sha256    : c5d4d63ab41e9995084c6792a1793b9832a8413486f3e22e1f378d517e546a94
   command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py
+  database         : /home/z/vibe/local_lm_research/experiments.sqlite
   report           : /home/z/vibe/local_lm_research/report.html
-  dirty paths      : 143 dirty path(s) in the tree; uncommitted among the ones this audit reads: .wrapup/mktables.py, make_report.py, migrate_db.py, report.html
+  dirty paths      : 146 dirty path(s) in the tree; uncommitted among the ones this audit reads: .wrapup/mktables.py, make_report.py, report.html
 MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cpp': 161, 'py': 161, 'js': 161, 'java': 158, 'rs': 155, 'rb': 161}
 
 [1] lineage: does each scored cell trace to a stored artefact?
@@ -112,15 +113,18 @@ MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cp
 
 [7] every cell the report prints belongs to its own protocol row
     report cells read: 186; not belonging to their protocol row: 0
-    report mtime 1792508539, DB mtime 1792421044
+    item counts compared: 180; cells skipped because the report prints no n: 6
+    report mtime 1792508867, DB mtime 1792421044
 
 [8] standard-column pooling state in the report
     standard tables with ONE pooled MultiPL-E column: 0
     standard tables with per-language MultiPL-E columns: 8
     no standard table pools cpp+py
 
-[9] no stored protocol lost a setting at ingest
-    cells whose summary settings differ from the stored protocol: 0
+[9] no stored protocol lost or invented a setting at ingest (full string, `;` fields included)
+    stored protocols that disagree with every summary line of their score: 0
+    recorded exceptions (stored string is the correct one): 1
+      NOTED: gemma-4-12b-it-UD-Q3_K_XL.gguf cpp 'mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified' -- m6b run config, summary wrote no ctx/tmpl
 
 [10] cells the per-language table cannot hold apart (row key lacks a column)
     (model, protocol, language) keys: 192 from 244 scored rows; 29 keys repeat the same value (duplicate ingest), 3 keys disagree
@@ -129,4 +133,4 @@ MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cp
       ONE ROW HIDES OTHERS: Qwen3.5-2B-UD-Q4_K_XL.gguf mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) py -> [(0.2733, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk')]
     OPEN (i02): a row key without the varied column hides the other rows; the sampling axis measures that column, this table cannot
 
-PASS: every scored cell traces to a stored artefact, no all-Exception cell carries a score, no stored protocol lost a setting, the prompt set matches its pin, and every cell the report prints belongs to its own protocol row
+PASS: every scored cell traces to a stored artefact, no all-Exception cell carries a score, no stored protocol lost or invented a setting, the prompt set matches its pin, and every cell the report prints belongs to its own protocol row

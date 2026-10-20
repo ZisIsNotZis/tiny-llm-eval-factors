@@ -1,9 +1,10 @@
 a12 MultiPL-E cell audit
-  audited revision : 7025d7166bcc6ec4ae4365c4a51a1099138dd12b
-  script sha256    : cfead840d5ca457f8161d7c565d52491fe83df0d9a65219e4de954412d1539cc
-  command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py --report /tmp/tmp.QSfpkN2wHw/head-report.html
-  report           : /tmp/tmp.QSfpkN2wHw/head-report.html
-  dirty paths      : 143 dirty path(s) in the tree; uncommitted among the ones this audit reads: .wrapup/mktables.py, make_report.py, migrate_db.py, report.html
+  audited revision : 8152a383a63511c758505a49f418f60124964c21
+  script sha256    : c5d4d63ab41e9995084c6792a1793b9832a8413486f3e22e1f378d517e546a94
+  command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py --report /tmp/tmp.BYSAZMbS9Q/head-report.html
+  database         : /home/z/vibe/local_lm_research/experiments.sqlite
+  report           : /tmp/tmp.BYSAZMbS9Q/head-report.html
+  dirty paths      : 147 dirty path(s) in the tree; uncommitted among the ones this audit reads: .wrapup/mktables.py, make_report.py, report.html
 MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cpp': 161, 'py': 161, 'js': 161, 'java': 158, 'rs': 155, 'rb': 161}
 
 [1] lineage: does each scored cell trace to a stored artefact?
@@ -112,6 +113,7 @@ MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cp
 
 [7] every cell the report prints belongs to its own protocol row
     report cells read: 192; not belonging to their protocol row: 32
+    item counts compared: 192; cells skipped because the report prints no n: 0
       MISMATCH: ('LFM2.5-8B-A1B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.0696, 'printed n=161, artefact n=[158]')
       MISMATCH: ('LFM2.5-8B-A1B-UD-Q3_K_XL.gguf', 'raw', 'java', 0.0506, 'printed n=161, artefact n=[158]')
       MISMATCH: ('NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.3734, 'printed n=161, artefact n=[158]')
@@ -132,15 +134,29 @@ MultiPL-E cells in the DB: 248 (scored 244, NULL 4); full-cell item counts: {'cp
       MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=2048·kv=f16/q8_0', 'cpp', 0.0667, 'printed n=161, artefact n=[60]')
       MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=2048·kv=q8_0/f16', 'cpp', 0.0667, 'printed n=161, artefact n=[60]')
       MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=2048·kv=q8_0/q8_0', 'cpp', 0.0667, 'printed n=161, artefact n=[60]')
-    report mtime 1792508552, DB mtime 1792421044
+      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=f16/f16', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
+      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=f16/q8_0', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
+      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=q8_0/f16', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
+      MISMATCH: ('Qwen3.5-2B-UD-Q3_K_XL.gguf', 'raw·ctx=49152·kv=q8_0/q8_0', 'cpp', 0.0, 'printed n=161, artefact n=[60]')
+      MISMATCH: ('Qwen3.5-4B-UD-Q2_K_XL.gguf', 'raw', 'java', 0.3228, 'printed n=161, artefact n=[158]')
+      MISMATCH: ('Qwen3.5-4B-UD-Q2_K_XL.gguf', 'raw', 'rs', 0.2581, 'printed n=161, artefact n=[155]')
+      MISMATCH: ('Qwen3.5-4B-UD-Q3_K_XL.gguf', 'raw', 'java', 0.4873, 'printed n=161, artefact n=[158]')
+      MISMATCH: ('Qwen3.5-4B-UD-Q3_K_XL.gguf', 'raw', 'rs', 0.4129, 'printed n=161, artefact n=[155]')
+      MISMATCH: ('gemma-4-12b-it-UD-Q2_K_XL.gguf', 'raw', 'java', 0.0, 'printed n=161, artefact n=[158]')
+      MISMATCH: ('gemma-4-12b-it-UD-Q2_K_XL.gguf', 'raw', 'rs', 0.0065, 'printed n=161, artefact n=[155]')
+      MISMATCH: ('gemma-4-12b-it-UD-Q3_K_XL.gguf', 'raw', 'java', 0.0253, 'printed n=161, artefact n=[158]')
+      MISMATCH: ('gemma-4-12b-it-UD-Q3_K_XL.gguf', 'raw', 'rs', 0.0, 'printed n=161, artefact n=[155]')
+    report mtime 1792508900, DB mtime 1792421044
 
 [8] standard-column pooling state in the report
     standard tables with ONE pooled MultiPL-E column: 8
     standard tables with per-language MultiPL-E columns: 0
     pooled: the standard column averages cpp+py, which the acceptance forbids; the split is i02's work package (PLAN.md WP7)
 
-[9] no stored protocol lost a setting at ingest
-    cells whose summary settings differ from the stored protocol: 0
+[9] no stored protocol lost or invented a setting at ingest (full string, `;` fields included)
+    stored protocols that disagree with every summary line of their score: 0
+    recorded exceptions (stored string is the correct one): 1
+      NOTED: gemma-4-12b-it-UD-Q3_K_XL.gguf cpp 'mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified' -- m6b run config, summary wrote no ctx/tmpl
 
 [10] cells the per-language table cannot hold apart (row key lacks a column)
     (model, protocol, language) keys: 192 from 244 scored rows; 29 keys repeat the same value (duplicate ingest), 3 keys disagree
