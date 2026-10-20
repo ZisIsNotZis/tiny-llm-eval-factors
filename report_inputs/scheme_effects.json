@@ -1,0 +1,265 @@
+{
+ "source_script": "docs/subprojects/a03-量化方案与厂商/analysis/attrib.py",
+ "benches": 9,
+ "rows": [
+  {
+   "bench": "HumanEval",
+   "slope": {
+    "est": 0.1974,
+    "lo": 0.1146,
+    "hi": 0.2801
+   },
+   "IQ": {
+    "est": 0.0116,
+    "lo": -0.2072,
+    "hi": 0.2304
+   },
+   "local": {
+    "est": -0.1877,
+    "lo": -0.5212,
+    "hi": 0.1457
+   },
+   "bartowski": {
+    "est": -0.1016,
+    "lo": -0.5477,
+    "hi": 0.3444
+   },
+   "n": 65
+  },
+  {
+   "bench": "HumanEval+",
+   "slope": {
+    "est": 0.1863,
+    "lo": 0.1072,
+    "hi": 0.2654
+   },
+   "IQ": {
+    "est": 0.0184,
+    "lo": -0.1908,
+    "hi": 0.2276
+   },
+   "local": {
+    "est": -0.1742,
+    "lo": -0.493,
+    "hi": 0.1446
+   },
+   "bartowski": {
+    "est": -0.1022,
+    "lo": -0.5286,
+    "hi": 0.3242
+   },
+   "n": 65
+  },
+  {
+   "bench": "MBPP",
+   "slope": {
+    "est": 0.1726,
+    "lo": 0.0978,
+    "hi": 0.2474
+   },
+   "IQ": {
+    "est": -0.0216,
+    "lo": -0.218,
+    "hi": 0.1748
+   },
+   "local": {
+    "est": -0.1882,
+    "lo": -0.4874,
+    "hi": 0.1109
+   },
+   "bartowski": {
+    "est": -0.0703,
+    "lo": -0.4705,
+    "hi": 0.3298
+   },
+   "n": 64
+  },
+  {
+   "bench": "MBPP+",
+   "slope": {
+    "est": 0.1381,
+    "lo": 0.0755,
+    "hi": 0.2008
+   },
+   "IQ": {
+    "est": 0.0021,
+    "lo": -0.1625,
+    "hi": 0.1667
+   },
+   "local": {
+    "est": -0.152,
+    "lo": -0.4027,
+    "hi": 0.0986
+   },
+   "bartowski": {
+    "est": -0.0531,
+    "lo": -0.3884,
+    "hi": 0.2821
+   },
+   "n": 64
+  },
+  {
+   "bench": "MMLU",
+   "slope": {
+    "est": 0.1044,
+    "lo": 0.0559,
+    "hi": 0.1529
+   },
+   "IQ": {
+    "est": 0.0258,
+    "lo": -0.0995,
+    "hi": 0.1512
+   },
+   "local": {
+    "est": -0.0602,
+    "lo": -0.2508,
+    "hi": 0.1304
+   },
+   "bartowski": {
+    "est": -0.0445,
+    "lo": -0.2994,
+    "hi": 0.2104
+   },
+   "n": 65
+  },
+  {
+   "bench": "ARC-c",
+   "slope": {
+    "est": 0.1217,
+    "lo": 0.0923,
+    "hi": 0.1511
+   },
+   "IQ": {
+    "est": 0.1031,
+    "lo": -0.0103,
+    "hi": 0.2165
+   },
+   "local": {
+    "est": -0.0344,
+    "lo": -0.2114,
+    "hi": 0.1427
+   },
+   "bartowski": {
+    "est": 0.0042,
+    "lo": -0.233,
+    "hi": 0.2414
+   },
+   "n": 58
+  },
+  {
+   "bench": "TruthfulQA",
+   "slope": {
+    "est": 0.0329,
+    "lo": 0.0095,
+    "hi": 0.0564
+   },
+   "IQ": {
+    "est": 0.0443,
+    "lo": -0.0177,
+    "hi": 0.1064
+   },
+   "local": {
+    "est": 0.0258,
+    "lo": -0.0689,
+    "hi": 0.1204
+   },
+   "bartowski": {
+    "est": -0.0383,
+    "lo": -0.1649,
+    "hi": 0.0883
+   },
+   "n": 65
+  },
+  {
+   "bench": "GSM8K",
+   "slope": {
+    "est": 0.194,
+    "lo": 0.101,
+    "hi": 0.287
+   },
+   "IQ": {
+    "est": -0.0317,
+    "lo": -0.2969,
+    "hi": 0.2335
+   },
+   "local": {
+    "est": -0.1679,
+    "lo": -0.5237,
+    "hi": 0.1879
+   },
+   "bartowski": {
+    "est": -0.0919,
+    "lo": -0.5677,
+    "hi": 0.3839
+   },
+   "n": 61
+  },
+  {
+   "bench": "IFEval",
+   "slope": {
+    "est": 0.1444,
+    "lo": 0.0888,
+    "hi": 0.2001
+   },
+   "IQ": {
+    "est": 0.0059,
+    "lo": -0.1398,
+    "hi": 0.1516
+   },
+   "local": {
+    "est": -0.0169,
+    "lo": -0.2954,
+    "hi": 0.2616
+   },
+   "bartowski": {
+    "est": -0.0621,
+    "lo": -0.3588,
+    "hi": 0.2346
+   },
+   "n": 65
+  }
+ ],
+ "labels": {
+  "IQ": {
+   "benches": 9,
+   "significant_benches": [],
+   "crosses_zero_on": 9,
+   "half_width_min": 0.062,
+   "half_width_max": 0.2652,
+   "identified_by": "{'Qwen3.5-2B': [0.0, 1.0], 'Qwen3.5-4B': [0.0, 1.0], 'Qwen3.8-27B': [0.0, 1.0]}",
+   "families": [
+    "Qwen3.5-2B",
+    "Qwen3.5-4B",
+    "Qwen3.8-27B"
+   ]
+  },
+  "local": {
+   "benches": 9,
+   "significant_benches": [],
+   "crosses_zero_on": 9,
+   "half_width_min": 0.0946,
+   "half_width_max": 0.3558,
+   "identified_by": "{'LFM2.5-8B-A1B': [0.0, 1.0]}",
+   "families": [
+    "LFM2.5-8B-A1B"
+   ]
+  },
+  "bartowski": {
+   "benches": 9,
+   "significant_benches": [],
+   "crosses_zero_on": 9,
+   "half_width_min": 0.1266,
+   "half_width_max": 0.4758,
+   "identified_by": "{'Qwen3.6-35B-A3B': [0.0, 1.0]}",
+   "families": [
+    "Qwen3.6-35B-A3B"
+   ]
+  }
+ },
+ "slope_significant_on_all": true,
+ "slope_range": [
+  0.0329,
+  0.1974
+ ],
+ "unidentifiable_sources": ""
+}

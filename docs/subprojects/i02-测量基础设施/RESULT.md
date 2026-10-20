@@ -187,3 +187,11 @@
 - evidence: 新节由 `report_inputs/reproducibility.json` 渲染（该索引由 `report_inputs/build_reproducibility.py` 从 `i01/RESULT.md` 的 `res32` / `res29` 抽取，2 条事实、2 族地板、1 个幅度）：地板是「同配置重复 161/161、164/164 逐题相同、翻转 0、Jaccard 1.0」，判读规则是「同一提示集哈希 + 同一后处理版本下任何非零跨 run 差异都不是噪声」；输入变更时是「16 题双向翻转（11 上 / 5 下、净 +6）、±16/161 ≈ 0.10、76/161 文本不同、66 题 token 不同」，并写明适用条件（只有提示集哈希 + 后处理版本都钉住才可比，两个数字不得相加）。BFCL 一节新增口径说明：没有唯一总分、本表不给汇总列、面板 micro 与类别列 macro 不可混用；两者在本仓最大差 `0.2028`（`gr3b-q2`：micro 0.3905 vs macro 0.1877，当场从 `m8_summary.jsonl` 算出），并说明多轮 21/123 行仍无题量、micro 不可从库复算。
 - producer: `python3 report_inputs/build_reproducibility.py --check`；`python3 checks/reproducibility_negative_control.py`（幅度改 0 → 正文改口；删适用条件 → 生成失败）
 
+## res47 :: 报告第三节与 `FINDINGS.md` 不再出现已撤回的「换方案有可测差异 +0.056」，改由 `a03` 的归因脚本输出生成。
+
+- kind: measured
+- status: current
+- evidence: 报告第三节的结论句由 `report_inputs/scheme_effects.json` 渲染，而该索引由 `report_inputs/build_scheme_effects.py` 直接跑 `a03` 的 `analysis/attrib.py` 并解析它的系数表得到（不抄散文）：三个标签系数在 9/9 基准上全跨 0，唯一九列都不含 0 的是位宽斜率（+0.03 至 +0.20 分/比特）；区间半宽最大到 IQ ≤0.27、local ≤0.36、bartowski ≤0.48，识别力最弱的两类在 ±0.4–0.5 量级以内不可分辨；识别来源各只有 1–3 族。`FINDINGS.md` 那一行改为指向 `docs/subprojects/a03-量化方案与厂商/RESULT.md::res7`（旧措辞在那里已标撤回）。
+- producer: `python3 report_inputs/build_scheme_effects.py --check`；`python3 checks/scheme_effects_negative_control.py`（把 IQ 的 ARC-c 区间改成显著 → 正文改口成「探测到了」；把所有区间加宽一倍 → 精度数字从 0.48 变 0.95）
+- 口径差异（以脚本为准）: a03 的散文写「区间半宽 0.23–0.57」，脚本当前输出按逐基准最大半宽算出来是 0.27 / 0.36 / 0.48（min 侧 0.06–0.13）；报告用脚本值。
+

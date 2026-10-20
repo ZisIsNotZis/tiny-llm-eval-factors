@@ -1077,7 +1077,7 @@ def mpl_ambiguous_note():
     return ("<li><b>行键无法区分的格（数据缺陷，逐条列出而不静默取其一）：</b>"
             + "；".join(items) + "。这些格来自 m31 的 top_k 扫描：它把 K=1（贪心地板）与 K=200（不截断）"
             "两种取值写进了同一条协议串，库内没有列说明哪一行属于哪个取值；"
-            "处置归入库侧（<code>docs/result/result.yaml</code> 的协议串记录），报告只如实显示两个值。</li>")
+            "处置归入库侧（<code>migrations/backfill_n_items.py</code> 与库内协议串），报告只如实显示两个值。</li>")
 
 
 def fig_mpl_langs(t):
@@ -1304,6 +1304,52 @@ def bfcl_aggregation_note():
                  "micro 需要逐题计数，而产物只有类别级 `acc`/`n`，所以 micro 不可从库复算，"
                  "本报告也不给 BFCL 的任何单一总分数值。</li>")
     return "".join(parts)
+
+
+SCHEME_EFFECTS = "report_inputs/scheme_effects.json"
+
+
+def scheme_effects_html():
+    """第三节的结论句：同字节下探测不到方案/厂商的水平位移，真正的变量是比特分配。
+
+    数字来自 `report_inputs/scheme_effects.json`，而它由 `a03` 的归因脚本输出解析而来
+    （`report_inputs/build_scheme_effects.py`）；所以脚本数据一变，这句话和它的精度就跟着变，
+    不会停在旧措辞上。
+    """
+    if not os.path.exists(SCHEME_EFFECTS):
+        raise SystemExit(f"报告输入缺失：{SCHEME_EFFECTS}"
+                         f"（由 report_inputs/build_scheme_effects.py 生成）。")
+    doc = json.load(open(SCHEME_EFFECTS, encoding="utf-8"))
+    labels = doc["labels"]
+    detected = {k: v["significant_benches"] for k, v in labels.items() if v["significant_benches"]}
+    n_bench = doc["benches"]
+
+    out = []
+    if not detected:
+        out.append("<li><b>同字节下探测不到方案 / 厂商的水平位移。</b>"
+                   f"把家族与比特预算固定住以后，三个标签系数（IQ 方案、本仓配方、另一个上传者）"
+                   f"在 {n_bench}/{n_bench} 个基准上<b>全部跨 0</b>；唯一每个基准都不含 0 的是位宽斜率本身"
+                   f"（{doc['slope_range'][0]:+.2f} 至 {doc['slope_range'][1]:+.2f} 分/比特）。")
+        weakest = sorted(labels.items(), key=lambda kv: -kv[1]["half_width_max"])[:2]
+        weak_lo = min(v["half_width_max"] for _k, v in weakest)
+        weak_hi = max(v["half_width_max"] for _k, v in weakest)
+        out.append("<br><b>精度：</b>各标签的 95% 区间半宽最大到 "
+                   + "、".join(f"{k} ≤{v['half_width_max']:.2f}" for k, v in labels.items())
+                   + f"。所以识别力最弱的两类（{'、'.join(k for k, _v in weakest)}）"
+                   f"在 <b>±{weak_lo:.1f}–{weak_hi:.1f} 量级以内的水平位移不可分辨</b>——"
+                   f"这是「探测不到」，不是「没有效应」。识别来源也很窄："
+                   + "；".join(f"{k} 由 {len(v['families'])} 族识别（{'、'.join(v['families'])}）"
+                              for k, v in labels.items() if v["families"])
+                   + "；其余来源在族内取值恒定、与家族固定效应共线，直接不可识别。")
+        out.append("<br><b>标签是比特分配的代理，分配在哪才是变量：</b>同名档位跨供应商时，"
+                   "分层分配轮廓的差可以远大于总位宽的差（实测轮廓与计数见 "
+                   "<code>docs/subprojects/a03-量化方案与厂商/RESULT.md::alloc-qwen36</code>），"
+                   "所以「换方案 / 换厂商」应当读成「换了谁把比特放在哪一层」。</li>")
+    else:
+        shown = "；".join(f"{k} 在 {'、'.join(v)} 上区间不含 0" for k, v in detected.items())
+        out.append(f"<li><b>同字节下探测到了标签的水平位移：</b>{html.escape(shown)}。"
+                   f"其余部分仍跨 0，逐基准读，不要外推。</li>")
+    return "".join(out)
 
 
 def bfcl_micro_macro_gap():
@@ -1561,21 +1607,21 @@ def data_quality_html():
              f"其中 <b>{n_fixed}</b> 份是同一格的 <code>_fixed</code> 重判（只把后处理换成正确的、重判旧落盘完成物，每道题仍是 <code>Exception</code>），"
              f"<b>{n_probe}</b> 份是 5 题探针（n=5，不是 161 题整格）。它们都不构成可用分数："
              "全 Exception 一律记为缺失（NULL）、不得写成 0；库中对应的格要么是 NULL，要么已被后来的重测取代。"
-             "把这类格读成整轮运行失败的旧归因已撤回（<code>docs/result/result.yaml::res17b</code>）；"
+             "把这类格读成整轮运行失败的旧归因已撤回（<code>docs/subprojects/i01-判分与基准有效性/RESULT.md::res17b</code>）；"
              "把它们归因为旧后处理破坏首行缩进的归因也已撤回（<code>::res21</code>）：同一签名在修正后的 harness 下依然存在，"
              "成因见下一条。</p>")
     h.append("<p><b>重测后这些格按真实通过数记分。</b> gemma-4-26B-A4B 在 chat 协议下的格，库中当前值与配对的评测状态："
              + "；".join(g26b_cells)
              + "。两个 py 格的 <code>Exception</code> 来自模型行为：模型把函数体首行写在第 0 列，拼接后必然缩进错误；"
              "每格「首行在第 0 列」的完成物条数与该格 <code>Exception</code> 条数逐格相等，而同为 py 的 Qwen3.8-27B Q3 格几乎没有这种完成物、得分很高，"
-             "所以不是 harness 剥离（<code>docs/result/result.yaml::res24</code>）。</p>")
+             "所以不是 harness 剥离（<code>docs/subprojects/i01-判分与基准有效性/RESULT.md::res24</code>）。</p>")
     h.append("<p><b>3. 生成协议会改变结论（轴 an7）。</b> 同一模型 gemma-4-26B-A4B 的 cpp："
              + "；".join(f"<code>{html.escape(p)}</code> → {v}" for _m, p, v in prot)
              + "。raw（纯补全）对 gemma 系列是不公平的：它的模板会先输出推理/散文，raw 下几乎全不通过（harness floor）。"
              "所以旧的 raw MultiPL-E 对 gemma 家族不可比。这正是“换协议必须重测”。</p>")
     h.append("<p><b>4. 模型规模曲线“越大越差”有两类原因，要分开看：</b>"
              "(a) <b>方案反向</b>：Qwen3.5-2B 在相邻的跨供应商档位上，字节更多的一档分数反而更低——同名档位跨供应商/方案不可比（当前值见 "
-             "<code>docs/result/result.yaml::res5</code>）；"
+             "<code>docs/subprojects/a01-量化位宽/RESULT.md::res5</code>）；"
              "(b) <b>协议/测集不可比</b>：gemma-4 的 12b/26B 近零来自 raw 协议与语言覆盖，见上。"
              "剩下同家族、同方案、同协议的单调趋势是真实的规模效应。</p>")
     h.append("</div>")
@@ -1775,7 +1821,7 @@ def main():
          "<li><b>行标签里的 <code>·ctx=…</code>／<code>·kv=…</code>／<code>·tmpl=…</code> 是数据库协议串自己记的附加条件，不是排版噪声。</b>"
          "以 gemma-4-12b 为例，它的 cpp 行来自 m6b 面板（<code>ctx=4096</code>、chat 模板未经核对 ⇒ <code>tmpl=unverified</code>），"
          "它的 py 行来自 m161 重测（<code>ctx=2048 --jinja</code>），所以同一个模型的 cpp 与 py 是两套设置，"
-         "不能拿来互相解释（<code>docs/result/result.yaml::res22</code>）。</li>"
+         "不能拿来互相解释（<code>docs/subprojects/a01-量化位宽/RESULT.md::res5</code>）。</li>"
          "<li><b>看图要点：</b>热力图中一行内的横向差异 = 语言效应；空白（NaN）= 未测，绝不当作 0。</li>"
          + mpl_ambiguous_note() +
          "</ul>"),
@@ -1852,7 +1898,8 @@ def main():
              "<tr><td>GSQ-RCO 方案</td><td>—</td><td class='sig'>全部差值都测不出</td><td>—</td></tr>"
              "<tr><td>扩散式解码</td><td>—</td><td>—</td><td class='nr'>运行时缺失</td></tr></table>")
     H.append("<p class='def'><b>一句话总结：</b>量化损失在代码、推理、指令上明显，在选择题知识与事实性上很小；"
-             "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>量化位宽至少约 4 比特/权重，再往上除非能测出收益否则不必多花比特</b>。</p>")
+             "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>量化位宽至少约 4 比特/权重，再往上除非能测出收益否则不必多花比特</b>。</p>"
+         "<ul>" + scheme_effects_html() + "</ul>")
     H.append("</body></html>")
     open("report.html", "w").write("\n".join(H))
     print("wrote report.html", os.path.getsize("report.html"), "bytes;",
