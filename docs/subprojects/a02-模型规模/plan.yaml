@@ -1,8 +1,0 @@
-plan5:
-  _text: 假设（MoE 激活参数双变量回归）：模型规模应写成 `score = f(总参数量, 激活参数量)` 的联合回归，因为没有「同家族同总参、不同激活」的受控样本，激活轴不能单列。
-  author: agent
-  origin: .scratch/originals/BACKLOG.md 尚未跑的假设
-  scope: general
-  status: provisional
-  domain:
-    kind: hypothesis
