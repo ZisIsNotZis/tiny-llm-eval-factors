@@ -1,0 +1,3088 @@
+{
+ "source": "wrapup/mres/*_eval.json",
+ "files": [
+  {
+   "file": "i01-recheck-g26b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 134,
+   "status": {
+    "Exception": 11,
+    "OK": 134,
+    "SyntaxError": 16
+   }
+  },
+  {
+   "file": "m1-qwen4b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 55,
+   "status": {
+    "Exception": 84,
+    "OK": 55,
+    "SyntaxError": 21,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m1-qwen4b-q2-java_eval.json",
+   "n": 158,
+   "pass": 51,
+   "status": {
+    "Exception": 73,
+    "OK": 51,
+    "SyntaxError": 33,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m1-qwen4b-q2-js_eval.json",
+   "n": 161,
+   "pass": 55,
+   "status": {
+    "Exception": 104,
+    "OK": 55,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m1-qwen4b-q2-py_eval.json",
+   "n": 161,
+   "pass": 57,
+   "status": {
+    "Exception": 102,
+    "OK": 57,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m1-qwen4b-q2-rb_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 118,
+    "OK": 43
+   }
+  },
+  {
+   "file": "m1-qwen4b-q2-rs_eval.json",
+   "n": 155,
+   "pass": 40,
+   "status": {
+    "Exception": 51,
+    "OK": 40,
+    "SyntaxError": 64
+   }
+  },
+  {
+   "file": "m1-qwen4b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 73,
+   "status": {
+    "Exception": 72,
+    "OK": 73,
+    "SyntaxError": 15,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m1-qwen4b-q3-java_eval.json",
+   "n": 158,
+   "pass": 77,
+   "status": {
+    "Exception": 52,
+    "OK": 77,
+    "SyntaxError": 28,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m1-qwen4b-q3-js_eval.json",
+   "n": 161,
+   "pass": 86,
+   "status": {
+    "Exception": 74,
+    "OK": 86,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m1-qwen4b-q3-py_eval.json",
+   "n": 161,
+   "pass": 81,
+   "status": {
+    "Exception": 79,
+    "OK": 81,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m1-qwen4b-q3-rb_eval.json",
+   "n": 161,
+   "pass": 56,
+   "status": {
+    "Exception": 105,
+    "OK": 56
+   }
+  },
+  {
+   "file": "m1-qwen4b-q3-rs_eval.json",
+   "n": 155,
+   "pass": 64,
+   "status": {
+    "Exception": 50,
+    "OK": 64,
+    "SyntaxError": 40,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-g26b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 9,
+   "status": {
+    "Exception": 39,
+    "OK": 9,
+    "SyntaxError": 112,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-g26b-q2-py_eval.json",
+   "n": 161,
+   "pass": 5,
+   "status": {
+    "Exception": 156,
+    "OK": 5
+   }
+  },
+  {
+   "file": "m10-g26b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 4,
+   "status": {
+    "Exception": 31,
+    "OK": 4,
+    "SyntaxError": 126
+   }
+  },
+  {
+   "file": "m10-g26b-q3-py_eval.json",
+   "n": 161,
+   "pass": 7,
+   "status": {
+    "Exception": 153,
+    "OK": 7,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-lfm25-8b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 104,
+    "OK": 26,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m10-lfm25-8b-q2-py_eval.json",
+   "n": 161,
+   "pass": 10,
+   "status": {
+    "Exception": 151,
+    "OK": 10
+   }
+  },
+  {
+   "file": "m10-lfm25-8b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 23,
+   "status": {
+    "Exception": 118,
+    "OK": 23,
+    "SyntaxError": 18,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m10-lfm25-8b-q3-py_eval.json",
+   "n": 161,
+   "pass": 6,
+   "status": {
+    "Exception": 155,
+    "OK": 6
+   }
+  },
+  {
+   "file": "m10-mcp5-2b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 10,
+   "status": {
+    "Exception": 53,
+    "OK": 10,
+    "SyntaxError": 95,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "m10-mcp5-2b-q2-py_eval.json",
+   "n": 161,
+   "pass": 14,
+   "status": {
+    "Exception": 144,
+    "OK": 14,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "m10-mcp5-2b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 60,
+   "status": {
+    "Exception": 87,
+    "OK": 60,
+    "SyntaxError": 13,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-mcp5-2b-q3-py_eval.json",
+   "n": 161,
+   "pass": 65,
+   "status": {
+    "Exception": 96,
+    "OK": 65
+   }
+  },
+  {
+   "file": "m10-nem4b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 93,
+   "status": {
+    "Exception": 58,
+    "OK": 93,
+    "SyntaxError": 10
+   }
+  },
+  {
+   "file": "m10-nem4b-q2-py_eval.json",
+   "n": 161,
+   "pass": 104,
+   "status": {
+    "Exception": 57,
+    "OK": 104
+   }
+  },
+  {
+   "file": "m10-nem4b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 97,
+   "status": {
+    "Exception": 55,
+    "OK": 97,
+    "SyntaxError": 8,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-nem4b-q3-py_eval.json",
+   "n": 161,
+   "pass": 106,
+   "status": {
+    "Exception": 55,
+    "OK": 106
+   }
+  },
+  {
+   "file": "m10-orn9b-q4-cpp_eval.json",
+   "n": 161,
+   "pass": 98,
+   "status": {
+    "Exception": 56,
+    "OK": 98,
+    "SyntaxError": 6,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-orn9b-q4-py_eval.json",
+   "n": 161,
+   "pass": 68,
+   "status": {
+    "Exception": 91,
+    "OK": 68,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m10-orn9b-q5-cpp_eval.json",
+   "n": 161,
+   "pass": 100,
+   "status": {
+    "Exception": 52,
+    "OK": 100,
+    "SyntaxError": 8,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-orn9b-q5-py_eval.json",
+   "n": 161,
+   "pass": 76,
+   "status": {
+    "Exception": 84,
+    "OK": 76,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m10-q38-27b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 122,
+   "status": {
+    "Exception": 31,
+    "OK": 122,
+    "SyntaxError": 6,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m10-q38-27b-q2-py_eval.json",
+   "n": 161,
+   "pass": 120,
+   "status": {
+    "Exception": 41,
+    "OK": 120
+   }
+  },
+  {
+   "file": "m10-q38-27b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 130,
+   "status": {
+    "Exception": 27,
+    "OK": 130,
+    "SyntaxError": 4
+   }
+  },
+  {
+   "file": "m10-q38-27b-q3-py_eval.json",
+   "n": 161,
+   "pass": 118,
+   "status": {
+    "Exception": 43,
+    "OK": 118
+   }
+  },
+  {
+   "file": "m160-g12b-q2-cpp-raw_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 74,
+    "SyntaxError": 84,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "m160v-q38-27b-q3-cpp-chat_eval.json",
+   "n": 161,
+   "pass": 73,
+   "status": {
+    "Exception": 13,
+    "OK": 73,
+    "SyntaxError": 75
+   }
+  },
+  {
+   "file": "m160v-q38-27b-q3-cpp-chat_fixed_eval.json",
+   "n": 161,
+   "pass": 140,
+   "status": {
+    "Exception": 18,
+    "OK": 140,
+    "SyntaxError": 3
+   }
+  },
+  {
+   "file": "m160v-q38-27b-q3-cpp-chat_unfenced_eval.json",
+   "n": 161,
+   "pass": 140,
+   "status": {
+    "Exception": 18,
+    "OK": 140,
+    "SyntaxError": 3
+   }
+  },
+  {
+   "file": "m161-g12b-q2-py-chat_eval.json",
+   "n": 161,
+   "pass": 77,
+   "status": {
+    "Exception": 83,
+    "OK": 77,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m161-g12b-q3-py-chat_eval.json",
+   "n": 161,
+   "pass": 93,
+   "status": {
+    "Exception": 68,
+    "OK": 93
+   }
+  },
+  {
+   "file": "m161-g26b-q2-py-chat_eval.json",
+   "n": 161,
+   "pass": 2,
+   "status": {
+    "Exception": 159,
+    "OK": 2
+   }
+  },
+  {
+   "file": "m161-g26b-q3-py-chat_eval.json",
+   "n": 161,
+   "pass": 1,
+   "status": {
+    "Exception": 160,
+    "OK": 1
+   }
+  },
+  {
+   "file": "m161-q38-27b-q2-py-chat_eval.json",
+   "n": 161,
+   "pass": 121,
+   "status": {
+    "Exception": 40,
+    "OK": 121
+   }
+  },
+  {
+   "file": "m161-q38-27b-q3-cpp-chat_eval.json",
+   "n": 161,
+   "pass": 140,
+   "status": {
+    "Exception": 18,
+    "OK": 140,
+    "SyntaxError": 3
+   }
+  },
+  {
+   "file": "m161-q38-27b-q3-py-chat_eval.json",
+   "n": 161,
+   "pass": 145,
+   "status": {
+    "Exception": 16,
+    "OK": 145
+   }
+  },
+  {
+   "file": "m2-qwen9b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 70,
+   "status": {
+    "Exception": 77,
+    "OK": 70,
+    "SyntaxError": 13,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m2-qwen9b-q2-js_eval.json",
+   "n": 161,
+   "pass": 81,
+   "status": {
+    "Exception": 80,
+    "OK": 81
+   }
+  },
+  {
+   "file": "m2-qwen9b-q2-py_eval.json",
+   "n": 161,
+   "pass": 56,
+   "status": {
+    "Exception": 105,
+    "OK": 56
+   }
+  },
+  {
+   "file": "m2-qwen9b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 94,
+   "status": {
+    "Exception": 62,
+    "OK": 94,
+    "SyntaxError": 4,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m2-qwen9b-q3-js_eval.json",
+   "n": 161,
+   "pass": 98,
+   "status": {
+    "Exception": 63,
+    "OK": 98
+   }
+  },
+  {
+   "file": "m2-qwen9b-q3-py_eval.json",
+   "n": 161,
+   "pass": 84,
+   "status": {
+    "Exception": 76,
+    "OK": 84,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m21-bonsai-q2g64-cpp_eval.json",
+   "n": 161,
+   "pass": 112,
+   "status": {
+    "Exception": 38,
+    "OK": 112,
+    "SyntaxError": 11
+   }
+  },
+  {
+   "file": "m21-bonsai-q2g64-py_eval.json",
+   "n": 161,
+   "pass": 123,
+   "status": {
+    "Exception": 38,
+    "OK": 123
+   }
+  },
+  {
+   "file": "m26-g26b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 134,
+   "status": {
+    "Exception": 11,
+    "OK": 134,
+    "SyntaxError": 16
+   }
+  },
+  {
+   "file": "m26-g26b-q2-cpp_fixed_eval.json",
+   "n": 161,
+   "pass": 134,
+   "status": {
+    "Exception": 11,
+    "OK": 134,
+    "SyntaxError": 16
+   }
+  },
+  {
+   "file": "m26-g26b-q2-py_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "m26-g26b-q2-py_fixed_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "m26-g26b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 134,
+   "status": {
+    "Exception": 11,
+    "OK": 134,
+    "SyntaxError": 16
+   }
+  },
+  {
+   "file": "m26-g26b-q3-cpp_fixed_eval.json",
+   "n": 161,
+   "pass": 134,
+   "status": {
+    "Exception": 11,
+    "OK": 134,
+    "SyntaxError": 16
+   }
+  },
+  {
+   "file": "m26-g26b-q3-py_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "m26-g26b-q3-py_fixed_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "m26-q38-27b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 35,
+   "status": {
+    "Exception": 6,
+    "OK": 35,
+    "SyntaxError": 120
+   }
+  },
+  {
+   "file": "m26-q38-27b-q2-cpp_fixed_eval.json",
+   "n": 161,
+   "pass": 102,
+   "status": {
+    "Exception": 11,
+    "OK": 102,
+    "SyntaxError": 48
+   }
+  },
+  {
+   "file": "m26-q38-27b-q2-py_eval.json",
+   "n": 161,
+   "pass": 105,
+   "status": {
+    "Exception": 56,
+    "OK": 105
+   }
+  },
+  {
+   "file": "m26-q38-27b-q2-py_fixed_eval.json",
+   "n": 161,
+   "pass": 112,
+   "status": {
+    "Exception": 49,
+    "OK": 112
+   }
+  },
+  {
+   "file": "m26-q38-27b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 78,
+   "status": {
+    "Exception": 11,
+    "OK": 78,
+    "SyntaxError": 72
+   }
+  },
+  {
+   "file": "m26-q38-27b-q3-cpp_fixed_eval.json",
+   "n": 161,
+   "pass": 138,
+   "status": {
+    "Exception": 19,
+    "OK": 138,
+    "SyntaxError": 4
+   }
+  },
+  {
+   "file": "m26-q38-27b-q3-cpp_unfenced_eval.json",
+   "n": 161,
+   "pass": 138,
+   "status": {
+    "Exception": 19,
+    "OK": 138,
+    "SyntaxError": 4
+   }
+  },
+  {
+   "file": "m26-q38-27b-q3-cpp_unfenced_fixed_eval.json",
+   "n": 161,
+   "pass": 138,
+   "status": {
+    "Exception": 19,
+    "OK": 138,
+    "SyntaxError": 4
+   }
+  },
+  {
+   "file": "m26-q38-27b-q3-py_eval.json",
+   "n": 161,
+   "pass": 131,
+   "status": {
+    "Exception": 30,
+    "OK": 131
+   }
+  },
+  {
+   "file": "m26-q38-27b-q3-py_fixed_eval.json",
+   "n": 161,
+   "pass": 139,
+   "status": {
+    "Exception": 22,
+    "OK": 139
+   }
+  },
+  {
+   "file": "m27-q2-t0.0-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 67,
+    "OK": 18,
+    "SyntaxError": 75,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m27-q2-t0.0-py_eval.json",
+   "n": 161,
+   "pass": 22,
+   "status": {
+    "Exception": 139,
+    "OK": 22
+   }
+  },
+  {
+   "file": "m27-q2-t0.3-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 76,
+    "OK": 18,
+    "SyntaxError": 65,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m27-q2-t0.3-py_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 135,
+    "OK": 26
+   }
+  },
+  {
+   "file": "m27-q2-t0.6-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 77,
+    "OK": 18,
+    "SyntaxError": 66
+   }
+  },
+  {
+   "file": "m27-q2-t0.6-py_eval.json",
+   "n": 161,
+   "pass": 15,
+   "status": {
+    "Exception": 144,
+    "OK": 15,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m27-q3-t0.3-cpp_eval.json",
+   "n": 161,
+   "pass": 28,
+   "status": {
+    "Exception": 99,
+    "OK": 28,
+    "SyntaxError": 33,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m27-q3-t0.3-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 116,
+    "OK": 43,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m27-q3-t0.6-cpp_eval.json",
+   "n": 161,
+   "pass": 24,
+   "status": {
+    "Exception": 100,
+    "OK": 24,
+    "SyntaxError": 35,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m27-q3-t0.6-py_eval.json",
+   "n": 161,
+   "pass": 44,
+   "status": {
+    "Exception": 116,
+    "OK": 44,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m27-q4-t0.3-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 101,
+    "OK": 37,
+    "SyntaxError": 23
+   }
+  },
+  {
+   "file": "m27-q4-t0.3-py_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 110,
+    "OK": 51
+   }
+  },
+  {
+   "file": "m27-q4-t0.6-cpp_eval.json",
+   "n": 161,
+   "pass": 31,
+   "status": {
+    "Exception": 102,
+    "OK": 31,
+    "SyntaxError": 27,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m27-q4-t0.6-py_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 110,
+    "OK": 51
+   }
+  },
+  {
+   "file": "m29-q2-faoff_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 17,
+   "status": {
+    "Exception": 74,
+    "OK": 17,
+    "SyntaxError": 69,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m29-q2-faoff_f16-py_eval.json",
+   "n": 161,
+   "pass": 21,
+   "status": {
+    "Exception": 140,
+    "OK": 21
+   }
+  },
+  {
+   "file": "m29-q2-faon_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 70,
+    "OK": 18,
+    "SyntaxError": 72,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m29-q2-faon_f16-py_eval.json",
+   "n": 161,
+   "pass": 21,
+   "status": {
+    "Exception": 140,
+    "OK": 21
+   }
+  },
+  {
+   "file": "m29-q2-faon_q8-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 67,
+    "OK": 18,
+    "SyntaxError": 75,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m29-q2-faon_q8-py_eval.json",
+   "n": 161,
+   "pass": 22,
+   "status": {
+    "Exception": 139,
+    "OK": 22
+   }
+  },
+  {
+   "file": "m29-q3-faoff_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 42,
+   "status": {
+    "Exception": 88,
+    "OK": 42,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m29-q3-faoff_f16-py_eval.json",
+   "n": 161,
+   "pass": 44,
+   "status": {
+    "Exception": 116,
+    "OK": 44,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m29-q3-faon_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 42,
+   "status": {
+    "Exception": 88,
+    "OK": 42,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m29-q3-faon_f16-py_eval.json",
+   "n": 161,
+   "pass": 44,
+   "status": {
+    "Exception": 115,
+    "OK": 44,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m29-q3-faon_q8-cpp_eval.json",
+   "n": 161,
+   "pass": 39,
+   "status": {
+    "Exception": 91,
+    "OK": 39,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m29-q3-faon_q8-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 116,
+    "OK": 43,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m3-e2b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 48,
+   "status": {
+    "Exception": 67,
+    "OK": 48,
+    "SyntaxError": 44,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m3-e2b-q2-js_eval.json",
+   "n": 161,
+   "pass": 19,
+   "status": {
+    "Exception": 141,
+    "OK": 19,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-e2b-q2-py_eval.json",
+   "n": 161,
+   "pass": 30,
+   "status": {
+    "Exception": 130,
+    "OK": 30,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-e2b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 86,
+   "status": {
+    "Exception": 43,
+    "OK": 86,
+    "SyntaxError": 31,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-e2b-q3-js_eval.json",
+   "n": 161,
+   "pass": 59,
+   "status": {
+    "Exception": 102,
+    "OK": 59
+   }
+  },
+  {
+   "file": "m3-e2b-q3-py_eval.json",
+   "n": 161,
+   "pass": 56,
+   "status": {
+    "Exception": 105,
+    "OK": 56
+   }
+  },
+  {
+   "file": "m3-e4b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 76,
+   "status": {
+    "Exception": 48,
+    "OK": 76,
+    "SyntaxError": 36,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-e4b-q2-js_eval.json",
+   "n": 161,
+   "pass": 33,
+   "status": {
+    "Exception": 128,
+    "OK": 33
+   }
+  },
+  {
+   "file": "m3-e4b-q2-py_eval.json",
+   "n": 161,
+   "pass": 80,
+   "status": {
+    "Exception": 79,
+    "OK": 80,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m3-e4b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 119,
+   "status": {
+    "Exception": 26,
+    "OK": 119,
+    "SyntaxError": 16
+   }
+  },
+  {
+   "file": "m3-e4b-q3-js_eval.json",
+   "n": 161,
+   "pass": 74,
+   "status": {
+    "Exception": 87,
+    "OK": 74
+   }
+  },
+  {
+   "file": "m3-e4b-q3-py_eval.json",
+   "n": 161,
+   "pass": 103,
+   "status": {
+    "Exception": 58,
+    "OK": 103
+   }
+  },
+  {
+   "file": "m3-g12b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 67,
+    "SyntaxError": 94
+   }
+  },
+  {
+   "file": "m3-g12b-q2-java_eval.json",
+   "n": 158,
+   "pass": 0,
+   "status": {
+    "SyntaxError": 158
+   }
+  },
+  {
+   "file": "m3-g12b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 2,
+   "status": {
+    "Exception": 19,
+    "OK": 2,
+    "SyntaxError": 140
+   }
+  },
+  {
+   "file": "m3-gr3b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 6,
+   "status": {
+    "Exception": 61,
+    "OK": 6,
+    "SyntaxError": 93,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-gr3b-q2-js_eval.json",
+   "n": 161,
+   "pass": 8,
+   "status": {
+    "Exception": 153,
+    "OK": 8
+   }
+  },
+  {
+   "file": "m3-gr3b-q2-py_eval.json",
+   "n": 161,
+   "pass": 9,
+   "status": {
+    "Exception": 152,
+    "OK": 9
+   }
+  },
+  {
+   "file": "m3-gr3b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 77,
+   "status": {
+    "Exception": 69,
+    "OK": 77,
+    "SyntaxError": 15
+   }
+  },
+  {
+   "file": "m3-gr3b-q3-js_eval.json",
+   "n": 161,
+   "pass": 73,
+   "status": {
+    "Exception": 87,
+    "OK": 73,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-gr3b-q3-py_eval.json",
+   "n": 161,
+   "pass": 39,
+   "status": {
+    "Exception": 122,
+    "OK": 39
+   }
+  },
+  {
+   "file": "m3-gr3b-q4-cpp_eval.json",
+   "n": 161,
+   "pass": 92,
+   "status": {
+    "Exception": 56,
+    "OK": 92,
+    "SyntaxError": 13
+   }
+  },
+  {
+   "file": "m3-gr3b-q4-py_eval.json",
+   "n": 161,
+   "pass": 49,
+   "status": {
+    "Exception": 112,
+    "OK": 49
+   }
+  },
+  {
+   "file": "m3-iq2m-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 58,
+    "OK": 18,
+    "SyntaxError": 83,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m3-iq2m-js_eval.json",
+   "n": 161,
+   "pass": 23,
+   "status": {
+    "Exception": 134,
+    "OK": 23,
+    "Timeout": 4
+   }
+  },
+  {
+   "file": "m3-iq2m-py_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 134,
+    "OK": 26,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-iq2xxs-cpp_eval.json",
+   "n": 161,
+   "pass": 1,
+   "status": {
+    "Exception": 44,
+    "OK": 1,
+    "SyntaxError": 116
+   }
+  },
+  {
+   "file": "m3-iq2xxs-java_eval.json",
+   "n": 158,
+   "pass": 2,
+   "status": {
+    "Exception": 26,
+    "OK": 2,
+    "SyntaxError": 130
+   }
+  },
+  {
+   "file": "m3-q08b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 7,
+   "status": {
+    "Exception": 81,
+    "OK": 7,
+    "SyntaxError": 72,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-q08b-q2-java_eval.json",
+   "n": 158,
+   "pass": 3,
+   "status": {
+    "Exception": 62,
+    "OK": 3,
+    "SyntaxError": 93
+   }
+  },
+  {
+   "file": "m3-q08b-q2-js_eval.json",
+   "n": 161,
+   "pass": 8,
+   "status": {
+    "Exception": 153,
+    "OK": 8
+   }
+  },
+  {
+   "file": "m3-q08b-q2-py_eval.json",
+   "n": 161,
+   "pass": 11,
+   "status": {
+    "Exception": 150,
+    "OK": 11
+   }
+  },
+  {
+   "file": "m3-q08b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 11,
+   "status": {
+    "Exception": 85,
+    "OK": 11,
+    "SyntaxError": 65
+   }
+  },
+  {
+   "file": "m3-q08b-q3-java_eval.json",
+   "n": 158,
+   "pass": 15,
+   "status": {
+    "Exception": 46,
+    "OK": 15,
+    "SyntaxError": 97
+   }
+  },
+  {
+   "file": "m3-q08b-q3-js_eval.json",
+   "n": 161,
+   "pass": 21,
+   "status": {
+    "Exception": 140,
+    "OK": 21
+   }
+  },
+  {
+   "file": "m3-q08b-q3-py_eval.json",
+   "n": 161,
+   "pass": 21,
+   "status": {
+    "Exception": 140,
+    "OK": 21
+   }
+  },
+  {
+   "file": "m3-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 67,
+    "OK": 18,
+    "SyntaxError": 75,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-q2-js_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 143,
+    "OK": 18
+   }
+  },
+  {
+   "file": "m3-q2-py_eval.json",
+   "n": 161,
+   "pass": 22,
+   "status": {
+    "Exception": 139,
+    "OK": 22
+   }
+  },
+  {
+   "file": "m3-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 39,
+   "status": {
+    "Exception": 91,
+    "OK": 39,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m3-q3-js_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 107,
+    "OK": 51,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "m3-q3-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 116,
+    "OK": 43,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m3-q36-35b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 114,
+   "status": {
+    "Exception": 43,
+    "OK": 114,
+    "SyntaxError": 4
+   }
+  },
+  {
+   "file": "m3-q36-35b-q2-py_eval.json",
+   "n": 161,
+   "pass": 112,
+   "status": {
+    "Exception": 49,
+    "OK": 112
+   }
+  },
+  {
+   "file": "m3-q36-35b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 116,
+   "status": {
+    "Exception": 37,
+    "OK": 116,
+    "SyntaxError": 8
+   }
+  },
+  {
+   "file": "m3-q36-35b-q3-py_eval.json",
+   "n": 161,
+   "pass": 122,
+   "status": {
+    "Exception": 39,
+    "OK": 122
+   }
+  },
+  {
+   "file": "m3-q4-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 96,
+    "OK": 37,
+    "SyntaxError": 27,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-q4-js_eval.json",
+   "n": 161,
+   "pass": 56,
+   "status": {
+    "Exception": 105,
+    "OK": 56
+   }
+  },
+  {
+   "file": "m3-q4-py_eval.json",
+   "n": 161,
+   "pass": 44,
+   "status": {
+    "Exception": 117,
+    "OK": 44
+   }
+  },
+  {
+   "file": "m3-q5-cpp_eval.json",
+   "n": 161,
+   "pass": 42,
+   "status": {
+    "Exception": 89,
+    "OK": 42,
+    "SyntaxError": 29,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-q5-js_eval.json",
+   "n": 161,
+   "pass": 47,
+   "status": {
+    "Exception": 113,
+    "OK": 47,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m3-q5-py_eval.json",
+   "n": 161,
+   "pass": 45,
+   "status": {
+    "Exception": 116,
+    "OK": 45
+   }
+  },
+  {
+   "file": "m30-ctx16384-kvf16_f16-cpp_eval.json",
+   "n": 60,
+   "pass": 0,
+   "status": {
+    "Exception": 1,
+    "SyntaxError": 59
+   }
+  },
+  {
+   "file": "m30-ctx16384-kvf16_q8_0-cpp_eval.json",
+   "n": 60,
+   "pass": 0,
+   "status": {
+    "Exception": 1,
+    "SyntaxError": 59
+   }
+  },
+  {
+   "file": "m30-ctx16384-kvq8_0_f16-cpp_eval.json",
+   "n": 60,
+   "pass": 1,
+   "status": {
+    "Exception": 1,
+    "OK": 1,
+    "SyntaxError": 58
+   }
+  },
+  {
+   "file": "m30-ctx16384-kvq8_0_q8_0-cpp_eval.json",
+   "n": 60,
+   "pass": 1,
+   "status": {
+    "Exception": 1,
+    "OK": 1,
+    "SyntaxError": 58
+   }
+  },
+  {
+   "file": "m30-ctx2048-kvf16_f16-cpp_eval.json",
+   "n": 60,
+   "pass": 4,
+   "status": {
+    "Exception": 5,
+    "OK": 4,
+    "SyntaxError": 51
+   }
+  },
+  {
+   "file": "m30-ctx2048-kvf16_q8_0-cpp_eval.json",
+   "n": 60,
+   "pass": 4,
+   "status": {
+    "Exception": 5,
+    "OK": 4,
+    "SyntaxError": 51
+   }
+  },
+  {
+   "file": "m30-ctx2048-kvq8_0_f16-cpp_eval.json",
+   "n": 60,
+   "pass": 4,
+   "status": {
+    "Exception": 4,
+    "OK": 4,
+    "SyntaxError": 52
+   }
+  },
+  {
+   "file": "m30-ctx2048-kvq8_0_q8_0-cpp_eval.json",
+   "n": 60,
+   "pass": 4,
+   "status": {
+    "Exception": 5,
+    "OK": 4,
+    "SyntaxError": 51
+   }
+  },
+  {
+   "file": "m30-ctx49152-kvf16_f16-cpp_eval.json",
+   "n": 60,
+   "pass": 0,
+   "status": {
+    "SyntaxError": 60
+   }
+  },
+  {
+   "file": "m30-ctx49152-kvf16_q8_0-cpp_eval.json",
+   "n": 60,
+   "pass": 0,
+   "status": {
+    "SyntaxError": 60
+   }
+  },
+  {
+   "file": "m30-ctx49152-kvq8_0_f16-cpp_eval.json",
+   "n": 60,
+   "pass": 0,
+   "status": {
+    "SyntaxError": 60
+   }
+  },
+  {
+   "file": "m30-ctx49152-kvq8_0_q8_0-cpp_eval.json",
+   "n": 60,
+   "pass": 0,
+   "status": {
+    "SyntaxError": 60
+   }
+  },
+  {
+   "file": "m30-q3-ctx24576-kvf16_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 40,
+   "status": {
+    "Exception": 87,
+    "OK": 40,
+    "SyntaxError": 34
+   }
+  },
+  {
+   "file": "m30-q3-ctx24576-kvf16_q8_0-cpp_eval.json",
+   "n": 161,
+   "pass": 41,
+   "status": {
+    "Exception": 88,
+    "OK": 41,
+    "SyntaxError": 32
+   }
+  },
+  {
+   "file": "m30-q3-ctx24576-kvq8_0_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 42,
+   "status": {
+    "Exception": 88,
+    "OK": 42,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m30-q3-ctx24576-kvq8_0_q8_0-cpp_eval.json",
+   "n": 161,
+   "pass": 39,
+   "status": {
+    "Exception": 91,
+    "OK": 39,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m30-q3-ctx49152-kvf16_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 40,
+   "status": {
+    "Exception": 87,
+    "OK": 40,
+    "SyntaxError": 34
+   }
+  },
+  {
+   "file": "m30-q3-ctx49152-kvf16_q8_0-cpp_eval.json",
+   "n": 161,
+   "pass": 41,
+   "status": {
+    "Exception": 88,
+    "OK": 41,
+    "SyntaxError": 32
+   }
+  },
+  {
+   "file": "m30-q3-ctx49152-kvq8_0_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 42,
+   "status": {
+    "Exception": 88,
+    "OK": 42,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m30-q3-ctx49152-kvq8_0_q8_0-cpp_eval.json",
+   "n": 161,
+   "pass": 39,
+   "status": {
+    "Exception": 91,
+    "OK": 39,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m30-q3-ctx8192-kvf16_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 40,
+   "status": {
+    "Exception": 87,
+    "OK": 40,
+    "SyntaxError": 34
+   }
+  },
+  {
+   "file": "m30-q3-ctx8192-kvf16_q8_0-cpp_eval.json",
+   "n": 161,
+   "pass": 41,
+   "status": {
+    "Exception": 88,
+    "OK": 41,
+    "SyntaxError": 32
+   }
+  },
+  {
+   "file": "m30-q3-ctx8192-kvq8_0_f16-cpp_eval.json",
+   "n": 161,
+   "pass": 42,
+   "status": {
+    "Exception": 88,
+    "OK": 42,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m30-q3-ctx8192-kvq8_0_q8_0-cpp_eval.json",
+   "n": 161,
+   "pass": 39,
+   "status": {
+    "Exception": 91,
+    "OK": 39,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m31-q2-tk1-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 67,
+    "OK": 18,
+    "SyntaxError": 75,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m31-q2-tk1-py_eval.json",
+   "n": 161,
+   "pass": 22,
+   "status": {
+    "Exception": 139,
+    "OK": 22
+   }
+  },
+  {
+   "file": "m31-q2-tk20-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 76,
+    "OK": 18,
+    "SyntaxError": 65,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q2-tk20-py_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 135,
+    "OK": 26
+   }
+  },
+  {
+   "file": "m31-q2-tk200-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 76,
+    "OK": 18,
+    "SyntaxError": 65,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q2-tk200-py_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 135,
+    "OK": 26
+   }
+  },
+  {
+   "file": "m31-q2-tk40-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 76,
+    "OK": 18,
+    "SyntaxError": 65,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q2-tk40-py_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 135,
+    "OK": 26
+   }
+  },
+  {
+   "file": "m31-q2-tk64-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 76,
+    "OK": 18,
+    "SyntaxError": 65,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q2-tk64-py_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 135,
+    "OK": 26
+   }
+  },
+  {
+   "file": "m31-q3-tk1-cpp_eval.json",
+   "n": 161,
+   "pass": 39,
+   "status": {
+    "Exception": 91,
+    "OK": 39,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "m31-q3-tk1-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 116,
+    "OK": 43,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q3-tk20-cpp_eval.json",
+   "n": 161,
+   "pass": 28,
+   "status": {
+    "Exception": 99,
+    "OK": 28,
+    "SyntaxError": 33,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m31-q3-tk20-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 117,
+    "OK": 43,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m31-q3-tk200-cpp_eval.json",
+   "n": 161,
+   "pass": 28,
+   "status": {
+    "Exception": 99,
+    "OK": 28,
+    "SyntaxError": 33,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m31-q3-tk200-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 116,
+    "OK": 43,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q3-tk40-cpp_eval.json",
+   "n": 161,
+   "pass": 28,
+   "status": {
+    "Exception": 99,
+    "OK": 28,
+    "SyntaxError": 33,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m31-q3-tk40-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 116,
+    "OK": 43,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q3-tk64-cpp_eval.json",
+   "n": 161,
+   "pass": 28,
+   "status": {
+    "Exception": 99,
+    "OK": 28,
+    "SyntaxError": 33,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m31-q3-tk64-py_eval.json",
+   "n": 161,
+   "pass": 43,
+   "status": {
+    "Exception": 116,
+    "OK": 43,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "m31-q4-tk1-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 96,
+    "OK": 37,
+    "SyntaxError": 27,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "m31-q4-tk1-py_eval.json",
+   "n": 161,
+   "pass": 44,
+   "status": {
+    "Exception": 117,
+    "OK": 44
+   }
+  },
+  {
+   "file": "m31-q4-tk20-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 101,
+    "OK": 37,
+    "SyntaxError": 23
+   }
+  },
+  {
+   "file": "m31-q4-tk20-py_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 110,
+    "OK": 51
+   }
+  },
+  {
+   "file": "m31-q4-tk200-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 101,
+    "OK": 37,
+    "SyntaxError": 23
+   }
+  },
+  {
+   "file": "m31-q4-tk200-py_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 110,
+    "OK": 51
+   }
+  },
+  {
+   "file": "m31-q4-tk40-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 101,
+    "OK": 37,
+    "SyntaxError": 23
+   }
+  },
+  {
+   "file": "m31-q4-tk40-py_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 110,
+    "OK": 51
+   }
+  },
+  {
+   "file": "m31-q4-tk64-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 101,
+    "OK": 37,
+    "SyntaxError": 23
+   }
+  },
+  {
+   "file": "m31-q4-tk64-py_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 110,
+    "OK": 51
+   }
+  },
+  {
+   "file": "m6b-g12b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 2,
+   "status": {
+    "Exception": 1,
+    "OK": 2,
+    "SyntaxError": 158
+   }
+  },
+  {
+   "file": "m6b-g12b-q2-cpp_fixed_eval.json",
+   "n": 161,
+   "pass": 4,
+   "status": {
+    "Exception": 1,
+    "OK": 4,
+    "SyntaxError": 156
+   }
+  },
+  {
+   "file": "m6b-g12b-q2-py_eval.json",
+   "n": 161,
+   "pass": 75,
+   "status": {
+    "Exception": 86,
+    "OK": 75
+   }
+  },
+  {
+   "file": "m6b-g12b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 130,
+   "status": {
+    "Exception": 16,
+    "OK": 130,
+    "SyntaxError": 15
+   }
+  },
+  {
+   "file": "m6b-g12b-q3-cpp_fixed_eval.json",
+   "n": 161,
+   "pass": 130,
+   "status": {
+    "Exception": 16,
+    "OK": 130,
+    "SyntaxError": 15
+   }
+  },
+  {
+   "file": "m6b-g12b-q3-py_eval.json",
+   "n": 161,
+   "pass": 5,
+   "status": {
+    "Exception": 156,
+    "OK": 5
+   }
+  },
+  {
+   "file": "m6b-probe-q3-py_eval.json",
+   "n": 40,
+   "pass": 2,
+   "status": {
+    "Exception": 38,
+    "OK": 2
+   }
+  },
+  {
+   "file": "mt1-bonsai17b-g64-cpp_eval.json",
+   "n": 161,
+   "pass": 47,
+   "status": {
+    "Exception": 75,
+    "OK": 47,
+    "SyntaxError": 39
+   }
+  },
+  {
+   "file": "mt1-bonsai17b-g64-py_eval.json",
+   "n": 161,
+   "pass": 67,
+   "status": {
+    "Exception": 94,
+    "OK": 67
+   }
+  },
+  {
+   "file": "mt1-bonsai8b-g64-cpp_eval.json",
+   "n": 161,
+   "pass": 89,
+   "status": {
+    "Exception": 53,
+    "OK": 89,
+    "SyntaxError": 19
+   }
+  },
+  {
+   "file": "mt1-bonsai8b-g64-py_eval.json",
+   "n": 161,
+   "pass": 99,
+   "status": {
+    "Exception": 62,
+    "OK": 99
+   }
+  },
+  {
+   "file": "mt1-iq3-2b-cpp_eval.json",
+   "n": 161,
+   "pass": 29,
+   "status": {
+    "Exception": 77,
+    "OK": 29,
+    "SyntaxError": 55
+   }
+  },
+  {
+   "file": "mt1-iq3-2b-py_eval.json",
+   "n": 161,
+   "pass": 32,
+   "status": {
+    "Exception": 127,
+    "OK": 32,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "mt1-iq3-4b-cpp_eval.json",
+   "n": 161,
+   "pass": 61,
+   "status": {
+    "Exception": 81,
+    "OK": 61,
+    "SyntaxError": 16,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "mt1-iq3-4b-py_eval.json",
+   "n": 161,
+   "pass": 66,
+   "status": {
+    "Exception": 95,
+    "OK": 66
+   }
+  },
+  {
+   "file": "mt1-q36-35b-bartq3-cpp_eval.json",
+   "n": 161,
+   "pass": 122,
+   "status": {
+    "Exception": 32,
+    "OK": 122,
+    "SyntaxError": 7
+   }
+  },
+  {
+   "file": "mt1-q36-35b-bartq3-py_eval.json",
+   "n": 161,
+   "pass": 119,
+   "status": {
+    "Exception": 42,
+    "OK": 119
+   }
+  },
+  {
+   "file": "pan-bonsai27b-1bit-cpp_eval.json",
+   "n": 161,
+   "pass": 88,
+   "status": {
+    "Exception": 56,
+    "OK": 88,
+    "SyntaxError": 16,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-bonsai27b-1bit-py_eval.json",
+   "n": 161,
+   "pass": 60,
+   "status": {
+    "Exception": 101,
+    "OK": 60
+   }
+  },
+  {
+   "file": "pan-bonsai4b-ternary-cpp_eval.json",
+   "n": 161,
+   "pass": 79,
+   "status": {
+    "Exception": 57,
+    "OK": 79,
+    "SyntaxError": 25
+   }
+  },
+  {
+   "file": "pan-bonsai4b-ternary-py_eval.json",
+   "n": 161,
+   "pass": 109,
+   "status": {
+    "Exception": 52,
+    "OK": 109
+   }
+  },
+  {
+   "file": "pan-gemma12b-q2-java_eval.json",
+   "n": 158,
+   "pass": 0,
+   "status": {
+    "SyntaxError": 158
+   }
+  },
+  {
+   "file": "pan-gemma12b-q2-js_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "pan-gemma12b-q2-rb_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "pan-gemma12b-q2-rs_eval.json",
+   "n": 155,
+   "pass": 1,
+   "status": {
+    "OK": 1,
+    "SyntaxError": 154
+   }
+  },
+  {
+   "file": "pan-gemma12b-q3-java_eval.json",
+   "n": 158,
+   "pass": 4,
+   "status": {
+    "Exception": 1,
+    "OK": 4,
+    "SyntaxError": 153
+   }
+  },
+  {
+   "file": "pan-gemma12b-q3-js_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "pan-gemma12b-q3-rb_eval.json",
+   "n": 161,
+   "pass": 0,
+   "status": {
+    "Exception": 161
+   }
+  },
+  {
+   "file": "pan-gemma12b-q3-rs_eval.json",
+   "n": 155,
+   "pass": 0,
+   "status": {
+    "Exception": 1,
+    "SyntaxError": 154
+   }
+  },
+  {
+   "file": "pan-glm47flash-q2kxl-cpp_eval.json",
+   "n": 161,
+   "pass": 76,
+   "status": {
+    "Exception": 79,
+    "OK": 76,
+    "SyntaxError": 5,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-glm47flash-q2kxl-py_eval.json",
+   "n": 161,
+   "pass": 56,
+   "status": {
+    "Exception": 104,
+    "OK": 56,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-glm47flash-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 94,
+   "status": {
+    "Exception": 63,
+    "OK": 94,
+    "SyntaxError": 4
+   }
+  },
+  {
+   "file": "pan-glm47flash-q3-py_eval.json",
+   "n": 161,
+   "pass": 79,
+   "status": {
+    "Exception": 82,
+    "OK": 79
+   }
+  },
+  {
+   "file": "pan-glm47flash-tq1-cpp_eval.json",
+   "n": 161,
+   "pass": 38,
+   "status": {
+    "Exception": 110,
+    "OK": 38,
+    "SyntaxError": 10,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "pan-glm47flash-tq1-py_eval.json",
+   "n": 161,
+   "pass": 19,
+   "status": {
+    "Exception": 142,
+    "OK": 19
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-m55-exq2-cpp_eval.json",
+   "n": 161,
+   "pass": 22,
+   "status": {
+    "Exception": 113,
+    "OK": 22,
+    "SyntaxError": 25,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-m55-exq2-py_eval.json",
+   "n": 161,
+   "pass": 11,
+   "status": {
+    "Exception": 150,
+    "OK": 11
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-m55-exq4-cpp_eval.json",
+   "n": 161,
+   "pass": 14,
+   "status": {
+    "Exception": 106,
+    "OK": 14,
+    "SyntaxError": 41
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-m55-exq4-py_eval.json",
+   "n": 161,
+   "pass": 8,
+   "status": {
+    "Exception": 153,
+    "OK": 8
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-m55-q3base-cpp_eval.json",
+   "n": 161,
+   "pass": 21,
+   "status": {
+    "Exception": 100,
+    "OK": 21,
+    "SyntaxError": 40
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-m55-q3base-py_eval.json",
+   "n": 161,
+   "pass": 5,
+   "status": {
+    "Exception": 155,
+    "OK": 5,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 26,
+   "status": {
+    "Exception": 104,
+    "OK": 26,
+    "SyntaxError": 31
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q2-java_eval.json",
+   "n": 158,
+   "pass": 11,
+   "status": {
+    "Exception": 18,
+    "OK": 11,
+    "SyntaxError": 129
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q2-js_eval.json",
+   "n": 161,
+   "pass": 11,
+   "status": {
+    "Exception": 149,
+    "OK": 11,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q2-py_eval.json",
+   "n": 161,
+   "pass": 10,
+   "status": {
+    "Exception": 151,
+    "OK": 10
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 23,
+   "status": {
+    "Exception": 118,
+    "OK": 23,
+    "SyntaxError": 18,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q3-java_eval.json",
+   "n": 158,
+   "pass": 8,
+   "status": {
+    "Exception": 14,
+    "OK": 8,
+    "SyntaxError": 136
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q3-js_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 143,
+    "OK": 18
+   }
+  },
+  {
+   "file": "pan-lfm25-8a1b-q3-py_eval.json",
+   "n": 161,
+   "pass": 6,
+   "status": {
+    "Exception": 155,
+    "OK": 6
+   }
+  },
+  {
+   "file": "pan-llama32-3b-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 37,
+   "status": {
+    "Exception": 98,
+    "OK": 37,
+    "SyntaxError": 25,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-llama32-3b-q2-py_eval.json",
+   "n": 161,
+   "pass": 48,
+   "status": {
+    "Exception": 113,
+    "OK": 48
+   }
+  },
+  {
+   "file": "pan-llama32-3b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 56,
+   "status": {
+    "Exception": 89,
+    "OK": 56,
+    "SyntaxError": 14,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "pan-llama32-3b-q3-py_eval.json",
+   "n": 161,
+   "pass": 80,
+   "status": {
+    "Exception": 81,
+    "OK": 80
+   }
+  },
+  {
+   "file": "pan-minicpm5-2b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 60,
+   "status": {
+    "Exception": 87,
+    "OK": 60,
+    "SyntaxError": 13,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-minicpm5-2b-q3-py_eval.json",
+   "n": 161,
+   "pass": 65,
+   "status": {
+    "Exception": 96,
+    "OK": 65
+   }
+  },
+  {
+   "file": "pan-nem4b-q2-java_eval.json",
+   "n": 158,
+   "pass": 59,
+   "status": {
+    "Exception": 44,
+    "OK": 59,
+    "SyntaxError": 54,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-nem4b-q2-js_eval.json",
+   "n": 161,
+   "pass": 13,
+   "status": {
+    "Exception": 148,
+    "OK": 13
+   }
+  },
+  {
+   "file": "pan-nem4b-q3-java_eval.json",
+   "n": 158,
+   "pass": 64,
+   "status": {
+    "Exception": 32,
+    "OK": 64,
+    "SyntaxError": 60,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "pan-nem4b-q3-js_eval.json",
+   "n": 161,
+   "pass": 24,
+   "status": {
+    "Exception": 137,
+    "OK": 24
+   }
+  },
+  {
+   "file": "pan-nemotron3-4b-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 97,
+   "status": {
+    "Exception": 55,
+    "OK": 97,
+    "SyntaxError": 8,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-nemotron3-4b-q3-py_eval.json",
+   "n": 161,
+   "pass": 106,
+   "status": {
+    "Exception": 55,
+    "OK": 106
+   }
+  },
+  {
+   "file": "pan-orn9b-q4-rb_eval.json",
+   "n": 161,
+   "pass": 73,
+   "status": {
+    "Exception": 87,
+    "OK": 73,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-orn9b-q4-rs_eval.json",
+   "n": 155,
+   "pass": 81,
+   "status": {
+    "Exception": 38,
+    "OK": 81,
+    "SyntaxError": 36
+   }
+  },
+  {
+   "file": "pan-orn9b-q5-rb_eval.json",
+   "n": 161,
+   "pass": 75,
+   "status": {
+    "Exception": 85,
+    "OK": 75,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-orn9b-q5-rs_eval.json",
+   "n": 155,
+   "pass": 85,
+   "status": {
+    "Exception": 42,
+    "OK": 85,
+    "SyntaxError": 28
+   }
+  },
+  {
+   "file": "pan-ornith9b-q4-cpp_eval.json",
+   "n": 161,
+   "pass": 98,
+   "status": {
+    "Exception": 56,
+    "OK": 98,
+    "SyntaxError": 6,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-ornith9b-q4-py_eval.json",
+   "n": 161,
+   "pass": 68,
+   "status": {
+    "Exception": 91,
+    "OK": 68,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "pan-phi4mini-q2-cpp_eval.json",
+   "n": 161,
+   "pass": 3,
+   "status": {
+    "Exception": 49,
+    "OK": 3,
+    "SyntaxError": 106,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "pan-phi4mini-q2-py_eval.json",
+   "n": 161,
+   "pass": 4,
+   "status": {
+    "Exception": 156,
+    "OK": 4,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-phi4mini-q3-cpp_eval.json",
+   "n": 161,
+   "pass": 56,
+   "status": {
+    "Exception": 79,
+    "OK": 56,
+    "SyntaxError": 24,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "pan-phi4mini-q3-py_eval.json",
+   "n": 161,
+   "pass": 75,
+   "status": {
+    "Exception": 86,
+    "OK": 75
+   }
+  },
+  {
+   "file": "pan-qwen2b-iq3xxs-cpp_eval.json",
+   "n": 161,
+   "pass": 29,
+   "status": {
+    "Exception": 77,
+    "OK": 29,
+    "SyntaxError": 55
+   }
+  },
+  {
+   "file": "pan-qwen2b-iq3xxs-py_eval.json",
+   "n": 161,
+   "pass": 32,
+   "status": {
+    "Exception": 127,
+    "OK": 32,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "pan-qwen2b-q2-java_eval.json",
+   "n": 158,
+   "pass": 19,
+   "status": {
+    "Exception": 46,
+    "OK": 19,
+    "SyntaxError": 93
+   }
+  },
+  {
+   "file": "pan-qwen2b-q2-js_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 143,
+    "OK": 18
+   }
+  },
+  {
+   "file": "pan-qwen2b-q2-rb_eval.json",
+   "n": 161,
+   "pass": 1,
+   "status": {
+    "Exception": 160,
+    "OK": 1
+   }
+  },
+  {
+   "file": "pan-qwen2b-q2-rs_eval.json",
+   "n": 155,
+   "pass": 10,
+   "status": {
+    "Exception": 33,
+    "OK": 10,
+    "SyntaxError": 110,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "pan-qwen2b-q2kxl-cpp_eval.json",
+   "n": 161,
+   "pass": 18,
+   "status": {
+    "Exception": 67,
+    "OK": 18,
+    "SyntaxError": 75,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-qwen2b-q2kxl-py_eval.json",
+   "n": 161,
+   "pass": 22,
+   "status": {
+    "Exception": 139,
+    "OK": 22
+   }
+  },
+  {
+   "file": "pan-qwen2b-q3-java_eval.json",
+   "n": 158,
+   "pass": 34,
+   "status": {
+    "Exception": 60,
+    "OK": 34,
+    "SyntaxError": 64
+   }
+  },
+  {
+   "file": "pan-qwen2b-q3-js_eval.json",
+   "n": 161,
+   "pass": 51,
+   "status": {
+    "Exception": 107,
+    "OK": 51,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "pan-qwen2b-q3-rb_eval.json",
+   "n": 161,
+   "pass": 17,
+   "status": {
+    "Exception": 144,
+    "OK": 17
+   }
+  },
+  {
+   "file": "pan-qwen2b-q3-rs_eval.json",
+   "n": 155,
+   "pass": 25,
+   "status": {
+    "Exception": 39,
+    "OK": 25,
+    "SyntaxError": 91
+   }
+  },
+  {
+   "file": "pan-qwen35-35a3b-iq1m-cpp_eval.json",
+   "n": 161,
+   "pass": 79,
+   "status": {
+    "Exception": 59,
+    "OK": 79,
+    "SyntaxError": 23
+   }
+  },
+  {
+   "file": "pan-qwen35-35a3b-iq1m-py_eval.json",
+   "n": 161,
+   "pass": 91,
+   "status": {
+    "Exception": 70,
+    "OK": 91
+   }
+  },
+  {
+   "file": "pan-qwen36-35a3b-q3km-cpp_eval.json",
+   "n": 161,
+   "pass": 122,
+   "status": {
+    "Exception": 32,
+    "OK": 122,
+    "SyntaxError": 7
+   }
+  },
+  {
+   "file": "pan-qwen36-35a3b-q3km-py_eval.json",
+   "n": 161,
+   "pass": 119,
+   "status": {
+    "Exception": 42,
+    "OK": 119
+   }
+  },
+  {
+   "file": "pan-qwen36-35a3b-udq3kxl-cpp_eval.json",
+   "n": 161,
+   "pass": 116,
+   "status": {
+    "Exception": 37,
+    "OK": 116,
+    "SyntaxError": 8
+   }
+  },
+  {
+   "file": "pan-qwen36-35a3b-udq3kxl-py_eval.json",
+   "n": 161,
+   "pass": 122,
+   "status": {
+    "Exception": 39,
+    "OK": 122
+   }
+  },
+  {
+   "file": "pan-qwen4b-iq3xxs-cpp_eval.json",
+   "n": 161,
+   "pass": 61,
+   "status": {
+    "Exception": 81,
+    "OK": 61,
+    "SyntaxError": 16,
+    "Timeout": 3
+   }
+  },
+  {
+   "file": "pan-qwen4b-iq3xxs-py_eval.json",
+   "n": 161,
+   "pass": 66,
+   "status": {
+    "Exception": 95,
+    "OK": 66
+   }
+  },
+  {
+   "file": "pan-qwen4b-q2kxl-cpp_eval.json",
+   "n": 161,
+   "pass": 55,
+   "status": {
+    "Exception": 84,
+    "OK": 55,
+    "SyntaxError": 21,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "pan-qwen4b-q2kxl-py_eval.json",
+   "n": 161,
+   "pass": 57,
+   "status": {
+    "Exception": 102,
+    "OK": 57,
+    "Timeout": 2
+   }
+  },
+  {
+   "file": "probe-cpp-chat_eval.json",
+   "n": 5,
+   "pass": 0,
+   "status": {
+    "Exception": 5
+   }
+  },
+  {
+   "file": "probe-cpp-raw_eval.json",
+   "n": 5,
+   "pass": 4,
+   "status": {
+    "Exception": 1,
+    "OK": 4
+   }
+  },
+  {
+   "file": "probe-java-raw_eval.json",
+   "n": 5,
+   "pass": 3,
+   "status": {
+    "Exception": 1,
+    "OK": 3,
+    "SyntaxError": 1
+   }
+  },
+  {
+   "file": "probe-js-chat_eval.json",
+   "n": 5,
+   "pass": 0,
+   "status": {
+    "Exception": 5
+   }
+  },
+  {
+   "file": "probe-js-raw_eval.json",
+   "n": 5,
+   "pass": 3,
+   "status": {
+    "Exception": 2,
+    "OK": 3
+   }
+  },
+  {
+   "file": "probe-pl-raw_eval.json",
+   "n": 5,
+   "pass": 1,
+   "status": {
+    "Exception": 4,
+    "OK": 1
+   }
+  },
+  {
+   "file": "probe-py-raw_eval.json",
+   "n": 5,
+   "pass": 4,
+   "status": {
+    "Exception": 1,
+    "OK": 4
+   }
+  },
+  {
+   "file": "probe-rb-chat_eval.json",
+   "n": 5,
+   "pass": 0,
+   "status": {
+    "Exception": 5
+   }
+  },
+  {
+   "file": "probe-rb-raw_eval.json",
+   "n": 5,
+   "pass": 1,
+   "status": {
+    "Exception": 4,
+    "OK": 1
+   }
+  },
+  {
+   "file": "probe-rs-raw_eval.json",
+   "n": 5,
+   "pass": 3,
+   "status": {
+    "Exception": 1,
+    "OK": 3,
+    "SyntaxError": 1
+   }
+  },
+  {
+   "file": "sanity-cpp_eval.json",
+   "n": 20,
+   "pass": 9,
+   "status": {
+    "Exception": 9,
+    "OK": 9,
+    "SyntaxError": 2
+   }
+  },
+  {
+   "file": "sanity-java_eval.json",
+   "n": 20,
+   "pass": 10,
+   "status": {
+    "Exception": 7,
+    "OK": 10,
+    "SyntaxError": 3
+   }
+  },
+  {
+   "file": "sanity-js_eval.json",
+   "n": 20,
+   "pass": 13,
+   "status": {
+    "Exception": 7,
+    "OK": 13
+   }
+  },
+  {
+   "file": "sanity-pl_eval.json",
+   "n": 20,
+   "pass": 2,
+   "status": {
+    "Exception": 17,
+    "OK": 2,
+    "Timeout": 1
+   }
+  },
+  {
+   "file": "sanity-py_eval.json",
+   "n": 20,
+   "pass": 12,
+   "status": {
+    "Exception": 8,
+    "OK": 12
+   }
+  },
+  {
+   "file": "sanity-rb_eval.json",
+   "n": 20,
+   "pass": 6,
+   "status": {
+    "Exception": 14,
+    "OK": 6
+   }
+  },
+  {
+   "file": "sanity-rs_eval.json",
+   "n": 20,
+   "pass": 7,
+   "status": {
+    "Exception": 7,
+    "OK": 7,
+    "SyntaxError": 6
+   }
+  }
+ ]
+}

@@ -56,7 +56,8 @@ CANON = {b: p for b, p in BENCH}
 # 中文标签：同时按列键和显示名索引（mktables 的列标签是显示名）
 LBL = {
     "humaneval": "代码 HumanEval", "humaneval_plus": "代码 HumanEval+", "mbpp": "代码 MBPP",
-    "mbpp_plus": "代码 MBPP+", "multipl_e": "多语言代码", "mmlu": "知识 MMLU",
+    "mbpp_plus": "代码 MBPP+", "multipl_e": "多语言代码",
+    "multipl_e_cpp": "多语言代码 C++", "multipl_e_py": "多语言代码 Python", "mmlu": "知识 MMLU",
     "arc_challenge": "科学 ARC-c", "truthfulqa_mc2": "真实 TruthfulQA", "gsm8k": "推理 GSM8K",
     "ifeval": "指令 IFEval",
     # 连字符键（规范协议用的键）
@@ -69,6 +70,7 @@ LBL = {
 }
 
 BPWMAP = json.load(open(".wrapup/bpw_map.json"))
+EVAL_STATUS = "report_inputs/eval_status.json"
 QAT_PAIRS = [
     ("gemma-4-12B-it", "UD-Q4_K_XL", "m140-qat-gemma12b-q4", "m141-native-gemma12b-q4"),
     ("gemma-4-31B-it", "UD-Q4_K_XL", "m142-qat-gemma31b-q4", "m143-native-gemma31b-q4"),
@@ -572,27 +574,33 @@ def fig_E(t):
 
 # ---------- F 采样参数 ----------
 def fig_F(t):
+    """采样参数：MultiPL-E 的每个语言各自一条线，cpp 与 py 不合成一个数。"""
+    mpl_cols = [k for k in t["col_keys"] if k.startswith("multipl_e_")]
     temp, topk = {}, {}
     for c1, c2, cells in t["rows"]:
-        c = cells.get("multipl_e")
-        if not c or c[0] is None:
-            continue
         try:
             v = float(c2)
         except ValueError:
             continue
         model = c1.split(" · ")[0]
         if "temperature" in c1:
-            temp.setdefault(model, []).append((v, c[0], c[1] or 0))
+            bucket, key = temp, model
         elif "top_k" in c1:
-            key = model + (" (temp 0)" if "temp 0" in c1 else "")
-            topk.setdefault(key, []).append((v, c[0], c[1] or 0))
+            bucket, key = topk, model + (" (temp 0)" if "temp 0" in c1 else "")
+        else:
+            continue
+        for k in mpl_cols:
+            c = cells.get(k)
+            if not c or c[0] is None:
+                continue
+            lang = MPL_LANG_LBL[k[len("multipl_e_"):]]
+            bucket.setdefault((key, lang), []).append((v, c[0], c[1] or 0))
     fig, axes = plt.subplots(1, 2, figsize=(12.4, 5.0))
     for ax, data, xlab, title in (
             (axes[0], temp, "温度 temperature", "温度对代码通过率的影响"),
             (axes[1], topk, "top_k", "top_k 对代码通过率的影响")):
-        for i, (name, pts) in enumerate(sorted(data.items())):
-            # 同一取值若有多条测量，按题目数加权平均后合并为一个点
+        for i, ((name, lang), pts) in enumerate(sorted(data.items())):
+            # 同一语言、同一取值若有多条测量，按题目数加权平均后合并为一个点
             agg = {}
             for v, y, n in pts:
                 agg.setdefault(v, []).append((y, n))
@@ -604,10 +612,10 @@ def fig_F(t):
             ax.errorbar([p[0] for p in pts], [p[1] for p in pts],
                         yerr=err,
                         marker=MARKERS[i % len(MARKERS)], ls=LINESTYLES[i % len(LINESTYLES)],
-                        color=col, lw=1.7, ms=6, capsize=2.5, label=name)
+                        color=col, lw=1.7, ms=6, capsize=2.5, label=f"{name} · {lang}")
         _style_axes(ax, xlab, "多语言代码通过率", title)
         ax.legend(fontsize=7.6, loc="best")
-    fig.suptitle("采样 / 解码参数：代码通过率", fontsize=13.5)
+    fig.suptitle("采样 / 解码参数：代码通过率（按语言分开）", fontsize=13.5)
     return [save(fig, "F_value",
                  caption="左：温度；右：top_k。温度 0 时没有分布可截断，top_k 曲线因此是平的"
                          "（结构事实，不是测量误差）。" + _bps_note())]
@@ -947,24 +955,34 @@ def mpl_protocol_label(proto):
 
 
 def table_mpl_langs():
-    """MultiPL-E per language: one row per (model, protocol), columns = languages."""
-    cells = {}
+    """MultiPL-E per language: one row per (model, display label), columns = languages.
+
+    行键是「模型 + 显示标签」。标签有意省掉不参与区分的附加协议段，所以两个协议串可以落到
+    同一个标签上；此时两者是同一个可读行，只有当它们的数值逐语言一致时才合并为一行，
+    不一致就报错——否则一行会静默盖掉另一个测量（plan16）。
+    """
+    grouped = {}
     rows = CON.execute(
         "SELECT model,protocol,language,_score,n_items,run_tag FROM experiments "
         "WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL")
-    prot_short = {}
-    models = set()
     for model, proto, lang, score, n, _tag in rows:
-        p = mpl_protocol_label(proto)
-        prot_short[(model, proto)] = p
-        models.add(model)
-        cells.setdefault((model, proto), {})[lang] = (score, n if n is not None else 161)
+        label = mpl_protocol_label(proto)
+        grouped.setdefault((model, label), {}).setdefault(lang, []).append((proto, score, n))
     out = []
-    for (model, proto), d in sorted(cells.items()):
-        if not d:
+    for (model, label), per_lang in sorted(grouped.items()):
+        merged = {}
+        for lang, vals in per_lang.items():
+            proto, score, n = vals[0]
+            for other_proto, other_score, _n in vals[1:]:
+                if other_score != score:
+                    raise SystemExit(
+                        f"MultiPL-E 行键冲突：{model} 的标签 {label!r} 在语言 {lang} 上，"
+                        f"{proto!r} 得 {score} 而 {other_proto!r} 得 {other_score}；"
+                        f"同标签不同值必须分行并让标签可区分，不能静默取其一。")
+            merged[lang] = (score, n if n is not None else 161)
+        if not merged:
             continue
-        out.append((model, prot_short[(model, proto)],
-                    {k: v for k, v in d.items()}, [model]))
+        out.append((model, label, merged, [model]))
     order = {"raw": 0, "chat": 1}
     out.sort(key=lambda r: (r[0], order.get(r[1], 9)))
     keys = MPL_LANGS
@@ -1121,22 +1139,57 @@ def section(H, title, definition, tables, figures, analysis_html):
     H.append("</section>")
 
 
+MD_FACT_RE = re.compile(r"^#{2,6}\s+([A-Za-z][\w.-]*)\s+::\s+(\S.*)$")
+MD_FIELD_RE = re.compile(r"^[-*]\s+(\w+)\s*:\s*(\S.*)$")
+
+
 def load_docs():
     """读取研究文档 SSOT 的 facts。
 
-    plan / result 归各子项目所有：`docs/subprojects/<id>-<name>/<layer>.yaml`。
-    保留 `docs/<layer>/<layer>.yaml` 的合并路径，供尚未搬完的层使用。
+    plan / result 归各子项目所有：`docs/subprojects/<id>-<name>/<layer>.{yaml,md}`。
+    尚未迁移的子项目仍是 yaml，已迁移的是 Markdown 事实文件，两种都读。
     """
     out = {}
     for layer in ("plan", "result"):
         facts = {}
-        legacy = os.path.join("docs", layer, f"{layer}.yaml")
-        if os.path.exists(legacy):
-            facts.update(_yaml_load(legacy) or {})
         for path in sorted(glob.glob(os.path.join("docs", "subprojects", "*", f"{layer}.yaml"))):
             facts.update(_yaml_load(path) or {})
+        for path in sorted(glob.glob(os.path.join("docs", "subprojects", "*", "*.md"))):
+            if os.path.basename(path)[:-len(".md")].lower() != layer:
+                continue      # PLAN.md / RESULT.md 与大写无关，其余 Markdown 不是事实文件
+            facts.update(_md_facts(path) or {})
         out[layer] = facts
     return out
+
+
+def _md_facts(path):
+    """Markdown 事实文件 → {fact_id: fact}。
+
+    `## <id> :: <一行事实>` 是事实本身（`_text`），其下的 `- key: value` bullet 是坐标；
+    不带 ` :: ` 的 `##` 是普通小节，不进 facts。事实写在一行，因为标题就是它的全部正文。
+    """
+    facts, cur = {}, None
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            m = MD_FACT_RE.match(line.rstrip("\n"))
+            if m:
+                cur = {"_text": m.group(2)}
+                facts[m.group(1)] = cur
+                continue
+            if line.startswith("#"):
+                cur = None
+                continue
+            if cur is None:
+                continue
+            fld = MD_FIELD_RE.match(line.rstrip("\n"))
+            if not fld:
+                continue
+            key, value = fld.group(1), fld.group(2)
+            if key == "kind":
+                cur.setdefault("domain", {})["kind"] = value
+            else:
+                cur[key] = value
+    return facts
 
 
 def _yaml_load(path):
@@ -1146,6 +1199,30 @@ def _yaml_load(path):
             return yaml.safe_load(f) or {}
     except Exception:
         return {}
+
+
+NON_MEASUREMENTS = "docs/subprojects/i02-测量基础设施/non_measurements.tsv"
+
+
+def non_measurements_html():
+    """非测量登记册：显存不足 / 门槛失败 / 没跑，逐格列出状态、发生了什么和证据。
+
+    它们是缺席而不是 0，所以既不能进任何均值，也不能被画成低分；登记册缺失时构建失败，
+    因为那时报告无法证明「这些格是没测」而不是「这些格还没写」。
+    """
+    if not os.path.exists(NON_MEASUREMENTS):
+        raise SystemExit(f"报告输入缺失：{NON_MEASUREMENTS}；未测格无法与 0 区分，不渲染报告。")
+    rows = [ln.rstrip("\n").split("\t")
+            for ln in open(NON_MEASUREMENTS, encoding="utf-8") if ln.strip()]
+    head, body = rows[0], rows[1:]
+    out = ["<table><tr>" + "".join(f"<th>{html.escape(h)}</th>" for h in head) + "</tr>"]
+    for r in body:
+        out.append("<tr>" + "".join(f"<td>{html.escape(c)}</td>" for c in r) + "</tr>")
+    out.append("</table>")
+    counts = collections.Counter(r[3] for r in body)
+    summary = "、".join(f"<b>{html.escape(k)}</b> {v} 格" for k, v in sorted(counts.items()))
+    return (f"<p class='def'>逐格口径：{summary}。这些格子没有数据，因此不参与任何均值、"
+            "也不出现在任何图上——空白不等于 0，也不等于「跑完但得分低」。</p>" + "".join(out))
 
 
 def render_fact_list(facts, kinds=None):
@@ -1165,26 +1242,22 @@ def render_fact_list(facts, kinds=None):
 
 
 def _eval_status_index():
-    """扫描 .wrapup/mres/*_eval.json，按 (语言, 通过数, 题数) 索引每份评测的状态直方图。
+    """按 (语言, 通过数, 题数) 索引每份评测的状态直方图。
 
+    数据来自 `report_inputs/eval_status.json`：`report_inputs/build_eval_status.py` 把不可入库的
+    逐题落盘产物 `.wrapup/mres/*_eval.json` 抽成这一点随仓库分发，干净 clone 才能得到同一份报告。
+    文件缺失时构建失败——这份输入不存在不等于 0 份文件。
     DB 行不带 mres 文件名，所以报告用「语言 + 通过数/题数 == _score」把库行与评测文件配对。
     """
-    import glob
+    if not os.path.exists(EVAL_STATUS):
+        raise SystemExit(f"报告输入缺失：{EVAL_STATUS}（由 report_inputs/build_eval_status.py 生成）；"
+                         f"不渲染任何数字，也不把它当成 0。")
     idx = {}
-    for path in glob.glob(".wrapup/mres/*_eval.json"):
-        try:
-            d = json.load(open(path))
-        except Exception:
-            continue
-        det = d.get("details")
-        if not isinstance(det, list) or not det:
-            continue
-        base = re.sub(r"(-chat)?(_fixed)?$", "", os.path.basename(path)[:-len("_eval.json")])
+    for rec in json.load(open(EVAL_STATUS))["files"]:
+        base = re.sub(r"(-chat)?(_fixed)?$", "", rec["file"][:-len("_eval.json")])
         lang = next((l for l in MPL_LANGS if base.endswith("-" + l) or base.endswith("_" + l)), None)
-        n = len(det)
-        p = int(d.get("pass") or 0)
-        st = collections.Counter(x.get("status") for x in det)
-        idx.setdefault((lang, p, n), []).append((os.path.basename(path), st))
+        st = collections.Counter(rec["status"])
+        idx.setdefault((lang, int(rec["pass"]), int(rec["n"])), []).append((rec["file"], st))
     return idx
 
 
@@ -1532,6 +1605,9 @@ def main():
     H.append("<p class='def'>这一节不是结论，而是“哪些数字可信、哪些不可比、哪些还没测”的账本。"
              "它把这一轮审计发现的数据缺陷、修复方式，以及文档 SSOT 里登记的未决假设集中在一处。</p>")
     H.append(data_quality_html())
+
+    H.append("<h3>非测量登记册（未测 ≠ 0）</h3>")
+    H.append(non_measurements_html())
 
     H.append("<h3>客观结果（引自研究文档 L2，测量）</h3>")
     H.append(render_fact_list(docs.get("result", {}), kinds={"measured"}))

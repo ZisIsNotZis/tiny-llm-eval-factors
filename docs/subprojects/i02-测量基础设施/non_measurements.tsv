@@ -1,0 +1,5 @@
+id	cell	model_file	state	what_happened	evidence	fact
+nm1	m142-qat-gemma31b-q4	gemma-4-31B-it-qat-UD-Q4_K_XL.gguf	BLOCKED-on-VRAM	已排进队列，两个阶段都以 rc=1 结束且没有 DONE 标记；库内 0 行	.wrapup/campaign.log: STAGE lmeval rc=1 wall=42s / STAGE code rc=1 wall=10s / MODEL INCOMPLETE；.wrapup/loadgate.log: 同一文件单独加载 -> PASS；库内 0 行	res14
+nm2	m143-native-gemma31b-q4	gemma-4-31B-it-UD-Q4_K_XL.gguf	BLOCKED-on-VRAM	从未进入队列（campaign.log 无该 tag），库内 0 行	.wrapup/loadgate.log: 同一文件单独加载 -> PASS；.wrapup/campaign.log 无 m143 记录；库内 0 行	res14
+nm3	m145-native-gemma26b-a4b-q4	gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf	BLOCKED-on-VRAM	从未进入队列，库内 0 行；同模型的 QAT 臂（m144，4.52 bpw）跑完并有数，原生臂（5.39 bpw）文件更大、没跑	.wrapup/loadgate.log: 同一文件单独加载 -> PASS；.wrapup/bpw_map.json: 4.5176 vs 5.3932 bpw；库内 0 行而 m144 有 8 行	res14
+nm4	axis07-diffusion-gemma	diffusiongemma-26B-A4B-it-Q4_K_M.gguf	GATE-FAIL	本机 llama-server 不认识该架构，加载即失败，因此不可比而不是测得低分	.wrapup/axes_diffusion_gate.log: unknown model architecture: 'diffusion-gemma'；库内 0 行	res14

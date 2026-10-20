@@ -939,6 +939,58 @@ def ingest_m161(con):
     return n
 
 
+# The two gemma-4-12B chat *cpp* cells m162 measured, and nothing else: m162 exists
+# because 12B's only cpp cells sat under the m6b protocol string
+# (`;ctx=4096;tmpl=unverified`) while its py cells were re-measured under
+# `mpl-chat-nothink-greedy-768`, leaving it without a cpp+py pair under one protocol.
+M162_CHAT_CELLS = {("g12b-q2", "cpp"), ("g12b-q3", "cpp")}
+
+
+def ingest_m162(con):
+    """M162: gemma-4-12B MultiPL-E chat **cpp** Q2/Q3 under the canonical protocol.
+
+    run_m162_chat_cpp_12b.sh copies run_m161_chat_py.sh's server and generator flags
+    verbatim (ctx 2048, ``--jinja``, greedy, 768 max tokens, ``--strip-thought``,
+    ``{"enable_thinking": false}``), so the protocol string is the canonical
+    `mpl-chat-nothink-greedy-768` with no suffix: nothing deviates, and a suffix is
+    reserved for a cell that does.  These are the cells that give the model a
+    same-protocol cpp+py pair against its m161 py rows.
+
+    An all-Exception cell keeps `_score` NULL, as in m161.
+    """
+    path = ".wrapup/m162_summary.jsonl"
+    if not os.path.exists(path):
+        print("  (no m162 summary)")
+        return 0
+    con.execute("DELETE FROM experiments WHERE run_tag = ?",
+                ("m162-chat-cpp-gemma12b",))
+    n = 0
+    seen = set()
+    for line in open(path):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        cell = (r["model"], r["lang"])
+        if cell not in M162_CHAT_CELLS:
+            continue
+        statuses = r.get("statuses") or {}
+        score = None if statuses and set(statuses) == {"Exception"} else r["score"]
+        row = base_row(MPL_CHAT_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0,
+                       score, None)
+        row.update({"run_tag": "m162-chat-cpp-gemma12b", "rep": 1,
+                    "ctx_size": 2048, "parallel_slots": 4,
+                    "protocol": r.get("protocol", "mpl-chat-nothink-greedy-768"),
+                    "language": r["lang"], "bench_family": "humaneval-multipl-e",
+                    "max_tokens": 768, "source_file": "m162_summary.jsonl"})
+        insert(con, row); n += 1
+        seen.add(cell)
+    missing = M162_CHAT_CELLS - seen
+    if missing:
+        print(f"  ! m162 summary lacks declared cells {sorted(missing)}")
+    return n
+
+
 M44_MODELS = {
     "qwen2b-q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
     "qwen2b-q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
@@ -1642,7 +1694,7 @@ def main():
         ("m58", ingest_m58), ("m59", ingest_m59), ("m60", ingest_m60),
         ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
         ("m54", ingest_m54), ("m26", ingest_m26), ("m6b", ingest_m6b),
-        ("m161", ingest_m161), ("m44", ingest_m44),
+        ("m161", ingest_m161), ("m162", ingest_m162), ("m44", ingest_m44),
         ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),

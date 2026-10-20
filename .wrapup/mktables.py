@@ -56,7 +56,8 @@ BENCH = [
     ("humaneval_plus", "HumanEval+"),
     ("mbpp",           "MBPP"),
     ("mbpp_plus",      "MBPP+"),
-    ("multipl_e",      "MultiPL-E"),
+    ("multipl_e_cpp",  "MultiPL-E C++"),
+    ("multipl_e_py",   "MultiPL-E Python"),
     ("mmlu",           "MMLU"),
     ("arc_challenge",  "ARC-c"),
     ("truthfulqa_mc2", "TruthfulQA"),
@@ -103,10 +104,10 @@ LANG_N.setdefault("py", 161)
 
 
 # ---- row helpers ----------------------------------------------------------
-def bench_key(bench, family):
-    """Map (_bench, bench_family) onto one report column key, or None."""
+def bench_key(bench, family, language=None):
+    """Map (_bench, bench_family, language) onto one report column key, or None."""
     if family == "humaneval-multipl-e":
-        return "multipl_e"
+        return "multipl_e_" + language if language in CANON_MPL else None
     if bench == "humaneval":
         return "humaneval"
     if bench == "humaneval-plus":
@@ -120,52 +121,36 @@ def bench_key(bench, family):
     return None
 
 
-# MultiPL-E comparability: a model's MultiPL-E cell is only produced when the
-# canonical language pair is fully present.  Legacy panels ran different
-# languages per model (some cpp only, gemma-4-12b java/js/rb/rs only), so a
-# naive pool averaged different test sets and made a 12B model look like it
-# "crashed to zero".  A comparison must hold the test set equal: present ->
-# mean over CANON_MPL, absent -> no cell (NaN), which the report renders as `-`
-# and never plots.  Other languages stay in the DB for per-language studies.
+# MultiPL-E comparability: C++ and Python are separate columns and are never
+# pooled.  A single mean over the two hides the sign of the language effect --
+# across the 51 models that carry both languages, 566 of 1275 rank pairs disagree
+# in direction and py-cpp runs from -0.267 to +0.186 (median +0.019).  A language
+# a model never ran stays absent (NaN), which the report renders as `-` and never
+# plots; it is never filled from the other language.  Legacy panels ran other
+# languages per model (gemma-4-12b java/js/rb/rs only); those stay in the DB for
+# per-language studies and out of these columns.
 CANON_MPL = ("cpp", "py")
 
 
-def query_cells_by(where, extra="''", params=(), mpl_langs=CANON_MPL):
+def query_cells_by(where, extra="''", params=()):
     """{(model, extra): {bench_key: (score, n)}} for a subset of the DB.
 
-    MultiPL-E rows (bench_family='humaneval-multipl-e') are pooled over
-    `mpl_langs`, weighted by language item count; a cell is emitted only when
-    every language in that set is present.  The default CANON_MPL=(cpp,py) is
-    the comparable cross-model set.  Pass mpl_langs=None only for a within-model
-    axis (same model, one constant language set), where pooling whatever ran is
-    the controlled comparison.  Every other row keeps its own (_score, n_items).
+    A MultiPL-E row lands in the column of its own language (`multipl_e_cpp`,
+    `multipl_e_py`); the two are never averaged into one number, so a language a
+    model never ran is simply an absent cell.  MultiPL-E rows carry no n_items in
+    the database, so their cell takes the per-language item count from LANG_N.
+    Every other row keeps its own (_score, n_items).
     """
     q = ("SELECT model, %s, _bench, bench_family, _score, n_items, language "
          "FROM experiments WHERE run_tag IS NOT NULL AND run_tag <> '' "
          "AND _score IS NOT NULL AND (%s)" % (extra, where))
     cells = collections.defaultdict(dict)
-    mpl = collections.defaultdict(lambda: collections.defaultdict(list))
     for model, tag, bench, fam, score, n, lang in con.execute(q, params):
         if score is None:
             continue
-        if fam == "humaneval-multipl-e":
-            mpl[(model, tag)][lang].append(score)
-            continue
-        k = bench_key(bench, fam)
+        k = bench_key(bench, fam, lang)
         if k is not None:
-            cells[(model, tag)][k] = (score, n)
-    for key, per_lang in mpl.items():
-        langs = sorted(per_lang) if mpl_langs is None else mpl_langs
-        if any(l not in per_lang for l in langs):
-            continue                      # incomplete test set -> NaN, not a low score
-        acc = tot = 0.0
-        for lang in langs:
-            scores = per_lang[lang]
-            w = LANG_N.get(lang, 161)
-            acc += (sum(scores) / len(scores)) * w
-            tot += w
-        if tot:
-            cells[key]["multipl_e"] = (acc / tot, int(tot))
+            cells[(model, tag)][k] = (score, n if n is not None else LANG_N.get(lang, 161))
     return cells
 
 
@@ -458,7 +443,7 @@ def axis_kv(o):
     ).fetchall()
     # m30 is a within-model panel with one constant language set (cpp only), so
     # pooling whatever ran is the controlled comparison -- do not force cpp+py.
-    cells = query_cells_by("run_tag='m30-kv-ctx'", "protocol", mpl_langs=None)
+    cells = query_cells_by("run_tag='m30-kv-ctx'", "protocol")
     for model, proto in kv_rows:
         mc = re.search(r"ctx=(\d+)", proto or "")
         mk = re.search(r"kv=([\w]+)/([\w]+)", proto or "")
@@ -475,7 +460,7 @@ def axis_kv(o):
     ).fetchall()
     newcells = query_cells_by(
         "source_file LIKE '%/variant_panel.json' AND protocol LIKE 'variant-kv-%'",
-        "cache_type_k || '/' || cache_type_v", mpl_langs=None)
+        "cache_type_k || '/' || cache_type_v")
     for model, k, v, ctx in new:
         c1 = "%s %s · ctx%s" % (family_of(model), _bpw_tag(model), ctx)
         label = f"{k}/{v}"
@@ -551,26 +536,14 @@ def axis_spec(o):
         "WHERE spec_type IS NOT NULL AND spec_type<>'' AND run_tag<>''").fetchall()
     tok = collections.defaultdict(lambda: collections.defaultdict(list))
     sc = collections.defaultdict(dict)
-    mpl = collections.defaultdict(lambda: collections.defaultdict(list))
     for model, bench, fam, ctx, n, tok_s, score, nit, lang in raw:
         key = (model, ctx, n)
         if tok_s is not None and bench in dict(SCEN):
             tok[key][bench].append(tok_s)
         if score is not None:
-            if fam == "humaneval-multipl-e":
-                mpl[key][lang].append(score)
-            else:
-                k = bench_key(bench, fam)
-                if k is not None:
-                    sc[key][k] = (score, nit)
-    for key, per_lang in mpl.items():
-        acc = tot = 0.0
-        for lang, scores in per_lang.items():
-            w = LANG_N.get(lang, 161)
-            acc += (sum(scores) / len(scores)) * w
-            tot += w
-        if tot:
-            sc[key]["multipl_e"] = (acc / tot, int(tot))
+            k = bench_key(bench, fam, lang)
+            if k is not None:
+                sc[key][k] = (score, nit if nit is not None else LANG_N.get(lang, 161))
 
     tok_cells = {k: {b: (sum(v) / len(v), len(v)) for b, v in per.items()}
                  for k, per in tok.items()}

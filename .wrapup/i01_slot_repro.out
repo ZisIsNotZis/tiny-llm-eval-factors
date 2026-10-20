@@ -1,0 +1,8 @@
+[i01-slot] preflight ok: prompt set matches SHA256SUMS
+[i01-slot] prompt humaneval-py.jsonl sha256=ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb
+[i01-slot] start Tue Oct 20 22:54:05 CST 2026
+[i01-slot] llama-server: version: 0.4.1-dev (build 4399, commit 4bc272fd72) built with GNU 13.3.0 for Linux x86_64 
+[i01-slot] model: /home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf size=13146393504 mtime=2026-09-30T20:33:27+08:00
+{"arm_np_flag": 1, "llama_reports": "n_slots = 1, n_ctx_slot = 2048", "ctx_flag": 2048, "model": "/home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf", "lang": "py", "mode": "chat", "greedy": true, "max_tokens": 768, "chat_kwargs": {"enable_thinking": false}, "strip_thought": true, "prompt_sha256": "ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb", "server_version": ""}
+[i01-slot] arm=np1 server up: n_slots = 1, n_ctx_slot = 2048
+[i01-slot] gen arm=np1 pass=p1 start=22:54:11
