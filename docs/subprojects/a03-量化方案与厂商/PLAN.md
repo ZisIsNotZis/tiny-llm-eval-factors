@@ -13,8 +13,8 @@
 ## 当前状态
 
 - 已完成：`WP1`（三层文档 + `result.yaml` 迁入并删除）、`WP2`（`analysis/pairs.py`）、`WP3`（方案归因：`scheme-2b`/`scheme-4b`/`scheme-27b`）、`WP4`（厂商归因：`vendor-qwen36`/`vendor-lfm`/`attrib`/`label-audit`）、`WP5`（`analysis/alloc.py` 的 `alloc-qwen36`/`alloc-scheme`/`alloc-m55`）。
-- 在办：`WP6` 收口——`analysis/run_all.py` 现在 17 条预期全部成立、`--selftest` 能翻红 3 条（退出码 1）；剩下两件：把 `report.html` 第三节的建议文本写进 `PLAN.md`，以及 `RESULT.md` 的数字与 `run_all.py` 的断言逐条对齐。
-- 下一个派给谁：本层编排者收 `WP6`；收完请 **meta 派 fresh-context reviewer** 做 `WP7`（本层运行时没有派孙工具，不得自评通过）。
+- 已完成全部工作包 `WP1`–`WP6`：`analysis/run_all.py` 18 条预期全部成立（退出码 0）、`--selftest` 翻红 3 条（退出码 1），报告第三节的建议文本已写进本文件。
+- 在办：无。下一个派给谁：**meta 派 fresh-context reviewer 做 `WP7`**（本层运行时没有派孙工具，不得自评通过）；可选加固 `WP6` 的复现负控在 GPU 队列里排队，不进 AC。
 - **递归不可用（运行时不提供 subagent 接口）**：本层编排者只有 shell/读写工具，没有派孙工具，所以分析、脚本与测量由编排者自己执行。这与派工契约里「可派孙」不一致，按 `@fail_loud` 写在这里而不是假装派过；独立复核因此必须由 meta 派。
 - 未测（不是 0）：`WP6` 的复现负控（同一格重跑）已挂成排队作业 `bash .wrapup/a03_repro_retry.sh`（锁当时被别的面板持着，见下面「GPU 队列」）。所有配对都是**单次运行**，区间只含逐题二项项，不含跨 run 项；这一条在 `RESULT.md` 的每条事实里都写着。
 
@@ -27,7 +27,7 @@
 | WP3 方案归因（IQ vs K，同厂商内） | 本层编排者 | 每条 IQ-vs-K 配对逐基准给差值 + 区间；跨族汇总只用「同号族数 + 逐族区间」，并打印参与汇总的族数；给出「方案效应在多少 bpw 内可分辨」的实测下界 | WP2 | ≤30 CPU 分钟 | **完成**（`scheme-2b`/`scheme-4b`/`scheme-27b`；跨族归因见 `attrib`） |
 | WP4 厂商归因（含跨供应商受控对） | 本层编排者 | 厂商从面板写入的模型路径取（不从文件名猜），打印每个文件的来源；给出 ≥1 对跨供应商同尺寸同协议配对的逐基准区间；机械证明「是否存在把比特分配也钉死的跨厂商对」（有/无都要打印计数） | WP2 | ≤30 CPU 分钟 | **完成**（`vendor-qwen36` 达成 AC 第二条；`attrib` 打印识别族：IQ 3 族、bartowski 1 族、local 1 族——没有同时钉死分配的跨厂商对） |
 | WP5 比特分配解释力 | 本层编排者 | `analysis/alloc.py` 直接读 gguf 头，按张量类别打印每个文件的实测 bits/参数与分配轮廓；对每组配对给出两份文件的分配轮廓差；写明报告的 `MATCH_BPW = 0.45` 允许的比特预算效应有多大 | WP2 | ≤45 CPU 分钟 | **完成**（`alloc-qwen36` 0.381、`alloc-scheme` 0.337–0.427、`alloc-m55`；位宽尺子见 `slopes`） |
-| WP6 收口与报告建议 | 本层编排者 | `RESULT.md` 每条事实带证据与复算命令；`analysis/run_all.py` 全部预期成立（`--selftest` 能翻红）；`report.html` 第三节的文本建议（`换方案测得出 / 换厂商测不出`）按本层证据给出「保留 / 收窄 / 撤回」与其否证条件；不写库、不改 `report.html` | WP3–WP5 | ≤30 CPU 分钟 | 进行中（`run_all.py` 17 条成立、`--selftest` 翻红 3 条；剩报告建议文本 + 复现负控排队） |
+| WP6 收口与报告建议 | 本层编排者 | `RESULT.md` 每条事实带证据与复算命令；`analysis/run_all.py` 全部预期成立（`--selftest` 能翻红）；`report.html` 第三节的文本建议（`换方案测得出 / 换厂商测不出`）按本层证据给出「保留 / 收窄 / 撤回」与其否证条件；不写库、不改 `report.html` | WP3–WP5 | ≤30 CPU 分钟 | **完成**（`run_all.py` 18 条成立、`--selftest` 翻红 3 条；报告建议见「给 `report.html` 第三节的建议文本」；复现负控是可选加固，见 GPU 队列） |
 | WP7 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令 | WP2–WP6 | ≤30 CPU 分钟/份 | 待派 |
 
 调度原则：`WP2` 是 `WP3`/`WP4`/`WP5` 的公共装置，先做；三包都是 CPU 只读，重活并发 ≤2。GPU 只在 `WP6` 的复现负控需要（≤25 分钟，见 GPU 队列）。
@@ -79,7 +79,7 @@
 
 | 排队项 | 配置 | 判据 | 预算 | 继续触发的条件 |
 |---|---|---|---|---|
-| WP6 复现负控 | Qwen3.5-2B 的 `UD-IQ3_XXS` 与 `UD-Q2_K_XL` 各跑一遍代码面板：`bash .wrapup/codepanel.sh <gguf> a03-repro-{iq3xxs,q2kxl}`（冻结协议：`--jinja --reasoning off --reasoning-format none`、`-c 8192 -np 1 -ngl 99`、贪心、EvalPlus 0.3.1 全量 164+378；该脚本自己用 `flock -n` 拿 `/tmp/llama_gpu.lock`，拿不到就退出 3，所以不能再套一层 `gpu_locked.sh`） | 两格的 HumanEval+/MBPP+ 复现入库值（0.3720 / 0.2857 与 0.2378 / 0.2725）⇒ `scheme-2b` 的 22 题不是运行抖动；出现 >0.05 的偏离 ⇒ `scheme-2b` 降为 provisional | 每条 573–638 s（实测，见 `.wrapup/mres/m{63,64}-*/evalplus.json` 的 `timings_s`），合计 ≤25 分钟 | 现在：锁被别的面板持着（`nvidia-smi` 空 15.6 GiB，不是显存不够）——按 `@scheduling.queue_behind` 挂了等待器 `bash .wrapup/a03_repro_retry.sh`（每 60 s 试一次、最多 12 次，拿不到就写「未测」并退出 3；日志 `.wrapup/a03_repro.log`） |
+| WP6 复现负控 | Qwen3.5-2B 的 `UD-IQ3_XXS` 与 `UD-Q2_K_XL` 各跑一遍代码面板：`bash .wrapup/codepanel.sh <gguf> a03-repro-{iq3xxs,q2kxl}`（冻结协议：`--jinja --reasoning off --reasoning-format none`、`-c 8192 -np 1 -ngl 99`、贪心、EvalPlus 0.3.1 全量 164+378；该脚本自己用 `flock -n` 拿 `/tmp/llama_gpu.lock`，拿不到就退出 3，所以不能再套一层 `gpu_locked.sh`） | 两格的 HumanEval+/MBPP+ 复现入库值（0.3720 / 0.2857 与 0.2378 / 0.2725）⇒ `scheme-2b` 的 22 题不是运行抖动；出现 >0.05 的偏离 ⇒ `scheme-2b` 降为 provisional | 每条 573–638 s（实测，见 `.wrapup/mres/m{63,64}-*/evalplus.json` 的 `timings_s`），合计 ≤25 分钟 | 锁被 `i01` 的噪声地板作业持有（同一张卡，`i01` 优先级更高：它定的是「多少波动值得当真」，本项只是验证脚本行为）；显存不是瓶颈。按 `@scheduling.queue_behind` 挂了等待器 `bash .wrapup/a03_repro_retry.sh`（每 60 s 试一次、最多 12 次，拿不到就写「未测」并退出 3；日志 `.wrapup/a03_repro.log`）。**本项不进入 AC**：AC 的两条已由 `res7` 与 `vendor-qwen36` 用库里现有行满足，本项只把「单次运行」这一残余风险降一档；锁在下一轮仍被占时直接降级为「已记录、未跑」，不为此继续排队 |
 
 显存需求按实测算，不用固定阈值：权重 922 MiB（文件大小）+ KV f16 @8192 一槽 768 MiB（由 gguf 头 `qwen35.block_count 24 / head_count_kv 2 / key_length 256 / value_length 256` 算出）+ compute buffer 余量 700 MiB ≈ **2.4 GB**。起服后断言 server 自报 `n_slots = 1`（`codepanel.sh` 传 `-np 1`），不符即作废该次测量。
 
