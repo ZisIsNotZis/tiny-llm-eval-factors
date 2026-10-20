@@ -149,8 +149,10 @@
 - scope: general
 - status: current
 - kind: measured
-- evidence: 只读两份入库夹具（a03 的 `alloc_map.json` 与本层的 `alloc_a04.json`），不读仓库外文件，所以干净 clone 里同样成立
-- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --infeasible`
+- evidence: 逐对冻结在 `analysis/fixtures/pin_feasibility.json`（22 对，每对带 `expert_span` / `expert_span_bound` / `verdict` / `l1_pw` / `dbpw` / 两侧策略）；它的两个输入（a03 的 `alloc_map.json` 与本层的 `alloc_a04.json`）都在仓库里，所以干净 clone 里 `--check` 同样成立，不需要 gguf、不读数据库、不占 GPU
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/build_pin_fixture.py" --check`（实跑输出：`[ok] 22 对一致（可等总比特 4 / 不可等 18），4 个有配对的 MoE 族`）；逐对清单见 `analysis/alloc_pairs.py --infeasible`
+- 说明：上界的算法 `(1−s_exp)/s_exp × 层间摆动` 把**全部非专家参数**（含 embed 与 `other`）都算成可反向摆动的额度，而实测只观测到层桶摆动过 5.55 比特，所以这个上界是**宽松的**；即便如此仍有 18 对超界，结论因此不依赖上界的松紧。
+- 说明：判据本身不是测量而是恒等式（钉住总比特 ⇒ `Σ_c Δb_c·p_c = 0`），所以这份夹具复核的是「数对不对、分族对不对」，不是「效应存不存在」。
 - 说明：这是「现有语料能不能判分配」的机械回答——结论不是「效果不存在」，而是**85% 的同族文件对根本不能被摆到同总比特下**，能摆的只有 4 对，而那 3 对实测全部不可分辨（`pinned-null`）。
 
 ## 四、判定（`kind: analysis`）
@@ -178,7 +180,21 @@
 - 会推翻它：同上两臂的钉住对照出现显著差。
 
 
-## 四、未测与限制（不是 0）
+## 五、三档判定口径（每条策略结论必须落进其中一档）
+
+1. **可分辨**：配对区间不含 0 → 写方向与幅度（差值 + 95% 区间 + `n_items`）。这是唯一能说「A 比 B 好」的档。
+2. **不可分辨**：区间跨 0 → 写**可见性下限**（该格 95% 半宽），说清「这个对照能探测到的最小效应」是多少，不写「没有差」、不写「相等」。
+3. **本次不可用**：没测成 → 写原因归到三类之一（模型加载 / 显存 / 任务本身），并写清缺的是哪一格。未测不是 0。
+
+- author: agent
+- scope: general
+- status: current
+- kind: analysis
+- evidence: 判据来自 `AGENTS.md` 第 6 条与 `i01::res32`；三档的用法在 `pinned-null`、`strategy-verdict`、`unmeasured-*` 各条上可见
+- repro: 无（这是本层怎么写结论的规则，不是一个测量）
+- 说明：**同 base、不同量化文件不是「同配置重复」**。`i01::res32` 的地板 0 只覆盖「输入相同、重复跑」，而换量化文件是**输入不同**，所以 0.02 的差既不能叫噪声也不能叫相等；要么给区间，要么判「此设计下不可分辨」并给出可见性下限。
+
+## 六、未测与限制（不是 0）
 
 ### unmeasured-pivot-extreme :: 语料里**没有**「总比特钉住 + 专家桶被压到 2.6 / 抬到 4.5」的对照，所以「专家层该压多低」这个 AC 的原问法在当前语料下**不可判**：`exq2` 与 `exq4` 与最近邻的 `Δbpw` 分别是 0.963/0.154 与 0.601/1.564，都不在钉住档内。要判它必须现造配方（`PLAN.md` 的 `WP4`，成本：`llama-quantize` 实测 63.8/106.3/145.5 s/份，六基准面板实测 27 分钟/份 = 五基准 11.8–13.4 分钟 + code 11.5–15.2 分钟，见 `.wrapup/m55_prebuild.log`、`.wrapup/m55_std.log`、`.wrapup/mres/m92-lfm25-8b-a1b-m55-exq2/.timings`）。
 - author: agent

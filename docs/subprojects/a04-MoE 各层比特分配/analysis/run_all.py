@@ -120,6 +120,20 @@ def main(argv=None):
 
     check("pinned-all-null", "两对钉住对照的 16 个有区间格里不含 0 的是 0 个", pinned_all_null)
 
+    def pin_fixture_matches():
+        import build_pin_fixture as bpf
+        import json
+        frozen = json.loads(bpf.FIXTURE.read_text(encoding="utf-8"))
+        live = bpf.build()
+        if frozen != live:
+            return False
+        return (live["summary"]["n_pairs"] == 22
+                and live["summary"]["n_comparable"] == 4
+                and live["summary"]["n_not_comparable"] == 18)
+
+    check("pin-fixture", "入库夹具 pin_feasibility.json 与重算一致，22 对（4 可等 / 18 不可等）",
+          pin_fixture_matches)
+
     bad = [c for c in EXPECTED if not c[2]]
     for cid, desc, ok in EXPECTED:
         print("[%s] %-20s %s" % ("PASS" if ok else "FAIL", cid, desc))
