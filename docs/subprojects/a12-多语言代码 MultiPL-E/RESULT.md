@@ -7,7 +7,7 @@
 
 - 审计：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`，退出 0 = 谱系、全 Exception、协议设置、提示集哈希、报告行归属五项全绿。
 - 负控：`bash "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_negative_control.sh"`，退出 0 = 干净报告通过、两处人为篡改都被拒。
-- 已存捕获（文件名带短 revision，首部记 `report.html` 的 sha256 `e97af396da4d26bb…`）：`evidence/audit-217524c-head-report.txt`（HEAD 报告，退出 0）、`evidence/negative-control-217524c.txt`（退出 0，三处篡改全被拒）。`report.html` 与库自 `f60a028` 起未变，所以同一份捕获对 `f60a028` 起的每个 revision 都成立，判据是 `git diff f60a028 217524c -- report.html experiments.sqlite` 为空。
+- 已存捕获（文件名带短 revision，首部记 `report.html` 的 sha256）：`evidence/audit-1169ef1-clean-clone.txt`（干净 clone 里的 HEAD 报告，退出 0、0 个脏路径）、`evidence/negative-control-1169ef1.txt`（退出 0，三处篡改全被拒）。两份都绑定 `report.html` 的 sha256 `d7b2ed52834ed7a2…`；该文件在 `90f3511`（i02 回填最后 2 格的 `n_items`）之后换过一次哈希，旧捕获连同旧哈希一起退役。
 
 ## 审计的负控能力：三处篡改都被拒
 
@@ -18,26 +18,36 @@
 ## 谱系：每个已入库的格都追到落盘产物
 
 - 结论：库中 MultiPL-E 共 250 个格，其中 246 个有分数、4 个是 NULL；246 个有分数的格全部追到落盘产物——244 个命中 panel summary 的同语言同分值行，2 个只命中 per-item eval（它们的库值是修正后处理重判后的值，summary 里留的是旧判分），未追溯 0 个。
-- 证据：两格 eval-only 是 `m26-q38-27b-q2-cpp_fixed_eval.json`（102/161=0.6335，summary 记 35/161）与 `m6b-g12b-q2-cpp_fixed_eval.json`（4/161=0.0248，summary 记 2/161）。题数来自 `n_items`：i02 已从产物回填（`migrate_db.py` 的 backfill），MultiPL-E 里仍有 6 格是 NULL——4 个 NULL 分的 js/rb 格与 m6b 的 2 个 chat cpp 格；满格题数为 cpp/py/js/rb 161、java 158、rs 155。
-- 限制：summary 命中是按「同一个文件 + 同语言 + 同分值」核对的；summary 行的 `model` 是面板短名，它与库中 gguf 文件名的映射在 `migrate_db.py` 的 `MPL_MODELS`/各面板 model_map 里，本审计不重做这层映射。per-item eval 的配对键 `(语言, 通过数, 题数)` 同样不是模型唯一的：246 个格里 101 个只命中一份 eval、145 个命中多份（多份时报告只在状态直方图一致时才接受）。所以这两条都证明「该格的值确实在这份产物里」，不单独证明「这行属于这个模型文件」。
+- 证据：两格 eval-only 是 `m26-q38-27b-q2-cpp_fixed_eval.json`（102/161=0.6335，summary 记 35/161）与 `m6b-g12b-q2-cpp_fixed_eval.json`（4/161=0.0248，summary 记 2/161）。题数来自 `n_items`：i02 已从产物回填（`migrate_db.py` 的 backfill，最后 2 格见 `90f3511`），MultiPL-E 里现在只剩 4 格是 NULL——就是那 4 个 NULL 分的 js/rb 格；满格题数为 cpp/py/js/rb 161、java 158、rs 155。
+- 限制：`[1]` 是**多重集成员检查**，不是逐格绑定，确切形状是：以库中该格的 `source_file` 为一张池子，把该面板 summary 的每一行折成 `(语言, 分值)` 放进 `collections.Counter`，库里同文件的每个格消耗其中一份（`mpl_cell_audit.py::cells_with_lineage`）。它证明的是「这个值出现在该面板该语言的产物里」，**不**证明「这一行属于这个模型文件」。直接后果：把同一面板、同一语言的两格在库与报告里**同时互换**，`[1]` 仍 exit 0——两份产物都没变、多重集也没变；负控的三处篡改（协议行、题量、协议串）不覆盖这种情况，所以这不是负控能拒的错，而是这条检查的边界。per-item eval 的配对键 `(语言, 通过数, 题数)` 同样不含模型：246 个格里 101 个只命中一份 eval、145 个命中多份、65 个键对应多份文件（多份时只接受状态直方图一致）。把格绑到模型上的只有 `[7]` 的一行一句（该 (模型, 协议标签, 语言) 下必须存在这个值）与库里的 `run_tag`/`source_file` 两列；把 `[1]` 读成逐格绑定会高估它。审计自己把这条印在 `[1]` 段：`the key is not model-unique, so it proves a file reproduces the cell, not that the file is this model's`。
 - 复算：审计脚本 `[1]` 段。
 
 ## 报告：报告印出的每个格都属于它自己那一行协议，且是库中已存的格
 
-- 前提：本节数字来自 HEAD 里的 `report.html`（revision `f60a028`、sha256 `e97af396da4d26bb…`，与 `git show HEAD:report.html` 逐字节相同）。捕获 `evidence/audit-f60a028-head-report.txt` 的首部记着被审 revision、脚本 sha256、命令与脏路径，其中「审计读的那些路径」无未提交改动。
-- 结论：`report.html` 第十三节（多语言代码）逐语言表现有 80 行（= 模型 × 协议标签）、188 个有值格，全部通过 `[7]` 的行归属检查（值在该行协议标签下存在、题量等于产物题量）；归属不符 0 格；题量比对了 186 格，另外 2 格因为报告不印 n 而跳过——正是 m6b 的 chat cpp 两格，它们在报告里印成 `(题量未知)`，即显式缺失而不是编出来的数字。
-- 结论：库中按 (模型, 协议串, 语言) 有 194 个键，而报告逐语言表只印出 188 个有值格，装不下的就是标签碰撞：m31-topk 的协议串（`mpl-raw-t0.3-768;topk-set=…`）与 m27 的 `multipl-e-raw-t0.3-768` 渲染成同一个标签 `raw·temp=0.3`，于是 3 个模型 × 2 语言各有一行被并掉。其中 3 个键的两条记录值不同（m31 的 `top_k=1` 锚点等于贪心地板值），被并掉的那条值不再出现在报告里，见「表里被并掉的格」。
+- 前提：本节数字来自 `report.html`（sha256 `d7b2ed52834ed7a2…`，与 `git show HEAD:report.html` 逐字节相同）。捕获 `evidence/audit-1169ef1-clean-clone.txt` 是在干净 clone 里对同一份报告跑出来的，首部记着被审 revision、脚本 sha256、命令与脏路径（0 个脏路径）。
+- 结论：`report.html` 第十三节（多语言代码）逐语言表现有 80 行（= 模型 × 协议标签）、188 个有值格，全部通过 `[7]` 的行归属检查（值在该行协议标签下存在、题量等于产物题量）；归属不符 0 格；题量比对了 188 格、**0 格因缺 n 而跳过**——i02 的 `90f3511` 把最后 2 格的 `n_items` 从产物回填后，逐语言表里已没有 `(题量未知)`。
+- 结论：库中按 (模型, 协议串, 语言) 有 194 个键，而报告逐语言表只印出 188 个有值格，装不下的就是标签碰撞：m31-topk 的协议串（`mpl-raw-t0.3-768;topk-set=…`）与 m27 的 `multipl-e-raw-t0.3-768` 渲染成同一个标签 `raw·temp=0.3`，于是 3 个模型 × 2 语言各有一行被并掉。其中 3 个键的两条记录值不同（m31 的 `top_k=1` 锚点等于贪心地板值）：第十三节的逐语言表只印其中一条，但第六节「采样 / 解码参数」按 `取值` 分行把两条都印了出来，见「表里被并掉的格」。
 - 证据：逐语言表 80 行的有值格按列计为 cpp 78 / py 63 / js 21 / java 12 / rs 8 / rb 6，合计 188，与 `[7]` 打印的 `report cells read: 188` 相等；表头是 `模型文件 | 生成协议 | C++ | Python | JS | Java | Rust | Ruby`。
 - 复算：审计脚本 `[7]` 与 `[10]` 段；逐列计数读同一张表的 `<td>` 即可，判据是每格以数字开头（`—` 与 `(题量未知)` 不计入）。
 
 ## 覆盖：canonical 协议下的语言矩阵与缺口登记
 
-- 结论：`protocol='multipl-e-raw-greedy-768'` 下共 54 个模型，324 个 model×language 槽位里 150 个有分数、4 个是 NULL、170 个从未测过。逐语言：cpp 已测 52 / NULL 0 / 未测 2；py 51 / 0 / 3；js 21 / 2 / 31；java 12 / 0 / 42；rs 8 / 0 / 46；rb 6 / 2 / 46。
-- 结论：有 cpp+py 对的 51 个模型；没有对的 3 个是 `Qwen3.5-2B-UD-IQ2_XXS`（只有 cpp）、`gemma-4-12b-it-UD-Q2_K_XL` 与 `gemma-4-12b-it-UD-Q3_K_XL`（raw 协议下只有 java/js/rs/rb，cpp 只在 chat 协议下跑过；这两格对应的 chat 对见「chat cpp 两格」，本节点只讲 raw 矩阵）。六种语言全测的 4 个是 `Qwen3.5-2B-UD-Q2_K_XL`、`Qwen3.5-2B-UD-Q3_K_XL`、`Qwen3.5-4B-UD-Q2_K_XL`、`Qwen3.5-4B-UD-Q3_K_XL`。
-- 未测的理由（170 个空格）：都是「该模型所在的那些面板没有跑这个语言」，没有产物也没有失败记录，按规则记为显式未测而不是 0。java/rs/rb 的 134 个空格全部落在这个类里：跑过这些语言的面板只有 m1（六语言）、java 的 m6/m38/m51/m56/m57、js 的 m2/m3/m5/m6/m38/m51/m56/m57、rs 与 rb 的 m42/m54/m60；其余面板按设计只跑 cpp+py。
-- 结论：4 个 NULL 空格不是未测而是被测过且整格全 `Exception`（见「4 个 NULL 格」）。
+- 结论：`protocol='multipl-e-raw-greedy-768'` 下共 54 个模型，324 个 model×language 槽位里 150 个有分数、4 个是 NULL、170 个在库中没有格。这 170 个里 **169 个是未测**，**1 个是已测但按规则排除入库**，所以「170 个都从未测过」是假登记。逐语言（库视角）：cpp 有分数 52 / NULL 0 / 库中无 2；py 51 / 0 / 3；js 21 / 2 / 31；java 12 / 0 / 42；rs 8 / 0 / 46；rb 6 / 2 / 46。
+- 结论：cpp 的 2 个「库中无」都落在 gemma-4-12b 上：**Q2 的 raw cpp 跑过**，`0/161`，直方图 `{'Exception': 74, 'SyntaxError': 84, 'Timeout': 3}`，`migrate_db.py` 的 `M6_MODELS` 明确把它排除（注释：raw 模式下 12b 输出 `<|channel>thought` 思考通道，破坏代码生成，那个 0 不是量化测量），所以它没有库行——这是「已测但排除入库」，不是未测；**Q3 的 raw cpp 没有产物**，才是未测。两格的 chat 协议对见「chat cpp 两格」，本节点只讲 raw 矩阵。
+- 结论：有 cpp+py 对的 51 个模型；没有对的 3 个是 `Qwen3.5-2B-UD-IQ2_XXS`（只有 cpp）与 `gemma-4-12b-it-UD-Q2_K_XL`、`gemma-4-12b-it-UD-Q3_K_XL`（raw 下 cpp 一格被排除入库、一格未测）。六种语言全测的 4 个是 `Qwen3.5-2B-UD-Q2_K_XL`、`Qwen3.5-2B-UD-Q3_K_XL`、`Qwen3.5-4B-UD-Q2_K_XL`、`Qwen3.5-4B-UD-Q3_K_XL`。
+- 未测的理由（169 个空格）：都是「该模型所在的那些面板没有跑这个语言」，没有产物也没有失败记录，按规则记为显式未测而不是 0。java/rs/rb 的 134 个空格全部落在这个类里：跑过这些语言的面板只有 m1（六语言）、java 的 m6/m38/m51/m56/m57、js 的 m2/m3/m5/m6/m38/m51/m56/m57、rs 与 rb 的 m42/m54/m60；其余面板按设计只跑 cpp+py。
+- 结论：4 个 NULL 空格不是未测而是被测过且整格全 `Exception`（见「4 个 NULL 格」）；「已测但被规则排除入库」与「已测但整批未入库」是另外两类，见「覆盖：库中没有的格分三类」。
 - 证据：语言集因模型而异的旧列不可比，是 i01 的判分审计节点登记的事实（i01 的 `res16`，其 home 随 i01 迁移到它自己的结果文档）；本节点只提供当前矩阵，不重复那条结论。
 - 复算：审计脚本 `[2]` 段打印逐语言的 scored/NULL/absent 三元组与完整的 54 行矩阵（空格 = 未测，`NULL` = 整格全 Exception 记为缺失，数字 = 通过率）；语言→面板清单 `sqlite3 experiments.sqlite "SELECT DISTINCT language,run_tag FROM experiments WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768' AND language NOT IN ('cpp','py') ORDER BY language"`。
+
+## 覆盖：库中没有的格分三类，只有一类是「未测」
+
+- 结论：一个 model×language 槽位在库中没有格，可能是三种状态之一，本册分开登记：(a) **未测**——没有产物也没有失败记录（raw 的 169 个空格、chat 的 24 个空格）；(b) **已测但按规则排除入库**——有产物与直方图，入库脚本按面板设计跳过（1 个：gemma-4-12b Q2 raw cpp）；(c) **已测但整批未入库**——产物在 `.wrapup/*_summary.jsonl` 里，但那个面板没有可用的入库映射甚至没有入库函数（m29 的 FA × KV 轴、m160 的 12b raw 面板）。把 (a) 与 (b)(c) 混成一句「面板没跑这个语言」，就是本册此前的那处假登记。
+- 结论（b）：gemma-4-12b Q2 raw cpp `0/161`，直方图 `{'Exception': 74, 'SyntaxError': 84, 'Timeout': 3}`；产物 `.wrapup/mres/m160-g12b-q2-cpp-raw_eval.json`，`.wrapup/m6_summary.jsonl` 与 `.wrapup/m160_summary.jsonl` 各有一行 `pass 0 n 161 protocol mpl-raw-greedy-768`；库中 0 行，因为没有 `ingest_m160`，且 `M6_MODELS` 明确排除 12b（raw 下 `<|channel>thought` 通道破坏代码生成，这个 0 不是量化测量，与「8 个 0.0 格」里 java 158 / rs 155 的成因同类）。
+- 结论（c1）：`.wrapup/m29_summary.jsonl` 24 行、每行都满 161 题，但只有 **12 个配置**——3 个 cell（`faon_f16` / `faoff_f16` / `faon_q8`）× 2 个模型（`Qwen3.5-2B-UD-Q2_K_XL`、`Qwen3.5-2B-UD-Q3_K_XL`）× 2 语言（cpp/py），每个配置写了两遍且两行 pass/score 逐字相同（无法区分是重复追加还是两次完全相同的贪心复跑）。pass 17–44（score 0.1056–0.2733），协议串带 `;fa=on|off,kv=q8_0/f16|q8_0/q8_0`。库中 0 行、`run_tag='m29-flash-attn'` 也为 0：`ingest_m29` 调 `ingest_mpl` 时没传 model_map，走默认 `MPL_MODELS`，而 m29 的 `model` 是短名 `q2`/`q3`，`MPL_MODELS` 没有这两个键，`ingest_mpl` 因此静默 `continue`。
+- 结论（c2）：m160 的 12b raw 面板同样没有 `ingest_m160`，所以它唯一的格（Q2 cpp）只有 summary 与 eval、没有库行——(b) 与 (c2) 是同一次面板设计的结果。
+- 限制：这两批属 flash-attention × KV 轴与 12b raw 面板的语义范围（`a05` 的 KV 缓存精度、面板的排除规则），a12 只登记状态与来源，不改库、不改报告、不补录。
+- 复算：`wc -l < .wrapup/m29_summary.jsonl`（24）与 `python3 -c "import json;rows=[json.loads(l) for l in open('.wrapup/m29_summary.jsonl')];print(len({(r['model'],r['lang'],r['cell']) for r in rows}))"`（12）；`grep -n "M6_MODELS" -A 6 migrate_db.py`；`grep -c "ingest_m160" migrate_db.py`（0）；`python3 -c "import json,collections;d=json.load(open('.wrapup/mres/m160-g12b-q2-cpp-raw_eval.json'));print(d['n'],d['pass'],dict(collections.Counter(x['status'] for x in d['details'])))"`。
 
 ## 覆盖：chat 协议只覆盖 cpp 与 py，24 个槽位显式未测
 
@@ -71,7 +81,7 @@
 
 - 结论：gemma-4-12b chat cpp（m6b 面板）入库时按协议串原样记录，末尾带 `;ctx=4096;tmpl=unverified`：Q2 `4/161=0.0248`、Q3 `130/161=0.8075`。这两格不并入任何 cpp+py 对：m6b 是 `ctx=4096`、没有 `--jinja`、模板路径未核对的一套配置，与 m161/m163 的 `ctx=2048 --jinja` 不同。12b 的同协议 cpp+py 对由 m163 的 canonical chat 两格给出（见「chat cpp 两格」），m6b 这两格继续单独成行。
 - 证据：`.wrapup/m6b.log` 有 `n_ctx_slot = 4096`；`.wrapup/run_m6b.sh` 的 start_server 无 `--jinja`；`.wrapup/run_m161_chat_py.sh` 与 `.wrapup/run_m163_chat_cpp_12b.sh` 都是 `CTX=2048` 加 `--jinja`。m6b 的 summary 留的是旧判分值（Q2 cpp 2/161、Q3 py 5/161），库值取自 `_fixed` 重判，两者的差由旧后处理解释，不由本节点裁决。m161 与 m163 的日志都记下了所用提示集的哈希，与 `.wrapup/prompts/SHA256SUMS` 的 `humaneval-cpp.jsonl` 行一致。
-- 限制：这两格是 `[7]` 里唯一印 `(题量未知)` 的格（库中 `n_items` 为 NULL，回填没能从产物里对上），所以它们的题量在报告里缺席而不是猜成 161。
+- 限制：这两格的 `n_items` 已由 i02 从产物回填为 161，报告印 `(161)`；它们与 canonical 两格的分栏理由只是协议串不同（`;ctx=4096;tmpl=unverified`），与题量无关。
 - 复算：`grep -n "n_ctx_slot" .wrapup/m6b.log | head -1`；`grep -n "jinja\|CTX=" .wrapup/run_m6b.sh .wrapup/run_m161_chat_py.sh .wrapup/run_m163_chat_cpp_12b.sh`；`sqlite3 experiments.sqlite "SELECT protocol,round(_score,4) FROM experiments WHERE run_tag='m6b-chat-gemma12b'"`。
 
 ## 4 个 NULL 格：整格全 Exception 记为缺失，证据是逐题状态而不是 summary
@@ -82,7 +92,7 @@
 
 ## 8 个 0.0 格：6 个是长上下文生成失败的探针，2 个是真实计算的 0
 
-- 结论：库里有 8 个格恰好是 0.0，分两类。第一类 6 个是 `m30-kv-ctx` 的 60 题探针格（Qwen3.5-2B Q3、cpp、ctx=16384 与 ctx=49152）：配对的 eval 显示 59–60/60 道题都是 SyntaxError，即生成在长前缀下被截断，这个 0 是生成失败的产物、不是整格 161 题上的模型分数；它们属于 a05 的 KV 轴，改值会改 a05 的结论，所以只登记不修改（见 `PLAN.md` 非目标）。第二类 2 个是 gemma-4-12b 在 raw 协议下的 java 0/158 与 rs 0/155，都是逐题算出来的真实通过数（java 158 道全是 SyntaxError、rs 154 SyntaxError + 1 Exception），即 raw 协议下 gemma 先输出散文的 harness floor，与 i01 的协议结论同向；它们不是 NULL，因为跑过了、只是没通过。
+- 结论：库里有 8 个格恰好是 0.0，分两类（库外还有 1 个同成因的 0.0：12b Q2 raw cpp `0/161`，按 `M6_MODELS` 排除入库，见「覆盖：库中没有的格分三类」）。第一类 6 个是 `m30-kv-ctx` 的 60 题探针格（Qwen3.5-2B Q3、cpp、ctx=16384 与 ctx=49152）：配对的 eval 显示 59–60/60 道题都是 SyntaxError，即生成在长前缀下被截断，这个 0 是生成失败的产物、不是整格 161 题上的模型分数；它们属于 a05 的 KV 轴，改值会改 a05 的结论，所以只登记不修改（见 `PLAN.md` 非目标）。第二类 2 个是 gemma-4-12b 在 raw 协议下的 java 0/158 与 rs 0/155，都是逐题算出来的真实通过数（java 158 道全是 SyntaxError、rs 154 SyntaxError + 1 Exception），即 raw 协议下 gemma 先输出散文的 harness floor，与 i01 的协议结论同向；它们不是 NULL，因为跑过了、只是没通过。
 - 证据：m30 六格分别配对 `m30-ctx16384-kv*-cpp_eval.json`（`{SyntaxError: 59, Exception: 1}`）与 `m30-ctx49152-kv*-cpp_eval.json`（`{SyntaxError: 60}`）；gemma java 配对 `pan-gemma12b-q2-java_eval.json`（`{SyntaxError: 158}`，pass 0），rs 配对 `pan-gemma12b-q3-rs_eval.json`（`{SyntaxError: 154, Exception: 1}`，pass 0）。
 - 复算：审计脚本 `[4]` 段的 0.0 清单；或 `for f in .wrapup/mres/m30-ctx*-cpp_eval.json .wrapup/mres/pan-gemma12b-q2-java_eval.json .wrapup/mres/pan-gemma12b-q3-rs_eval.json; do echo "$f $(python3 -c "import json,collections;d=json.load(open('$f'));print(len(d['details']),d.get('pass'),dict(collections.Counter(x['status'] for x in d['details'])))")"; done`。
 
@@ -96,7 +106,7 @@
 ## 标准列已拆成 C++ 与 Python 两列（已提交）
 
 - 结论：HEAD（`f60a028`）的 `report.html` 里，8 个标准表各带「多语言代码 C++」与「多语言代码 Python」两列，带池化单列「多语言代码」的标准表为 0 个；两列的格直接来自库中对应语言的格，不再有 cpp+py 的加权均值。改法在 `make_report.py` 的 `LBL`（`multipl_e_cpp`/`multipl_e_py`）与 `.wrapup/mktables.py` 的 `BENCH`/`query_cells_by` 里，两者与 `report.html` 都已提交，所以干净 clone 能用 HEAD 的代码重建同一份报告。
-- 证据：审计 `[8]` 段报 0 个池化表、8 个已拆表；`git diff HEAD -- make_report.py .wrapup/mktables.py report.html` 为空；`sha256sum report.html` = `e97af396da4d26bb…`，与 `git show HEAD:report.html | sha256sum` 相同。
+- 证据：审计 `[8]` 段报 0 个池化表、8 个已拆表；`git diff HEAD -- make_report.py .wrapup/mktables.py report.html` 为空；`sha256sum report.html` = `d7b2ed52834ed7a2…`，与 `git show HEAD:report.html | sha256sum` 相同。
 - 复算：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"` 的 `[8]` 段；`grep -n "multipl_e_cpp" make_report.py`。
 
 ## 不混协议：行的身份由协议串决定
@@ -109,7 +119,7 @@
 
 ## 表里被并掉的格：3 个格的值被同一行标签遮住（open，归 i02）
 
-- 结论：逐语言表的行键只有「模型 + 协议标签」，而 m31-topk 的协议串里被采样的那一维是 `top_k` 列、不在标签里，于是 m31 的 30 个格与 m27 同一模型的 2 个温度格撞成同一个标签 `raw·temp=0.3`：库中按 (模型, 协议串, 语言) 有 194 个键，报告只能印出 188 个格，合并掉的键里有 3 个两条记录的值不同（m31 的 `top_k=1` 锚点等于贪心地板值 0.1366/0.2422/0.2733，而 t0.3 采样是 0.1615/0.1739/0.3168），报告只能印出其中一条。
+- 结论：逐语言表的行键只有「模型 + 协议标签」，而 m31-topk 的协议串里被采样的那一维是 `top_k` 列、不在标签里，于是 m31 的 30 个格与 m27 同一模型的 2 个温度格撞成同一个标签 `raw·temp=0.3`：库中按 (模型, 协议串, 语言) 有 194 个键，报告只能印出 188 个格，合并掉的键里有 3 个两条记录的值不同（m31 的 `top_k=1` 锚点等于贪心地板值 0.1366/0.2422/0.2733，而 t0.3 采样是 0.1615/0.1739/0.3168）。第十三节每 (模型, 语言) 只印一条；第六节「采样 / 解码参数」的原始数据表按 `取值`（K=1 与 K=20/40/64/200）分行，把两条都印出来：Qwen3.5-2B @4.11 的 Python 0.1366（K=1）与 0.1615（K≥20）、@4.93 的 C++ 0.2422 与 0.1739、@5.70 的 Python 0.2733 与 0.3168。所以值没有离开报告，丢的是「这两条属于同一 (模型, 语言) 的两个不同 top_k」这一归属：从第十三节读不出另一条的存在。
 - 证据：审计 `[10]` 段逐个列出这三组值；29 个键重复同一个值（重复入库，不丢信息），3 个键值不一致。
 - 复算：审计脚本 `[10]` 段；修法在报告代码（标签要把被采样的一维带上，或把采样格移出逐语言表），归 i02，见 `PLAN.md` 的 `WP8`。
 

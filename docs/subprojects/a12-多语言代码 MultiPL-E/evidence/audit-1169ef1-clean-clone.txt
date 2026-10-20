@@ -1,13 +1,13 @@
-# captured for revision 217524c (HEAD), report.html sha256 e97af396da4d26bbd24b5521ba0446a2dc69779a0b528969ffad0a563b2b3295
-# command: python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
-# datetime: 2026-10-21 00:10:59 CST  exit: 0
+# captured in a clean clone of revision 1169ef1 (git clone /home/z/vibe/local_lm_research /tmp/a12-clone), report.html sha256 d7b2ed52834ed7a2371f9bf7cafd90fb508d0ce606ec24b2f1e99e3a761ed7a6
+# command: cd /tmp/a12-clone && python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
+# datetime: 2026-10-21 00:21:13 CST  exit: 0  (dirty paths: 0)
 a12 MultiPL-E cell audit
-  audited revision : 217524cb21fdbd67440e4a4a3ca63d05473bb771
+  audited revision : 1169ef1312a2d131d9e819a630766706edd2dd41
   script sha256    : c5d4d63ab41e9995084c6792a1793b9832a8413486f3e22e1f378d517e546a94
   command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py
-  database         : /home/z/vibe/local_lm_research/experiments.sqlite
-  report           : /home/z/vibe/local_lm_research/report.html
-  dirty paths      : 3 dirty path(s) in the tree; uncommitted among the ones this audit reads: none
+  database         : /tmp/a12-clone/experiments.sqlite
+  report           : /tmp/a12-clone/report.html
+  dirty paths      : 0 dirty path(s) in the tree; uncommitted among the ones this audit reads: none
 MultiPL-E cells in the DB: 250 (scored 246, NULL 4); full-cell item counts: {'cpp': 161, 'py': 161, 'js': 161, 'java': 158, 'rs': 155, 'rb': 161}
 
 [1] lineage: does each scored cell trace to a stored artefact?
@@ -116,8 +116,8 @@ MultiPL-E cells in the DB: 250 (scored 246, NULL 4); full-cell item counts: {'cp
 
 [7] every cell the report prints belongs to its own protocol row
     report cells read: 188; not belonging to their protocol row: 0
-    item counts compared: 186; cells skipped because the report prints no n: 2
-    report mtime 1792512389, DB mtime 1792511968
+    item counts compared: 188; cells skipped because the report prints no n: 0
+    report mtime 1792513263, DB mtime 1792513263
 
 [8] standard-column pooling state in the report
     standard tables with ONE pooled MultiPL-E column: 0
