@@ -29,8 +29,8 @@
 
 - kind: measured
 - status: current
-- evidence: `./reproduce.sh` 退出 0；报告 10277111 字节、sha256 `a6b755ef90a929dd7b4adfbfa57e6339bb60b92f8d7643bc14f78748f56c36c7`、86 张图；本机实测报告构建 34 s、全流程约 50 s（12 核 CPU，无 GPU）。
-- producer: `./reproduce.sh`
+- evidence: 在 `git clone` 出的空树里 `./reproduce.sh` 退出 0，重建的 `report.html` 与仓库里那份逐字节相同（10281006 字节、86 张图）；本机实测报告构建约 35 s、全流程本机 50 s / 干净 clone 60 s（12 核 CPU，无 GPU）。唯一的 BLOCKED 行是 `docs@1` 标准不在本机（见 res32）。
+- producer: `git clone <repo> x && cd x && ./reproduce.sh`
 
 ## res25 :: 报告除数据库外的输入是有限的、都随仓库分发；缺任何一个都让构建失败或让检查变红，不会渲染出 0。
 
