@@ -12,7 +12,7 @@ import random
 import re
 import sys
 
-WD = "/home/z/hf/research/.wrapup"
+WD = os.path.dirname(os.path.abspath(__file__))  # .wrapup/：按脚本自身位置定位
 
 # filename tag -> (anchor, quant)
 TAG = {

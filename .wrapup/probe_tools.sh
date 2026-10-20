@@ -1,7 +1,8 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Probe native tool-call support for each model: /props template marker + real request.
-cd /home/z/hf/research/.wrapup
-OUT=/home/z/hf/research/.wrapup/tools_probe.jsonl
+cd ${REPO_ROOT}/.wrapup
+OUT=${REPO_ROOT}/.wrapup/tools_probe.jsonl
 : > "$OUT"
 for m in gemma-4-E2B-it-UD-Q3_K_XL gemma-4-E4B-it-UD-Q3_K_XL granite-4.1-3b-Q3_K_M Qwen3.5-2B-UD-Q3_K_XL; do
   pid=$(ss -ltnp 2>/dev/null | grep ':8080' | grep -oP 'pid=\K[0-9]+' | head -1); [ -n "$pid" ] && kill $pid; sleep 2

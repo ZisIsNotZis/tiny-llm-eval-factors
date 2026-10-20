@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M50 (NEXT_DRIVER N1) — BRAINSTORM 1B: does the imatrix (IQ*) scheme buy SCORE
 # PER BYTE over a plain K-quant? We have compared levels, never schemes at EQUAL
 # file size. The pairs below are chosen so the two members are within ~3% of each
@@ -15,7 +16,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m50.log
 SUM=$W/m50_summary.jsonl

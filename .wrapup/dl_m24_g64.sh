@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M24 — acquire the group-64 (upstream-loadable) ternary Bonsai packs for the
 # SIZE SERIES. The earlier download fetched the legacy g128 `Q2_0.gguf` files,
 # which the loader rejects ("legacy Prism Q2_0 layout ... expected group-64").
 # The correct upstream-loadable files are `*Q2_0_g64.gguf`.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 MS=$W/msenv/bin/modelscope
 DST=/home/z/hf/mscache
 LOG=$W/m24_29.log

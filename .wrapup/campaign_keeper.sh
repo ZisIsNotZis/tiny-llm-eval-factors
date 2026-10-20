@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Watches the campaign: relaunches campaign.sh whenever it is not running and there is
 # still un-done work in CAMPAIGN.txt.
 #
@@ -11,9 +12,9 @@
 # `pgrep -f "<script name>"` matching a stray shell (SSOT 6b rule 5). The pgrep pattern is
 # anchored to the exact driver path and excludes this keeper's own PID.
 set -u
-cd /home/z/hf/research || exit 2
+cd ${REPO_ROOT} || exit 2
 
-WR=/home/z/hf/research/.wrapup
+WR=${REPO_ROOT}/.wrapup
 CAMP="$WR/CAMPAIGN.txt"
 DRIVER="$WR/campaign.sh"
 LOG="$WR/keeper.log"

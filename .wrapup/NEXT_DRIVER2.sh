@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # NEXT_DRIVER2.sh — successor queue for NEXT_DRIVER.sh (SSOT 6b anti-idle).
 #
 # NEXT_DRIVER.sh hands over with `locked bash NEXT_DRIVER2.sh`, i.e. this script
@@ -21,7 +22,7 @@
 # Idempotent (summary row count / null check), never stops on failure, logs
 # START/DONE/FAIL/SKIP to .wrapup/NEXT_DRIVER2.log.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/NEXT_DRIVER2.log
 echo "=== NEXT_DRIVER2 start $(date) pid=$$ ===" >> "$LOG"
 

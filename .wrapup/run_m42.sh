@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M42 (QUEUE #16) — Tier 5B/5C statistical power, step 2: MultiPL-E rust + ruby.
 #
 # SSOT 2/§5C: the fix for a headline CI is more ITEMS, not more runs. The
@@ -13,7 +14,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m42.log
 SUM=$W/m42_summary.jsonl

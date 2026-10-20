@@ -1,14 +1,15 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M4 — tool-calling (BFCL) panel.
 #
 # The study had no agentic/function-calling axis at all; this adds one.
 # Protocol: prompt-based tool calling, thinking disabled via chat_template_kwargs,
 # greedy, ctx 8192, KV q8_0/q8_0, 512 max tokens.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m4.log
-SUMMARY=/home/z/hf/research/.wrapup/m4_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m4.log
+SUMMARY=${REPO_ROOT}/.wrapup/m4_summary.jsonl
+MRES=${REPO_ROOT}/.wrapup/mres
 PORT=8080
 BASE=http://127.0.0.1:$PORT
 PY=python3

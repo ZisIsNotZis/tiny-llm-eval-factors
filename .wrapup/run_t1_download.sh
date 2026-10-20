@@ -1,5 +1,6 @@
 #!/bin/bash
-cd /home/z/hf/research
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
+cd ${REPO_ROOT}
 LOG=.wrapup/t1_download.log
 : > $LOG
 echo "=== download start $(date) ===" >> $LOG

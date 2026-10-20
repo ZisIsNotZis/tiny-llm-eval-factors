@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # W1 — repeat-noise measurement.
 #
 # The DB has zero replicates (the unique index forbids them), so run-to-run
@@ -16,12 +17,12 @@
 #          .wrapup/wres/<bench>/<alias>_openai_temp_<t>_eval_results.json
 #          .wrapup/w1_summary.jsonl  (one line per run)
 set -u
-cd /home/z/hf/research/.wrapup
+cd ${REPO_ROOT}/.wrapup
 PY=evalpy/bin/evalplus.codegen
 EV=evalpy/bin/evalplus.evaluate
-ROOT=/home/z/hf/research/.wrapup/wres
-LOG=/home/z/hf/research/.wrapup/w1.log
-SUMMARY=/home/z/hf/research/.wrapup/w1_summary.jsonl
+ROOT=${REPO_ROOT}/.wrapup/wres
+LOG=${REPO_ROOT}/.wrapup/w1.log
+SUMMARY=${REPO_ROOT}/.wrapup/w1_summary.jsonl
 MODEL=/home/z/hf/Qwen3.5-2B-UD-Q4_K_XL.gguf
 MODELTAG=Qwen3.5-2B-UD-Q4_K_XL
 PORT=8080

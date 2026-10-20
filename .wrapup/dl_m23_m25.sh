@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Downloads for BRAINSTORM Tier-1 (1B/1C/1A). Detached; writes .ready markers
 # under .wrapup/dl_ready/<file>.ready once a GGUF is fully local and symlinked.
 # ModelScope first (China-reachable, matches workspace layout); HF mirror for
 # repos absent from ModelScope (penkia/TernaryQuench).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 MS=$W/msenv/bin/modelscope
 DST=/home/z/hf/mscache
 HF=/home/z/.venv/bin/hf

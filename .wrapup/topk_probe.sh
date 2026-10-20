@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Diagnostic: is llama-server's --top-k flag actually applied to /completion requests
 # that do NOT carry a top_k field (the mpl_run.py raw protocol)?
 # Runs two servers (top_k=1 and top_k=64) on the same prompts at temp 0.3 seed 1234
 # and compares the outputs.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 M=Qwen3.5-2B-UD-Q2_K_XL.gguf
 PY=python3
 port_srv() {  # port topk

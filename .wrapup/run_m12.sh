@@ -1,9 +1,10 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M12 — cross-family multi-turn + long-context multi-turn.
 # Each panel carries its own category (was a single CATS before, which duplicated m9).
 set -u
-cd /home/z/hf/research
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}
+WR=${REPO_ROOT}/.wrapup
 export LOG=$WR/m12.log
 export SUM=$WR/m12_summary.jsonl
 echo "=== M12 start $(date) ===" >> "$LOG"

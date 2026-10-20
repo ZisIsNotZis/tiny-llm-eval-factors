@@ -1,11 +1,12 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # T4 full chain — runs under a single GPU-lock acquisition.
 #   1) gemma-4-12B repair (probe+select protocol) -> m6b_summary.jsonl
 #   2) new architecture anchors, raw greedy protocol -> m10_summary.jsonl
 # Batches are ordered by priority so partial completion still covers the core.
 set -u
-cd /home/z/hf/research/.wrapup
-MS=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}/.wrapup
+MS=${REPO_ROOT}/.wrapup
 LOG=$MS/t4_run.log
 MRES=$MS/mres
 M10=$MS/m10_summary.jsonl

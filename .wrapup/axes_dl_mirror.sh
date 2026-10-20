@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # axes_dl_mirror.sh -- fetch the missing NATIVE (non-QAT) gemma-4 UD-Q4_K_XL controls for
 # the QAT axis (1.6) and the DiffusionGemma AR control (axis 7).
 #
@@ -13,7 +14,7 @@
 # Detached + idempotent: retries each file until its size matches, then symlinks
 # /home/z/hf/<name> and writes .wrapup/dl_ready/<name>.ready.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 MS=$W/msenv/bin/modelscope
 DST=/home/z/hf/mscache/unsloth
 H=/home/z/hf

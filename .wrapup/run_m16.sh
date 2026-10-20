@@ -1,8 +1,9 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M16 — multi-turn BFCL cross-family (MiniCPM5-2B) with MiniCPM's native FC handler.
 set -u
-cd /home/z/hf/research
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}
+WR=${REPO_ROOT}/.wrapup
 export LOG=$WR/m16.log
 export SUM=$WR/m16_summary.jsonl
 export CTX=131072

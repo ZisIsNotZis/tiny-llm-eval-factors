@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Decisive check on the gsm8k anomaly on the Qwen3.5-2B ladder.
 #
 # thinking-off gsm8k: IQ2_XXS 0.02, IQ2_M 0.01, IQ3_XXS 0.01, Q2_K_XL 0.36, while MMLU is
@@ -8,12 +9,12 @@
 #
 # This dumps lm_eval's per-sample prompt/response for a small limit, side by side.
 set -u
-cd /home/z/hf/research || exit 2
+cd ${REPO_ROOT} || exit 2
 exec 9>/tmp/llama_gpu.lock
 if ! flock -n 9; then echo "verify: GPU lock held; aborting"; exit 3; fi
 
-PY=/home/z/hf/research/.wrapup/lmenv/bin/python
-OUT=/home/z/hf/research/.wrapup/mres/verify-gsm8k
+PY=${REPO_ROOT}/.wrapup/lmenv/bin/python
+OUT=${REPO_ROOT}/.wrapup/mres/verify-gsm8k
 mkdir -p "$OUT"
 LIM="${LIM:-30}"
 

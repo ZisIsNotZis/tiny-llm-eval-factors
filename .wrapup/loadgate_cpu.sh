@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # loadgate_cpu.sh <gguf-basename> [tag]
 #
 # CPU-only load gate (NO GPU, NO /tmp/llama_gpu.lock): start llama-server with
@@ -8,7 +9,7 @@
 # a GGUF whose ggml type the build cannot parse; a CPU parse catches that class of
 # failure without touching the GPU lock, so it can run in parallel with the queue.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 F="$1"; TAG="${2:-$1}"
 LG=$W/loadgate.jsonl
 LOG=$W/loadgate.log

@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # arm_next2.sh — detached safety net for the NEXT_DRIVER2.sh queue (SSOT 6b).
 #
 # The live chain QUEUE_DRIVER.sh -> NEXT_DRIVER.sh -> NEXT_DRIVER2.sh should carry
@@ -15,7 +16,7 @@
 # Launch detached:
 #   setsid nohup bash .wrapup/arm_next2.sh >>.wrapup/arm_next2.log 2>&1 &
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/arm_next2.log
 echo "=== arm_next2 start $(date) pid=$$ ===" >> "$LOG"
 

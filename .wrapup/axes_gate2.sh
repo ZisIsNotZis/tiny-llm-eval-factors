@@ -1,12 +1,13 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # axes_gate2.sh -- idempotent CPU load gate for the AXES campaign, diffusion first.
 #
 # Same contract as axes_gate.sh but (a) gates DiffusionGemma immediately (it is the file
 # most likely to GATE-FAIL and the axis-7 decision needs it early), and (b) skips any tag
 # already present in .wrapup/loadgate.jsonl so a restart cannot double-record.
 set -u
-cd /home/z/hf/research || exit 2
-W=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT} || exit 2
+W=${REPO_ROOT}/.wrapup
 LG=$W/loadgate.jsonl
 H=/home/z/hf
 touch "$LG"

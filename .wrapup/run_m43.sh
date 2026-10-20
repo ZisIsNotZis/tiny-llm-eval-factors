@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M43 (QUEUE #17) — provenance recovery for Tier 2C (dense vs MoE at matched
 # TOTAL size).
 #
@@ -15,7 +16,7 @@
 #
 # Rows: m26_summary.jsonl = 4 cells x 2 langs = 8.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m43.log
 SUM=$W/m26_summary.jsonl

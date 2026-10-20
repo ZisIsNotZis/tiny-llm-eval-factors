@@ -20,7 +20,7 @@ import urllib.request
 
 PROMPTS = "/tmp/MultiPL-E/prompts"
 LONGCTX_FILES = [
-    "/home/z/hf/research/docs/FINDINGS.md",
+    str(__import__("pathlib").Path(__file__).resolve().parent.parent / "FINDINGS.md"),
     
     
 ]

@@ -25,7 +25,8 @@ import sys
 import time
 import urllib.request
 
-BFCL = "/home/z/hf/research/.wrapup/bfclenv/lib/python3.11/site-packages/bfcl_eval/data"
+BFCL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bfclenv", "lib",
+                    "python3.11", "site-packages", "bfcl_eval", "data")  # bfclenv 相对 .wrapup/
 QDIR = BFCL
 ADIR = os.path.join(BFCL, "possible_answer")
 

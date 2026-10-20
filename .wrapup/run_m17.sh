@@ -1,8 +1,9 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M17 — multi-turn BFCL, Qwen3.5-9B Q2/Q3 (completes the size trend 2B/4B/9B).
 set -u
-cd /home/z/hf/research
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}
+WR=${REPO_ROOT}/.wrapup
 export LOG=$WR/m17.log
 export SUM=$WR/m17_summary.jsonl
 export CTX=131072

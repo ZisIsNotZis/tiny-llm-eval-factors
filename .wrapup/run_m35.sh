@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M35 (QUEUE #9) — sub-2-bit model sweep: turn the single ternary point (Bonsai 27B,
 # Finding 8) into a class of sub-2-bit observations across schemes and families.
 #
@@ -15,7 +16,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m35.log
 SUM=$W/m35_summary.jsonl

@@ -1,9 +1,10 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # T4 downloads (network-only, parallel-safe). Streams run concurrently; each file
 # goes to its own repo dir so there is no write contention.
-MS=/home/z/hf/research/.wrapup/msenv/bin/modelscope
+MS=${REPO_ROOT}/.wrapup/msenv/bin/modelscope
 DST=/home/z/hf/mscache
-LOG=/home/z/hf/research/.wrapup/t4_dl.log
+LOG=${REPO_ROOT}/.wrapup/t4_dl.log
 mkdir -p "$DST"
 dl() {
   local repo="$1" file="$2"

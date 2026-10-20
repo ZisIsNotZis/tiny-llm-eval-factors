@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M44 (QUEUE #18) — compute-precision axis, REDONE as a provable manipulation.
 #
 # Why: m29 (flash-attn on/off x KV dtype) recorded 24 rows, but its fa on/off
@@ -25,7 +26,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m44.log
 SUM=$W/m44_summary.jsonl

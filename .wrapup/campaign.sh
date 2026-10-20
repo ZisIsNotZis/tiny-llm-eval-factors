@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Campaign driver: drain .wrapup/CAMPAIGN.txt, one model at a time.
 #
 # For every not-yet-done line `<abs_gguf_path> <tag> <limit>` it runs
@@ -17,9 +18,9 @@
 #
 # Env overrides (for testing): CAMPAIGN_FILE, LOCK_SLEEP, MAX_LOCK_TRIES.
 set -u
-cd /home/z/hf/research || exit 2
+cd ${REPO_ROOT} || exit 2
 
-WR=/home/z/hf/research/.wrapup
+WR=${REPO_ROOT}/.wrapup
 CAMP="${CAMPAIGN_FILE:-$WR/CAMPAIGN.txt}"
 LOG="$WR/campaign.log"
 LMEVAL="$WR/lmeval_panel.sh"

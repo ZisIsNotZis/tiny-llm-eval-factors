@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M21 — B1 Bonsai ternary off-curve probe.
 #
 # Model: Ternary-Bonsai-27B-Q2_g64.gguf — the group-64 pack that the README says
@@ -10,10 +11,10 @@
 # curve: ctx 4096, KV q8_0/q8_0, top_p .95 / top_k 40 / min_p .05, raw
 # completion (MultiPL-E native), greedy, 768 max tokens.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m21.log
-SUMMARY=/home/z/hf/research/.wrapup/m21_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m21.log
+SUMMARY=${REPO_ROOT}/.wrapup/m21_summary.jsonl
+MRES=${REPO_ROOT}/.wrapup/mres
 PORT=8080
 BASE=http://127.0.0.1:$PORT
 LANGS="${LANGS:-cpp py}"

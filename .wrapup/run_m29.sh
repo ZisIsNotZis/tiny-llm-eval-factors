@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M29 — Tier 3A: attention/compute precision (flash-attn) x weight quant.
 #
 # Design (approved; 2x2 minus one):
@@ -14,7 +15,7 @@
 # NOTE: m3's standard 2B cells (q2/q3) used `-fa auto` + K/V q8_0 -> effectively
 # FA-on; cell faon_q8 is the same config and is the bridge to those cells.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m24_29.log
 SUMMARY=$W/m29_summary.jsonl

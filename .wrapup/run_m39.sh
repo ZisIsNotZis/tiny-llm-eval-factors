@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M39 (NEW QUEUE entry) — a SECOND ternary family: GLM-4.7-Flash-UD-TQ1_0.
 #
 # Tier 1C needs any second ternary/sub-2-bit family to turn the single Bonsai
@@ -17,7 +18,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m39.log
 SUM=$W/m39_summary.jsonl

@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M6b — full weight-quant ladder on a small (fast) model, across languages.
 #
 # Answers: where does the quant-response curve saturate, and does the Q2->Q3
@@ -7,10 +8,10 @@
 # Frozen protocol: ctx 4096, KV q8_0/q8_0, top_p .95 / top_k 40 / min_p .05,
 # raw completion (MultiPL-E native), greedy, 768 max tokens.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m6b.log
-SUMMARY=/home/z/hf/research/.wrapup/m6b_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m6b.log
+SUMMARY=${REPO_ROOT}/.wrapup/m6b_summary.jsonl
+MRES=${REPO_ROOT}/.wrapup/mres
 PORT=8080
 BASE=http://127.0.0.1:$PORT
 LANGS="${LANGS:-cpp py}"

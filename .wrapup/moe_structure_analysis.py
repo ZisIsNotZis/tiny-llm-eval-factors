@@ -27,7 +27,7 @@ from pathlib import Path
 
 import numpy as np
 
-ROOT = Path("/home/z/hf/research")
+ROOT = Path(__file__).resolve().parent.parent  # 仓库根
 WR = ROOT / ".wrapup"
 DB = ROOT / "experiments.sqlite"
 OUT = WR / "moe_structure.json"

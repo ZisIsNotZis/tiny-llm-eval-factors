@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M55 (Tier 1A) — expert-wise / mixed-precision quantisation, the one big untested
 # axis (BRAINSTORM 1A). The quantisation itself is done CPU-side by
 # m55_prebuild.sh (llama-quantize --tensor-type overrides on the 16.9 GB BF16
@@ -17,7 +18,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m55.log
 SUM=$W/m55_summary.jsonl

@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M40 (QUEUE #14) — Ternary generalisation: third-party QUANTISERS of the ternary
 # scheme, not just third-party models.
 #
@@ -21,7 +22,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m40.log
 SUM=$W/m40_summary.jsonl

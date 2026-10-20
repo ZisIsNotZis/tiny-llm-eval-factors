@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M58 (Tier 5A architecture-family breadth) — Llama-3.2-3B-Instruct Q2_K / Q3_K_M.
 #
 # A family the study has never crossed (no Llama-architecture anchor at all).
@@ -10,7 +11,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m58.log
 SUM=$W/m58_summary.jsonl

@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # arm_m36_after_queue.sh — detached safety-net armer for the m36 repair (QUEUE #10).
 #
 # The current QUEUE_DRIVER.sh already ran #10 (and recorded 2 nulls) and is now on
@@ -13,7 +14,7 @@
 # Launch detached:
 #   setsid nohup bash .wrapup/arm_m36_after_queue.sh >>.wrapup/m36_arm.log 2>&1 &
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/m36_arm.log
 SUM=$W/m36_summary.jsonl
 echo "=== m36 armer start $(date) pid=$$ ===" >> "$LOG"

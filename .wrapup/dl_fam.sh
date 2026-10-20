@@ -1,7 +1,8 @@
 #!/bin/bash
-MS=/home/z/hf/research/.wrapup/msenv/bin/modelscope
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
+MS=${REPO_ROOT}/.wrapup/msenv/bin/modelscope
 DST=/home/z/hf/mscache
-LOG=/home/z/hf/research/.wrapup/dl_fam.log
+LOG=${REPO_ROOT}/.wrapup/dl_fam.log
 dl() {
   local repo="$1" file="$2"
   echo "[$(date +%H:%M:%S)] START $file" >> "$LOG"

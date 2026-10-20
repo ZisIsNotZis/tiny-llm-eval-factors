@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # W2 — scale-generalisation ladder on the newly restored Q2/Q3 weights.
 #
 # Directly attacks the #1 pending question in questions.md ("largest feasible
@@ -12,12 +13,12 @@
 #   A  Qwen3.5-9B  : Q2_K_XL vs Q3_K_XL   x  humaneval,mbpp  x  greedy  x  2 reps
 #   B  Qwen3.5-4B  : Q2_K_XL vs Q3_K_XL   x  humaneval       x  greedy  x  2 reps
 set -u
-cd /home/z/hf/research/.wrapup
+cd ${REPO_ROOT}/.wrapup
 PY=evalpy/bin/evalplus.codegen
 EV=evalpy/bin/evalplus.evaluate
-ROOT=/home/z/hf/research/.wrapup/wres
-LOG=/home/z/hf/research/.wrapup/w2.log
-SUMMARY=/home/z/hf/research/.wrapup/w2_summary.jsonl
+ROOT=${REPO_ROOT}/.wrapup/wres
+LOG=${REPO_ROOT}/.wrapup/w2.log
+SUMMARY=${REPO_ROOT}/.wrapup/w2_summary.jsonl
 PORT=8080
 BASE=http://127.0.0.1:$PORT/v1
 REPS=${REPS:-2}

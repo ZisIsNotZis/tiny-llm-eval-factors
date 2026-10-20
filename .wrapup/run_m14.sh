@@ -1,8 +1,9 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M14 — granite multi-turn with the granite-4 native FC handler + larger per-slot ctx.
 set -u
-cd /home/z/hf/research
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}
+WR=${REPO_ROOT}/.wrapup
 export LOG=$WR/m14.log
 export SUM=$WR/m14_summary.jsonl
 export CTX=131072

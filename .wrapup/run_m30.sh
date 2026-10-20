@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M30 (QUEUE #4) — KV-cache quantisation x INPUT length (fixed 2026-10-05).
 #
 # WHY THE PREVIOUS RUN WAS A NULL BY CONSTRUCTION:
@@ -26,7 +27,7 @@
 # Must run under the GPU flock (the chain does this):
 #   bash gpu_locked.sh bash run_m30.sh
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=${M30_LOG:-$W/m30.log}
 SUM=$W/m30_summary.jsonl

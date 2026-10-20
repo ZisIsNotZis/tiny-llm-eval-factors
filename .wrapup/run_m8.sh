@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M8 (T3 step 1) — BFCL live_* single-turn categories, native tools.
 #
 # Adds the six live_* categories to bfcl_run.py. Protocol matches M7 so results are
@@ -7,10 +8,10 @@
 # Relevance handling: live_irrelevance => no call expected; live_relevance => a call is
 # required (bundled data ships no possible_answer for either).
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m8.log
-SUMMARY=/home/z/hf/research/.wrapup/m8_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m8.log
+SUMMARY=${REPO_ROOT}/.wrapup/m8_summary.jsonl
+MRES=${REPO_ROOT}/.wrapup/mres
 PORT=8080
 BASE=http://127.0.0.1:$PORT
 PY=python3

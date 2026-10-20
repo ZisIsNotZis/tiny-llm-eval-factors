@@ -1,9 +1,10 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # MoE expert-wise recipes on the STANDARD benchmark set (table D was MultiPL-E only).
 # The three m55 recipes differ in which tensors get the bits, at 2.92-4.48 effective bpw.
 set -u
-cd /home/z/hf/research || exit 2
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT} || exit 2
+WR=${REPO_ROOT}/.wrapup
 LOG="$WR/m55_std.log"
 exec 7>/tmp/m55std.lock
 flock -n 7 || { echo "another m55 driver holds the lock"; exit 0; }

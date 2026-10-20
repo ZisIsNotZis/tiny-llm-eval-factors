@@ -1,9 +1,10 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # One M9 panel: start llama-server, run BFCL generate+evaluate for each category.
 # Usage: run_m9_panel.sh <tag> <modelfile> <bfcl-handler> [cats]
 set -u
-cd /home/z/hf/research
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}
+WR=${REPO_ROOT}/.wrapup
 LOG=${LOG:-$WR/m9.log}
 SUM=${SUM:-$WR/m9_summary.jsonl}
 BFCL=$WR/bfclenv/bin/bfcl
@@ -98,7 +99,7 @@ for cat in "${CL[@]}"; do
   # BFCL `generate` defaults to allow_overwrite=False: without this the second panel that
   # shares this handler (e.g. qwen4b-q2 then qwen4b-q3) would generate nothing and `evaluate`
   # would silently re-score the previous quant's responses.
-  RRES=/home/z/hf/research/.wrapup/bfclenv/lib/python3.11/site-packages/result
+  RRES=${REPO_ROOT}/.wrapup/bfclenv/lib/python3.11/site-packages/result
   find "$RRES/$(echo "$handler" | tr '/' '_')" -name "BFCL_v4_${cat}_result.json" -delete 2>/dev/null
   echo "[$(date +%H:%M:%S)] gen $tag $cat" >> "$LOG"
   REMOTE_OPENAI_BASE_URL=http://127.0.0.1:$PORT/v1 REMOTE_OPENAI_TOKENIZER_PATH=$TOK \
@@ -107,7 +108,7 @@ for cat in "${CL[@]}"; do
   # A truncated `generate` (timeout / crash) leaves fewer result rows than test entries;
   # official `evaluate` then raises mid-run and the accuracy never prints. Surface the
   # row count up front so the failure is visible instead of looking like a null model.
-  RES=/home/z/hf/research/.wrapup/bfclenv/lib/python3.11/site-packages/result
+  RES=${REPO_ROOT}/.wrapup/bfclenv/lib/python3.11/site-packages/result
   nres=$(find "$RES/$(echo "$handler" | tr '/' '_')" -name "BFCL_v4_${cat}_result.json" \
          -exec wc -l {} + 2>/dev/null | awk 'NR==1{print $1}')
   echo "[$(date +%H:%M:%S)] generated $cat rows=${nres:-0} (expect 200)" >> "$LOG"

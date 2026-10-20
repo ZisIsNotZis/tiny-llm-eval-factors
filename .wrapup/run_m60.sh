@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M60 (Tier 5B statistical power) — Ornith-1.5-9B Q4/Q5 x {rust, ruby}.
 #
 # A second non-Qwen family with an on-disk two-level pair (m10 tags orn9b-q4/q5).
@@ -10,7 +11,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m60.log
 SUM=$W/m60_summary.jsonl

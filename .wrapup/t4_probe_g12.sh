@@ -1,9 +1,10 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # T4 probe: diagnose gemma-4-12B raw-mode thought-channel breakage.
 # Holds the GPU lock for the duration. Kills its own server before releasing.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/t4_probe_g12.log
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/t4_probe_g12.log
 PORT=8080
 BASE=http://127.0.0.1:$PORT
 MODEL="${1:-gemma-4-12b-it-UD-Q3_K_XL.gguf}"

@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # BRAINSTORM Tier-1 runner: 1B -> 1C -> 1A, strictly sequential, one GPU job at
 # a time (every panel goes through .wrapup/gpu_locked.sh).
 #   1B m23: IQ3_XXS vs K-quant at matched file size (4B primary, 2B secondary)
@@ -7,7 +8,7 @@
 # Waits for each GGUF's dl_ready marker before acquiring the lock, so downloads
 # never hold the GPU.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m23_m24_m25.log
 echo "=== BRAINSTORM T1 runner start $(date) ===" >> "$LOG"

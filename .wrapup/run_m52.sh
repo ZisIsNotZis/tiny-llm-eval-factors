@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M52 (NEXT_DRIVER N3) — Tier 4B: decode SPEED vs prompt type (prose vs code) and,
 # if the MTP draft head loads, the spec-draft length curve. This is a different
 # measurement type from the score panels: it records tokens/s (prefill + decode)
@@ -13,7 +14,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m52.log
 SUM=$W/m52_summary.jsonl

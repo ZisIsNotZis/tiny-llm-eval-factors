@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # m32 preflight: prove Ternary-Bonsai-27B can emit a REAL tool call two ways,
 # because the official BFCL qwen_fc handler drives the model through the manual
 # <tool_call> format over /v1/completions (NOT the native tools= endpoint):
@@ -15,7 +16,7 @@
 # NP=1), step the ctx down on failure, and always print the llama-server log
 # tail so an OOM is visible instead of being misread as model incapability.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/m32_preflight.log
 SLOG=$W/m32_preflight_server.log   # raw llama-server output, so the tail is clean
 M=Ternary-Bonsai-27B-Q2_g64.gguf

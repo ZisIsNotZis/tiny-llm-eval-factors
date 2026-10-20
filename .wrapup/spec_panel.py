@@ -32,7 +32,7 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 
-ROOT = Path("/home/z/hf/research")
+ROOT = Path(__file__).resolve().parent.parent  # 仓库根
 WR = ROOT / ".wrapup"
 MRES = WR / "mres"
 LMEVAL_PY = WR / "lmenv/bin/python"

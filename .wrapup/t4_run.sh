@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # T4 generic runner. Must be invoked under the GPU lock:
 #   bash gpu_locked.sh bash t4_run.sh
 #
@@ -18,10 +19,10 @@
 #   META    optional companion jsonl recording ctx/KV/sampling per row
 #   PREFIX  filename prefix for samples (default m10)
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=${LOG:-/home/z/hf/research/.wrapup/t4_run.log}
-SUMMARY=${SUMMARY:-/home/z/hf/research/.wrapup/m10_summary.jsonl}
-MRES=${MRES:-/home/z/hf/research/.wrapup/mres}
+cd ${REPO_ROOT}/.wrapup
+LOG=${LOG:-${REPO_ROOT}/.wrapup/t4_run.log}
+SUMMARY=${SUMMARY:-${REPO_ROOT}/.wrapup/m10_summary.jsonl}
+MRES=${MRES:-${REPO_ROOT}/.wrapup/mres}
 PORT=${PORT:-8080}
 BASE=http://127.0.0.1:$PORT
 LANGS="${LANGS:-cpp py}"

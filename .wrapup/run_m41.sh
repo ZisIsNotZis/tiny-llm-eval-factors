@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M41 (QUEUE #15) — T2 partial-credit metric for the ternary-vs-conventional
 # comparison: does a ternary model fail FEWER tests or just DIFFERENT ones?
 #
@@ -15,7 +16,7 @@
 #
 # Rows: m41_summary.jsonl = one row per (completion file) scored.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m41.log
 SUM=$W/m41_summary.jsonl

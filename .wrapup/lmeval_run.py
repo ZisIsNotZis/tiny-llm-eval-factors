@@ -46,7 +46,7 @@ from pathlib import Path
 
 import requests
 
-ROOT = Path("/home/z/hf/research")
+ROOT = Path(__file__).resolve().parent.parent  # 仓库根
 WR = ROOT / ".wrapup"
 MRES = WR / "mres"
 LMENV_PY = WR / "lmenv/bin/python"

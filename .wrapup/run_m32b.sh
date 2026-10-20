@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # m32b — repaired Ternary-Bonsai-27B BFCL multi-turn panel (QUEUE #6).
 #
 # Thin entry point so the corrected re-run does not clobber `run_m32.sh`, which
@@ -11,4 +12,4 @@
 #
 # Must run under the GPU flock:
 #   bash gpu_locked.sh bash run_m32b.sh
-M32_LOG=/home/z/hf/research/.wrapup/m32b.log exec bash /home/z/hf/research/.wrapup/run_m32.sh
+M32_LOG=${REPO_ROOT}/.wrapup/m32b.log exec bash ${REPO_ROOT}/.wrapup/run_m32.sh

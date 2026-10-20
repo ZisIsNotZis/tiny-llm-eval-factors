@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M59 (Tier 5A architecture-family breadth) — Microsoft Phi-4-mini-instruct Q2_K / Q3_K_M.
 #
 # Second new family (Phi) for the cross-family table; downloaded + CPU-load-gated
@@ -8,7 +9,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m59.log
 SUM=$W/m59_summary.jsonl

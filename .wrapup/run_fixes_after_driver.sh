@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Run the three repaired panels (m32b -> m31 -> m30b) once the concurrent
 # QUEUE_DRIVER.sh workstream has released the GPU.
 #
@@ -13,10 +14,10 @@
 # rewrites its own summary from scratch).
 #
 # Launch detached:
-#   setsid nohup bash /home/z/hf/research/.wrapup/run_fixes_after_driver.sh \
-#       >>/home/z/hf/research/.wrapup/fixes_after_driver.log 2>&1 &
+#   setsid nohup bash ${REPO_ROOT}/.wrapup/run_fixes_after_driver.sh \
+#       >>${REPO_ROOT}/.wrapup/fixes_after_driver.log 2>&1 &
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/fixes_after_driver.log
 DLOG=$W/QUEUE_DRIVER.log
 echo "=== fixes_after_driver armed $(date) pid=$$ ===" >> "$LOG"

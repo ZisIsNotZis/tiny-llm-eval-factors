@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # One frozen-protocol MultiPL-E panel for BRAINSTORM Tier-1.
 # Usage: panel_one.sh <tag> <gguf-basename> <summary.jsonl> <protocol> [langs]
 # Protocol matches .wrapup/run_m1.sh / run_m5.sh: ctx 4096, KV q8_0/q8_0,
@@ -6,11 +7,11 @@
 # Refuses to run if port 8080 is held by a non-project server; smoke-tests the
 # model with one real completion before spending GPU time on the panel.
 set -u
-cd /home/z/hf/research/.wrapup
+cd ${REPO_ROOT}/.wrapup
 TAG=$1; MODEL=$2; SUMMARY=$3; PROTO=${4:-mpl-raw-greedy-768}; LANGS=${5:-"cpp py"}
 PORT=8080; BASE=http://127.0.0.1:$PORT; PY=python3
-LOG=/home/z/hf/research/.wrapup/m23_m24_m25.log
-MRES=/home/z/hf/research/.wrapup/mres
+LOG=${REPO_ROOT}/.wrapup/m23_m24_m25.log
+MRES=${REPO_ROOT}/.wrapup/mres
 mkdir -p "$MRES"
 
 if curl -s --max-time 3 "$BASE/health" >/dev/null 2>&1; then

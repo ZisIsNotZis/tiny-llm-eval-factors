@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M36 (QUEUE #10) — ternary Bonsai on the OTHER multi-turn task types:
 # multi_turn_miss_func and multi_turn_miss_param.
 #
@@ -37,7 +38,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/m36.log
 SUM=$W/m36_summary.jsonl
 HANDLER=Qwen/Qwen3-1.7B-FC

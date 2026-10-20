@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # panel_mpl.sh <tag> <gguf-basename> <summary.jsonl> <langs> [protocol]
 #
 # One frozen-protocol MultiPL-E panel (the shared body of panel_one.sh / run_m5.sh),
@@ -13,11 +14,11 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-cd /home/z/hf/research/.wrapup
+cd ${REPO_ROOT}/.wrapup
 TAG=$1; MODEL=$2; SUMMARY=$3; LANGS=${4:-"cpp py"}; PROTO=${5:-mpl-raw-greedy-768}
 PORT=${PORT:-8150}; BASE=http://127.0.0.1:$PORT; PY=python3
-LOG=${LOG:-/home/z/hf/research/.wrapup/panel_mpl.log}
-MRES=${MRES:-/home/z/hf/research/.wrapup/mres}
+LOG=${LOG:-${REPO_ROOT}/.wrapup/panel_mpl.log}
+MRES=${MRES:-${REPO_ROOT}/.wrapup/mres}
 mkdir -p "$MRES"
 
 # A previous panel that died before its `kill` leaves llama-server holding the port

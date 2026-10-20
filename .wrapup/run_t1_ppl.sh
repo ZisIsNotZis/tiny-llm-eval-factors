@@ -1,7 +1,8 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # T1 PPL ladder sweep. Every GPU call goes through gpu_locked.sh (flock serialisation).
 # Fixed flags across all points: -c 2048 --chunks 40 -ngl 99 -ctk q8_0 -ctv q8_0.
-cd /home/z/hf/research || exit 1
+cd ${REPO_ROOT} || exit 1
 PP=/home/z/llama.cpp/build/bin/llama-perplexity
 OUT=.wrapup/ppl_summary.jsonl
 LOGDIR=.wrapup/ppl_logs

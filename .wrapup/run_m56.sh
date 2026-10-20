@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M56 (Tier 5B statistical power) — LFM2.5-8B-A1B Q2/Q3 x {java, js}.
 #
 # The model already has cpp+py rows (m45). BRAINSTORM 5C: the fix for a headline
@@ -12,7 +13,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m56.log
 SUM=$W/m56_summary.jsonl

@@ -1,12 +1,13 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M20 — B3 cross-architecture multi-turn: sparse-MoE anchor (Qwen3.6-35B-A3B, A3B) on
 # BFCL multi_turn_base, Q2/Q3 pair, native Qwen FC handler (Qwen3-30B-A3B-Instruct-2507-FC).
 # Goal: extend the item-level Q2->Q3 multi-turn quant ladder beyond the dense Qwen3.5 family
 # to a large sparse-MoE architecture (B3 "the MoE anchors"). 131072 ctx / 2 slots = 65536/slot,
 # matches the m17 9B panel; multi_turn_base prompts stay < 53k so no overflow expected.
 set -u
-cd /home/z/hf/research
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}
+WR=${REPO_ROOT}/.wrapup
 export LOG=$WR/m20.log
 export SUM=$WR/m20_summary.jsonl
 export CTX=131072

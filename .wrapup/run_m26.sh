@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # 2C — break the total/active collinearity with ONE GPU panel.
 #
 # Comparison: dense Qwen3.8-27B (27B total = 27B active) vs sparse
@@ -19,10 +20,10 @@
 # Writes .wrapup/m26_summary.jsonl in the MultiPL-E summary shape
 #   {"model","lang","n","pass","score","protocol"}.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m26.log
-SUMMARY=/home/z/hf/research/.wrapup/m26_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m26.log
+SUMMARY=${REPO_ROOT}/.wrapup/m26_summary.jsonl
+MRES=${REPO_ROOT}/.wrapup/mres
 PORT=${PORT:-8077}
 BASE=http://127.0.0.1:$PORT
 PROTO=mpl-chat-nothink-greedy-768

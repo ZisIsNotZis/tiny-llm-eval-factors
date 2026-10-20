@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # One lm-evaluation-harness panel, serialised on the GPU.
 # Usage: .wrapup/lmeval_panel.sh <MODEL_PATH> <TAG> [limit]
 #   limit omitted or 0 == full/complete suite (no --limit passed to lm_eval)
@@ -7,16 +8,16 @@
 # stop instead of hanging (SSOT 6b.5 / delegation protocol).  We never kill a
 # llama-server we did not start; the runner only binds a port that `ss` proves free.
 set -u
-cd /home/z/hf/research || exit 2
+cd ${REPO_ROOT} || exit 2
 
 MODEL="${1:?usage: lmeval_panel.sh <MODEL_PATH> <TAG> [limit]}"
 TAG="${2:?usage: lmeval_panel.sh <MODEL_PATH> <TAG> [limit]}"
 LIMIT="${3:-0}"
 
-PY=/home/z/hf/research/.wrapup/lmenv/bin/python
-RUNNER=/home/z/hf/research/.wrapup/lmeval_run.py
+PY=${REPO_ROOT}/.wrapup/lmenv/bin/python
+RUNNER=${REPO_ROOT}/.wrapup/lmeval_run.py
 LLAMA_SERVER="${LLAMA_SERVER:-$(command -v llama-server || echo /home/z/.local/bin/llama-server)}"
-OUT=/home/z/hf/research/.wrapup/mres/$TAG
+OUT=${REPO_ROOT}/.wrapup/mres/$TAG
 mkdir -p "$OUT" || exit 2
 
 # Hold the flock on fd 9 for the whole run (same lock file as gpu_locked.sh).

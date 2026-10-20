@@ -1,9 +1,10 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # T2 driver — run per-test-fraction instrumentation over all m1/m3 completion files.
 set -u
-cd /home/z/hf/research/.wrapup
+cd ${REPO_ROOT}/.wrapup
 mkdir -p tflogs
-SUMMARY=/home/z/hf/research/.wrapup/testfrac_summary.jsonl
+SUMMARY=${REPO_ROOT}/.wrapup/testfrac_summary.jsonl
 : > "$SUMMARY"
 FILES=$(ls mres/m1-*.jsonl mres/m3-*.jsonl | grep -E '\-(cpp|java|js|py)\.jsonl$')
 for f in $FILES; do

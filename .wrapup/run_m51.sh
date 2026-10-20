@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M51 (NEXT_DRIVER N2) — Tier 5B power, step 3: a THIRD anchor for the multilingual
 # code claim, in a NEW architecture family (gemma-4, after Qwen2B/2B in m38/m42).
 # Adding java+js for gemma-4-12B Q2->Q3 raises the item count on a second,
@@ -9,7 +10,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m51.log
 SUM=$W/m51_summary.jsonl

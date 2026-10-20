@@ -13,7 +13,7 @@ call_rate (fraction of GT function calls matched by name+arguments).
 Only native tool-calling mode is used, matching the M7/M8 protocol (greedy, thinking off).
 
 Requires the bfclenv interpreter:
-  /home/z/hf/research/.wrapup/bfclenv/bin/python bfcl_multi_run.py gen ...
+  .wrapup/bfclenv/bin/python .wrapup/bfcl_multi_run.py gen ...   (在仓库根执行)
 """
 import argparse
 import ast

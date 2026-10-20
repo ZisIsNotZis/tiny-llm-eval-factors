@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M32 (QUEUE #6) — ternary on the HARD axis: official BFCL multi-turn.
 #
 # WHY THE PREVIOUS RUN RETURNED null (the bug this fixes):
@@ -44,7 +45,7 @@
 # Must run under the GPU flock (the chain does this):
 #   bash gpu_locked.sh bash run_m32.sh
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=${M32_LOG:-$W/m32.log}
 SUM=$W/m32_summary.jsonl
 HANDLER=Qwen/Qwen3-1.7B-FC

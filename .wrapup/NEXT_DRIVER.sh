@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # NEXT_DRIVER.sh — successor queue for QUEUE_DRIVER.sh (SSOT 6b anti-idle).
 #
 # QUEUE_DRIVER.sh probes for this file after #19 and does
@@ -20,7 +21,7 @@
 # Idempotent (a step whose summary already has `need` rows — and, for BFCL, zero
 # nulls — is SKIPped). Never stops on failure. Logs START/DONE/FAIL/SKIP.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/NEXT_DRIVER.log
 echo "=== NEXT_DRIVER start $(date) pid=$$ ===" >> "$LOG"
 

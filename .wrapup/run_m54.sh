@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M54 (QUEUE successor, post-N4) — Tier 5B statistical power, step 4: extend the
 # THIRD-family code anchor (gemma-4-12B, java+js in m51) to rust+ruby, the same
 # language pair used for the Qwen3.5-2B power step (m42). Adding languages to an
@@ -10,7 +11,7 @@
 #
 # Must run under the GPU flock (gpu_locked.sh).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m54.log
 SUM=$W/m54_summary.jsonl

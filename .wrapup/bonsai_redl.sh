@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # B1 recon: re-download Ternary-Bonsai-27B-Q2_0.gguf from ModelScope to a FRESH dir and
 # compare sha256 to the on-disk copy, to test the "truncated download" hypothesis.
 set -u
-MS=/home/z/hf/research/.wrapup/msenv/bin/modelscope
-DST=/home/z/hf/research/.wrapup/bonsai_redl
-LOG=/home/z/hf/research/.wrapup/bonsai_redl.log
+MS=${REPO_ROOT}/.wrapup/msenv/bin/modelscope
+DST=${REPO_ROOT}/.wrapup/bonsai_redl
+LOG=${REPO_ROOT}/.wrapup/bonsai_redl.log
 echo "[$(date +%H:%M:%S)] START redownload" >> "$LOG"
 $MS download --model prism-ml/Ternary-Bonsai-27B-gguf Ternary-Bonsai-27B-Q2_0.gguf --local_dir "$DST" >> "$LOG" 2>&1
 NEW=$(find "$DST" -name Ternary-Bonsai-27B-Q2_0.gguf | head -1)

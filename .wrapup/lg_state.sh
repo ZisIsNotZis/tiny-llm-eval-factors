@@ -1,8 +1,9 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # lg_state.sh <gguf-basename> — print the load-gate verdict recorded in
 # .wrapup/loadgate.jsonl: PASS | FAIL | NONE. Exit 0 only for PASS.
 # NONE means the CPU load gate has not seen the file yet.
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 python3 - "$1" "$W/loadgate.jsonl" <<'PY'
 import json, sys
 name, path = sys.argv[1], sys.argv[2]

@@ -18,7 +18,7 @@ import sys
 import time
 import urllib.request
 
-HERE = "/home/z/hf/research/.wrapup"
+HERE = os.path.dirname(os.path.abspath(__file__))  # .wrapup/：按脚本自身位置定位
 MRES = os.path.join(HERE, "mres")
 PORT = 8080
 BASE = f"http://127.0.0.1:{PORT}"

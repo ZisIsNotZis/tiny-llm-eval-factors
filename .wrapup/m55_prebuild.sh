@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # m55_prebuild.sh — CPU/network preparation for the Tier-1A expert-wise / mixed-
 # precision quantisation panel (m55) plus the two fetch-gated architecture-family
 # panels (m58 Llama-3.2-3B, m59 Phi-4-mini).
@@ -16,7 +17,7 @@
 # Launch detached:
 #   setsid nohup bash .wrapup/m55_prebuild.sh >>.wrapup/m55_prebuild.log 2>&1 &
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/m55_prebuild.log
 cd "$W"
 echo "=== m55_prebuild start $(date) pid=$$ ===" >> "$LOG"

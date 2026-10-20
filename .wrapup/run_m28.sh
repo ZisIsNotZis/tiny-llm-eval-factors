@@ -1,13 +1,14 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M28 (BRAINSTORM 4B) — MTP draft length x SPEED on Qwen3.5-2B-UD-Q4_K_XL (MTP GGUF).
 #
 # Sweeps --spec-draft-n-max n in {0,1,2,3,4} (0 = spec off baseline) and measures
 # generation tok/s + draft acceptance on three prompt classes: code / prose / long-context.
 # Speed fit only — no benchmark scoring. Each (mode,n) row is appended as it is measured.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m28.log
-OUT=/home/z/hf/research/.wrapup/m28_speed.jsonl
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m28.log
+OUT=${REPO_ROOT}/.wrapup/m28_speed.jsonl
 M=/home/z/hf/models--unsloth--Qwen3.5-2B-MTP-GGUF/snapshots/e05864f8066d874d5f85aaff007ae57a2a7d1efe/Qwen3.5-2B-UD-Q4_K_XL.gguf
 TAG=qwen3.5-2b-q4
 PORT=8125

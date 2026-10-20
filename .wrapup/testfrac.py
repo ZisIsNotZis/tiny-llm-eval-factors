@@ -30,7 +30,7 @@ import subprocess
 import tempfile
 
 PROMPTS = "/tmp/MultiPL-E/prompts"
-JAR = "/home/z/hf/research/.wrapup/jars/javatuples-1.2.jar"
+JAR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "jars", "javatuples-1.2.jar")
 
 CPP_INJECT = r"""
 #undef assert

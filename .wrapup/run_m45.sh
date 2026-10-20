@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M45 (QUEUE #19) — Tier 5A/2B architecture breadth: LFM2.5-8B-A1B (Liquid MoE).
 #
 # A new MoE family with a *within-model* Q2 -> Q3 pair already on disk, so it adds
@@ -13,7 +14,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m45.log
 SUM=$W/m45_summary.jsonl

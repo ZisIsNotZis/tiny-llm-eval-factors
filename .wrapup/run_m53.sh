@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M53 (NEXT_DRIVER N4) — BRAINSTORM 1C / task hint: hunt more ternary / sub-2-bit
 # families that are NOT already on disk, then load-gate and measure the ones that
 # resolve. Two stages, never stops:
@@ -11,12 +12,12 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m53.log
 SUM=$W/m53_summary.jsonl
 SEARCH=$W/m53_search.log
-MS=/home/z/hf/research/.wrapup/msenv/bin/python
+MS=${REPO_ROOT}/.wrapup/msenv/bin/python
 echo "=== M53 start $(date) ===" >> "$LOG"
 : > "$SUM"; : > "$SEARCH"
 

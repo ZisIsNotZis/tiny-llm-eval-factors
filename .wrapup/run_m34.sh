@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M34 (QUEUE #8) — a third-party ternary / 1-bit family: does the off-curve ternary
 # result generalise beyond the original Ternary-Bonsai-27B (Finding 8)?
 #
@@ -18,7 +19,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m34.log
 SUM=$W/m34_summary.jsonl

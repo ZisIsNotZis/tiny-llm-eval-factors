@@ -11,7 +11,7 @@ import os
 import re
 import sys
 
-ROOT = "/home/z/hf/research/.wrapup/wres"
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wres")  # .wrapup/wres
 
 
 def score_of(ev):
@@ -60,7 +60,7 @@ def main(tag):
         out.append({"model": model, "bench": bench, "temp": float(temp),
                     "rep": int(rep), "score": score_of(ev), "bad_rate": bad_of(jsonl)})
     out.sort(key=lambda r: (r["model"], r["bench"], r["temp"], r["rep"]))
-    dest = f"/home/z/hf/research/.wrapup/{tag}_summary.jsonl"
+    dest = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{tag}_summary.jsonl")
     with open(dest, "w") as f:
         for r in out:
             f.write(json.dumps(r) + "\n")

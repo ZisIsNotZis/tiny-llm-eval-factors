@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Panel chain for the three worker-built queue entries, in priority order
 # (SSOT 6b — the queue must never idle):
 #   1. run_m32.sh  QUEUE #6  ternary Bonsai 27B on BFCL multi-turn + long_context
@@ -13,7 +14,7 @@
 # Last step: hand the GPU to the next QUEUE.md entry if a script for it exists;
 # otherwise log that the queue is empty so the idle is visible in the log.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/m30_32.log
 echo "=== M32/M30/M31 chain armed $(date) ===" >> "$LOG"
 

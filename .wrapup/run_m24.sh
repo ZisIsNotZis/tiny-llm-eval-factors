@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M24 — ternary (Bonsai) SIZE SERIES.
 #
 # Earlier single ternary observation: Ternary-Bonsai-27B-Q2_g64 (m21, 7.59 GB,
@@ -15,7 +16,7 @@
 # top_p .95 / top_k 40 / min_p .05, raw completion (MultiPL-E native), greedy,
 # 768 max tokens. panel_one.sh smoke-tests each model before the panel.
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m24_29.log
 echo "=== M24 ternary size series start $(date) ===" >> "$LOG"

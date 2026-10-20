@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Arm the repaired m32 (Ternary-Bonsai-27B BFCL multi-turn, QUEUE #6) BEHIND the
 # current fixes chain `run_fixes_after_driver.sh` (m31 -> m30b). This worker must
 # not block on /tmp/llama_gpu.lock, so this script waits for the predecessor
@@ -6,10 +7,10 @@
 # runs run_m32b.sh. Up to two attempts, matching the two-preflight-attempt rule.
 #
 # It does NOT touch the lock while waiting. Launch detached:
-#   setsid nohup bash /home/z/hf/research/.wrapup/arm_m32_after_fixes.sh \
-#       >>/home/z/hf/research/.wrapup/m32_arm.log 2>&1 &
+#   setsid nohup bash ${REPO_ROOT}/.wrapup/arm_m32_after_fixes.sh \
+#       >>${REPO_ROOT}/.wrapup/m32_arm.log 2>&1 &
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/m32_arm.log
 echo "=== arm_m32 armed $(date) pid=$$ ===" >> "$LOG"
 

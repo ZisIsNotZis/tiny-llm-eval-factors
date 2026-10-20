@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M13 — corrected long-context multi-turn re-run.
 # M12's long_context panel used 98304/2 = 49152 ctx/slot; prompts reach ~53k.
 # Run with 131072/2 = 65536 per slot (and a single-slot fallback already large enough).
 set -u
-cd /home/z/hf/research
-WR=/home/z/hf/research/.wrapup
+cd ${REPO_ROOT}
+WR=${REPO_ROOT}/.wrapup
 export LOG=$WR/m13.log
 export SUM=$WR/m13_summary.jsonl
 export CTX=131072

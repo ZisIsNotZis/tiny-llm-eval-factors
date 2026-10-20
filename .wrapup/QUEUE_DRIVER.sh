@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # QUEUE_DRIVER.sh — keep the GPU busy through the whole QUEUE.md list with no session.
 #
 # Implements SSOT 6b (anti-idle): the driver is the single persisted queue runner.
@@ -13,9 +14,9 @@
 # GPU panels behind a compile/run workload.
 #
 # Launch detached (do not wait):
-#   setsid nohup bash /home/z/hf/research/.wrapup/QUEUE_DRIVER.sh >>/home/z/hf/research/.wrapup/QUEUE_DRIVER.log 2>&1 &
+#   setsid nohup bash ${REPO_ROOT}/.wrapup/QUEUE_DRIVER.sh >>${REPO_ROOT}/.wrapup/QUEUE_DRIVER.log 2>&1 &
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 LOG=$W/QUEUE_DRIVER.log
 echo "=== QUEUE_DRIVER armed $(date) pid=$$ ==="
 

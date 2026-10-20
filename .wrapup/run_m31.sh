@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M31 (QUEUE #5) — sampling top_k x weight quant (fixed 2026-10-05).
 #
 # HISTORY: the 2026-10-03 run already restarted llama-server per cell with
@@ -26,7 +27,7 @@
 # Must run under the GPU flock (the chain does this):
 #   bash gpu_locked.sh bash run_m31.sh
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m31.log
 SUM=$W/m31_summary.jsonl

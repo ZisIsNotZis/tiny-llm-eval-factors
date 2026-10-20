@@ -6,3 +6,14 @@
 {"arm_np_flag": 1, "llama_reports": "n_slots = 1, n_ctx_slot = 2048", "ctx_flag": 2048, "model": "/home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf", "lang": "py", "mode": "chat", "greedy": true, "max_tokens": 768, "chat_kwargs": {"enable_thinking": false}, "strip_thought": true, "prompt_sha256": "ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb", "server_version": ""}
 [i01-slot] arm=np1 server up: n_slots = 1, n_ctx_slot = 2048
 [i01-slot] gen arm=np1 pass=p1 start=22:54:11
+[i01-slot] gen arm=np1 pass=p1 end=22:59:34 rc=0
+[i01-slot] eval arm=np1 pass=p1 rc=0 {"n":161,"pass":145,"score":0.9006211180124224}
+[i01-slot] gen arm=np1 pass=p2 start=22:59:40
+[i01-slot] gen arm=np1 pass=p2 end=23:06:40 rc=0
+[i01-slot] eval arm=np1 pass=p2 rc=0 {"n":161,"pass":145,"score":0.9006211180124224}
+{"arm_np_flag": 4, "llama_reports": "n_slots = 4, n_ctx_slot = 512", "ctx_flag": 2048, "model": "/home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf", "lang": "py", "mode": "chat", "greedy": true, "max_tokens": 768, "chat_kwargs": {"enable_thinking": false}, "strip_thought": true, "prompt_sha256": "ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb", "server_version": ""}
+[i01-slot] arm=np4 server up: n_slots = 4, n_ctx_slot = 512
+[i01-slot] gen arm=np4 pass=p1 start=23:06:54
+Terminated
+[i01-slot] gen arm=np4 pass=p1 end=23:09:33 rc=143
+[i01-slot] GEN-FAILED arm=np4 pass=p1 rc=143

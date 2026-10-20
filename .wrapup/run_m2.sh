@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M2 — MultiPL-E resolution panel.
 #
 # Purpose: give the study's most reproducible effect (the local Q2->Q3 weight-quant
@@ -11,10 +12,10 @@
 #
 # Panels: Qwen3.5-4B UD-Q2_K_XL and UD-Q3_K_XL, each across the languages below.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m2.log
-SUMMARY=/home/z/hf/research/.wrapup/m2_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m2.log
+SUMMARY=${REPO_ROOT}/.wrapup/m2_summary.jsonl
+MRES=${REPO_ROOT}/.wrapup/mres
 PORT=8080
 BASE=http://127.0.0.1:$PORT
 LANGS="${LANGS:-cpp java js rs py rb}"

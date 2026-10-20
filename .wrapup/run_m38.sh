@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M38 (NEW QUEUE entry) — Tier 5B / 5C statistical power: add MultiPL-E java + js to
 # the two anchors that define the headline Q2->Q3 quant step.
 #
@@ -14,7 +15,7 @@
 #
 # Must run under the GPU flock (the driver does this).
 set -u
-W=/home/z/hf/research/.wrapup
+W=${REPO_ROOT}/.wrapup
 cd "$W"
 LOG=$W/m38.log
 SUM=$W/m38_summary.jsonl

@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # One EvalPlus 0.3.1 code panel (HumanEval/HumanEval+ and MBPP/MBPP+), serialised on the GPU.
 #
 # Usage: codepanel.sh <MODEL_PATH> <TAG> [limit]
@@ -28,13 +29,13 @@
 # `ss -ltn` proves free and kills only that server (never one it did not start).  The
 # other project owns port 8834 and is left alone.
 set -u
-cd /home/z/hf/research || exit 2
+cd ${REPO_ROOT} || exit 2
 
 MODEL="${1:?usage: codepanel.sh <MODEL_PATH> <TAG> [limit]}"
 TAG="${2:?usage: codepanel.sh <MODEL_PATH> <TAG> [limit]}"
 LIMIT="${3:-0}"
 
-WR=/home/z/hf/research/.wrapup
+WR=${REPO_ROOT}/.wrapup
 PY="$WR/evalpy/bin/evalplus.codegen"
 EV="$WR/evalpy/bin/evalplus.evaluate"
 OUT="$WR/mres/$TAG"

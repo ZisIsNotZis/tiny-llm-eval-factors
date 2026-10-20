@@ -1,8 +1,9 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Model acquisition via ModelScope (China-reachable).
-MS=/home/z/hf/research/.wrapup/msenv/bin/modelscope
+MS=${REPO_ROOT}/.wrapup/msenv/bin/modelscope
 DST=/home/z/hf/mscache
-LOG=/home/z/hf/research/.wrapup/dl_ms.log
+LOG=${REPO_ROOT}/.wrapup/dl_ms.log
 mkdir -p "$DST"
 echo "=== ms download start $(date) ===" >> "$LOG"
 

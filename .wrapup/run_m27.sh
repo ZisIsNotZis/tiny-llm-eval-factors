@@ -1,4 +1,5 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # M27 (BRAINSTORM 4A) — does the best SAMPLING setting shift with quant?
 #
 # Qwen3.5-2B (Unsloth UD K_XL) at Q2/Q3/Q4 x temperature {0.0,0.3,0.6} on
@@ -9,10 +10,10 @@
 # temp 0.0 for q2 is the harness anchor against m3 (mpl-raw-greedy-768).
 # Rows are appended per cell, shape: {"model","lang","n","pass","score","temp","protocol"}.
 set -u
-cd /home/z/hf/research/.wrapup
-LOG=/home/z/hf/research/.wrapup/m27.log
-SUM=/home/z/hf/research/.wrapup/m27_summary.jsonl
-MRES=/home/z/hf/research/.wrapup/mres
+cd ${REPO_ROOT}/.wrapup
+LOG=${REPO_ROOT}/.wrapup/m27.log
+SUM=${REPO_ROOT}/.wrapup/m27_summary.jsonl
+MRES=${REPO_ROOT}/.wrapup/mres
 PORT=8126
 BASE=http://127.0.0.1:$PORT
 mkdir -p "$MRES"

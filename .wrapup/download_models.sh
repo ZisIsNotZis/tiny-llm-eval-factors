@@ -1,10 +1,11 @@
 #!/bin/bash
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # 仓库根：脚本按自身位置定位，不再写死绝对路径
 # Wrap-up resource acquisition. Uses hf-mirror (China-reachable).
 export HF_ENDPOINT=https://hf-mirror.com
 export HF_HUB_ENABLE_HF_TRANSFER=0
 HF=/home/z/.venv/bin/hf
 cd /home/z/hf
-LOG=/home/z/hf/research/.wrapup/download_models.log
+LOG=${REPO_ROOT}/.wrapup/download_models.log
 echo "=== download start $(date) ===" >> $LOG
 
 dl() {  # repo  file
