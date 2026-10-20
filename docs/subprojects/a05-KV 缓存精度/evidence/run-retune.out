@@ -1,0 +1,100 @@
+[07:32:33] tokenizer server: n_slots=1 n_ctx=2048
+[07:32:36] ctx=8192 depth=0.9: 20 prompts, tokens 7169–7169
+[07:32:43] ctx=16384 depth=0.9: 20 prompts, tokens 15362–15362
+[07:32:53] ctx=32768 depth=0.9: 20 prompts, tokens 31746–31746
+[07:32:54] control: 20 prompts, needle removed, expect 0/20
+[07:33:44] a05-needle-d0.9-ctx32768-kvf16_f16: hits 14/20  prompt_tokens≈31746.0  -> a05-needle-d0.9-ctx32768-kvf16_f16.json
+[07:34:00] a05-needle-d0.9-ctx8192-kvf16_f16: hits 17/20  prompt_tokens≈7169.0  -> a05-needle-d0.9-ctx8192-kvf16_f16.json
+[07:34:16] a05-needle-d0.9-ctx8192-kvq4_0_q4_0: hits 13/20  prompt_tokens≈7169.0  -> a05-needle-d0.9-ctx8192-kvq4_0_q4_0.json
+[07:34:42] a05-needle-d0.9-ctx16384-kvf16_f16: hits 20/20  prompt_tokens≈15362.0  -> a05-needle-d0.9-ctx16384-kvf16_f16.json
+[07:35:07] a05-needle-d0.9-ctx16384-kvq4_0_q4_0: hits 20/20  prompt_tokens≈15362.0  -> a05-needle-d0.9-ctx16384-kvq4_0_q4_0.json
+[07:35:58] a05-needle-d0.9-ctx32768-kvq4_0_q4_0: hits 15/20  prompt_tokens≈31746.0  -> a05-needle-d0.9-ctx32768-kvq4_0_q4_0.json
+[07:36:14] a05-needle-d0.9-ctx8192-kvf16_f16-control-absent: hits 0/20  prompt_tokens≈7169.0  -> a05-needle-d0.9-ctx8192-kvf16_f16-control-absent.json
+{
+ "run_tag": "a05-needle-kv-ctx",
+ "design": "needle at a fixed depth per cell (depth is a stratum, not pooled), answer-only instruction, prompt = ctx-1024 tokens, 20 items per cell",
+ "control": {
+  "cell": "a05-needle-d0.9-ctx8192-kvf16_f16-control-absent",
+  "hits": 0,
+  "n": 20,
+  "passed": true
+ },
+ "strata": {
+  "0.9": {
+   "gate": {
+    "ctx": 32768,
+    "kv": "f16/f16",
+    "hits": 14,
+    "n": 20,
+    "window": "v2: >=8/20 usable; 20/20 = one-sided",
+    "passed": true,
+    "one_sided": false
+   },
+   "diffs_vs_f16": {
+    "8192:q4_0/q4_0": -4,
+    "16384:q4_0/q4_0": 0,
+    "32768:q4_0/q4_0": 1
+   },
+   "verdict": "resolvable"
+  }
+ },
+ "cells": [
+  {
+   "cell": "a05-needle-d0.9-ctx32768-kvf16_f16",
+   "ctx": 32768,
+   "kv": "f16/f16",
+   "depth": 0.9,
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-d0.9-ctx8192-kvf16_f16",
+   "ctx": 8192,
+   "kv": "f16/f16",
+   "depth": 0.9,
+   "hits": 17,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-d0.9-ctx8192-kvq4_0_q4_0",
+   "ctx": 8192,
+   "kv": "q4_0/q4_0",
+   "depth": 0.9,
+   "hits": 13,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-d0.9-ctx16384-kvf16_f16",
+   "ctx": 16384,
+   "kv": "f16/f16",
+   "depth": 0.9,
+   "hits": 20,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-d0.9-ctx16384-kvq4_0_q4_0",
+   "ctx": 16384,
+   "kv": "q4_0/q4_0",
+   "depth": 0.9,
+   "hits": 20,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-d0.9-ctx32768-kvq4_0_q4_0",
+   "ctx": 32768,
+   "kv": "q4_0/q4_0",
+   "depth": 0.9,
+   "hits": 15,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-d0.9-ctx8192-kvf16_f16-control-absent",
+   "ctx": 8192,
+   "kv": "f16/f16",
+   "depth": 0.9,
+   "hits": 0,
+   "n": 20
+  }
+ ],
+ "verdict": "resolvable"
+}

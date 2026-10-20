@@ -115,7 +115,7 @@
 
 ### kv-long-ctx-needle :: 32k 上下文上 KV q4_0 没有检索损失：0 丢 1 得（针检索，20 条/格）
 
-条件：Qwen3.5-2B UD-Q3_K_XL，`-fa on`、`-np 1`、贪心、`n_predict 32`；prompt = `ctx − 1024` tokens 的英文散文填充段（`.wrapup/ppl_corpora/nl_english.txt`），一条 `KEY: <5 位数字>` 插在**深度 0.9**（贴着末尾指令），最后一行要求只输出该数字；每格 20 条，同一 (ctx) 的 20 条 prompt 跨 KV 配置**逐字节相同**（sha256 落在证据文件里）；判分 = 完成物里第一个 5 位数字等于针。深度是**分层**而不是混在一格里——第一次跑（`.wrapup/a05_needle.out`）把 0.1/0.5/0.9 三个深度混成一格，0.5 深度是「lost in the middle」地板（0–1/7），把整格压到 7/20 触发了旧门，那一轮按规则判**不可用**，只作为诊断保留。
+条件：Qwen3.5-2B UD-Q3_K_XL，`-fa on`、`-np 1`、贪心、`n_predict 32`；prompt = `ctx − 1024` tokens 的英文散文填充段（`.wrapup/ppl_corpora/nl_english.txt`），一条 `KEY: <5 位数字>` 插在**深度 0.9**（贴着末尾指令），最后一行要求只输出该数字；每格 20 条，同一 (ctx) 的 20 条 prompt 跨 KV 配置**逐字节相同**（sha256 落在证据文件里）；判分 = 完成物里第一个 5 位数字等于针。深度是**分层**而不是混在一格里——第一次跑（`evidence/run-first-void.out`）把 0.1/0.5/0.9 三个深度混成一格，0.5 深度是「lost in the middle」地板（0–1/7），把整格压到 7/20 触发了旧门，那一轮按规则判**不可用**，只作为诊断保留。
 
 | ctx（实测 prompt tokens） | f16/f16 | q4_0/q4_0 | 差值 | 配对丢/得 | 95% CI（Wilson，单格） |
 |---|---|---|---|---|---|
@@ -126,7 +126,7 @@
 - **阳性对照 0/20**（同一条 8k 题把针那一行删掉，模型无从检索）：打分器看得到失败，这一轮不是「模型在猜」。
 - **动态范围门（本轮门 v2，跑前写死）**：f16 在 32768 上 14/20 ≥ 8/20 ⇒ 可用；20/20 记「单侧（只能测出退化）」。门 v1（8–19/20）在第一次跑时因为深度混合被地板拉低而失败，v1→v2 的改动只放宽了天花板一侧，地板一侧不变，理由写在 `PLAN.md::WP4`。
 - **结论与方向**：在 32k 上 q4_0 与 f16 不可分辨（14 vs 15，配对 0 丢 1 得，单侧 20 条下可见性下限约 4/20）；**唯一 ≥4 的差在最短的 8k 上（q4_0 4 丢 0 得，单侧精确 p = 0.0625）**，16k 两侧都顶到 20/20。所以「上下文越长、KV 量化越贵」这个方向的证据**不存在**；本设计下长上下文没有让 KV 量化更贵。
-- 限制：只有深度 0.9 这一层、每格 20 条单次运行、`q8_0` 没有重跑（第一次跑的四配置在三个 ctx 上逐格相同，见 `.wrapup/a05_needle.out`，但那一轮按规则判不可用）；16k 是天花板、只能测出退化。
+- 限制：只有深度 0.9 这一层、每格 20 条单次运行、`q8_0` 没有重跑（第一次跑的四配置在三个 ctx 上逐格相同，见 `evidence/run-first-void.out`，但那一轮按规则判不可用）；16k 是天花板、只能测出退化。
 - 状态：current。
 - 证据：`evidence/needle-retune/a05-needle-d0.9-ctx{8192,16384,32768}-kv{f16_f16,q4_0_q4_0}.json`（每条的深度、针值、完成物、是否命中、prompt sha256）与 `evidence/needle-retune/summary.json`；第一次（不可用）的一轮在 `evidence/needle/`。
 - 复现：`timeout 780 bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a05-KV 缓存精度/analysis/needle_grid.py" --depths 0.9 --kvs f16:f16,q4_0:q4_0 --outdir "docs/subprojects/a05-KV 缓存精度/evidence/needle-retune"`；重算命中率与配对翻动：见本条表格下的命令块（`python3 - <<'PY'` 读 evidence/needle-retune/*.json 统计 `hit` 与 `i`）。
@@ -135,8 +135,8 @@
 
 - 本条原为「未测」，现由 `kv-long-ctx-needle` 取代：32k 上 q4_0 与 f16 的检索命中不可分辨（14 vs 15，0 丢 1 得），可见性下限约 4/20。
 - 仍未覆盖的部分（不是 0）：40k 以上没测（Qwen3.5-2B 的原生窗口之外）；中间深度（0.5）在该模型上是结构性地板，KV 在那一层无法被测出——这是模型行为（lost in the middle），不是 KV 结论；`q8_0` 只在第一次（按规则不可用的）一轮里测过。
-- 代价已实测：13 格（含 1 个阳性对照）wall 约 11 分钟，其中 32k 格 ~64 s、16k ~32 s、8k ~20 s（`.wrapup/a05_needle_retune.out` 的时间戳）；重跑 7 格约 4 分钟。
-- 证据：`evidence/needle-retune/`、`.wrapup/a05_needle.out`、`.wrapup/a05_needle_retune.out`。
+- 代价已实测：13 格（含 1 个阳性对照）wall 约 11 分钟，其中 32k 格 ~64 s、16k ~32 s、8k ~20 s（`evidence/run-retune.out` 的时间戳）；重跑 7 格约 4 分钟。
+- 证据：`evidence/needle-retune/`、`evidence/run-first-void.out`、`evidence/run-retune.out`。
 - 复现：见 `kv-long-ctx-needle` 的复现命令；未覆盖档的代价是一次 `--ctxs 8192,16384,32768,49152`（4 个 ctx × 2 KV × 20 条约 8 分钟）。
 
 ## 数据库与报告的状态

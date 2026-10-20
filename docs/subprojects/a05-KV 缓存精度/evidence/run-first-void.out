@@ -1,0 +1,133 @@
+[02:02:20] tokenizer server: n_slots=1 n_ctx=2048
+[02:02:25] ctx=8192: 20 prompts, tokens 7169–7170
+[02:02:33] ctx=16384: 20 prompts, tokens 15361–15362
+[02:02:42] ctx=32768: 20 prompts, tokens 31744–31746
+[02:02:44] control: 20 prompts, needle removed, expect 0/20
+[02:03:45] a05-needle-ctx32768-kvf16_f16: hits 7/20  prompt_tokens≈31744.6  -> a05-needle-ctx32768-kvf16_f16.json
+[02:04:03] a05-needle-ctx8192-kvf16_f16: hits 9/20  prompt_tokens≈7169.7  -> a05-needle-ctx8192-kvf16_f16.json
+[02:04:21] a05-needle-ctx8192-kvq8_0_f16: hits 9/20  prompt_tokens≈7169.7  -> a05-needle-ctx8192-kvq8_0_f16.json
+[02:04:38] a05-needle-ctx8192-kvf16_q8_0: hits 10/20  prompt_tokens≈7169.7  -> a05-needle-ctx8192-kvf16_q8_0.json
+[02:04:56] a05-needle-ctx8192-kvq8_0_q8_0: hits 9/20  prompt_tokens≈7169.7  -> a05-needle-ctx8192-kvq8_0_q8_0.json
+[02:05:26] a05-needle-ctx16384-kvf16_f16: hits 14/20  prompt_tokens≈15361.6  -> a05-needle-ctx16384-kvf16_f16.json
+[02:05:58] a05-needle-ctx16384-kvq8_0_f16: hits 14/20  prompt_tokens≈15361.6  -> a05-needle-ctx16384-kvq8_0_f16.json
+[02:06:31] a05-needle-ctx16384-kvf16_q8_0: hits 14/20  prompt_tokens≈15361.6  -> a05-needle-ctx16384-kvf16_q8_0.json
+[02:07:03] a05-needle-ctx16384-kvq8_0_q8_0: hits 14/20  prompt_tokens≈15361.6  -> a05-needle-ctx16384-kvq8_0_q8_0.json
+[02:08:07] a05-needle-ctx32768-kvq8_0_f16: hits 6/20  prompt_tokens≈31744.6  -> a05-needle-ctx32768-kvq8_0_f16.json
+[02:09:11] a05-needle-ctx32768-kvf16_q8_0: hits 7/20  prompt_tokens≈31744.6  -> a05-needle-ctx32768-kvf16_q8_0.json
+[02:10:15] a05-needle-ctx32768-kvq8_0_q8_0: hits 7/20  prompt_tokens≈31744.6  -> a05-needle-ctx32768-kvq8_0_q8_0.json
+[02:10:34] a05-needle-ctx8192-kvf16_f16-control-absent: hits 0/20  prompt_tokens≈7169.7  -> a05-needle-ctx8192-kvf16_f16-control-absent.json
+{
+ "run_tag": "a05-needle-kv-ctx",
+ "design": "needle at 10/50/90% depth, answer-only instruction, prompt = ctx-1024 tokens",
+ "gate": {
+  "ctx": 32768,
+  "kv": "f16/f16",
+  "hits": 7,
+  "n": 20,
+  "window": [
+   8,
+   19
+  ],
+  "passed": false
+ },
+ "control": {
+  "cell": "a05-needle-ctx8192-kvf16_f16-control-absent",
+  "hits": 0,
+  "n": 20,
+  "passed": true
+ },
+ "cells": [
+  {
+   "cell": "a05-needle-ctx32768-kvf16_f16",
+   "ctx": 32768,
+   "kv": "f16/f16",
+   "hits": 7,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvf16_f16",
+   "ctx": 8192,
+   "kv": "f16/f16",
+   "hits": 9,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvq8_0_f16",
+   "ctx": 8192,
+   "kv": "q8_0/f16",
+   "hits": 9,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvf16_q8_0",
+   "ctx": 8192,
+   "kv": "f16/q8_0",
+   "hits": 10,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvq8_0_q8_0",
+   "ctx": 8192,
+   "kv": "q8_0/q8_0",
+   "hits": 9,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvf16_f16",
+   "ctx": 16384,
+   "kv": "f16/f16",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvq8_0_f16",
+   "ctx": 16384,
+   "kv": "q8_0/f16",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvf16_q8_0",
+   "ctx": 16384,
+   "kv": "f16/q8_0",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx16384-kvq8_0_q8_0",
+   "ctx": 16384,
+   "kv": "q8_0/q8_0",
+   "hits": 14,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx32768-kvq8_0_f16",
+   "ctx": 32768,
+   "kv": "q8_0/f16",
+   "hits": 6,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx32768-kvf16_q8_0",
+   "ctx": 32768,
+   "kv": "f16/q8_0",
+   "hits": 7,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx32768-kvq8_0_q8_0",
+   "ctx": 32768,
+   "kv": "q8_0/q8_0",
+   "hits": 7,
+   "n": 20
+  },
+  {
+   "cell": "a05-needle-ctx8192-kvf16_f16-control-absent",
+   "ctx": 8192,
+   "kv": "f16/f16",
+   "hits": 0,
+   "n": 20
+  }
+ ],
+ "verdict": "void-dynamic-range"
+}
