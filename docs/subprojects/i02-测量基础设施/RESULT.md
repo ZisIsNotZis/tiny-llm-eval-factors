@@ -103,9 +103,16 @@
 - evidence: 字体 `/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc`（`fonts-noto-cjk`），sha256 `b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a`；换掉它 86 张图的字形与度量全变、报告从 10280329 字节变成另一个哈希。构建末行印出真字节数与字体指纹。
 - producer: `python3 -c "import make_report as m; print(m.CJK_FONT, m.CJK_FONT_SHA256)"`；`./reproduce.sh` 的「CJK 字体」一步（把 `make_report.py` 的 `CJK_FONT` 改成不存在的路径时，该步失败并念出字体名、安装命令与期望哈希）
 
-## res35 :: 报告不再把已退役路径当作来源引用；仍有 89 条事实的来源是 `.scratch/originals`，它们由各自的持有层迁移。
+## res35 :: 报告里每条事实的来源都按「查得到就打印，查不到就说不存在」给出，标签不再是固定断言。
 
 - kind: measured
 - status: current
-- evidence: `make_report.py` 的 `render_fact_list` 对退役根（`.scratch/`、`/tmp/MultiPL-E/`、`/home/z/hf/`）改成显示「已退役历史原件（该子项目尚未迁移到当前家）」并优先给出该事实自己的 `producer`/`evidence`；`checks/report_check.py` 断言报告里没有退役根的字符串。规模：19 个文件 89 条事实仍带该来源，其中共享层 65 条（method 43、product 15、architecture 6、need 1）、子项目 24 条（a01 8、a02 3、a03 2、a09 2、a04 2、a05 2、a06 2、a07 1、a10 1、a13 1）。
-- producer: `python3 -c "import yaml,glob,collections;c=collections.Counter();[c.update({p:sum(1 for k,v in (yaml.safe_load(open(p,encoding='utf-8')) or {}).items() if isinstance(v,dict) and '.scratch/originals' in str(v.get('origin','')))}) for p in glob.glob('docs/**/*.yaml',recursive=True)];print(sum(c.values()),len([k for k,v in c.items() if v]))"`；`python3 checks/report_check.py`
+- evidence: 规则是：先打印事实本体所在文件（它随仓库分发，永远可查）；`origin` 里记录下来的路径若在**被 git 跟踪的文件集**里就一并打印（`.scratch/` 下的加「该目录已按策略退役」标注），一个都不存在时给该事实的 `producer`/`evidence` 并写明「来源路径在本仓库不存在」。用跟踪集判断而不是 `os.path.exists`，否则只在本机存在的 `.wrapup/mres/*` 会让干净 clone 得到不同的报告。当前报告：24 条带退役标注且各自先给出本体文件、1 条（`plan7b`，其 origin 指的是已迁走的 `docs/plan/plan.yaml`）打印「来源路径在本仓库不存在」并给出本体 `docs/subprojects/a01-量化位宽/plan.yaml`、0 条再出现「已退役历史原件」这种断言。
+- producer: `python3 checks/report_check.py`；报告内 `该目录已按策略退役` / `来源路径在本仓库不存在` 的计数
+
+## res36 :: `reproduce.sh` 的报告一致性检查只在本次真的产出了报告时运行，构建失败时是 SKIP 而不是拿旧文件冒充。
+
+- kind: measured
+- status: current
+- evidence: 构建成功后置 `BUILD_OK=1` 才跑 `checks/report_check.py`；把 CJK 字体路径改成不存在的路径强制构建失败时，`reproduce.sh` 打印 `FAIL 报告构建失败` 与 `SKIP 报告与产物一致（第 9 步没有产出本次报告，不拿仓库里那份旧文件比对）`，整体 FAILED。
+- producer: `./reproduce.sh`（强制构建失败一次，观察第 9、10 步）

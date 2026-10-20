@@ -233,7 +233,8 @@ def render_repro(rows, title="用到的模型文件与来源（复现用）"):
          f"<div class='fixed'>{FIXED_NOTE}</div>",
          "<div class='scroll'><table>",
          "<tr><th>模型文件（gguf，实际加载项）</th><th>家族</th><th>规模</th><th>量化方案</th>"
-         "<th>有效位宽</th><th>QAT</th><th>量化发布方</th><th>GGUF 仓库</th><th>本地路径</th></tr>"]
+         "<th>有效位宽</th><th>QAT</th><th>量化发布方</th><th>GGUF 仓库</th>"
+         "<th>测量时的加载路径（采集机上已不存在，不是本机文件）</th></tr>"]
     for d in rows:
         h.append("<tr><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>"
                  "<td>%s</td><td>%s</td><td>%s</td><td class='nr'>%s</td></tr>"
@@ -1241,7 +1242,10 @@ def load_docs():
     for layer in ("plan", "result"):
         facts = {}
         for path in sorted(glob.glob(os.path.join("docs", "subprojects", "*", f"{layer}.yaml"))):
-            facts.update(_yaml_load(path) or {})
+            for fid, fact in (_yaml_load(path) or {}).items():
+                if isinstance(fact, dict):
+                    fact["_file"] = path          # 事实自己的家：报告据此给出可查的来源
+                facts[fid] = fact
         out[layer] = facts
     return out
 
@@ -1309,18 +1313,77 @@ def non_measurements_html():
             "也不出现在任何图上——空白不等于 0，也不等于「跑完但得分低」。</p>" + "".join(out))
 
 
-# 已退役的来源根：它们不再是「持有事实的家」，所以报告不把它们当作可打开的来源来引用。
+# 已退役的目录：路径本身仍可能存在（`.scratch` 还在仓库里），但已不再作为「事实的家」。
+# 报告因此照实打印存在的路径并标注这一点，而不是给一条固定文案。
 RETIRED_ORIGINS = (".scratch/", "/tmp/MultiPL-E/", "/home/z/hf/")
+RETIRED_MARK = "该目录已按策略退役"
+
+# origin 里像路径的片段：至少一层目录 + 已知扩展名
+_PATH_RE = re.compile(r"(?:[\w.~-]+/)+[\w\u4e00-\u9fff.~-]+\.(?:yaml|yml|md|json|jsonl|py|sh|log|txt|tsv|csv|gguf)")
+
+
+def recorded_paths(origin):
+    """origin 字段里被记录下来的路径（按出现顺序，去重）。"""
+    seen, out = set(), []
+    for m in _PATH_RE.finditer(str(origin or "")):
+        path = m.group(0)
+        if path not in seen:
+            seen.add(path)
+            out.append(path)
+    return out
+
+
+_TRACKED = {}
+
+
+def tracked_paths():
+    """仓库里被 git 跟踪的路径集合。
+
+    「来源在本仓库里是否存在」必须与机器无关：`.wrapup/mres/*` 之类只在本机存在、被
+    .gitignore 排除，用 `os.path.exists` 判断会让干净 clone 得到不同的报告。
+    """
+    if "set" not in _TRACKED:
+        import subprocess
+        try:
+            out = subprocess.run(["git", "ls-files", "-z"], capture_output=True, text=True,
+                                 check=True).stdout
+            _TRACKED["set"] = {p for p in out.split("\0") if p}
+        except Exception:
+            _TRACKED["set"] = None            # 没有 git：退回文件系统判断
+    return _TRACKED["set"]
+
+
+def path_in_repo(path):
+    tracked = tracked_paths()
+    if tracked is None:
+        return os.path.exists(path)
+    return path in tracked
 
 
 def _source_label(fact):
-    """一句话的来源：退役原件明说未迁移，派生事实优先给出它的 producer/evidence。"""
+    """这条事实的来源：先查记录下来的路径是否存在，查不到才说不存在，并给出它自己的家。
+
+    总是先给事实本体所在的文件（它的家，随仓库分发）；记录下来的路径存在就一并打印，
+    退役目录里的路径按 RETIRED_MARK 标注；一个都不存在时给 producer/evidence，并照实说
+    「来源路径在本仓库不存在」——这是可核对的陈述，不是「尚未迁移」这种断言。
+    """
     origin = str(fact.get("origin") or "")
-    live = fact.get("producer") or fact.get("evidence") or ""
-    if any(root in origin for root in RETIRED_ORIGINS):
-        return ("已退役历史原件（该子项目尚未迁移到当前家）"
-                + (f"；可核对的产物：{live}" if live else "")), True
-    return (live or origin), False
+    live = str(fact.get("producer") or fact.get("evidence") or "")
+    home = str(fact.get("_file") or "")
+    paths = recorded_paths(origin)
+    existing = [p for p in paths if path_in_repo(p)]
+    parts = []
+    if home:
+        parts.append(home)                     # 事实本体所在文件：永远可查
+    for p in existing:
+        parts.append(p + (f"（{RETIRED_MARK}）" if any(r in p for r in RETIRED_ORIGINS) else ""))
+    if live and live not in existing:
+        parts.append(live)
+    if paths and not existing:
+        parts.append("来源路径在本仓库不存在")
+    if not parts and origin:
+        parts.append(origin[:100])
+    return "；".join(parts), bool(paths and not existing)
 
 
 def render_fact_list(facts, kinds=None):

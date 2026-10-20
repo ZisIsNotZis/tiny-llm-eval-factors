@@ -6,8 +6,9 @@
 它们的事实格式，只取读者确实需要的那一节：还没解决的问题。这个索引因此是**派生**的——
 `make_report.py` 读它，而它由本脚本从 `PLAN.md` 生成，不手工维护。
 
-识别规则（只看标题，不看正文格式）：标题含「未解 / 未决 / 待解 / 开放问题」或英文 open question。
-该标题下到下一个标题之间的列表项是条目；没有这一节的文件被跳过并计数。
+识别规则（只看标题，不看正文格式）：二级标题（`## `）且标题文字以「未解 / 未决 / 待解 / 开放问题」
+或英文 open question 开头。该标题下到**下一个任意级别的标题**之间的列表项是条目；代码围栏内的行
+不算标题也不算条目；没有这一节的文件被跳过并计数。
 
     python3 report_inputs/build_open_questions.py          # 重写 open_questions.json
     python3 report_inputs/build_open_questions.py --check  # 与现有 json 比对
@@ -32,6 +33,7 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
 # 不是这一节，`# 未解问题` 是文件标题层级之外的写法，都不算。代码围栏里的 `# …` 一律跳过。
 OPEN_RE = re.compile(r"^(未解|未决|待解|开放问题|open\s*questions?)", re.I)
 LEVEL2_RE = re.compile(r"^##\s+(?!#)(.*)$")
+ANY_HEADING_RE = re.compile(r"^#{1,6}\s")
 FENCE_RE = re.compile(r"^\s*(```|~~~)")
 ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(.+?)\s*$")
 
@@ -53,11 +55,13 @@ def scan():
             m = LEVEL2_RE.match(line)
             if m:
                 if heading:
-                    break                       # 这一节到下一个二级标题为止
+                    break                       # 任意级别的下一个标题都终止这一节
                 title = m.group(1).strip()
                 if OPEN_RE.match(title):
                     heading = title
                 continue
+            if heading and ANY_HEADING_RE.match(line):
+                break                           # `###`/`####` 子标题同样终止（与 docstring 一致）
             if heading:
                 it = ITEM_RE.match(line)
                 if it:

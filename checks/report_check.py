@@ -161,19 +161,27 @@ def check_registry(html):
     return len(body), problems
 
 
-# 只把「我们不再持有、却被当成来源引用」的根算缺陷。`/home/z/hf/…` 仍会出现在模型来源附录里，
-# 那是测量当时的运行条件；对应的事实是：报告必须同时声明它在采集机上已不存在。
-RETIRED_ROOTS = (".scratch/originals", "/tmp/MultiPL-E")
+# 退役目录与标注只有一个家：渲染器的常量，这里 import 过来用（和字体那条同一个做法）。
+sys.path.insert(0, REPO)
+import make_report  # noqa: E402
+
+RETIRED_ROOTS = make_report.RETIRED_ORIGINS
+RETIRED_MARK = make_report.RETIRED_MARK
 RETIRED_PATH_NOTE = "在采集机上已不存在"
 
 
 def check_no_retired_sources(plain):
-    """(6) 报告不得把已退役的路径当作来源引用。"""
+    """(6) 每条退役路径都必须就地标注，且不许出现「尚未迁移」这种未经核对的断言。"""
     problems = []
+    marks = plain.count(RETIRED_MARK)
     for root in RETIRED_ROOTS:
         n = plain.count(root)
-        if n:
-            problems.append(f"报告仍引用已退役来源 {root}（{n} 处）")
+        if n and marks < n:
+            problems.append(f"报告里有 {n} 处 {root}，但只有 {marks} 处带「{RETIRED_MARK}」标注")
+    if "已退役历史原件" in plain:
+        problems.append("报告仍在使用「已退役历史原件（尚未迁移）」这种断言式标签")
+    if "来源路径在本仓库不存在" in plain and not problems:
+        pass          # 可核对的陈述，允许出现
     if "/home/z/hf" in plain and RETIRED_PATH_NOTE not in plain:
         problems.append("报告出现 /home/z/hf 路径，却没有声明它在采集机上已不存在")
     return problems

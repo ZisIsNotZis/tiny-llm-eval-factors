@@ -125,7 +125,9 @@ if [ -f report.html ]; then
 else
     before=""
 fi
+BUILD_OK=0
 if python3 make_report.py >/tmp/reproduce_report.$$ 2>&1; then
+    BUILD_OK=1                       # 本次真的产出了报告：后面的报告检查据此放行
     after=$(sha256sum report.html | cut -d' ' -f1)
     if [ -n "$before" ] && [ "$before" = "$after" ]; then
         record PASS "report.html 从库重建后逐字节相同（$(wc -c <report.html) 字节，${after:0:12})）"
@@ -136,11 +138,15 @@ else
     record FAIL "报告构建失败（见 /tmp/reproduce_report.$$）"
 fi
 
-# 10) 报告与产物一致
-if python3 checks/report_check.py >/tmp/reproduce_repchk.$$ 2>&1; then
-    record PASS "报告与产物一致（行标签唯一、题量取自产物、非测量登记册在场）"
+# 10) 报告与产物一致——只在本次真的产出了报告时做；否则拿仓库里那份旧文件冒充
+if [ "$BUILD_OK" = 1 ]; then
+    if python3 checks/report_check.py >/tmp/reproduce_repchk.$$ 2>&1; then
+        record PASS "报告与产物一致（行标签唯一、题量取自产物、非测量登记册在场）"
+    else
+        record FAIL "报告与产物不一致：python3 checks/report_check.py"
+    fi
 else
-    record FAIL "报告与产物不一致：python3 checks/report_check.py"
+    record SKIP "报告与产物一致（第 9 步没有产出本次报告，不拿仓库里那份旧文件比对）"
 fi
 
 say ""

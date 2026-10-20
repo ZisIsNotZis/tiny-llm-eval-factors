@@ -13,15 +13,19 @@ python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测
 `./reproduce.sh` 依次核对运行时依赖、提示集 SHA256（`.wrapup/prompts/SHA256SUMS`）、报告输入、数据库
 完整性与清洁度、是否还有脚本硬编码退役路径、文档检查，然后从 `experiments.sqlite` 重建 `report.html`
 并与仓库里那份**逐字节**对比，最后用 `checks/report_check.py` 核对报告与产物一致。最后一行
-`OK：报告可从库重建…` 是完成信号；`BLOCKED` 行表示该项未验证（当前是 `docs@1` schema 标准不在本机）。
+`OK：报告可从库重建…` 是完成信号。`SKIP`/`BLOCKED` 行表示该项未验证（例如干净 clone 里没有本机的
+`.wrapup/mres/` 落盘产物）。文档检查这一项现在是绿的：`docs@1` 标准在 `docs/docs.schema.yaml`，
+`python3 docs/check_docs.py` 以 0 通过。
 本机实测：报告构建约 35 s；`./reproduce.sh` 全流程 41.1 / 49.9 / 60.2 s（干净 clone，12 核 CPU、无 GPU；差异来自字体缓存与负载）。
 
-**CJK 字体是被复现条件的一部分**：`/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc`
-（来自 `fonts-noto-cjk`，sha256 `b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a`）。
+**CJK 字体是被复现条件的一部分**：`/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc`（来自 `fonts-noto-cjk`）。
+它的路径与期望 sha256 只有一个家：`make_report.py` 的 `CJK_FONT` / `CJK_FONT_SHA256`；构建末行的
+`cjk font: <路径> sha256=<哈希>` 就是本次实际用的那一份，`./reproduce.sh` 也把这一条当单独一步核对。
 缺它或版本不对时构建**直接失败**并说明装什么，不静默换字体——换字体后 86 张图的字形与度量都变，
-报告就不再逐字节相同。`./reproduce.sh` 会把这一条当单独一步核对。
+报告就不再逐字节相同。
 
-它不能重建的东西：模型权重（`.gguf` 不在仓库内，也不在 `artifacts.tsv` 里，因为原始权重文件已不在本机）、
+它不能重建的东西：模型权重（`.gguf` 不在仓库内，原始权重文件已不在本机；本仓库没有
+`artifacts.tsv`，也不打算为它们建一份——那些字节已丢失）、
 `/tmp/MultiPL-E` 提示缓存、CJK 字体（系统包，按上面的命令装）、以及评测运行本身（需要 GPU 与模型文件）。`.wrapup/mres/*_eval.json` 是逐题
 落盘产物、不入库，其所需的判读摘要随仓库分发在 `report_inputs/eval_status.json`，所以干净 clone 得到的
 报告与本机相同。
