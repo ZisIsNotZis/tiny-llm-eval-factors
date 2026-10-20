@@ -17,6 +17,7 @@ Changes
 
 Run:  python3 migrate_db.py
 """
+import collections
 import json
 import os
 import re
@@ -125,6 +126,15 @@ def insert(con, row):
 # inserted instead of appending a bare duplicate.
 # Consequence: a rerun never refreshes a score.  A corrected score needs an
 # explicit delete-then-reinsert, as ingest_m26 / ingest_m6b / ingest_m161 do.
+# 本次入库跳过了哪些行：run_tag → {(原因, 名字): 行数}。静默跳过比错数更危险——数据在、结论不在，
+# 却没人知道。每个 ingest_* 在跳过一行时记一笔，main() 在末尾把整张账打出来。
+INGEST_SKIPS = {}
+
+
+def note_skip(run_tag, reason, name=""):
+    INGEST_SKIPS.setdefault(run_tag, collections.Counter())[(reason, name)] += 1
+
+
 MEASUREMENT_IDENTITY = [
     "model", "cache_type_k", "cache_type_k_draft", "cache_type_v",
     "cache_type_v_draft", "reasoning", "spec_type", "spec_draft_n_max", "temp",
@@ -246,12 +256,15 @@ def ingest_mpl(con, path, run_tag, source, model_map=None):
         return 0
     n = 0
     skipped = 0
+    unknown = collections.Counter()
     for line in open(path):
         line = line.strip()
         if not line:
             continue
         r = json.loads(line)
         if r["model"] not in model_map:
+            unknown[r["model"]] += 1
+            note_skip(run_tag, "unknown_model", r["model"])
             continue
         lang = r["lang"]
         row = base_row(model_map[r["model"]], f"humaneval-{lang}", 0.0, r["score"], None)
@@ -261,11 +274,15 @@ def ingest_mpl(con, path, run_tag, source, model_map=None):
                     "max_tokens": 768, "source_file": source})
         if measurement_present(con, row):
             skipped += 1
+            note_skip(run_tag, "already_present")
             continue
         insert(con, row)
         n += 1
     if skipped:
         print(f"  {run_tag}: {skipped} cell(s) already present, not re-inserted")
+    if unknown:
+        print(f"  {run_tag}: skipped_rows={sum(unknown.values())} reason=unknown_model "
+              f"names={','.join(sorted(unknown))} (在 model_map 里没有这些名字)")
     return n
 
 
@@ -452,7 +469,11 @@ def _ingest_bfcl_mt(con, path, run_tag, source, model_map=None, ctx_size=98304):
         if not line:
             continue
         r = json.loads(line)
-        if r["model"] not in model_map or r.get("accuracy") is None:
+        if r["model"] not in model_map:
+            note_skip(run_tag, "unknown_model", r["model"])
+            continue
+        if r.get("accuracy") is None:
+            note_skip(run_tag, "missing_field", "accuracy")
             continue
         row = base_row(model_map[r["model"]], f"bfcl-{r['category']}", 0.0, r["accuracy"], None)
         row.update({"run_tag": run_tag, "rep": 1, "ctx_size": ctx_size, "parallel_slots": 2,
@@ -1705,6 +1726,19 @@ def assert_backup_usable(dst, source_rows):
     return rows
 
 
+def print_ingest_skips():
+    """把本次入库跳过的行按 (run_tag, 原因, 名字) 打出来；没有跳过就明说没有。"""
+    total = sum(sum(c.values()) for c in INGEST_SKIPS.values())
+    if not total:
+        print("== ingest skips == none (每一行都入库或按测量身份去重)")
+        return
+    print(f"== ingest skips == total skipped_rows={total}")
+    for run_tag in sorted(INGEST_SKIPS):
+        for (reason, name), n in sorted(INGEST_SKIPS[run_tag].items()):
+            label = f" name={name}" if name else ""
+            print(f"  {run_tag}: skipped_rows={n} reason={reason}{label}")
+
+
 def main():
     print("== backup ==")
     _dst, backup_rows = numbered_backup()
@@ -1771,6 +1805,7 @@ def main():
         tally[label] = fn(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
+    print_ingest_skips()
     print("  inserted " + " ".join(f"{k}={v}" for k, v in tally.items())
           + f"  rows {before} -> {after}")
     ic = con.execute("PRAGMA integrity_check").fetchone()[0]

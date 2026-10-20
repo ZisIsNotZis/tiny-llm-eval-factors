@@ -102,6 +102,13 @@ else
 fi
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/ingest_skip_negative_control.py >/tmp/reproduce_is.$$ 2>&1; then
+    record PASS "入库跳过报告的负控（未知名逐条报出、认得的名字跳过计数为 0）"
+else
+    record FAIL "入库跳过报告的负控未通过：python3 checks/ingest_skip_negative_control.py"
+fi
+rm -f /tmp/reproduce_is.$$
+
 if python3 checks/paired_delta_negative_control.py >/tmp/reproduce_pd.$$ 2>&1; then
     record PASS "配对差叙述的负控（区间全跨 0 时报告改口，不声称掉点）"
 else

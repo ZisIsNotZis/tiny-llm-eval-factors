@@ -159,3 +159,17 @@
 - evidence: 入库 `.wrapup/mres/*_eval.json` 337 个、3,621,143 字节（`.wrapup/mres/` 其余内容——逐题 samples `.jsonl`、探针转储——仍是可重算的分布物，继续忽略）。判据是 `@regeneration_cost`：承载断言且不能重算的产物随仓库走，能重算的分布物不入库。每个 `_eval.json` 自包含（`lang`/`n`/`pass`/`score`/`details[{name,pass,status}]`），不引用任何未入库文件，所以没有遗留的悬空依赖。干净 clone 里 `mpl_cell_audit.py` 从 exit 1 变 exit 0，`reproduce.sh` 的「eval_status.json 与落盘产物一致性」从 SKIP 变 PASS（15 PASS / 0 SKIP / 0 FAIL），报告哈希不变。
 - producer: `git ls-files .wrapup/mres | wc -l`；干净 clone 里 `python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`；`./reproduce.sh`
 
+## res43 :: 入库跳过的行现在会被报出来，不再静默丢掉。
+
+- kind: measured
+- status: current
+- evidence: `ingest_mpl` 遇到不在 `model_map` 里的模型名时逐条记入 `INGEST_SKIPS` 并当场打印 `skipped_rows=N reason=unknown_model names=…`（已存在的格记 `reason=already_present`，多轮入库的缺字段记 `reason=missing_field`）；`main()` 末尾统一打印 `== ingest skips ==` 账目，没有跳过时明说 `none`。实测样例：`m29-skip-probe: skipped_rows=24 reason=unknown_model names=q2,q3`（`m29_summary.jsonl` 的 24 行此前因此 0 行入库且无任何提示）。
+- producer: `python3 checks/ingest_skip_negative_control.py`（三种情形：未知名被报出且不入库、配上映射后不再报未知名、全部认识时跳过计数为 0）；`python3 migrate_db.py` 末尾的 `== ingest skips ==` 一节
+
+## res44 :: `ingest_mpl` 把协议写死成规范化那一串，因此带因子面的面板（如 m29 的 fa/kv）不能被它原样收下——m29 是否补录、以什么协议入库，归 a05 判断。
+
+- kind: citation
+- status: current
+- evidence: `ingest_mpl` 生成行时用固定 `protocol="multipl-e-raw-greedy-768"`，忽略 summary 每行自带的 `protocol`/`cell`（`m29_summary.jsonl` 的行带 `mpl-raw-greedy-768;fa=on,kv=q8_0/f16` 这类带因子的串）。在库副本上用一个认识 `q2`/`q3` 的映射试跑 m29：24 行里 20 行按测量身份与库里已有的其它面板格相撞（`already_present`）、只入 4 行——若直接把 m29 映射打开，这些格会被错记成规范化协议下的格。所以本子项目只保证「下次跑入库不会被吞掉」，不替 a05 决定补录；若 a05 要补，需要 `ingest_mpl` 支持逐行协议，短名映射本身是显然的（`.wrapup/run_m29.sh:73` 写着 `q2:Qwen3.5-2B-UD-Q2_K_XL.gguf`、`q3:…Q3_K_XL…`），但没有被确认过、也没有被加进 `migrate_db.py`。
+- producer: `python3 checks/ingest_skip_negative_control.py`（第 2、3 种情形）；`grep -n "protocol" migrate_db.py`（`ingest_mpl` 内写死的 `protocol="multipl-e-raw-greedy-768"`）
+
