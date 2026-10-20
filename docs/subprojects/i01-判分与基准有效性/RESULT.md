@@ -52,6 +52,22 @@
 - 证据：`audits/multipl-e.md`、`audits/multipl_e_audit.py`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/multipl_e_audit.py"`（实跑 `exit=0`，9 条预期成立）；语料扫描见该文档第 2、4 条。
 
+### res29 plan15 裁决：批处理被排除，131 不可复现，「6 道题」说法撤回（16 题双向翻转）
+
+- **批处理不是原因**：同一 cell（`q38-27b-q3`、py、`mpl-chat-nothink-greedy-768`、chat 关思考、贪心、768 tokens、每槽 2048 ctx、`.wrapup/prompts` 定版提示集），四个 pass 全部 **145/161 = 0.9006**，且完成物 **sha256 完全相同**（`a2f5eb5d…`）：`np1` 两次（server `-np 1`）+ `npauto` 两次（历史原旗标 `-c 2048` 不带 `-np`，server 自报 `n_slots = 4, n_ctx_slot = 2048`）。逐题比对：三对比较的 Jaccard 均为 1.0，翻转 0 题。**四槽与单槽的输出逐字节相同**，所以「多槽贪心批处理不可复现」这一候选原因被排除。
+- **「139→145 的 6 道题只能来自生成侧」撤回**：在存活工件上重算，`m26` 存活的 py 完成物用当前判分得 139/161，今天新生成得 145/161，逐题是 **16 题翻转（11 上 / 5 下，净 +6）**，不是 6 题单向。其中：
+  - 11 题上升里有 **7 题**是「同一批 token，只是 m26 那一份丢了缩进」，即 res20/res21 的旧后处理损伤类；
+  - 其余 **4 题上升**与 **5 题下降全部**伴随**不同的 token**（不是缩进/围栏差异）。
+- **旧文本与今天的生成差异很大**：m26 存活文件与今天的完成物在 **76/161** 题上文本不同，其中 **66 题是 token 不同**、10 题只差缩进/围栏。既然今天的生成在两种槽位下都逐字节可复现，66 题 token 不同只能来自**输入变了**，唯一被记录到不同的候选是提示集（`/tmp/MultiPL-E/prompts` 已删除，无法逐字节比对）。
+- **131 这道锚点不可复现**：拿 m26 存活文本过两种后处理——原样/新版都得 **139/161**，旧版 `.strip()` 后处理得 **5/161**，都得不到 131/161。所以当初算出 131 的那份文本不在盘上（m26 的 py 样本文件已被修复后的快照覆盖），这是**证据持久性缺陷**，不是判分问题。
+- **后果（这才是可用的结论）**：跨 run 比较这个 cell 时，未记录的输入差能造成 **±16/161（≈0.10）**量级的翻转，并让 66/161 的完成物 token 不同。所以任何两次 run 只有在**提示集哈希 + 后处理版本**都被钉住并记录时才可比；把 6/161 或 16/161 当噪声地板是错的——它不是噪声，是输入差。
+- 状态：current（裁决口径在 `PLAN.md` 的「plan15 的裁决口径」一节里先写死，实跑落在「四槽复现 145」那一支）。
+- 证据：`.wrapup/mres/i01-slot-{np1-p1,np1-p2,npauto-p1,npauto-p2}-py-chat{.jsonl,_eval.json}` 与 `i01-slot-{np1,npauto}-meta.json`；`m26-q38-27b-q3-py.jsonl`、`m26-q38-27b-q3-py_fixed_eval.json`。
+- 复现：
+  1. 四臂逐题比对：`python3 "docs/subprojects/i01-判分与基准有效性/audits/slot_repro_compare.py"`（实跑 `verdict: prompt-set`，三对 `flipped=0 jaccard=1.0000 identical=True`）。
+  2. 逐字节：`sha256sum .wrapup/mres/i01-slot-{np1-p1,np1-p2,npauto-p1,npauto-p2}-py-chat.jsonl`（四行同值 `a2f5eb5d…`）。
+  3. 131 不可复现：对 `m26-q38-27b-q3-py.jsonl` 原样 / 过旧后处理 / 过新后处理各跑一次 `mpl_run.py eval`，得 139 / 5 / 139。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。

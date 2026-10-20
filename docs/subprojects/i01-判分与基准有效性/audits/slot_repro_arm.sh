@@ -47,7 +47,10 @@ BASE=http://127.0.0.1:$PORT
 MODEL=${MODEL:-/home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf}
 LANG_=py
 CHAT_KW='{"enable_thinking": false}'
-MIN_FREE_MIB=${MIN_FREE_MIB:-20000}
+# Derived, not guessed: weights buffer 11,671 MiB (measured OOM line) + KV/compute
+# 3,084 MiB (measured: 22,627 free before load, 7,872 free while generating at 4 slots x
+# 2048 ctx) + 1,536 MiB headroom = 16,291 MiB -> 16 GiB.
+MIN_FREE_MIB=${MIN_FREE_MIB:-16384}
 PY=python3
 mkdir -p "$MRES"
 
