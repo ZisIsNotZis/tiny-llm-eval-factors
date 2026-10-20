@@ -5,6 +5,16 @@
 判断类结论（analysis）与技术测量分开，analysis 不覆盖任何数字。
 本层只读 `experiments.sqlite`；所有命令都在仓库根执行。
 
+### acceptance-entry-point :: 本层的唯一验收入口是一条命令 `python3 "docs/subprojects/a02-模型规模/analysis/run_all.py" --selftest`，它跑五个脚本的 67 条断言并附一次负控（篡改一条取数通道后检查必须失败），当前 5/5 绿且负控按要求失败。
+
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- origin: `analysis/run_all.py`
+- evidence: 逐脚本断言数 provenance 32、ladder 15、regression 9、curves 7、moe_position 4，合计 67；负控输出 `expected failure was seen`。GGUF 头解析带 (size, mtime) 缓存（`analysis/gguf_cache.json`），重复运行 3m52s → 0.08s，文件一改即重算。
+- repro: `python3 "docs/subprojects/a02-模型规模/analysis/run_all.py" --selftest`（实跑输出：`5/5 checks green` + `[PASS] negative control`）
+
 ## 本轴的 X 本身不是一条通道给的数
 
 ### size-not-one-thing :: 「模型规模」这一列（`experiments.__size`）由三条互不相同的通道给出，且其中一条把百万和十亿当成同一个单位：文件名 size token 直接取数（`-4B`→4.0）、同一 token 在 M 量级时不换算（`LFM2.5-230M`→230.0，实际 0.23B，差 1000 倍）、文件名没有 size token 时回退成 `2 × gguf 文件字节数`（量化后字节数是 `_file_size`）。

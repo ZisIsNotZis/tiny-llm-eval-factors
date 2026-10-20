@@ -11,8 +11,8 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（文档归位）、`WP2`（规模这一列归位：7 条取数通道 + 逐族可用性裁决）、`WP3`（plan5 的可识别性：判定为**不可识别**，理由与最小补测已入 `RESULT.md`）。
-- 在办：`WP4`（每家族规模曲线：把 §2 之外的全部基准按同族同配方画出来，逐格用自己的 `n_items` 算区间，跨语言/跨协议的格子分开）。
+- 已完成：`WP1`（文档归位）、`WP2`（规模这一列归位：7 条取数通道 + 逐族可用性裁决）、`WP3`（plan5 判为**不可识别**，理由与最小补测已入 `RESULT.md`）、`WP4`（63 条同族同配方规模曲线，逐格 `n_items` + Wilson 区间）、`WP5`（同激活参数下 MoE 的等效稠密规模）、`WP6`（验收入口 `analysis/run_all.py`：5 个脚本 67 条断言 + 负控，5/5 绿）。
+- 在办：`WP7` 独立复核（等 meta 派 fresh-context reviewer；本层没有派孙工具，不能自评通过）。
 - 已回收的登记：plan5 已在 `WP3` 裁决（`RESULT.md::moe-design-not-identified`），不再作为未解问题挂着。
 - 下一个派给谁：`WP4` 由本层编排者做；`WP4` 出曲线后 `WP5`（同激活参数下 dense/MoE 的位置）与 `WP6`（收口与报告建议文本）由本层编排者接着做，最后请 meta 派 fresh-context reviewer 做 `WP7`。
 - 本层没有派孙工具（运行时不提供 subagent 接口），所以实现与分析由编排者自己执行；独立复核必须由 meta 派 fresh-context reviewer，不得自评通过。
@@ -24,9 +24,9 @@
 | WP1 文档归位 | 本层编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml`/`result.yaml` 已迁入并删除；`python3 docs/check_docs.py` 退出 0 且 a02 的事实被解析（`shape not parsed` 列表里不出现 a02 的文件）；提交在 main 且按路径点名 | — | 1 会话 | **完成** |
 | WP2 「规模」这一列到底是谁给的（X 的归位） | 本层编排者 | 对库里每个 model 文件给出四项并逐项与库对照：GGUF 张量元素求和得到的真参数量、文件名 size token、`2 × 文件字节数` 回退值、库里的 `__size`；输出一张「每一行 `__size` 来自哪条通道」的表 + 每通道行数；并给出「同一 model 文件在 `__size` 上出现几个不同值」的清单（>1 即该通道与量化耦合） | WP1 | ≤40 CPU 分钟 | **完成**（`analysis/size_provenance.py` 7 条通道、`other`=0、3233 行全部归位；`analysis/size_ladder.py` 给出逐族三个候选 X 的可用性；结论在 `RESULT.md::size-channel-inventory`…`::report-size-claims-audit`） |
 | WP3 plan5 双变量回归的可识别性 | 本层编排者 | 在 WP2 判为「`__size` 是真参数」的行集上，给出 `log(总参)` 与 `log(激活参)` 的相关系数、VIF、设计矩阵非对角结构的计数（同总参不同激活的对数、同激活不同总参的对数）；结论必须是「可识别并给出系数+区间」或「不可识别并写明缺哪类受控对」，二者之一 | WP2 | ≤40 CPU 分钟 | **完成**：判为**不可识别**——稠密点上激活≡总参（去掉 MoE 后秩亏），MoE 内部总参系数 +0.122±0.141 与 0 不可分；被识别的只有合并斜率 0.210±0.023。`analysis/size_regression.py --check` 9 条全真 |
-| WP4 每家族规模曲线（an3 的一半） | 本层编排者 | 每家族每基准一条（规模, 分数）序列，同家族同配方，逐格用该行自己的 `n_items` 算二项区间；点数 <2 的家族记「无曲线」；跨语言/跨协议的格子不入同一条线（a12），lm-eval 全 timeout 无法与真 0 区分的格子标不可用（i01 res26） | WP2 | ≤60 CPU 分钟 | 未开始 |
-| WP5 同激活参数下 dense 与 MoE 的位置 | 本层编排者 | 把每个 MoE 锚点按 dense 曲线反解出「等效 dense 规模」并给出区间，或证明库内没有可比的 dense/MoE 对并写明缺什么 | WP3, WP4 | ≤40 CPU 分钟 | 未开始 |
-| WP6 报告能说什么（收口） | 本层编排者 | `RESULT.md` 每条新事实带证据与复算命令；`report.html` §2 的两句硬编码断言（`make_report.py:1674-1675`）逐句判定「成立 / 需改写 / 超出证据」，改写文本交 meta 转 i02，本层不改 `make_report.py` | WP3–WP5 | ≤30 CPU 分钟 | 未开始 |
+| WP4 每家族规模曲线（an3 的一半） | 本层编排者 | 每家族每基准一条（规模, 分数）序列，同家族同配方，逐格用该行自己的 `n_items` 算二项区间；点数 <2 的家族记「无曲线」；跨语言/跨协议的格子不入同一条线（a12），lm-eval 全 timeout 无法与真 0 区分的格子标不可用（i01 res26） | WP2 | ≤60 CPU 分钟 | **完成**：63 条曲线（40 单调、23 有反向，其中仅 4 处超出噪声且全在 gemma-4 Q2_K_XL 的 12B 档，3 处由 MultiPL-E raw 的已知 harness 失败解释），逐基准打印 i01 的通道限制 |
+| WP5 同激活参数下 dense 与 MoE 的位置 | 本层编排者 | 把每个 MoE 锚点按 dense 曲线反解出「等效 dense 规模」并给出区间，或证明库内没有可比的 dense/MoE 对并写明缺什么 | WP3, WP4 | ≤40 CPU 分钟 | **完成**：稠密曲线 `0.2223+0.2375·ln(B)`；三个大 MoE 的等效稠密规模是自身激活参数的 2.9–5.8×，LFM2.5-8B-A1B 约 1×；跨家族边界写死 |
+| WP6 收口与报告能说什么 | 本层编排者 | `RESULT.md` 每条新事实带证据与复算命令；`report.html` §2 的两句硬编码断言（`make_report.py:1674-1675`）逐句判定「成立 / 需改写 / 超出证据」，改写文本交 meta 转 i02，本层不改 `make_report.py` | WP3–WP5 | ≤30 CPU 分钟 | **完成**：`analysis/run_all.py --selftest` 5/5 绿 + 负控成立；报告六处「规模当 X」逐条裁决与建议文本入 `RESULT.md::report-size-claims-audit` |
 | WP7 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；reviewer 必须实跑命令并贴输出 | 对应包完成 | ≤30 CPU 分钟/份 | 待派 |
 
 调度原则：`WP2` 是其余各包的公共前提（X 错了，Y 的拟合没有意义），所以它先做且只有它一个在跑。`WP3`/`WP4` 都只读 `experiments.sqlite`，可并发 ≤2；`WP5` 依赖两者。

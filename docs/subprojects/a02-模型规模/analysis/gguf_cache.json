@@ -1,0 +1,914 @@
+{
+"/home/z/hf/Bonsai-27B-Q1_0.gguf": {
+"mtime": 1791260754,
+"size": 3803452480,
+"struct": {
+"active_params": 26895998464,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 26895998464
+}
+},
+"/home/z/hf/GLM-4.7-Flash-UD-Q2_K_XL.gguf": {
+"mtime": 1791267612,
+"size": 11888759136,
+"struct": {
+"active_params": 3896766080,
+"arch": "deepseek2",
+"expert_count": 64,
+"expert_params": 27783069696,
+"expert_used": 4,
+"n_params": 29943393920
+}
+},
+"/home/z/hf/GLM-4.7-Flash-UD-Q3_K_XL.gguf": {
+"mtime": 1791257559,
+"size": 13782004064,
+"struct": {
+"active_params": 3896766080,
+"arch": "deepseek2",
+"expert_count": 64,
+"expert_params": 27783069696,
+"expert_used": 4,
+"n_params": 29943393920
+}
+},
+"/home/z/hf/GLM-4.7-Flash-UD-TQ1_0.gguf": {
+"mtime": 1791266033,
+"size": 8331004256,
+"struct": {
+"active_params": 3896766080,
+"arch": "deepseek2",
+"expert_count": 64,
+"expert_params": 27783069696,
+"expert_used": 4,
+"n_params": 29943393920
+}
+},
+"/home/z/hf/LFM2.5-8B-A1B-UD-Q2_K_XL.gguf": {
+"mtime": 1790770987,
+"size": 2925768288,
+"struct": {
+"active_params": 1685667264,
+"arch": "lfm2moe",
+"expert_count": 32,
+"expert_params": 7751073792,
+"expert_used": 4,
+"n_params": 8467856832
+}
+},
+"/home/z/hf/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf": {
+"mtime": 1790771168,
+"size": 4003114592,
+"struct": {
+"active_params": 1685667264,
+"arch": "lfm2moe",
+"expert_count": 32,
+"expert_params": 7751073792,
+"expert_used": 4,
+"n_params": 8467856832
+}
+},
+"/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf": {
+"mtime": 1791394943,
+"size": 4108397920,
+"struct": {
+"active_params": 1685667264,
+"arch": "lfm2moe",
+"expert_count": 32,
+"expert_params": 7751073792,
+"expert_used": 4,
+"n_params": 8467856832
+}
+},
+"/home/z/hf/LFM2.5-8B-A1B-m55-exq2.gguf": {
+"mtime": 1791395052,
+"size": 3088821600,
+"struct": {
+"active_params": 1685667264,
+"arch": "lfm2moe",
+"expert_count": 32,
+"expert_params": 7751073792,
+"expert_used": 4,
+"n_params": 8467856832
+}
+},
+"/home/z/hf/LFM2.5-8B-A1B-m55-exq4.gguf": {
+"mtime": 1791395201,
+"size": 4744686944,
+"struct": {
+"active_params": 1685667264,
+"arch": "lfm2moe",
+"expert_count": 32,
+"expert_params": 7751073792,
+"expert_used": 4,
+"n_params": 8467856832
+}
+},
+"/home/z/hf/Llama-3.2-3B-Instruct-Q2_K.gguf": {
+"mtime": 1791393932,
+"size": 1363935680,
+"struct": {
+"active_params": 3212749888,
+"arch": "llama",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3212749888
+}
+},
+"/home/z/hf/Llama-3.2-3B-Instruct-Q3_K_M.gguf": {
+"mtime": 1791394007,
+"size": 1687159232,
+"struct": {
+"active_params": 3212749888,
+"arch": "llama",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3212749888
+}
+},
+"/home/z/hf/MiniCPM5-1B-Q4_K_M.gguf": {
+"mtime": 1783577000,
+"size": 688065920,
+"struct": {
+"active_params": 1080632832,
+"arch": "llama",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1080632832
+}
+},
+"/home/z/hf/MiniCPM5-2B-Q2_K.gguf": {
+"mtime": 1790771189,
+"size": 1014320352,
+"struct": {
+"active_params": 2516756480,
+"arch": "llama",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 2516756480
+}
+},
+"/home/z/hf/MiniCPM5-2B-Q3_K_M.gguf": {
+"mtime": 1790771262,
+"size": 1236085984,
+"struct": {
+"active_params": 2516756480,
+"arch": "llama",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 2516756480
+}
+},
+"/home/z/hf/NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf": {
+"mtime": 1790770979,
+"size": 2504018208,
+"struct": {
+"active_params": 3973556832,
+"arch": "nemotron_h",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3973556832
+}
+},
+"/home/z/hf/NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf": {
+"mtime": 1790771124,
+"size": 2682625952,
+"struct": {
+"active_params": 3973556832,
+"arch": "nemotron_h",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3973556832
+}
+},
+"/home/z/hf/Ornith-1.5-9B-Q4_K_M.gguf": {
+"mtime": 1789088525,
+"size": 5780090816,
+"struct": {
+"active_params": 9197093888,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 9197093888
+}
+},
+"/home/z/hf/Ornith-1.5-9B-Q5_K_M.gguf": {
+"mtime": 1790771325,
+"size": 6642544576,
+"struct": {
+"active_params": 9197093888,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 9197093888
+}
+},
+"/home/z/hf/Phi-4-mini-instruct-Q2_K.gguf": {
+"mtime": 1791394111,
+"size": 1682635744,
+"struct": {
+"active_params": 3836021856,
+"arch": "phi3",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3836021856
+}
+},
+"/home/z/hf/Phi-4-mini-instruct-Q3_K_M.gguf": {
+"mtime": 1791394219,
+"size": 2117532640,
+"struct": {
+"active_params": 3836021856,
+"arch": "phi3",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3836021856
+}
+},
+"/home/z/hf/Qwen3.5-0.8B-UD-IQ2_M.gguf": {
+"mtime": 1790733438,
+"size": 371933440,
+"struct": {
+"active_params": 752393024,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 752393024
+}
+},
+"/home/z/hf/Qwen3.5-0.8B-UD-Q2_K_XL.gguf": {
+"mtime": 1790756047,
+"size": 417718528,
+"struct": {
+"active_params": 752393024,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 752393024
+}
+},
+"/home/z/hf/Qwen3.5-0.8B-UD-Q3_K_XL.gguf": {
+"mtime": 1790756079,
+"size": 492216576,
+"struct": {
+"active_params": 752393024,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 752393024
+}
+},
+"/home/z/hf/Qwen3.5-0.8B-UD-Q4_K_XL.gguf": {
+"mtime": 1789109033,
+"size": 558772480,
+"struct": {
+"active_params": 752393024,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 752393024
+}
+},
+"/home/z/hf/Qwen3.5-0.8B-UD-Q5_K_XL.gguf": {
+"mtime": 1789109124,
+"size": 606585088,
+"struct": {
+"active_params": 752393024,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 752393024
+}
+},
+"/home/z/hf/Qwen3.5-2B-UD-IQ2_M.gguf": {
+"mtime": 1790733371,
+"size": 859857152,
+"struct": {
+"active_params": 1881825088,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1881825088
+}
+},
+"/home/z/hf/Qwen3.5-2B-UD-IQ2_XXS.gguf": {
+"mtime": 1790733415,
+"size": 768270592,
+"struct": {
+"active_params": 1881825088,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1881825088
+}
+},
+"/home/z/hf/Qwen3.5-2B-UD-IQ3_XXS.gguf": {
+"mtime": 1790939235,
+"size": 931823872,
+"struct": {
+"active_params": 1881825088,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1881825088
+}
+},
+"/home/z/hf/Qwen3.5-2B-UD-Q2_K_XL.gguf": {
+"mtime": 1790678631,
+"size": 966533376,
+"struct": {
+"active_params": 1881825088,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1881825088
+}
+},
+"/home/z/hf/Qwen3.5-2B-UD-Q3_K_XL.gguf": {
+"mtime": 1789109180,
+"size": 1159274752,
+"struct": {
+"active_params": 1881825088,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1881825088
+}
+},
+"/home/z/hf/Qwen3.5-2B-UD-Q4_K_XL.gguf": {
+"mtime": 1789109252,
+"size": 1339752704,
+"struct": {
+"active_params": 1881825088,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1881825088
+}
+},
+"/home/z/hf/Qwen3.5-2B-UD-Q5_K_XL.gguf": {
+"mtime": 1789109195,
+"size": 1466687744,
+"struct": {
+"active_params": 1881825088,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1881825088
+}
+},
+"/home/z/hf/Qwen3.5-4B-UD-IQ3_XXS.gguf": {
+"mtime": 1790939179,
+"size": 1949047968,
+"struct": {
+"active_params": 4205751296,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4205751296
+}
+},
+"/home/z/hf/Qwen3.5-4B-UD-Q2_K_XL.gguf": {
+"mtime": 1790678583,
+"size": 1940825248,
+"struct": {
+"active_params": 4205751296,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4205751296
+}
+},
+"/home/z/hf/Qwen3.5-4B-UD-Q3_K_XL.gguf": {
+"mtime": 1789109292,
+"size": 2436420768,
+"struct": {
+"active_params": 4205751296,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4205751296
+}
+},
+"/home/z/hf/Qwen3.5-4B-UD-Q4_K_XL.gguf": {
+"mtime": 1789109170,
+"size": 2912109728,
+"struct": {
+"active_params": 4205751296,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4205751296
+}
+},
+"/home/z/hf/Qwen3.5-9B-UD-Q2_K_XL.gguf": {
+"mtime": 1790678740,
+"size": 4121781472,
+"struct": {
+"active_params": 8953803264,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 8953803264
+}
+},
+"/home/z/hf/Qwen3.5-9B-UD-Q3_K_XL.gguf": {
+"mtime": 1790678899,
+"size": 5053834464,
+"struct": {
+"active_params": 8953803264,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 8953803264
+}
+},
+"/home/z/hf/Qwen3.5-9B-UD-Q4_K_XL.gguf": {
+"mtime": 1780443605,
+"size": 6135034208,
+"struct": {
+"active_params": 9197093888,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 9197093888
+}
+},
+"/home/z/hf/Qwen3.6-35B-A3B-UD-IQ4_XS.gguf": {
+"mtime": 1779690810,
+"size": 18209036576,
+"struct": {
+"active_params": 3519489152,
+"arch": "qwen35moe",
+"expert_count": 256,
+"expert_params": 33017561088,
+"expert_used": 8,
+"n_params": 35505251456
+}
+},
+"/home/z/hf/Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf": {
+"mtime": 1790757125,
+"size": 12574128416,
+"struct": {
+"active_params": 3519489152,
+"arch": "qwen35moe",
+"expert_count": 256,
+"expert_params": 33017561088,
+"expert_used": 8,
+"n_params": 35505251456
+}
+},
+"/home/z/hf/Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf": {
+"mtime": 1790757753,
+"size": 17227569440,
+"struct": {
+"active_params": 3519489152,
+"arch": "qwen35moe",
+"expert_count": 256,
+"expert_params": 33017561088,
+"expert_used": 8,
+"n_params": 35505251456
+}
+},
+"/home/z/hf/Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf": {
+"mtime": 1789084491,
+"size": 12120016960,
+"struct": {
+"active_params": 27320697856,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 27320697856
+}
+},
+"/home/z/hf/Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf": {
+"mtime": 1789084284,
+"size": 10442827840,
+"struct": {
+"active_params": 27320697856,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 27320697856
+}
+},
+"/home/z/hf/Qwen3.8-27B-UD-IQ4_XS.gguf": {
+"mtime": 1788143175,
+"size": 14252845984,
+"struct": {
+"active_params": 27320697856,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 27320697856
+}
+},
+"/home/z/hf/Qwen3.8-27B-UD-Q2_K_XL.gguf": {
+"mtime": 1790771327,
+"size": 9828981664,
+"struct": {
+"active_params": 27320697856,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 27320697856
+}
+},
+"/home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf": {
+"mtime": 1790771607,
+"size": 13146393504,
+"struct": {
+"active_params": 27320697856,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 27320697856
+}
+},
+"/home/z/hf/Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf": {
+"mtime": 1791262421,
+"size": 8643426848,
+"struct": {
+"active_params": 3454988928,
+"arch": "qwen35moe",
+"expert_count": 256,
+"expert_params": 32212254720,
+"expert_used": 8,
+"n_params": 34660610688
+}
+},
+"/home/z/hf/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf": {
+"mtime": 1790940368,
+"size": 17117951616,
+"struct": {
+"active_params": 3519489152,
+"arch": "qwen35moe",
+"expert_count": 256,
+"expert_params": 33017561088,
+"expert_used": 8,
+"n_params": 35505251456
+}
+},
+"/home/z/hf/Qwythos-9B-Claude-Mythos-5-1M-MTP-Q4_K_M.gguf": {
+"mtime": 1789090178,
+"size": 5887667808,
+"struct": {
+"active_params": 9197093888,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 9197093888
+}
+},
+"/home/z/hf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf": {
+"mtime": 1790987157,
+"size": 490163968,
+"struct": {
+"active_params": 1720028160,
+"arch": "qwen3",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 1720028160
+}
+},
+"/home/z/hf/Ternary-Bonsai-27B-Q2_g64.gguf": {
+"mtime": 1789089151,
+"size": 7585330240,
+"struct": {
+"active_params": 26895998464,
+"arch": "qwen35",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 26895998464
+}
+},
+"/home/z/hf/Ternary-Bonsai-4B-Q2_0_g64.gguf": {
+"mtime": 1791259779,
+"size": 1137806656,
+"struct": {
+"active_params": 4021784576,
+"arch": "qwen3",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4021784576
+}
+},
+"/home/z/hf/Ternary-Bonsai-8B-Q2_0_g64.gguf": {
+"mtime": 1790987249,
+"size": 2310125920,
+"struct": {
+"active_params": 8188548096,
+"arch": "qwen3",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 8188548096
+}
+},
+"/home/z/hf/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf": {
+"mtime": 1784778678,
+"size": 6716356800,
+"struct": {
+"active_params": 11907350576,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 11907350576
+}
+},
+"/home/z/hf/gemma-4-12b-it-UD-Q2_K_XL.gguf": {
+"mtime": 1790756407,
+"size": 4661419840,
+"struct": {
+"active_params": 11907350576,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 11907350576
+}
+},
+"/home/z/hf/gemma-4-12b-it-UD-Q3_K_XL.gguf": {
+"mtime": 1790756647,
+"size": 6022684480,
+"struct": {
+"active_params": 11907350576,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 11907350576
+}
+},
+"/home/z/hf/gemma-4-12b-it-UD-Q4_K_XL.gguf": {
+"mtime": 1791858088,
+"size": 7366423360,
+"struct": {
+"active_params": 11907350576,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 11907350576
+}
+},
+"/home/z/hf/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf": {
+"mtime": 1790771453,
+"size": 10546934240,
+"struct": {
+"active_params": 3822527246,
+"arch": "gemma4",
+"expert_count": 128,
+"expert_params": 22837989120,
+"expert_used": 8,
+"n_params": 25233142046
+}
+},
+"/home/z/hf/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf": {
+"mtime": 1790772050,
+"size": 12907280096,
+"struct": {
+"active_params": 3822527246,
+"arch": "gemma4",
+"expert_count": 128,
+"expert_params": 22837989120,
+"expert_used": 8,
+"n_params": 25233142046
+}
+},
+"/home/z/hf/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf": {
+"mtime": 1784780526,
+"size": 14249047104,
+"struct": {
+"active_params": 3822527246,
+"arch": "gemma4",
+"expert_count": 128,
+"expert_params": 22837989120,
+"expert_used": 8,
+"n_params": 25233142046
+}
+},
+"/home/z/hf/gemma-4-31B-it-qat-UD-Q4_K_XL.gguf": {
+"mtime": 1784783147,
+"size": 17287670048,
+"struct": {
+"active_params": 30697345596,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 30697345596
+}
+},
+"/home/z/hf/gemma-4-E2B-it-UD-Q2_K_XL.gguf": {
+"mtime": 1790743497,
+"size": 2403614816,
+"struct": {
+"active_params": 4647450147,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4647450147
+}
+},
+"/home/z/hf/gemma-4-E2B-it-UD-Q3_K_XL.gguf": {
+"mtime": 1790679169,
+"size": 2923782240,
+"struct": {
+"active_params": 4647450147,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4647450147
+}
+},
+"/home/z/hf/gemma-4-E2B-it-UD-Q4_K_XL.gguf": {
+"mtime": 1791857185,
+"size": 3184496736,
+"struct": {
+"active_params": 4647450147,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4647450147
+}
+},
+"/home/z/hf/gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf": {
+"mtime": 1789087429,
+"size": 2186186784,
+"struct": {
+"active_params": 4628569635,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4628569635
+}
+},
+"/home/z/hf/gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf": {
+"mtime": 1784783954,
+"size": 2620370976,
+"struct": {
+"active_params": 4628569635,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 4628569635
+}
+},
+"/home/z/hf/gemma-4-E4B-it-UD-Q2_K_XL.gguf": {
+"mtime": 1790743660,
+"size": 3757419648,
+"struct": {
+"active_params": 7518069290,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 7518069290
+}
+},
+"/home/z/hf/gemma-4-E4B-it-UD-Q3_K_XL.gguf": {
+"mtime": 1790679057,
+"size": 4588440704,
+"struct": {
+"active_params": 7518069290,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 7518069290
+}
+},
+"/home/z/hf/gemma-4-E4B-it-UD-Q4_K_XL.gguf": {
+"mtime": 1791857585,
+"size": 5126306944,
+"struct": {
+"active_params": 7518069290,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 7518069290
+}
+},
+"/home/z/hf/gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf": {
+"mtime": 1789087600,
+"size": 3219532192,
+"struct": {
+"active_params": 7463013674,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 7463013674
+}
+},
+"/home/z/hf/gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf": {
+"mtime": 1784854583,
+"size": 4215695776,
+"struct": {
+"active_params": 7463013674,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 7463013674
+}
+},
+"/home/z/hf/gemma4-v2-Q4_K_M.gguf": {
+"mtime": 1789090385,
+"size": 7381381664,
+"struct": {
+"active_params": 11907350576,
+"arch": "gemma4",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 11907350576
+}
+},
+"/home/z/hf/granite-4.1-3b-Q2_K.gguf": {
+"mtime": 1790743717,
+"size": 1371437664,
+"struct": {
+"active_params": 3402836480,
+"arch": "granite",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3402836480
+}
+},
+"/home/z/hf/granite-4.1-3b-Q3_K_M.gguf": {
+"mtime": 1790743787,
+"size": 1725577824,
+"struct": {
+"active_params": 3402836480,
+"arch": "granite",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3402836480
+}
+},
+"/home/z/hf/granite-4.1-3b-Q4_K_M.gguf": {
+"mtime": 1790770893,
+"size": 2099501664,
+"struct": {
+"active_params": 3402836480,
+"arch": "granite",
+"expert_count": 0,
+"expert_params": 0,
+"expert_used": 0,
+"n_params": 3402836480
+}
+}
+}

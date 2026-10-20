@@ -35,6 +35,7 @@ REPO = HERE.parents[3]  # analysis -> a02-模型规模 -> subprojects -> docs ->
 DB = REPO / "experiments.sqlite"
 HF = Path("/home/z/hf")
 OUT = HERE / "size_provenance.json"
+CACHE = HERE / "gguf_cache.json"      # 每个 GGUF 的 (size, mtime) → 张量统计；文件变了就重读
 BPW_MAP = REPO / ".wrapup" / "bpw_map.json"
 
 sys.path.insert(0, str(REPO / ".wrapup"))
@@ -88,6 +89,18 @@ def gguf_structure(path: Path) -> dict:
     }
 
 
+def gguf_structure_cached(path: Path, cache: dict) -> dict:
+    """带缓存的 GGUF 头解析：键是路径，值是 (size, mtime) 与结果；文件一改就重算。"""
+    st = path.stat()
+    key = str(path)
+    hit = cache.get(key)
+    if hit and hit.get("size") == st.st_size and hit.get("mtime") == int(st.st_mtime):
+        return hit["struct"]
+    struct_ = gguf_structure(path)
+    cache[key] = {"size": st.st_size, "mtime": int(st.st_mtime), "struct": struct_}
+    return struct_
+
+
 def read_rows():
     con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
@@ -130,13 +143,14 @@ def attribute(size, filesize, truth):
 
 def build():
     bpw = json.loads(BPW_MAP.read_text(encoding="utf-8")) if BPW_MAP.is_file() else {}
+    cache = json.loads(CACHE.read_text(encoding="utf-8")) if CACHE.is_file() else {}
     per_row = []
     missing = []
     for r in read_rows():
         p = HF / r["model"]
         st = None
         if p.is_file():
-            st = gguf_structure(p)
+            st = gguf_structure_cached(p, cache)
             source = "gguf-tensors"
         else:
             missing.append({"model": r["model"], "rows": r["n"],
@@ -160,6 +174,7 @@ def build():
             "gguf_says_moe": bool(st and st["expert_count"] > 0),
         })
     per_row.sort(key=lambda d: (d["channel"], -(d["db_size"] or 0)))
+    CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True), encoding="utf-8")
     return per_row, missing
 
 
