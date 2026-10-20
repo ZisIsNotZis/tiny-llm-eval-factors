@@ -17,6 +17,7 @@
 | CPU | 12 核 | 重活 ≤ 2 并发（编译/评测/绘图），其余让路 |
 | 内存 | 125 GB（可用 ~108） | 单任务 > 30 GB 前先算一次峰值；不得同时起两个大模型服务 |
 | 磁盘 | 191 GB 可用 | 大产物按 `artifacts.tsv` 声明，不进 git |
+| GPU 的外部占用 | 不受本仓库锁管理 | 起服前先看 `nvidia-smi` 的 `memory.free` 与 `--query-compute-apps`：别的仓库的任务（例如 `scripts/train_sft.py`）也在同一张卡上，本仓库的 `/tmp/llama_gpu.lock` 只管自己。**绑定约束是空闲显存**，不是锁；起服后断言 server 自报的 `n_slots` 与配置相符，不符即作废该次测量 |
 | 活跃 orchestrator | ≤ 3 | 未启动的单元排队，由 meta 按依赖放行 |
 
 ## 我发给子项目的契约（每次派工都含这些，缺一不可）
