@@ -1,0 +1,6 @@
+UNMEASURED: the census cannot see its inputs:
+  missing database: /tmp/tmp.KRe65SJUY7/experiments.sqlite
+  missing m27 sampling panel product: /tmp/tmp.KRe65SJUY7/.wrapup/m27_summary.jsonl
+  missing m31 top_k panel product: /tmp/tmp.KRe65SJUY7/.wrapup/m31_summary.jsonl
+  missing standard-benchmark sampling panel product: /tmp/tmp.KRe65SJUY7/.wrapup/mres/*/variant_panel.json
+EXIT=2

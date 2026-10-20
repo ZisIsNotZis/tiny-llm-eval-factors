@@ -1,8 +1,0 @@
-res10:
-  _text: 采样/解码参数：温度从 0 升到 0.3/0.7 会压低代码通过率；温度 0 时 top_k 无影响；MMLU 对采样完全无反应（走对数似然）。
-  author: measurement
-  origin: .scratch/originals/L2-结果.md 采样/解码参数
-  scope: general
-  status: current
-  domain:
-    kind: measured

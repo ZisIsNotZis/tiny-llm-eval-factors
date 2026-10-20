@@ -1,0 +1,267 @@
+# command : python3 docs/subprojects/a06-采样与解码参数/sampling_census.py 
+# git HEAD: 6fc5b0cee475ff12f0dd7d7c36821bc5d3c3ac5a
+# script  : sha256 729192bf2f321ac4…
+# db      : experiments.sqlite (mode=ro)
+# dirty   : 35 path token(s) in `git status --porcelain`
+
+== A. Can the sampling identity columns be read at all? ==
+  total rows                       : 3319
+  rows with protocol AND run_tag NULL: 1881
+  rows whose temp/top_k is outside every declared setting: 490  (14.8% of all rows)
+    of those, rows with no source_file : 490
+    of those, distinct temp values     : 478
+    of those, distinct top_k values    : 385
+    distinct presence_penalty values   : 477 (max repeat 13)
+  -> verdict: those rows' sampling columns are NOT a decoding setting;
+     the setting is UNKNOWN for them and is not read from these columns.
+
+== B. Protocol inventory (one row per protocol x max_tokens x identity) ==
+  bench_family         max_tok cells models NULL  protocol
+  arc_challenge              -    72     59    0  lmeval-0.4.13-gguf-shim-reasoning-off
+  bfcl                       -     5      1    0  bfcl-native-tools-nothink-greedy
+  bfcl                     512    74     10    0  bfcl-native-tools-nothink-greedy
+  bfcl                     512    20      4    0  bfcl-prompt-nothink-greedy
+  bfcl-multiturn             -    22     10    0  bfcl-official-multiturn-temp0
+  bfcl-multiturn             -     2      1    0  bfcl-official-multiturn-temp0-partial
+  fa-probe                 256     6      2    0  m44-probe-greedy-256
+  gsm8k                      -    16      8    0  lmeval-0.4.13-chat-reasoning-off
+  gsm8k                   1024   134     54    0  lmeval-0.4.13-chat-reasoning-off
+  gsm8k                   4096    26     13    0  lmeval-0.4.13-chat-reasoning-on
+  gsm8k                   1024     5      5    0  spec-mtp-draft-mtp-n1-lmeval
+  gsm8k                   1024     5      5    0  spec-mtp-draft-mtp-n2-lmeval
+  gsm8k                   1024     5      5    0  spec-mtp-draft-mtp-n4-lmeval
+  gsm8k                   1024     5      5    0  spec-mtp-none-n0-lmeval
+  gsm8k                   1024     1      1    0  variant-kv-f16/f16-lmeval
+  gsm8k                   1024     1      1    0  variant-kv-q4_0/q4_0-lmeval
+  gsm8k                   1024     1      1    0  variant-kv-q8_0/q8_0-lmeval
+  gsm8k                   1024     1      1    0  variant-sampling-greedy-lmeval
+  gsm8k                   1024     1      1    0  variant-sampling-greedy-topk1-lmeval
+  gsm8k                   1024     1      1    0  variant-sampling-greedy-topk200-lmeval
+  gsm8k                   1024     1      1    0  variant-sampling-temp0.3-lmeval
+  gsm8k                   1024     1      1    0  variant-sampling-temp0.7-lmeval
+  humaneval                768    16      5    0  evalplus-0.3.1-openai-chat
+  humaneval                768    74     65    0  evalplus-0.3.1-openai-chat-greedy-base
+  humaneval                768    74     65    0  evalplus-0.3.1-openai-chat-greedy-plus
+  humaneval                  -     5      5    0  spec-mtp-draft-mtp-n1-evalplus
+  humaneval                  -     5      5    0  spec-mtp-draft-mtp-n2-evalplus
+  humaneval                  -     5      5    0  spec-mtp-draft-mtp-n4-evalplus
+  humaneval                  -     5      5    0  spec-mtp-none-n0-evalplus
+  humaneval                  -     1      1    0  variant-kv-f16/f16-evalplus
+  humaneval                  -     1      1    0  variant-kv-q4_0/q4_0-evalplus
+  humaneval                  -     1      1    0  variant-kv-q8_0/q8_0-evalplus
+  humaneval                  -     1      1    0  variant-sampling-greedy-evalplus
+  humaneval                  -     1      1    0  variant-sampling-greedy-topk1-evalplus
+  humaneval                  -     1      1    0  variant-sampling-greedy-topk200-evalplus
+  humaneval                  -     1      1    0  variant-sampling-temp0.3-evalplus
+  humaneval                  -     1      1    0  variant-sampling-temp0.7-evalplus
+  humaneval-multipl-e      768    12      6    0  mpl-chat-nothink-greedy-768
+  humaneval-multipl-e      768     2      2    0  mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified
+  humaneval-multipl-e      768    52     20    0  mpl-raw-greedy-768
+  humaneval-multipl-e      768     6      3    0  mpl-raw-greedy-768-expertwise
+  humaneval-multipl-e      768     8      4    0  mpl-raw-greedy-768-iq-vs-k-size-matched
+  humaneval-multipl-e      768     8      4    0  mpl-raw-greedy-768-new-family
+  humaneval-multipl-e      768     8      2    0  mpl-raw-greedy-768-third-family-code
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=16384,kv=f16/f16,fa=on,prefix=15327.6tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=16384,kv=f16/q8_0,fa=on,prefix=15327.6tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=16384,kv=q8_0/f16,fa=on,prefix=15327.6tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=16384,kv=q8_0/q8_0,fa=on,prefix=15327.6tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=2048,kv=f16/f16,fa=on,prefix=995.8tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=2048,kv=f16/q8_0,fa=on,prefix=995.8tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=2048,kv=q8_0/f16,fa=on,prefix=995.8tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=2048,kv=q8_0/q8_0,fa=on,prefix=995.8tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=49152,kv=f16/f16,fa=on,prefix=48095.7tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=49152,kv=f16/q8_0,fa=on,prefix=48095.7tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=49152,kv=q8_0/f16,fa=on,prefix=48095.7tok
+  humaneval-multipl-e        -     1      1    0  mpl-raw-greedy-768;ctx=49152,kv=q8_0/q8_0,fa=on,prefix=48095.7tok
+  humaneval-multipl-e        -    30      3    0  mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation)
+  humaneval-multipl-e      768   180     53    4  multipl-e-raw-greedy-768
+  humaneval-multipl-e      768     6      3    0  multipl-e-raw-t0.3-768
+  humaneval-multipl-e      768     6      3    0  multipl-e-raw-t0.6-768
+  ifeval                     -     8      8    0  lmeval-0.4.13-chat-reasoning-off
+  ifeval                  1024    71     58    0  lmeval-0.4.13-chat-reasoning-off
+  ifeval                  1024     5      5    0  spec-mtp-draft-mtp-n1-lmeval
+  ifeval                  1024     5      5    0  spec-mtp-draft-mtp-n2-lmeval
+  ifeval                  1024     5      5    0  spec-mtp-draft-mtp-n4-lmeval
+  ifeval                  1024     5      5    0  spec-mtp-none-n0-lmeval
+  ifeval                  1024     1      1    0  variant-kv-f16/f16-lmeval
+  ifeval                  1024     1      1    0  variant-kv-q4_0/q4_0-lmeval
+  ifeval                  1024     1      1    0  variant-kv-q8_0/q8_0-lmeval
+  ifeval                  1024     1      1    0  variant-sampling-greedy-lmeval
+  ifeval                  1024     1      1    0  variant-sampling-greedy-topk1-lmeval
+  ifeval                  1024     1      1    0  variant-sampling-greedy-topk200-lmeval
+  ifeval                  1024     1      1    0  variant-sampling-temp0.3-lmeval
+  ifeval                  1024     1      1    0  variant-sampling-temp0.7-lmeval
+  mbpp                     768     3      1    0  evalplus-0.3.1-openai-chat
+  mbpp                     768    73     64    0  evalplus-0.3.1-openai-chat-greedy-base
+  mbpp                     768    73     64    0  evalplus-0.3.1-openai-chat-greedy-plus
+  mmlu                       -    79     66    0  lmeval-0.4.13-gguf-shim-reasoning-off
+  mmlu                    1024     5      5    0  spec-mtp-draft-mtp-n1-lmeval
+  mmlu                    1024     5      5    0  spec-mtp-draft-mtp-n2-lmeval
+  mmlu                    1024     5      5    0  spec-mtp-draft-mtp-n4-lmeval
+  mmlu                    1024     5      5    0  spec-mtp-none-n0-lmeval
+  mmlu                    1024     1      1    0  variant-kv-f16/f16-lmeval
+  mmlu                    1024     1      1    0  variant-kv-q4_0/q4_0-lmeval
+  mmlu                    1024     1      1    0  variant-kv-q8_0/q8_0-lmeval
+  mmlu                    1024     1      1    0  variant-sampling-greedy-lmeval
+  mmlu                    1024     1      1    0  variant-sampling-greedy-topk1-lmeval
+  mmlu                    1024     1      1    0  variant-sampling-greedy-topk200-lmeval
+  mmlu                    1024     1      1    0  variant-sampling-temp0.3-lmeval
+  mmlu                    1024     1      1    0  variant-sampling-temp0.7-lmeval
+  speed                    256    15      1   15  m28-mtp-speed-greedy
+  speed                    256     5      5    5  spec-mtp-draft-mtp-n1-greedy-256
+  speed                    256     5      5    5  spec-mtp-draft-mtp-n2-greedy-256
+  speed                    256     5      5    5  spec-mtp-draft-mtp-n4-greedy-256
+  speed                    256     5      5    5  spec-mtp-none-n0-greedy-256
+  speed                    256    10      2   10  speed-greedy-256-tps
+  testfrac                   -    24     11    0  mpl-raw-greedy-768 + per-test fraction
+  truthfulqa_mc2             -    79     66    0  lmeval-0.4.13-gguf-shim-reasoning-off
+  distinct protocol strings: 65; rows carrying one: 1438
+
+== C. The fixed protocol, derived from the rows that carry it ==
+  max_tokens=None n=74   temp=0.0,0.3,0 top_k=40,1,20,64,200 top_p=0.95 min_p=0.05
+  max_tokens=256 n=51   temp=0.0 top_k=40 top_p=0.95 min_p=0.05
+  max_tokens=512 n=94   temp=0.0 top_k=40 top_p=0.95 min_p=0.05
+  max_tokens=768 n=570  temp=0.0 top_k=40 top_p=0.95 min_p=0.05
+  max_tokens=1024 n=9    temp=0 top_k=40,1,200 top_p=0.95 min_p=0.05
+  declared fixed max_tokens = 768; rows carrying a '-768' protocol: 354; of them disagreeing with that column: 0
+  greedy protocols that are NOT the -768 fixed protocol (different protocol): max_tokens=None n=8, max_tokens=256 n=51, max_tokens=512 n=94, max_tokens=768 n=294, max_tokens=1024 n=9
+
+== D. Panels that vary decoding (the sampling axis as measured) ==
+  m130-kv         bench=humaneval       n=1   models=1 langs=python temp=0.0 top_k=40 max_tok=-1 n_items=164..164
+      protocol: variant-kv-f16/f16-evalplus
+  m130-kv         bench=mmlu            n=3   models=1 langs=- temp=0.0 top_k=40 max_tok=1024 n_items=50..456
+      protocol: variant-kv-f16/f16-lmeval
+  m130-kv         bench=humaneval       n=1   models=1 langs=python temp=0.0 top_k=40 max_tok=-1 n_items=164..164
+      protocol: variant-kv-q4_0/q4_0-evalplus
+  m130-kv         bench=mmlu            n=3   models=1 langs=- temp=0.0 top_k=40 max_tok=1024 n_items=50..456
+      protocol: variant-kv-q4_0/q4_0-lmeval
+  m130-kv         bench=humaneval       n=1   models=1 langs=python temp=0.0 top_k=40 max_tok=-1 n_items=164..164
+      protocol: variant-kv-q8_0/q8_0-evalplus
+  m130-kv         bench=mmlu            n=3   models=1 langs=- temp=0.0 top_k=40 max_tok=1024 n_items=50..456
+      protocol: variant-kv-q8_0/q8_0-lmeval
+  m131-sampling   bench=humaneval       n=1   models=1 langs=python temp=0 top_k=40 max_tok=-1 n_items=164..164
+      protocol: variant-sampling-greedy-evalplus
+  m131-sampling   bench=mmlu            n=3   models=1 langs=- temp=0 top_k=40 max_tok=1024 n_items=50..456
+      protocol: variant-sampling-greedy-lmeval
+  m131-sampling   bench=humaneval       n=1   models=1 langs=python temp=0 top_k=1 max_tok=-1 n_items=164..164
+      protocol: variant-sampling-greedy-topk1-evalplus
+  m131-sampling   bench=mmlu            n=3   models=1 langs=- temp=0 top_k=1 max_tok=1024 n_items=50..456
+      protocol: variant-sampling-greedy-topk1-lmeval
+  m131-sampling   bench=humaneval       n=1   models=1 langs=python temp=0 top_k=200 max_tok=-1 n_items=164..164
+      protocol: variant-sampling-greedy-topk200-evalplus
+  m131-sampling   bench=mmlu            n=3   models=1 langs=- temp=0 top_k=200 max_tok=1024 n_items=50..456
+      protocol: variant-sampling-greedy-topk200-lmeval
+  m131-sampling   bench=humaneval       n=1   models=1 langs=python temp=0.3 top_k=40 max_tok=-1 n_items=164..164
+      protocol: variant-sampling-temp0.3-evalplus
+  m131-sampling   bench=mmlu            n=3   models=1 langs=- temp=0.3 top_k=40 max_tok=1024 n_items=50..456
+      protocol: variant-sampling-temp0.3-lmeval
+  m131-sampling   bench=humaneval       n=1   models=1 langs=python temp=0.7 top_k=40 max_tok=-1 n_items=164..164
+      protocol: variant-sampling-temp0.7-evalplus
+  m131-sampling   bench=mmlu            n=3   models=1 langs=- temp=0.7 top_k=40 max_tok=1024 n_items=50..456
+      protocol: variant-sampling-temp0.7-lmeval
+  m27-sampling    bench=humaneval-multipl-e n=2   models=1 langs=cpp,py temp=0.0 top_k=40 max_tok=768 n_items=-1..-1
+      protocol: multipl-e-raw-greedy-768
+  m27-sampling    bench=humaneval-multipl-e n=6   models=3 langs=cpp,py temp=0.3 top_k=40 max_tok=768 n_items=-1..-1
+      protocol: multipl-e-raw-t0.3-768
+  m27-sampling    bench=humaneval-multipl-e n=6   models=3 langs=cpp,py temp=0.6 top_k=40 max_tok=768 n_items=-1..-1
+      protocol: multipl-e-raw-t0.6-768
+  m31-topk        bench=humaneval-multipl-e n=30  models=3 langs=cpp,py temp=0.3 top_k=1,20,40,64,200 max_tok=-1 n_items=-1..-1
+      protocol: mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation)
+
+  declared sampling variants in the standard-benchmark panel source:
+    .wrapup/mres/m131-sampling/variant_panel.json  tag=m131-sampling
+      variant greedy          sampling={'temperature': 0}
+      variant temp0.3         sampling={'temperature': 0.3}
+      variant temp0.7         sampling={'temperature': 0.7}
+      variant greedy-topk1    sampling={'temperature': 0, 'top_k': 1}
+      variant greedy-topk200  sampling={'temperature': 0, 'top_k': 200}
+
+== E. Comparisons available WITHOUT a new measurement ==
+  E1 MultiPL-E cells per (bench, language, model) available for a temp/top_k comparison:
+    Qwen3.5-2B-UD-Q2_K_XL.gguf  cpp
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=1    n_items=None score=0.1118
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=20   n_items=None score=0.1118
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=40   n_items=None score=0.1118
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=64   n_items=None score=0.1118
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=200  n_items=None score=0.1118
+      multipl-e-raw-greedy-768                         temp=0.0 top_k=40   n_items=None score=0.1118
+      multipl-e-raw-t0.3-768                           temp=0.3 top_k=40   n_items=None score=0.1118
+      multipl-e-raw-t0.6-768                           temp=0.6 top_k=40   n_items=None score=0.1118
+    Qwen3.5-2B-UD-Q3_K_XL.gguf  cpp
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=1    n_items=None score=0.2422
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=20   n_items=None score=0.1739
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=40   n_items=None score=0.1739
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=64   n_items=None score=0.1739
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=200  n_items=None score=0.1739
+      multipl-e-raw-t0.3-768                           temp=0.3 top_k=40   n_items=None score=0.1739
+      multipl-e-raw-t0.6-768                           temp=0.6 top_k=40   n_items=None score=0.1491
+    Qwen3.5-2B-UD-Q4_K_XL.gguf  cpp
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=1    n_items=None score=0.2298
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=20   n_items=None score=0.2298
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=40   n_items=None score=0.2298
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=64   n_items=None score=0.2298
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=200  n_items=None score=0.2298
+      multipl-e-raw-t0.3-768                           temp=0.3 top_k=40   n_items=None score=0.2298
+      multipl-e-raw-t0.6-768                           temp=0.6 top_k=40   n_items=None score=0.1925
+    Qwen3.5-2B-UD-Q2_K_XL.gguf  py
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=1    n_items=None score=0.1366
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=20   n_items=None score=0.1615
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=40   n_items=None score=0.1615
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=64   n_items=None score=0.1615
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=200  n_items=None score=0.1615
+      multipl-e-raw-greedy-768                         temp=0.0 top_k=40   n_items=None score=0.1366
+      multipl-e-raw-t0.3-768                           temp=0.3 top_k=40   n_items=None score=0.1615
+      multipl-e-raw-t0.6-768                           temp=0.6 top_k=40   n_items=None score=0.0932
+    Qwen3.5-2B-UD-Q3_K_XL.gguf  py
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=1    n_items=None score=0.2671
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=20   n_items=None score=0.2671
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=40   n_items=None score=0.2671
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=64   n_items=None score=0.2671
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=200  n_items=None score=0.2671
+      multipl-e-raw-t0.3-768                           temp=0.3 top_k=40   n_items=None score=0.2671
+      multipl-e-raw-t0.6-768                           temp=0.6 top_k=40   n_items=None score=0.2733
+    Qwen3.5-2B-UD-Q4_K_XL.gguf  py
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=1    n_items=None score=0.2733
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=20   n_items=None score=0.3168
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=40   n_items=None score=0.3168
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=64   n_items=None score=0.3168
+      mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) temp=0.3 top_k=200  n_items=None score=0.3168
+      multipl-e-raw-t0.3-768                           temp=0.3 top_k=40   n_items=None score=0.3168
+      multipl-e-raw-t0.6-768                           temp=0.6 top_k=40   n_items=None score=0.3168
+
+  E2 quantisation ladder: level pairs measured under two or more decoding settings
+    family Qwen3.5-2B: levels=['Qwen3.5-2B-UD-Q2_K_XL.gguf', 'Qwen3.5-2B-UD-Q3_K_XL.gguf', 'Qwen3.5-2B-UD-Q4_K_XL.gguf']
+      cpp @ (temp,top_k)=('0.3', '1'): Q2_K_X=0.1118  Q3_K_X=0.2422  Q4_K_X=0.2298
+      cpp @ (temp,top_k)=('0.3', '20'): Q2_K_X=0.1118  Q3_K_X=0.1739  Q4_K_X=0.2298
+      cpp @ (temp,top_k)=('0.3', '200'): Q2_K_X=0.1118  Q3_K_X=0.1739  Q4_K_X=0.2298
+      cpp @ (temp,top_k)=('0.3', '40'): Q2_K_X=0.1118  Q3_K_X=0.1739  Q4_K_X=0.2298
+      cpp @ (temp,top_k)=('0.3', '64'): Q2_K_X=0.1118  Q3_K_X=0.1739  Q4_K_X=0.2298
+      cpp @ (temp,top_k)=('0.6', '40'): Q2_K_X=0.1118  Q3_K_X=0.1491  Q4_K_X=0.1925
+      cpp level-pair order: concordant=40 discordant=5 over 7 settings
+      py @ (temp,top_k)=('0.3', '1'): Q2_K_X=0.1366  Q3_K_X=0.2671  Q4_K_X=0.2733
+      py @ (temp,top_k)=('0.3', '20'): Q2_K_X=0.1615  Q3_K_X=0.2671  Q4_K_X=0.3168
+      py @ (temp,top_k)=('0.3', '200'): Q2_K_X=0.1615  Q3_K_X=0.2671  Q4_K_X=0.3168
+      py @ (temp,top_k)=('0.3', '40'): Q2_K_X=0.1615  Q3_K_X=0.2671  Q4_K_X=0.3168
+      py @ (temp,top_k)=('0.3', '64'): Q2_K_X=0.1615  Q3_K_X=0.2671  Q4_K_X=0.3168
+      py @ (temp,top_k)=('0.6', '40'): Q2_K_X=0.0932  Q3_K_X=0.2733  Q4_K_X=0.3168
+      py level-pair order: concordant=45 discordant=0 over 7 settings
+
+  E3 fixed-protocol cells whose model family has no sampling twin
+    greedy cells: 54 over 54 models
+    families with a temp>0 twin: 1 ['Qwen3.5-2B']
+    greedy models with NO temp>0 twin: 47
+      humaneval-multipl-e Bonsai-27B-Q1_0.gguf
+      humaneval-multipl-e GLM-4.7-Flash-UD-Q2_K_XL.gguf
+      humaneval-multipl-e GLM-4.7-Flash-UD-Q3_K_XL.gguf
+      humaneval-multipl-e GLM-4.7-Flash-UD-TQ1_0.gguf
+      humaneval-multipl-e LFM2.5-8B-A1B-UD-Q2_K_XL.gguf
+      humaneval-multipl-e LFM2.5-8B-A1B-UD-Q3_K_XL.gguf
+      humaneval-multipl-e LFM2.5-8B-A1B-m55-Q3_K_M.gguf
+      humaneval-multipl-e LFM2.5-8B-A1B-m55-exq2.gguf
+      humaneval-multipl-e LFM2.5-8B-A1B-m55-exq4.gguf
+      humaneval-multipl-e Llama-3.2-3B-Instruct-Q2_K.gguf
+      humaneval-multipl-e Llama-3.2-3B-Instruct-Q3_K_M.gguf
+      humaneval-multipl-e MiniCPM5-2B-Q2_K.gguf
+      … and 35 more
+
+== census complete ==

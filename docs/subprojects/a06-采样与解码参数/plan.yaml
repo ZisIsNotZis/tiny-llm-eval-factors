@@ -1,8 +1,0 @@
-plan3:
-  _text: 假设 B2（厂商推荐采样）：unsloth 给每个模型发布推荐运行/采样参数，而我们固定协议；做一次受控检查，看厂商推荐采样会不会改变任何量化结论（即我们的协议是否是 confound）。
-  author: agent
-  origin: .scratch/originals/BACKLOG.md 尚未跑的假设
-  scope: general
-  status: provisional
-  domain:
-    kind: hypothesis
