@@ -107,6 +107,16 @@ AC：四份落盘完成物与四份 `_eval.json` 存在；一份逐题对照表�
 
 锁粒度：每个 arm 自己持一次 `flock`（`slot_repro_arm.sh <arm>` 由 `gpu_locked.sh` 包住），不是整段实验一次长锁，排在后面的子项目（a12 的 m163）可以在两个 arm 之间插入。理由是 `@machine` 的有限并发与 `@scheduling` 的 queue_behind：一个 arm 是一个可被抢占的完整测量单元，而整段实验不是。
 
+## 注册表 AC 的完成状态（逐条对到节点）
+
+| AC | 证据节点 | 状态 |
+|---|---|---|
+| 每个 harness 一份审计 + 负控 | EvalPlus `RESULT.md::res31` + `audits/evalplus.md`；lm-eval `res26` + `audits/lmeval.md`；BFCL `res27`/`res30` + `audits/bfcl.md`；MultiPL-E `res28` + `audits/multipl-e.md` | **完成**（4/4 份，每份脚本 `exit=0` 且两侧负控都观测到；已知缺口：BFCL 多轮的 checker 负控未做、MultiPL-E 的非 py 语言提前退出未逐个实测，均已在各审计的「未测」节写明） |
+| chat 单次噪声地板 | `res32` | **部分**：MultiPL-E（161 题 × 2 对，0 翻转）与 EvalPlus（164 题 × 3 次 temp=0，0 翻转）已定；lm-eval gsm8k 与 BFCL 的单轮重复正在跑，未出数前这两族记未定 |
+| 同一格跨 run 差异有裁决 | `res29` | **完成**：plan15 裁决为「批处理排除（四臂逐字节相同）+ 131 不可复现（证据被覆盖）+ 16 题双向翻转 + 66/161 token 不同」；并把「6/161 是噪声地板」的说法撤回 |
+
+**真正未做的项**：`WP7` 的 lm-eval/BFCL 两族重复（在跑）；`WP3` 的 `lmeval_run.py --selftest`（需起 server，排在 WP7 之后）；BFCL 多轮 checker 的可执行负控；MultiPL-E 非 py 语言的提前退出通道；自研 BFCL 匹配器与官方 checker 的一致率（历史预测文件缺失）；`WP9` 独立复核（待 meta 派）。
+
 ## GPU 排队项（外部占用时按触发条件等，不轮询重试）
 
 | 项 | 所需显存 | 当前空闲（2026-10-21 00:32） | 触发条件 | 预算 |
