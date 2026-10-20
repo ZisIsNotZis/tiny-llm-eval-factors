@@ -101,120 +101,120 @@
   {
    "bench": "MMLU",
    "slope": {
-    "est": 0.1044,
-    "lo": 0.0559,
-    "hi": 0.1529
+    "est": 0.1152,
+    "lo": 0.0597,
+    "hi": 0.1707
    },
    "IQ": {
-    "est": 0.0258,
-    "lo": -0.0995,
-    "hi": 0.1512
+    "est": 0.0348,
+    "lo": -0.1097,
+    "hi": 0.1793
    },
    "local": {
-    "est": -0.0602,
-    "lo": -0.2508,
-    "hi": 0.1304
+    "est": -0.0655,
+    "lo": -0.2854,
+    "hi": 0.1544
    },
    "bartowski": {
-    "est": -0.0445,
-    "lo": -0.2994,
-    "hi": 0.2104
+    "est": -0.0499,
+    "lo": -0.344,
+    "hi": 0.2442
    },
    "n": 65
   },
   {
    "bench": "ARC-c",
    "slope": {
-    "est": 0.1217,
-    "lo": 0.0923,
-    "hi": 0.1511
+    "est": 0.122,
+    "lo": 0.0933,
+    "hi": 0.1508
    },
    "IQ": {
-    "est": 0.1031,
-    "lo": -0.0103,
-    "hi": 0.2165
+    "est": 0.1034,
+    "lo": -0.0081,
+    "hi": 0.2149
    },
    "local": {
-    "est": -0.0344,
-    "lo": -0.2114,
-    "hi": 0.1427
+    "est": -0.0345,
+    "lo": -0.2086,
+    "hi": 0.1396
    },
    "bartowski": {
-    "est": 0.0042,
-    "lo": -0.233,
-    "hi": 0.2414
+    "est": 0.004,
+    "lo": -0.2292,
+    "hi": 0.2373
    },
    "n": 58
   },
   {
    "bench": "TruthfulQA",
    "slope": {
-    "est": 0.0329,
-    "lo": 0.0095,
-    "hi": 0.0564
+    "est": 0.0446,
+    "lo": 0.0056,
+    "hi": 0.0835
    },
    "IQ": {
-    "est": 0.0443,
-    "lo": -0.0177,
-    "hi": 0.1064
+    "est": 0.054,
+    "lo": -0.0499,
+    "hi": 0.1579
    },
    "local": {
-    "est": 0.0258,
-    "lo": -0.0689,
-    "hi": 0.1204
+    "est": 0.0201,
+    "lo": -0.1384,
+    "hi": 0.1786
    },
    "bartowski": {
-    "est": -0.0383,
-    "lo": -0.1649,
-    "hi": 0.0883
+    "est": -0.0441,
+    "lo": -0.256,
+    "hi": 0.1679
    },
    "n": 65
   },
   {
    "bench": "GSM8K",
    "slope": {
-    "est": 0.194,
-    "lo": 0.101,
-    "hi": 0.287
+    "est": 0.2042,
+    "lo": 0.1094,
+    "hi": 0.299
    },
    "IQ": {
-    "est": -0.0317,
-    "lo": -0.2969,
-    "hi": 0.2335
+    "est": -0.0221,
+    "lo": -0.2947,
+    "hi": 0.2504
    },
    "local": {
-    "est": -0.1679,
-    "lo": -0.5237,
-    "hi": 0.1879
+    "est": -0.1729,
+    "lo": -0.5388,
+    "hi": 0.193
    },
    "bartowski": {
-    "est": -0.0919,
-    "lo": -0.5677,
-    "hi": 0.3839
+    "est": -0.097,
+    "lo": -0.5863,
+    "hi": 0.3922
    },
    "n": 61
   },
   {
    "bench": "IFEval",
    "slope": {
-    "est": 0.1444,
-    "lo": 0.0888,
-    "hi": 0.2001
+    "est": 0.155,
+    "lo": 0.0935,
+    "hi": 0.2164
    },
    "IQ": {
-    "est": 0.0059,
-    "lo": -0.1398,
-    "hi": 0.1516
+    "est": 0.0147,
+    "lo": -0.1474,
+    "hi": 0.1767
    },
    "local": {
-    "est": -0.0169,
-    "lo": -0.2954,
-    "hi": 0.2616
+    "est": -0.0167,
+    "lo": -0.3268,
+    "hi": 0.2933
    },
    "bartowski": {
-    "est": -0.0621,
-    "lo": -0.3588,
-    "hi": 0.2346
+    "est": -0.0674,
+    "lo": -0.3977,
+    "hi": 0.2629
    },
    "n": 65
   }
@@ -224,42 +224,34 @@
    "benches": 9,
    "significant_benches": [],
    "crosses_zero_on": 9,
-   "half_width_min": 0.062,
-   "half_width_max": 0.2652,
-   "identified_by": "{'Qwen3.5-2B': [0.0, 1.0], 'Qwen3.5-4B': [0.0, 1.0], 'Qwen3.8-27B': [0.0, 1.0]}",
-   "families": [
-    "Qwen3.5-2B",
-    "Qwen3.5-4B",
-    "Qwen3.8-27B"
-   ]
+   "half_width_min": 0.1039,
+   "half_width_max": 0.2726,
+   "identified_by": "",
+   "families": []
   },
   "local": {
    "benches": 9,
    "significant_benches": [],
    "crosses_zero_on": 9,
-   "half_width_min": 0.0946,
-   "half_width_max": 0.3558,
-   "identified_by": "{'LFM2.5-8B-A1B': [0.0, 1.0]}",
-   "families": [
-    "LFM2.5-8B-A1B"
-   ]
+   "half_width_min": 0.1585,
+   "half_width_max": 0.3659,
+   "identified_by": "",
+   "families": []
   },
   "bartowski": {
    "benches": 9,
    "significant_benches": [],
    "crosses_zero_on": 9,
-   "half_width_min": 0.1266,
-   "half_width_max": 0.4758,
-   "identified_by": "{'Qwen3.6-35B-A3B': [0.0, 1.0]}",
-   "families": [
-    "Qwen3.6-35B-A3B"
-   ]
+   "half_width_min": 0.2119,
+   "half_width_max": 0.4893,
+   "identified_by": "",
+   "families": []
   }
  },
  "slope_significant_on_all": true,
  "slope_range": [
-  0.0329,
-  0.1974
+  0.0446,
+  0.2042
  ],
  "unidentifiable_sources": ""
 }
