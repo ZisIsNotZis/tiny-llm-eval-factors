@@ -189,6 +189,15 @@
 - repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/profiles.py"`（三档清单里没有 `exq2`/`exq4` 参与的钉住对）
 - 说明：这是本层最重要的一条「未测」——不是「没有效应」，是**没有对照**。
 
+### harness-env :: 在本仓库当前路径下跑面板时，`gsm8k`/`ifeval` 两个生成任务曾直接失败：venv 的入口脚本 shebang 写的是仓库搬家前的旧根 `/home/z/hf/research/.wrapup/lmenv/bin/python3.12`，那个路径已不存在，`subprocess` 报 `FileNotFoundError`（实跑：`.wrapup/mres/m164-a04-uni45` 的第一次面板在 mmlu 0.4825 / arc 0.4600 之后、truthfulqa 之后死于这一行）。两个入口脚本的 shebang 已改指当前根，`lm_eval --help` 正常；但 `.wrapup/lmenv/` 被 `.gitignore` 排除，所以**干净 clone 里这一条会重新出现**，需要重装 venv 或同样修 shebang。
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- evidence: `.wrapup/m164_lmeval.out` 的 `FileNotFoundError: … .wrapup/lmenv/bin/lm_eval`；修复后 `.wrapup/m164_lmeval2.out` 正常进入 mmlu
+- repro: `grep -c FileNotFoundError .wrapup/m164_lmeval.out`；`head -1 .wrapup/lmenv/bin/lm_eval`
+- 说明：这是测量基础设施的缺陷，归 `i02`；本层只记录它曾把一次面板弄死，并说明为何 `m164` 的面板重跑了一次。
+
 ### unmeasured-items :: 逐题结果不落库（`i01::res26`：lm-eval 未开 `--log_samples`），所以本层所有区间都是非配对的（两比例差的 Newcombe method 10），跨 0 只能写「不可分辨」并附半宽，不能写「相等」；同一格在相同协议下重跑是否复现入库值**未测**（复现负控未跑，GPU 排队）。
 - author: agent
 - scope: general

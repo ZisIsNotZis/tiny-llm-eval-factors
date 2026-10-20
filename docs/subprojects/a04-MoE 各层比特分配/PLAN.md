@@ -24,7 +24,7 @@
 
 | 排队项 | 需要什么 | 当前状态 | 触发条件 | 预计 GPU 分钟 |
 |---|---|---|---|---|
-| `WP4` 三臂面板：`m164-a04-uni45` 的 lm-eval 五基准 + EvalPlus code | 显存：该臂 4.5 GB 权重 + KV（8192 ctx×1 slot），实测峰值看 `nvidia-smi` 的空闲（开跑时 18.3 GB 空闲、另一仓库占 5.2 GB）；持 `/tmp/llama_gpu.lock` | lm-eval 面板**已启动**（PID 在 `.wrapup/m164_lmeval.out`），mmlu / arc 已出，truthfulqa / gsm8k / ifeval 未完；code 面板未开始 | lm-eval 面板退出后（`.wrapup/mres/m164-a04-uni45/lmeval_panel.json` 出现）立即接 `bash .wrapup/codepanel.sh /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf m164-a04-uni45` | lm-eval ≤14 + code ≤16 ≈ ≤30（预估值，均为 `m134` 的实测锚点） |
+| `WP4` 三臂面板：`m164-a04-uni45` 的 lm-eval 五基准 + EvalPlus code | 显存：该臂 4.5 GB 权重 + KV（8192 ctx×1 slot）；开跑时 18.3 GB 空闲（另一仓库占 5.2 GB），持 `/tmp/llama_gpu.lock`，端口 8901，server 自报 `n_slots = 1` 已校对 | lm-eval 面板**在跑**（`.wrapup/m164_lmeval2.out`，标签 `m164-a04-uni45`；第一次因 venv 入口脚本 shebang 失效而死，见 `RESULT.md::harness-env`，已修并重跑）；code 面板未开始 | `.wrapup/mres/m164-a04-uni45/lmeval_panel.json` 出现（五任务齐全）后立即接 `bash .wrapup/codepanel.sh /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf m164-a04-uni45` | lm-eval ≤14 + code ≤16 ≈ ≤30（预估，错于 `m134` 的实测锚点） |
 | 入库入库 | `migrate_db.py`（唯一入库路径）+ 先做编号备份 | 等两个面板都出完 | `.wrapup/mres/m164-a04-uni45/evalplus.json` 存在且 `code.DONE` 写出 | 0（CPU，≤10 分钟） |
 
 等待期间只做不占 GPU 的活：`--infeasible`（逐对能不能被钉住）、`RESULT.md` 事实、`run_all.py` 断言。
