@@ -11,9 +11,9 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（文档归位）、`WP2`（EvalPlus 审计 + 负控）、`WP6` 的 `np1` arm。
+- 已完成：`WP1`（文档归位）、`WP2`（EvalPlus 审计 + 负控）、`WP3`（lm-eval 审计 + 负控）、`WP6` 的 `np1` arm。
 - 在办：`WP6` 的 `np4`/`np4b` arm（23:11:03 起在 GPU 锁后排队，前面是 a12 的 `m163`；驱动 pid 2571952 自己等锁，不占本编排者的回合）。
-- 下一个派给谁：`WP6` 由本子项目编排者自己持 GPU 跑（`bash .wrapup/gpu_locked.sh`，全局串行）；`WP3`（lm-eval）/`WP4`（BFCL）/`WP5`（MultiPL-E）是 CPU 审计，下一件就做 `WP3`。本会话没有派孙工具，所以 `WP9` 的独立复核必须由 meta 派 fresh-context reviewer，不得自评通过。
+- 下一个派给谁：GPU 空出后先取 `np4`/`np4b` 的结果；CPU 侧下一件是 `WP4`（BFCL 审计），然后 `WP5`（MultiPL-E 审计收尾）。`WP3` 留下的一个 GPU 负控（`lmeval_run.py --selftest`）排在 `np4b` 之后。本会话没有派孙工具，所以 `WP9` 的独立复核必须由 meta 派 fresh-context reviewer，不得自评通过。
 - **`np1` 已把 plan15 的嫌疑压到四槽批处理上**：同一提示集、`-np 1`、贪心、chat 关思考、每槽 2048 ctx，两次独立生成得到逐字节相同的完成物与相同的 145/161（`RESULT.md::res25`）。所以差异不可能来自「贪心生成本身不稳定」；剩下的是 4 槽批处理（`np4`/`np4b` 待测）或提示集（旧集已删，不可测）。
 
 ## 工作包
@@ -24,7 +24,7 @@
 | WP6 槽位可复现裁决（plan15） | i01 编排者 | 同一提示集下 plan15 那个 cell 在 `-np 1` 与 `-np 4` 各跑 2 次，四份 `_eval.json` + 一份逐题翻转对照表；按预先写死的判定规则给裁决，写进 `RESULT.md` | WP1 | ≤90 GPU 分钟 | 进行中 |
 | WP7 chat 单次噪声地板 | i01 编排者 | 四族各一个代表 cell 同配置重复 ≥3 次，给出覆盖率极差 + 逐题通过集合一致率 + 适用协议串；不可测处写不可测 | WP6（共用槽位开关与落盘装置） | ≤120 GPU 分钟 | 未开始 |
 | WP2 EvalPlus 判分审计 + 负控 | i01 编排者 | `audits/evalplus.md` 四问逐问有裁决 + 复现命令；负控两侧都观测到；审计脚本 `exit=0`，45 条 HumanEval+ 与 9 条 MBPP+ 预期全部成立 | WP1 | ≤60 CPU 分钟 | **完成** |
-| WP3 lm-eval 判分审计 + 负控 | i01 编排者 | `audits/lmeval.md`：mmlu / arc_challenge / gsm8k / ifeval / truthfulqa_mc2 五问裁决（含答案解析与模板）+ 负控两侧 | WP1 | ≤60 CPU 分钟 | 未开始 |
+| WP3 lm-eval 判分审计 + 负控 | i01 编排者 | `audits/lmeval.md`：五任务的失真条件/方向/幅度 + 负控两侧；审计脚本 `exit=0`，18 条预期成立；一项需 GPU 的负控（echo shim `--selftest`）显式记未测 | WP1 | ≤60 CPU 分钟 | **完成**（缺口：shim selftest 待 GPU） |
 | WP4 BFCL 判分审计 + 负控 | i01 编排者 | `audits/bfcl.md`：单轮 native / 单轮 prompt / 多轮 的判定路径与类别覆盖 + 负控两侧 | WP1 | ≤60 CPU 分钟 | 未开始 |
 | WP5 MultiPL-E 判分审计 + 负控 | i01 编排者 | `audits/multipl-e.md`：围栏剥离、缩进保留、状态直方图、假阳性方向四问裁决 + 负控两侧；`python3 .wrapup/test_mpl_postprocess.py` 仍 5/5 | WP1 | ≤60 CPU 分钟 | 未开始 |
 | WP8 RESULT 与报告一致 | i01 编排者 | `RESULT.md` 新事实逐条带证据与复算命令；若写了库则先编号备份 + 完整性/清洁检查 + 重生成 `report.html` 并给「报告数 = 库数」的核对命令；未改库则明写未改 | WP2–WP7 | ≤30 CPU 分钟 | 未开始 |

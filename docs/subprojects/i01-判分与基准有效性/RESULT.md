@@ -19,6 +19,17 @@
   2. 完成物逐字节：`sha256sum .wrapup/mres/i01-slot-np1-p{1,2}-py-chat.jsonl`（实跑输出：两行同为 `a2f5eb5dac78a1e4a2387a4fdb943c318dcf71d16edfffeaa9626cbc22457779`）。
   3. 重跑整个 arm：`bash .wrapup/gpu_locked.sh bash "docs/subprojects/i01-判分与基准有效性/audits/slot_repro_arm.sh" np1`。
 
+### res26 lm-eval 五个任务各有可测的失真通道（见 audits/lmeval.md）
+
+- **truthfulqa_mc2 的 `acc` 不是命中率**：它是归一化后的真答案概率质量；817 条文档上「各选项等概率」的地板均值 **0.4484**（首条 4 选 1 真 → 0.2500）。所以该列 0.45–0.55 区间的跨模型差不能读成知识差。
+- **gsm8k 入库用 `flexible-extract`，它取完成物里最后一个数字**：答案对但没写 `#### N` → strict 0.0 / flexible 1.0；答案是正确值但末尾另有数字 → strict 1.0 / flexible 0.0。逐例双向偏移，不能用一个常数修正；库里 `gsm8k-strict` 行数为 0，所以真实数据上的变体差未测。
+- **ifeval 的入库指标是 `prompt_level_strict_acc`**：空答案 0/100，通用废话 `"The answer to your question is 42."` 与 300 个重复词各 **9/100**——存在约 9 个百分点的、与模型无关的地板。
+- **mmlu/arc_challenge 的似然打平不报错**：`argmax` 静默取下标 0，实测平局格 `acc=0`；arc 入库的是 `acc_norm`、`acc` 未入库，两者在真实数据上的差未测。
+- **逐题状态不落盘**：`--log_samples` 未开，`.wrapup` 下 0 个 `samples_*.jsonl`；`results.json` 只有聚合，所以「全 timeout 的格」与「真 0 分的格」在产物里只能靠 `lmeval_run.py` 的 `errors/null` 区分。
+- 状态：current。
+- 证据：`audits/lmeval.md`；实跑输出见该文档的复现命令。
+- 复现：`HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 .wrapup/lmenv/bin/python "docs/subprojects/i01-判分与基准有效性/audits/lmeval_audit.py"`（实跑 `exit=0`，18 条预期成立）。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
