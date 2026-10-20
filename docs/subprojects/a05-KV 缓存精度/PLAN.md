@@ -66,9 +66,18 @@
 |---|---|---|---|---|
 | WP4 主网格（**已跑，见 `RESULT.md::kv-long-ctx-needle`**） | 针检索：深度 0.9 × 3 ctx × {f16/f16, q4_0/q4_0} × 20 条 + 1 阳性对照 | 结果：8k 17→13（4 丢 0 得）、16k 20→20、32k 14→15（0 丢 1 得），对照 0/20，门 v2 通过 | 实测 7 格 4 分钟 | 已完成 |
 | WP4 首次（**判不可用，仅作诊断**） | 同设计但三深度混在一格：3 ctx × 4 KV × 20 条 + 对照 | 结果：f16 32k 7/20（0.1:2/7、0.5:0/7、0.9:5/6）→ 门 v1 失败；诊断=深度混合把结构性地板算进了比率 | 实测 11 分钟 | 已完成，产物在 `evidence/needle/` |
-| WP4 对照重跑（**卡在这条**） | `needle_grid.py --control-only --depths 0.9 --kvs f16:f16,q4_0:q4_0`（1 格，~40 s GPU + 建 prompt） | 对照必须 0/20，且答案形态落盘；跑完把 `summary.json` 的 `control.status` 从 `void-absent-veto` 改为实测，并让 `kv_evidence.py` 的 H5 转绿 | 1 GPU 分钟 | 锁空闲即可；已两次排队超时（1200 s、480 s），持有者是 a04 的 `evalplus.codegen m164-a04-uni45 mbpp`；`@scheduling.queue_behind`，不抢锁 |
+| **WP4 对照重跑（排队中，唯一未完成项）** | 一条命令、一次、单格：`bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a05-KV 缓存精度/analysis/needle_grid.py" --depths 0.9 --kvs f16:f16,q4_0:q4_0 --outdir "docs/subprojects/a05-KV 缓存精度/evidence/needle-retune" --control-only` | 见下方「对照重跑的三要素与完成判据」 | **≤1 GPU 分钟**（实测：建 20 条 7k prompt ≈ 8 s，起服 + 20 次 32-token 生成 ≈ 20 s，余量给加载抖动） | **触发条件**：`flock -n /tmp/llama_gpu.lock` 能拿到（即 a04 的 m164 释放），且 `nvidia-smi` 的 `memory.free` ≥ 需求——按实测算：Qwen3.5-2B Q3 文件 ≈1.2 GB + `-c 8192` 的 KV（24 层、2 个 KV head、f16）+ compute buffer 余量，要求 **≥3 GB 空闲**；两条同时满足才起，不抢锁、不再起带超时的排队（本轮的两次排队 1200 s / 480 s 已过期并被我清掉） |
 | WP4 加档（不属 AC） | 加 40k/64k 档；把每格加到 60 条以压窄可见性下限；q8_0 重跑 | 若 32k 上出现 ≥4/20 的差，则「长上下文不更贵」被否 | 每档 ≤10 分钟 | meta 决定是否值得；当前 9% GPU 额度下优先级低于 `WP5` |
 | WP4 降档复核（只在主网格判「全同」时触发） | `llama-perplexity -c <ctx> -ctk/-ctv` 同一长语料 × 3 ctx × 4 KV | 32k 上 q4_0 的 ΔPPL 超出 f16 的重复测量波动（f16 跑两次定波动） | ≤2 GPU 分钟 | WP4 主网格结论为「逐题全同」 |
+
+### 对照重跑的三要素与完成判据
+
+- **需要什么**：上面那条 `--control-only` 命令跑一次，产出 `evidence/needle-retune/a05-needle-d0.9-ctx8192-kvf16_f16-control-noinstruction.json`（20 条，含深度、针值、完成物、`answer_shape`、`hit`、实际 `prompt_tokens`）。
+- **预计 GPU 分钟**：**≤1 分钟**（见上表；一次建 prompt + 一次起服 + 20 条 32-token 生成）。
+- **触发条件**：能拿到 `/tmp/llama_gpu.lock`（`flock -n` 试一次即可，不排队等待），且空闲显存 ≥3 GB。
+- **新判据（写在这里，跑之前就固定）**：对照 = 保留针、去掉最后那行「只回答数字」的指令；**命中 = 完成物里第一个 5 位数字串等于针值**（与处理组同一条码路，不再有任何 `absent` 一票否决）。于是：模型复述针 → 记命中（对照非 0）；输出占位符 `12345` 或别的 5 位数 → 不命中；没有 5 位数字 → 不命中。期望 **0/20**。
+- **跑完要做的四件事**：(1) `summary.json` 的 `control` 块从 `status=void-absent-veto` 改成实测结果（hits / answer_shapes / mode）；(2) 删掉 `…-control-absent-VOID.json`；(3) `python3 analysis/kv_evidence.py` 让 **H5 转绿**（应 20/20、exit 0）；(4) 把 `RESULT.md::kv-long-ctx-control-pending` 改成实测事实（或并入 `kv-long-ctx-needle` 的对照条），并删掉本节的排队行。
+- **对照若不为 0**：说明模型在**没有指令**的情况下也会复述针，那么处理组的 17/20 与 13/20 就要区分「检索」与「复述」两件事，`kv-long-ctx-needle` 的结论降级为 provisional 并说明降级理由——这条不能靠事后解释绕开。
 
 显存需求按实测算，不用固定阈值：Qwen3.5-2B UD-Q3_K_XL 文件 1.2 GB 量级 + KV 按 `-c 32768` 的 f16 计 + compute buffer 余量；起跑前看 `nvidia-smi` 的 `memory.free`（观测值 10 504 MiB），要求 ≥3 GB，占锁用 `bash .wrapup/gpu_locked.sh`。
 **`n_slots` 断言**：WP4 用 `llama-server -np 1` 起服（针检索需要 `/tokenize` 与逐条超时），所以本包**有** `n_slots` 可断言：起服后必须自报 `n_slots = 1` 且 `n_ctx_slot` 等于该格的 `-c`，不符即作废该次测量。若改用 `llama-perplexity`/`llama-passkey` 这类 CLI 复核，它们没有 slot，断言改成「命令行里 `-c`/`-ctk`/`-ctv` 与格子一致，且加载日志报告的 ctx 与 KV 类型相符」。
@@ -104,5 +113,6 @@
 
 - **40k 以上与「K 还是 V」仍未测（≤32k 的那一档已答）。** 针检索在 8k/16k/32k、深度 0.9、20 条/格上未观察到 q4_0 与 f16 的差异（32k 14 vs 15，0 丢 1 得，可观测下限 4/20），8k 反而有 −4；但 40k/64k 因成本没测（窗口是 262144，不是限制），且可用的一轮只对比了「K、V 同时变」的两个配置，`q8_0/f16` 与 `f16/q8_0` 只在判不可用的第一轮里跑过，所以长上下文里是 K 还是 V 在起作用仍无结论。
 - **m29 进不了库：报告行标签会把 `fa=` 吞掉。** 在库副本上入库 12 个格后，`raw·kv=q8_0/f16` 这一个行标签下同时有 fa=on 与 fa=off 两条协议串：1 个格触发行键冲突提示（q2 cpp 18 vs 17），另 3 个格分数相同因而**静默合并**。两条前置条件（满足其一即可重审）：行标签容纳 `fa=`（`make_report.mpl_protocol_label`），或报告改按完整协议串分行。两者都属消费侧，i02/meta 拥有；在此之前 m29 只以 `kv-short-m29` 与 `kv-two-metrics` 的形式留在 `RESULT.md`。
+- **长上下文那条结论还挂着一个未验证的阳性对照。** `kv-long-ctx-needle` 的 32k「未观察到差异」建立在 `f16 14/20 vs q4_0 15/20` 上，但它的阳性对照仍是 `absent` 一票否决的 void 版本（代码已改成「留针、去指令、可非 0」，尚未重跑，`kv_evidence.py` 的 H5 因此是红的）。在对照跑成之前，这条结论的证据等级是「待验证」，读者不能把它当最终态；重跑条件与完成判据在「GPU 队列」的「对照重跑的三要素与完成判据」。
 - **短上下文的 KV 差在 lm-eval 三列上没有逐题产物，翻转未测。** m130 面板每配置单次运行，gsm8k/ifeval 是 `--limit 50`、mmlu 是 `--limit 8`/科目；只有 HumanEval 有逐题落盘（`eval_results.json`），lm-eval 三列按 `i01::res26` 不落逐题，所以那三列的差只能报计数（最多 4/50），不能报翻转数、也不能报区间。
 - **KV 效应到底靠 K 还是靠 V 分不开。** 现有两个可用证据都不指向同一边：m30 的 16k 格把 K、V 分开看，f16/f16 与 f16/q8_0 同哈希、q8_0/f16 与 q8_0/q8_0 同哈希（像 K 在起作用，但那一轮是填充伪像、不可用）；针检索的可用一轮只跑了 `f16/f16` 与 `q4_0/q4_0`。要分开就得在可用设计下补 `q8_0/f16` 与 `f16/q8_0` 两格（每格 ~1 分钟）。

@@ -132,6 +132,17 @@
 - 证据：`evidence/needle-retune/a05-needle-d0.9-ctx{8192,16384,32768}-kv{f16_f16,q4_0_q4_0}.json`（每条的深度、针值、完成物、是否命中、prompt sha256）与 `evidence/needle-retune/summary.json`；第一次（不可用）的一轮在 `evidence/needle/`。
 - 复现：`timeout 780 bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a05-KV 缓存精度/analysis/needle_grid.py" --depths 0.9 --kvs f16:f16,q4_0:q4_0 --outdir "docs/subprojects/a05-KV 缓存精度/evidence/needle-retune"`；重算命中率、配对丢/得与对照（不需要 GPU）：`python3 "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py"` 的 H 段（读 `evidence/needle-retune/*.json`，缺文件即退出 1）。
 
+### kv-long-ctx-control-pending :: 长上下文结论目前附带一个**未验证的阳性对照**（证据等级：待验证）
+
+- 现状：`kv-long-ctx-needle` 的「32k 上未观察到 q4_0 与 f16 的差异」用的是 `f16 14/20 vs q4_0 15/20`，而它的阳性对照**没能重跑**——旧实现的对照恒为 0（`absent` 一票否决），只能证明 20 条回答都输出了占位符 `12345`。所以这条长上下文结论的证据等级现在写死为**待验证**，不是最终态。
+- 读者据此该怎么读：`kv-long-ctx-needle` 的数字（逐格命中、逐条判定、prompt sha256）都可复算，**唯一缺的是「打分器在这一批 prompt 上能记到一次命中」的直接演示**；打分器两个方向能判这件事由 `kv_evidence.py` 的 **H4** 用四个纯函数例子证明（命中 / 错数 / 无数字 / 占位符都判对），H5 因对照是 void 而**红**。
+- 替代对照的新判据（已写死，跑之前固定）：对照 = **保留针、去掉最后那行「只回答数字」的指令**；**命中 = 完成物里第一个 5 位数字串等于针值**（与处理组同一码路，无任何一票否决）。于是复述针 → 命中（对照可非 0）；占位符 `12345` 或别的 5 位数 → 不命中；没有 5 位数字 → 不命中。期望 0/20。
+- **控制跑成之前这条不能删**：它替代的那句话是「本轮没有有效对照」。跑成后把本条改成实测（hits / 答案形态 / 是否 0/20）或并入 `kv-long-ctx-needle` 的对照条，同时删掉 `PLAN.md` 的排队行并让 H5 转绿。条件与步骤见 `PLAN.md` 的「对照重跑的三要素与完成判据」。
+- 若对照跑出非 0：说明模型在没有指令时也会复述针，处理组的 17/20 与 13/20 就要区分「检索」与「复述」，`kv-long-ctx-needle` 降为 provisional——这条写在前面，避免事后挑解释。
+- 状态：current（在对照跑成之前，它是这条结论的证据等级标记）。
+- 证据：`evidence/needle-retune/a05-needle-d0.9-ctx8192-kvf16_f16-control-absent-VOID.json`；`evidence/needle-retune/summary.json` 的 `control` 块（`status=void-absent-veto`）；`analysis/needle_grid.py` 的对照构造（`instruction-removed`）。
+- 复现：`python3 "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py"`（H4 绿、**H5 红**、整体 exit 1）；对照重跑命令见 `PLAN.md`，本层这一轮不跑。
+
 ### kv-long-ctx-unmeasured :: 长上下文的 KV 效应已由针检索覆盖到 32k（先前「未测」的状态撤销）
 
 - 本条原为「未测」，现由 `kv-long-ctx-needle` 取代：32k 上 q4_0 与 f16 的检索命中不可分辨（14 vs 15，0 丢 1 得），可见性下限约 4/20。
