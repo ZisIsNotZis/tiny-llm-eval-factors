@@ -60,8 +60,24 @@ def main():
             print(f"FAIL: 在线备份行数 {got} != 变更前 {want}")
             ok = False
         con.close()
+
+        # 第二个负控：拿一份真实但不是变更前状态的备份（少一行）喂给门禁，必须被拒绝
+        truncated = tmp / "truncated.sqlite"
+        shutil.copyfile(dst, truncated)
+        con2 = sqlite3.connect(truncated)
+        con2.execute("DELETE FROM experiments WHERE rowid=(SELECT min(rowid) FROM experiments)")
+        con2.commit()
+        con2.close()
+        try:
+            migrate_db.assert_backup_usable(str(truncated), want)
+            print("FAIL: 备份行数与源库不一致时门禁没有拒绝")
+            ok = False
+        except SystemExit as exc:
+            print(f"gate refuses a row-count mismatch      : {exc}")
+
         if ok:
-            print("PASS: 只复制主文件会漏掉 -wal 里已提交的行；在线备份拿到的是变更前状态")
+            print("PASS: 只复制主文件会漏掉 -wal 里已提交的行；在线备份拿到的是变更前状态；"
+                  "备份不完整时门禁拒绝改库")
         return 0 if ok else 1
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

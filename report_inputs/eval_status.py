@@ -54,10 +54,15 @@ def n_for(lang, score, hints=()):
     """
     hits = [r for r in records()
             if r["lang"] == lang and r["n"] and abs(r["pass"] / r["n"] - score) < 1e-9]
+    # facet 只是**更精确**的一层：有些面板（m6b 的 chat 模板探针）的产物名里不写 ctx/tmpl，
+    # 按 facet 过滤会一个不剩。所以先按 facet 取，取不到再用同一分数的不带 facet 候选——
+    # 两种情形都只在「剩下的候选给出同一个 n」时才认。
+    candidates = hits
     if hints:
-        # 每个 facet 是一组可选写法：同一对 KV 在协议串与产物文件名里可能顺序相反
-        hits = [r for r in hits if all(any(h in r["name"] for h in group) for group in hints)]
-    ns = {r["n"] for r in hits}
+        filtered = [r for r in hits if all(any(h in r["name"] for h in group) for group in hints)]
+        if filtered:
+            candidates = filtered
+    ns = {r["n"] for r in candidates}
     return ns.pop() if len(ns) == 1 else None
 
 

@@ -92,7 +92,14 @@ def derive(row, summaries):
         return (n, f"harness 常量且 score==k/{n}") if is_exact_fraction(score, n) \
             else (None, f"score 不是 k/{n}（该行可能被 --limit 截过）")
     if family == "bfcl-multiturn":
-        return None, "多轮类别（multi_turn_*）不在任何 *_summary.jsonl 的 per_category 里"
+        # 多轮没有 per_category，但汇總是扁平记录：{category, accuracy, n}
+        cat = bench[len("bfcl-"):] if bench.startswith("bfcl-") else bench
+        recs = summaries.get(source or "", []) or [r for v in summaries.values() for r in v]
+        for rec in recs:
+            if rec.get("category") == cat and rec.get("n") \
+                    and rec.get("accuracy") is not None and abs(rec["accuracy"] - score) < 1e-9:
+                return int(rec["n"]), f"{source or '任意 summary'}:category={cat}.n"
+        return None, "多轮汇总里没有匹配该类别与分数的记录"
     if family == "bfcl":
         recs = summaries.get(source or "", []) or [
             r for v in summaries.values() for r in v]

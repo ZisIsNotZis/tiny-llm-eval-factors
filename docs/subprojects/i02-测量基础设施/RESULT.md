@@ -29,7 +29,7 @@
 
 - kind: measured
 - status: current
-- evidence: 在 `git clone` 出的空树里 `./reproduce.sh` 退出 0，重建的 `report.html` 与仓库里那份逐字节相同（10281006 字节、86 张图）；本机实测报告构建约 35 s；全流程三次实测 41.1 / 49.9 / 60.2 s（差异来自 matplotlib 字体缓存与机器负载），12 核 CPU、无 GPU。唯一的 BLOCKED 行是 `docs@1` 标准不在本机（见 res32）。
+- evidence: 在 `git clone` 出的空树里 `./reproduce.sh` 退出 0，重建的 `report.html` 与仓库里那份逐字节相同（10274885 字节、86 张图）；本机实测报告构建约 35 s；全流程三次实测 41.1 / 49.9 / 60.2 s（差异来自 matplotlib 字体缓存与机器负载），12 核 CPU、无 GPU。唯一的 BLOCKED 行是 `docs@1` 标准不在本机（见 res32）。
 - producer: `git clone <repo> x && cd x && ./reproduce.sh`
 
 ## res25 :: 报告除数据库外的输入是有限的、都随仓库分发；缺任何一个都让构建失败或让检查变红，不会渲染出 0。
@@ -124,12 +124,12 @@
 - evidence: `migrate_db.py::numbered_backup()` 用 `Connection.backup()` 把已提交内容整体写进 `experiments.sqlite.bakN`，随后打开备份核对 `integrity_check` 与行数，并打印备份时的行数与 sha256；行数与主库不一致就不往下改库。负控在库副本上制造「已提交行只存在于 -wal」的状态：`shutil.copy2` 主文件得到 3233 行（少一条），在线备份得到 3234 行 = 变更前状态。
 - producer: `python3 checks/backup_wal_negative_control.py`
 
-## res38 :: `n_items` 从产物回填：已评分行的 NULL 从 2297 降到 35，剩下降级为显式原因，没有任何默认值。
+## res38 :: `n_items` 从产物回填：已评分行的 NULL 从 2297 降到 30，剩余的每一条都有显式原因，没有任何默认值。
 
 - kind: measured
 - status: current
-- evidence: `migrations/backfill_n_items.py` 逐族回填并有可证伪判据——`humaneval`/`mbpp` 只在分数恰好等于 `k/164`、`k/378` 时认（1141/1142、756/757 满足，各 1 行不满足则留空）；`humaneval-multipl-e` 用 `eval_status.n_for` 配产物（242/244，2 行产物无法唯一配对）；`bfcl` 用 run 汇总的 `per_category[类别].n`（99 全中）；`testfrac` 用 `m41_summary.jsonl` 的 `mean_frac`（24 全中）。仍为 NULL 的 35 行：`bfcl-multiturn` 24（多轮类别不在任何 summary 的 `per_category` 里）、`fa-probe` 6、空 family 1、两族各 1 行分数不是 k/n、MPL 2 行产物无法唯一配对。逐行溯源在 `audits/n_items_backfill.tsv`；连跑两次第二次改动 0 行；前后各一次在线备份（`bak5`/`bak6`），`checks/db_check.py` 绿。
-- producer: `python3 migrations/backfill_n_items.py --dry-run`；`sqlite3 experiments.sqlite "select bench_family,count(*) from experiments where _score is not null and n_items is null group by 1"`
+- evidence: `migrations/backfill_n_items.py` 逐族回填且有可证伪判据——`humaneval`/`mbpp` 只在分数恰好等于 `k/164`、`k/378` 时认（1141/1142、756/757 满足，各 1 行不满足则留空）；`humaneval-multipl-e` 用 `eval_status.n_for` 配产物（244/244 全中，含 m6b 两格 chat cpp：它们的 `ctx4096` 不出现在任何产物文件名里，故 facet 过滤取不到时退回到「同分数的候选给出同一个 n」）；`bfcl` 用 run 汇总的 `per_category[类别].n`（99 全中）；`bfcl-multiturn` 用多轮汇总的扁平记录 `{category, accuracy, n}`（3/24）；`testfrac` 用 `m41_summary.jsonl` 的 `mean_frac`（24 全中）。仍为 NULL 的 30 行：`bfcl-multiturn` 21（其类别在汇总里没有匹配「类别 + 分数」的记录）、`fa-probe` 6、空 family 1、`humaneval` 1 与 `mbpp` 1（分数不是 k/n，该行被限题跑过）。逐行溯源在 `audits/n_items_backfill.tsv`；连跑两次第二次改动 0 行；每次改库前后各一次在线备份（`bak13`/`bak14`），`checks/db_check.py` 绿；报告里 MultiPL-E 的 188 个格全部印出题量（审计脚本第 7 项「跳过 0 格」）。
+- producer: `python3 migrations/backfill_n_items.py --dry-run`；`sqlite3 experiments.sqlite "select bench_family,count(*) from experiments where _score is not null and n_items is null group by 1"`；`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`
 
 ## res39 :: BFCL 只有类别级题量，micro 不可得——不是用 macro 代替。
 
@@ -144,4 +144,11 @@
 - status: current
 - evidence: 三个点估计（HumanEval+ 0.3720 → 0.2378 等）改成从库查 `cell_point()`，查不到就不印；区间与显著性来自 `a01` 的 `b1-heplus-only` 事实，经 `report_inputs/build_paired_deltas.py` 抽成 `paired_deltas.json`（6 个基准里只有 HumanEval+ 的区间不含 0，其余 5 个跨 0）。报告据此生成文字：被支持的只有 HumanEval+，其余写「区间跨 0、分不出差别、不能说同时下降」；方案差异写成机制假设并给出否证方式。负控把这条事实的区间全部改成跨 0，报告随即改成「区间全部跨 0、不声称任何方向的掉点」。
 - producer: `python3 report_inputs/build_paired_deltas.py --check`；`python3 checks/paired_delta_negative_control.py`
+
+## res41 :: MultiPL-E 逐语言表的行键容纳不下 `top_k` 是一个已记录的限制，不是缺陷——meta 已裁决接受。
+
+- kind: citation
+- status: current
+- evidence: 那张表的行键是「模型 + 显示协议标签」，标签有意省掉不参与区分的附加段；m31 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，于是 3 个格在一个标签下存了两个分数。报告第十三节把两个值并排印出并写明取用规则，**没有数值丢失**；给行键加 `top_k` 维度要改库结构，代价远大于收益，因此 meta 裁决按已记录的限制结项，不改数据模型。审计脚本据此把该项从「OPEN (i02)」视为已记录限制。
+- producer: `python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`（`[10]` 三个 `ONE ROW HIDES OTHERS`）；报告第十三节「行键无法区分的格」
 

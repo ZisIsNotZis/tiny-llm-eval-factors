@@ -1655,12 +1655,13 @@ def ingest_variant(con):
 def numbered_backup(path=DB):
     """变更前先产生下一个编号备份 `experiments.sqlite.bakN`，并断言它真的可用。
 
-    库是 WAL 模式：只 `copy2` 主文件会漏掉还没检查点的那一段（-wal 里约 1.8 MB），备份会
-    回到一个**不是**变更前状态的库。所以用 SQLite 的在线备份 API（`Connection.backup()`）
+    库是 WAL 模式：只 `copy2` 主文件会漏掉还没检查点的那一段（实测一次 24,752 B 的 `-wal`），
+    备份会回到一个**不是**变更前状态的库。所以用 SQLite 的在线备份 API（`Connection.backup()`）
     把已提交内容整体取出来，再打开备份逐项核对：integrity ok、行数与主库一致，并打印
     备份时的行数与 sha256，供事后比对。
 
-    备份是变更的前置条件而不是事后步骤：核不过就不往下走。
+    备份是变更的前置条件而不是事后步骤：`assert_backup_usable()` 在这一层就把关，所以任何
+    调用点（`migrate_db.main()`、`migrations/backfill_n_items.py`）都拿到同一个门禁。
     """
     import hashlib
     n = 1
@@ -1670,11 +1671,22 @@ def numbered_backup(path=DB):
     src = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
     out = sqlite3.connect(dst)
     try:
+        source_rows = src.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
         src.backup(out)                        # 在线备份：把已提交内容整体写进 dst
     finally:
         out.close()
         src.close()
 
+    rows = assert_backup_usable(dst, source_rows)
+    return dst, rows
+
+
+def assert_backup_usable(dst, source_rows):
+    """核对一份备份：能打开、integrity ok、行数与源库当时一致；否则抛错，不再改库。
+
+    单独成函数是为了能被负控直接喂一份「行数不符」的备份来证明它会拒绝。
+    """
+    import hashlib
     probe = sqlite3.connect(f"file:{dst}?mode=ro", uri=True)
     try:
         ic = probe.execute("PRAGMA integrity_check").fetchone()[0]
@@ -1683,10 +1695,14 @@ def numbered_backup(path=DB):
         probe.close()
     with open(dst, "rb") as fh:
         digest = hashlib.sha256(fh.read()).hexdigest()
-    print(f"  backup: {dst} rows={rows} integrity={ic} sha256={digest[:16]}…")
+    print(f"  backup: {dst} rows={rows} integrity={ic} sha256={digest[:16]}… "
+          f"(源库当时 {source_rows} 行)")
     if ic != "ok":
         raise SystemExit(f"备份不可用：{dst} 的 integrity_check 返回 {ic}")
-    return dst, rows
+    if rows != source_rows:
+        raise SystemExit(f"备份不可用：{dst} 有 {rows} 行，而源库当时是 {source_rows} 行；"
+                         f"不在这种状态下改库")
+    return rows
 
 
 def main():
