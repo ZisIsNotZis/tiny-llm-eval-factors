@@ -57,14 +57,26 @@ def revision():
         return "unknown"
 
 
+AUDITED_PATHS = re.compile(r"(^|/)(report\.html|make_report\.py|mktables\.py|migrate_db\.py|"
+                           r"experiments\.sqlite|prompts/|mpl_cell_audit\.py|"
+                           r"docs/subprojects/a12-)")
+
+
 def dirty_files():
-    """Paths modified/untracked in the audited tree: a clean capture has only evidence."""
+    """Paths the audit actually reads that are uncommitted, plus the total dirty count.
+
+    A capture is bound to a revision only if the files it read are that revision, so the
+    ones that matter are named even when the rest of the tree is busy.
+    """
     try:
         out = subprocess.run(["git", "-C", REPO, "status", "--short"], check=True,
                              capture_output=True, text=True).stdout
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
-    return ", ".join(line[3:] for line in out.splitlines() if line.strip()) or "none"
+    paths = [line[3:] for line in out.splitlines() if line.strip()]
+    relevant = [p for p in paths if AUDITED_PATHS.search(p)]
+    return "%d dirty path(s) in the tree; uncommitted among the ones this audit reads: %s" % (
+        len(paths), ", ".join(relevant) or "none")
 
 
 def script_sha256():
