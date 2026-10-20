@@ -81,26 +81,82 @@
 - repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/profiles.py" --family LFM2.5-8B-A1B`（`Δbpw`）与 `--scores LFM2.5-8B-A1B`（分数）；斜率本身用 `python3 "docs/subprojects/a03-量化方案与厂商/analysis/pairs.py" --slopes`
 - 说明：这条是「多给比特反而更低」这个现象的形状化：不是「比特没用」，是**这 1.564 比特被放在了错误的地方**（专家 2.625→4.500，同时非专家被砍 2.5–2.9 比特）。它把问题变成分配问题而不是预算问题，但还不能单独当分配的判定，因为总位宽也一起变了。
 
-## 三、判定（`kind: analysis`，由 `WP3`/`WP5` 写）
+## 三、三个策略与受控对照（`kind: measured`）
 
-### strategy-verdict :: 待 `WP3` 写：三种策略（均匀 / 非专家优先 / 专家优先）在钉住总比特的对照下各自的判定与区间。
+### strategies :: 按 `AGENTS.md` 第 1 条的机械规则（专家桶 vs 层桶 = attn/稠密 FFN/共享专家的参数加权均值，带宽 0.5 比特/参数）把 14 个 MoE 文件分成 3 个策略：**非专家优先 12 个**、**均匀 1 个**（`m55-Q3_K_M`，专家 3.792 vs 层桶 3.977）、**专家优先 1 个**（`m55-exq4`，专家 4.500 vs 层桶 2.952）；`embed` 不参与方向判定（K-quant 模板把它钉在 4.5–8.5，是另一套机制），但一并打印。
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- evidence: `alloc_map.json` 逐类 `bits` 与 `params`；分类规则在 `AGENTS.md`
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py"`
+- 说明：12/1/1 这个分布本身就是结果——本库的每条「非专家优先」配方（unsloth UD-XL 系列、本仓 exq2、GLM/gemma 的 UD 档）都把注意力/稠密层抬到远高于专家层，而**均匀**与**专家优先**各只有一个文件，所以后两者在语料里几乎没有对照可用。
 
-- author: agent
+### pinned-null :: 总比特钉住的 MoE 对照只有 2 对，两对的分配距离都是 `L1_pw = 0.381` 比特/参数；两对合计 **16 个有区间的格，区间不含 0 的 0 个**，最大半宽 0.135（≤0.05 档：1 对、8 格、0 个不含 0、最大半宽 0.134）。也就是说：把 0.381 比特/参数从专家层挪到非专家层（或反向），在本设计下六基准上**全部不可分辨**。
+- author: measurement
 - from: result.pivots
 - scope: general
-- status: provisional
-- kind: analysis
-- evidence: `WP3` 未完成，本条是占位还是事实以 `PLAN.md` 的工作包状态为准——**本条不是结论**，`run_all.py` 不把它当断言。
-- repro: 无
+- status: current
+- kind: measured
+- evidence: `alloc_pairs.py --summary` 的逐档统计；逐格差值与区间用 `--pinned`；区间是两比例差的 Newcombe method 10，`n` 取该格 `n_items`，TruthfulQA 不套区间
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --summary`
+- 说明：这两对的 `|Δbpw|` 分别只值 HumanEval+ 0.0044 与 0.0177，所以「预算部分」也解释不了任何观测差；观测差最大的是 LFM 那对的 IFEval +0.100 [−0.038,+0.233]（100 题，跨 0）。
+- 会推翻它：同两对文件同配置重跑出现某一列区间不含 0 且方向稳定的差（复现负控未测，见 `unmeasured-items`）。
 
-### tier1a-verdict :: 待 `WP5` 写：`plan6` 的 Tier-1A（专家级/逐张量 MoE 量化，F16 源 ~70 GB）判定与资源结论。
+### expert-bound :: 钉住总比特时专家桶能挪多少有一个由架构决定的上界 `(1−s_exp)/s_exp × 层桶跨度`：LFM2.5-8B-A1B（专家占 91.54%，层桶占 1.78%，语料内层桶跨度 5.55）→ **上界 0.513 比特/参数**，而该族专家桶实际跨度是 1.897；GLM-4.7-Flash（92.79%/5.08%/0.32）→ 上界 0.025、实际 1.552；Qwen3.6-35B-A3B（92.99%/3.33%/2.91）→ 上界 0.219、实际 0.930；gemma-4-26B-A4B（90.51%/6.52%/2.44）→ 上界 0.256、实际 0.554。
+- author: measurement
+- from: result.strategies
+- scope: general
+- status: current
+- kind: measured
+- evidence: `alloc_map.json` 的桶参数占比与比特数；推导是恒等式（钉住：`Σ_c Δb_c p_c = 0`），不是拟合
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --bounds`
+- 说明：这是本轴最重要的一条结构事实——**在 90%–93% 参数都是专家的架构上，「固定总比特、只改专家层比特」几乎不存在可行域**：专家桶最多挪 0.03–0.51 比特，而语料里实际看到的 0.55–1.90 比特跨度**全部**超出上界，所以它们必然同时改了总比特。`exq2`（2.918）与 `exq4`（4.483）专家桶差 1.875 > 上界 0.513，就是这件事的具体例证。
 
+### inversion-contrast :: 语料里唯一一对「均匀 → 专家优先」是 `m55-Q3_K_M`（3.881，专家 3.792 / 层桶 3.977）对 `m55-exq4`（4.483，专家 4.500 / 层桶 2.952）：`Δbpw = +0.601`、`L1_pw = 0.696`，8 个有区间的格里 **6 个区间不含 0 且全为负**（HumanEval+ −0.201、MBPP+ −0.243、MMLU −0.160、GSM8K −0.220、IFEval −0.180、HumanEval −0.213、MBPP −0.270），而比特尺子对 `Δbpw = +0.601` 的预测是 **+0.107**（HumanEval+）——符号相反，残差 −0.31，远大于任何半宽。
+- author: measurement
+- from: result.strategies, result.budget-ruler
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `alloc_pairs.py --pairs --family LFM2.5-8B`；斜率来自 `a03::slopes`
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --pairs --family LFM2.5-8B`
+- 说明：这一对**不是**受控分配对照（`L1_pw = 0.696` 远超 `|Δbpw| = 0.601`，且总位宽也变了），所以它只能支持「往专家优先方向走 0.6 比特、同时把层桶砍 1 比特，分数会掉 0.16–0.27」这个**打包**结论；要把「掉分」归给分配本身，必须在总比特钉住下重做（`PLAN.md` 的 `WP4`）。
+
+### inseparability :: 第三对（≤0.45 档）`UD-Q2_K_XL`（2.764）对 `exq2`（2.918）的 `L1_pw = 0.157` 与 `|Δbpw| = 0.154` **同量级**，因此这一对分不开「总比特」与「分配」：它的 7 个有区间的格里有 3 个不含 0（MBPP −0.103、MBPP+ −0.077、MMLU +0.114），方向还不一致（代码降、知识升）。
+- author: measurement
+- from: result.pivots
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `alloc_pairs.py --pairs --family LFM2.5-8B`
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --pairs --family LFM2.5-8B`
+- 说明：这一条是「本语料不能把所有配对都判成分配对照」的机械反例：`L1_pw ≈ |Δbpw|` 的对必须排除在分配判定之外（`AGENTS.md` 第 2 条）。
+
+## 四、判定（`kind: analysis`）
+
+### strategy-verdict :: 三个策略各自能说到哪一步：**均匀 vs 非专家优先**在钉住档内有 2 对对照（`L1_pw` 均 0.381）→ 结论是**不可分辨**（16/16 格跨 0，最大半宽 0.135）；**均匀 vs 专家优先**在语料里只有一对非钉住的对照（`L1_pw` 0.696、`Δbpw` +0.601）→ 只能给出打包结论「掉 0.16–0.27」；**专家优先的钉住对照语料里不存在**，而 `expert-bound` 说明它在本架构上最多只能挪 0.5 比特，所以「专家层该压多低」的钉住版本必须现造一臂（`WP4`）。
 - author: agent
+- from: result.pinned-null, result.inversion-contrast, result.expert-bound
 - scope: general
 - status: provisional
 - kind: analysis
-- evidence: `WP4`/`WP5` 未完成；`plan6` 的原文只说「需要 F16 源（~70 GB）」，那个数**未在本层验证**（`LFM2.5-8B-A1B-BF16.gguf` 实测 16.9 GB，见 `PLAN.md` 的 `WP4`），所以 70 GB 只能当作大模型的量级而不是实测值。
-- repro: `stat -Lc%s /home/z/hf/LFM2.5-8B-A1B-BF16.gguf`
+- evidence: 三条 `kind: measured` 事实的机器读数
+- repro: 见三条各自的复算命令
+- 说明：`provisional` 的理由：第三种策略缺钉住对照，`WP4` 会用一臂把 4.5 比特的**均匀**控制补齐（`llama-quantize --dry-run` 实测 `Q4_K_S + token_embd=Q4_K = 4565.94 MiB` 对 `exq4 = 4517.03 MiB`，Δbpw ≈ 0.049，落在钉住档内），那时本条改为 `current`。
+- 会推翻它：`WP4` 那一臂与 `exq4` 的钉住对照出现某一列区间不含 0 且有方向的差（那说明分配在钉住档内确实可测）。
+
+### tier1a-verdict :: `plan6` 的 Tier-1A（专家级/逐张量 MoE 量化）判定：**有界**——它要买的不是「固定总比特下更好的类别级分配」（`expert-bound` 已证明那一维在本架构上几乎没有可行域），而是**类别桶内部**的结构（哪几层/哪几个专家的比特不同），这一维在本语料里**完全没有对照**（14 个 MoE 文件里没有一个的桶内结构与另一个同总比特文件构成对照），所以它值不值得做在本轮**未测**。资源结论：源必须是 F16/BF16 全权重（`LFM2.5-8B-A1B-BF16.gguf` 实测 16,947,260,768 字节 = 16.95 GB；`plan6` 写的 ~70 GB 是大模型（26B/35B）的量级，本层未验证那两类）；构建成本实测 `llama-quantize` 63.8–145.5 s/份；评估成本实测 27 分钟/份（五基准 11.8–13.4 分钟 + code 11.5–15.2 分钟），所以一臂端到端 ≈2.5 分钟 CPU + 27 分钟 GPU。
+- author: agent
+- from: result.expert-bound, result.pinned-null
+- scope: general
+- status: provisional
+- kind: analysis
+- evidence: 尺寸 `stat -Lc%s`；构建耗时 `.wrapup/m55_prebuild.log`；评估耗时 `.wrapup/m55_std.log` 与 `.wrapup/mres/m92-lfm25-8b-a1b-m55-exq2/.timings`
+- repro: `stat -Lc%s /home/z/hf/LFM2.5-8B-A1B-BF16.gguf`；`grep 'quantize time' .wrapup/m55_prebuild.log`；`cat .wrapup/mres/m92-lfm25-8b-a1b-m55-exq2/.timings`
+- 说明：判定的可证伪形式——若造出两臂「同一类别轮廓、不同的桶内结构、总比特钉住」，且某一列区间不含 0，则「Tier-1A 买不到可测的东西」被推翻。
+- 会推翻它：同上两臂的钉住对照出现显著差。
+
 
 ## 四、未测与限制（不是 0）
 
