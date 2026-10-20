@@ -140,6 +140,18 @@
 - evidence: 六条同配方曲线里 5 条在实测参数量下单调，唯一的两处反向是 Ternary-Bonsai 的 −3.0 pp（区间重叠，属噪声）与 gemma-4 Q2_K_XL 的 −20.1 pp（`gemma4-q2kxl-inversion`）。所以「小模型之间差距更大」这句话在 Q3_K_XL 档成立、在 Q2_K_XL 档不成立，不能作为通例。
 - repro: `python3 -c "import json;d=json.load(open('docs/subprojects/a02-模型规模/analysis/size_ladder.json'));[print(lin,rec,v['rungs'],v['inversions']) for lin in ('Qwen3.5','Ternary-Bonsai') for rec,v in d[lin]['detail'].items()]"`
 
+### report-size-claims-audit :: 报告里拿规模当 X 的说法共六处，逐条判：§2 的 X 定义「模型参数量（单位 B）」不成立（标签是有效参数量/字节数/单位错的混合）；「同一配方下参数量越大分数越高」在 Q3_K_XL 等档成立、在 gemma-4 Q2_K_XL 被 20.1pp 的反例推翻；「小模型之间差距更大」只在 Q3_K_XL 档成立、在 Q2_K_XL 档最大的一步反而是 1.882→4.206；「gemma-4 在 13B 附近回折」不成立，那是 Q2_K_XL 那一格的损伤；「剩下同家族同方案同协议的单调趋势是真实的规模效应」需要先换数源才成立（标签通道不诚实的族里它是比特效应）；「规模影响低比特表现」属 an3，WP4 未做，记未测。
+
+- author: agent
+- scope: specific
+- status: current
+- kind: analysis
+- from: result.size-axis-verdict, result.gemma4-q2kxl-inversion, result.size-curve-shape, result.label-dishonest-cases
+- origin: `report.html` 全文按「参数量 / 规模」正则扫描（`make_report.py:1674-1675` 是 §2 两句的来源）
+- evidence: 逐条判定与它依赖的本层事实：X 定义→`label-dishonest-cases`（不可用，需换数源）；「越大越高」→`size-curve-shape`（有条件）；「小模型差距更大」→`size-curve-shape`（只在 Q3_K_XL 成立）；「13B 回折」→`gemma4-q2kxl-inversion`（撤回）；「真实的规模效应」→`size-axis-verdict`（换数源后才成立）；「低比特触底」→ 未测（`WP4`）。
+- repro: `python3 -c "import re;h=open('report.html',encoding='utf-8').read();t=re.sub(r'<[^>]+>',' ',h);[print(m.group(0).strip()[:150]) for m in re.finditer(r'[^。\n]{0,60}(参数量|规模)[^。\n]{0,100}。',t)]" | sort -u`
+- 给 i02 的建议文本（不由本层改 `make_report.py`）：「X = 实测参数量（GGUF 张量求和）」；把 E2B/E4B 两档的行从 §2 面板剔除或在表头注明其标签是有效参数量；删掉「13B 回折」那句，改为「gemma-4 的 Q2_K_XL 档里 12B 这一格低于同档 4B（54.3% vs 74.4%，n=164），与同模型 Q3_K_XL 档的 93.9% 相差 39.6pp，属该配方格的问题」。
+
 ## plan5：双变量回归的可识别性
 
 ### moe-vif-unresolved :: 既往那份 `log(总参) + log(激活参)` 联合回归（`.wrapup/moe_structure_analysis.py` 及其输出 `.wrapup/moe_structure.json`）给出 VIF=1.93、`total_only` 调整 R²=0.668、`total+active`=0.750、`total+moe`=0.765，但它既不足以证明可识别、也不足以判不可识别：它只覆盖 `multipl-e-raw-greedy-768` 一个协议、把每格题数硬编码为 322、且成文于 `n_items` 回填之前，所以结论仍是未定，由 `WP3` 在 WP2 判定的行集上重算。
