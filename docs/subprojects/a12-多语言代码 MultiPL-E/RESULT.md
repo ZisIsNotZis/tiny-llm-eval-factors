@@ -17,17 +17,20 @@
 - 证据：报告覆盖行自报 cpp 79 / py 66 / js 21 / java 12 / rs 8 / rb 6，合计 192；报告 mtime 晚于数据库 mtime。
 - 复算：审计脚本 `[7]` 段；或 `python3 -c "import re;h=open('report.html',encoding='utf-8').read();i=h.find('<th>模型文件</th><th>生成协议</th>');print(h[i:i+400])"`。
 
-## 覆盖：canonical 协议下的语言矩阵
+## 覆盖：canonical 协议下的语言矩阵与缺口登记
 
-- 结论：`protocol='multipl-e-raw-greedy-768'` 下共 54 个模型；有 cpp+py 对的 51 个，没有对的 3 个（`Qwen3.5-2B-UD-IQ2_XXS`、`gemma-4-12b-it-UD-Q2_K_XL`、`gemma-4-12b-it-UD-Q3_K_XL`）；六种语言全测的 4 个（`Qwen3.5-2B-UD-Q2_K_XL`、`Qwen3.5-2B-UD-Q3_K_XL`、`Qwen3.5-4B-UD-Q2_K_XL`、`Qwen3.5-4B-UD-Q3_K_XL`）。有值格数：cpp 52、py 51、js 21、java 12、rs 8、rb 6。
+- 结论：`protocol='multipl-e-raw-greedy-768'` 下共 54 个模型，324 个 model×language 槽位里 150 个有分数、4 个是 NULL、170 个从未测过。逐语言：cpp 已测 52 / NULL 0 / 未测 2；py 51 / 0 / 3；js 21 / 2 / 31；java 12 / 0 / 42；rs 8 / 0 / 46；rb 6 / 2 / 46。
+- 结论：有 cpp+py 对的 51 个模型；没有对的 3 个是 `Qwen3.5-2B-UD-IQ2_XXS`（只有 cpp）、`gemma-4-12b-it-UD-Q2_K_XL` 与 `gemma-4-12b-it-UD-Q3_K_XL`（raw 协议下只有 java/js/rs/rb，cpp 只在 m6b 的 chat 协议下跑过）。六种语言全测的 4 个是 `Qwen3.5-2B-UD-Q2_K_XL`、`Qwen3.5-2B-UD-Q3_K_XL`、`Qwen3.5-4B-UD-Q2_K_XL`、`Qwen3.5-4B-UD-Q3_K_XL`。
+- 未测的理由（170 个空格）：都是「该模型所在的那些面板没有跑这个语言」，没有产物也没有失败记录，按规则记为显式未测而不是 0；其中 java/rs/rb 的 134 个空格全部落在这个类里，因为绝大多数面板只跑 cpp+py 两种语言，语言扩展面板只有 m1/m2/m3/m5/m6/m10（cpp/py/js/java）与 m38/m42/m51/m54/m56/m57/m60（成对的语言）。
+- 结论：4 个 NULL 空格不是未测而是被测过且整格全 `Exception`（见「4 个 NULL 格」）。
 - 证据：语言集因模型而异的旧列不可比，是 i01 的判分审计节点登记的事实（i01 的 `res16`，其 home 随 i01 迁移到它自己的结果文档）；本节点只提供当前矩阵，不重复那条结论。
-- 复算：审计脚本 `[2]` 段打印完整的 54 行矩阵（空格 = 未测，`NULL` = 整格全 Exception 记为缺失，数字 = 通过率）。
+- 复算：审计脚本 `[2]` 段打印逐语言的 scored/NULL/absent 三元组与完整的 54 行矩阵（空格 = 未测，`NULL` = 整格全 Exception 记为缺失，数字 = 通过率）。
 
-## 覆盖：chat 协议只覆盖 cpp 与 py
+## 覆盖：chat 协议只覆盖 cpp 与 py，24 个槽位显式未测
 
-- 结论：chat 生成协议下只有 12 个格，覆盖 6 个模型 × cpp/py 两种语言；js / java / rs / rb 在 chat 协议下从未测过（24 个空格的显式未测，理由见 `PLAN.md` 非目标）。
+- 结论：chat 生成协议下只有 12 个格，覆盖 6 个模型 × cpp/py 两种语言；这 6 个模型的 36 个 model×language 槽位里，js / java / rs / rb 的 24 个从未测过，理由与 `PLAN.md` 非目标一致：非 cpp/py 语言的判分有效性还没有 i01 的审计，24 格也超出 9% 的 GPU 份额。gemma-4-12b 的 cpp 槽位已在补测计划里（`PLAN.md` 的 `WP5`）。
 - 证据：chat 协议串共两种：`mpl-chat-nothink-greedy-768`（10 格）与 `mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified`（2 格）。
-- 复算：审计脚本 `[3]` 段。
+- 复算：审计脚本 `[3]` 段，含 `unmeasured under chat: 24 of 36` 一行。
 
 ## chat 面板的逐格值（m161）
 
@@ -55,9 +58,9 @@
 
 ## 两语言分歧：cpp+py 的均值会掩盖语言层面的排序
 
-- 结论：51 个同时有 cpp 与 py 的模型里，py−cpp 的差值从 −0.2671（`granite-4.1-3b-Q4_K_M`）到 +0.1863（`Ternary-Bonsai-4B-Q2_0_g64`），中位数 +0.0186；两语言各自给模型排序时，566/1275 对模型的相对次序不一致（44%）。因此把两者加权成一个「多语言代码」格会掩盖语言层面的反转，逐语言结论只能取自逐语言表。
-- 证据：51 对 cpp+py 的差值分布与 566/1275 的排序不一致数都是审计脚本从库直接算出的；报告第十三节的逐语言表把同一模型的 raw/chat 分成两行、六种语言各占一列，行键是 (模型, 协议)，没有跨语言或跨协议的合并，所以逐语言的当前值在报告里本就可读。
-- 复算：审计脚本 `[5]` 段；行键证据 `grep -n "cells.setdefault((model, proto)" make_report.py`（`table_mpl_langs`）。
+- 结论：51 个同时有 cpp 与 py 的模型里，py−cpp 的差值最小 −0.2671、中位数 +0.0186、最大 +0.1863，其中 29 个模型的 |差值|>0.05；两语言对 169/1275 对模型（13.3%）给出严格相反的次序，另有 13 对在至少一种语言上打平。因此把两者加权成一个「多语言代码」格会掩盖语言层面的次序反转，标准列按 meta 的裁决拆成 C++ 与 Python 两列（`PLAN.md`「已裁决」）。
+- 证据：169/1275 是按「两个模型在两语言下的差值符号相反」逐对判定得到的；报告第十三节的逐语言表把同一模型的 raw/chat 分成两行、六种语言各占一列，行键是 (模型, 协议)，没有跨语言或跨协议的合并，所以逐语言的当前值在报告里本就可读。
+- 复算：审计脚本 `[5]` 段；或直接 `python3 -c "import sqlite3,itertools;con=sqlite3.connect('file:experiments.sqlite?mode=ro',uri=True);d={};[d.setdefault(m,{}).__setitem__(l,s) for m,l,s in con.execute(\"SELECT model,language,_score FROM experiments WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768' AND language IN ('cpp','py') AND _score IS NOT NULL\")];b=[(m,v['cpp'],v['py']) for m,v in d.items() if 'cpp' in v and 'py' in v];sg=lambda x:(x>0)-(x<0);print(len(b),sum(1 for (m1,c1,p1),(m2,c2,p2) in itertools.combinations(b,2) if sg(c1-c2)*sg(p1-p2)<0))"`；行键证据 `grep -n "cells.setdefault((model, proto)" make_report.py`（`table_mpl_langs`）。
 
 ## 不混协议：标准列只取 canonical raw-greedy 协议
 

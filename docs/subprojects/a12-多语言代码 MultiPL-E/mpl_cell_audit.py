@@ -25,6 +25,7 @@ from __future__ import annotations
 import collections
 import glob
 import hashlib
+import itertools
 import json
 import os
 import re
@@ -249,9 +250,21 @@ def main() -> int:
             and matrix[(RAW_GREEDY, m)].get("py") is not None]
     print("    models: %d; with all 6 languages: %d; with the cpp+py pair: %d"
           % (len(raw_models), len(full), len(pair)))
-    print("    measured cells per language: " + ", ".join(
-        "%s %d" % (l, sum(1 for m in raw_models if matrix[(RAW_GREEDY, m)].get(l) is not None))
-        for l in LANGS))
+    tally = {l: {"scored": 0, "null": 0, "absent": 0} for l in LANGS}
+    for m in raw_models:
+        for l in LANGS:
+            if l not in matrix[(RAW_GREEDY, m)]:
+                tally[l]["absent"] += 1
+            elif matrix[(RAW_GREEDY, m)][l] is None:
+                tally[l]["null"] += 1
+            else:
+                tally[l]["scored"] += 1
+    print("    per language: " + "; ".join(
+        "%s scored %d / NULL %d / absent %d" % (l, tally[l]["scored"], tally[l]["null"],
+                                               tally[l]["absent"]) for l in LANGS))
+    print("    of %d model x language slots: %d scored, %d NULL, %d absent"
+          % (len(raw_models) * len(LANGS), sum(t["scored"] for t in tally.values()),
+             sum(t["null"] for t in tally.values()), sum(t["absent"] for t in tally.values())))
     for m in raw_models:
         marks = []
         for l in LANGS:
@@ -271,6 +284,13 @@ def main() -> int:
     print("    chat cells: %d over %d models; languages %s"
           % (sum(len(matrix[(p, m)]) for p, m in chat), len({m for _p, m in chat}),
              sorted({l for p, m in chat for l in matrix[(p, m)]})))
+    chat_models = sorted({m for _p, m in chat})
+    chat_absent = sum(1 for m in chat_models for l in LANGS
+                      if not any(l in matrix[(p, m)] for p, _m in chat if _m == m))
+    print("    unmeasured under chat: %d of %d model x language slots (languages %s, %d models)"
+          % (chat_absent, len(chat_models) * len(LANGS),
+             sorted({l for m in chat_models for l in LANGS if l not in {ll for p, mm in chat if mm == m for ll in matrix[(p, mm)]}}),
+             len(chat_models)))
 
     print("\n[4] non-measurements and stored zeros")
     print("    NULL cells (every item raised -> missing, never a 0): %d" % len(nulls))
@@ -296,16 +316,23 @@ def main() -> int:
 
     print("\n[5] is one pooled cpp+py number faithful to both languages?")
     both = [(m, matrix[(RAW_GREEDY, m)]["cpp"], matrix[(RAW_GREEDY, m)]["py"]) for m in pair]
-    deltas = sorted(((py - cpp), m) for m, cpp, py in both)
-    print("    models with cpp+py: %d; py-cpp delta: min %+.4f (%s), max %+.4f (%s), median %+.4f"
-          % (len(both), deltas[0][0], deltas[0][1], deltas[-1][0], deltas[-1][1],
-             deltas[len(deltas) // 2][0]))
-    order_cpp = [m for m, _c, _p in sorted(both, key=lambda t: t[1])]
-    order_py = [m for m, _c, _p in sorted(both, key=lambda t: t[2])]
-    disc = sum(1 for i in range(len(order_cpp)) for j in range(i + 1, len(order_cpp))
-               if (order_cpp[i] < order_cpp[j]) != (order_py[i] < order_py[j]))
-    print("    pairwise orderings the two languages disagree on: %d of %d pairs"
-          % (disc, len(order_cpp) * (len(order_cpp) - 1) // 2))
+    deltas = sorted(py - cpp for _m, cpp, py in both)
+    print("    models with cpp+py: %d; py-cpp delta: min %+.4f, median %+.4f, max %+.4f; "
+          "|delta|>0.05 on %d models" % (len(both), deltas[0], deltas[len(deltas) // 2],
+                                         deltas[-1], sum(1 for d in deltas if abs(d) > 0.05)))
+    def sign(x):
+        return (x > 0) - (x < 0)
+    disc = tie = 0
+    for (m1, c1, p1), (m2, c2, p2) in itertools.combinations(both, 2):
+        a, b = sign(c1 - c2), sign(p1 - p2)
+        if a == 0 or b == 0:
+            tie += 1
+        elif a != b:
+            disc += 1
+    npairs = len(both) * (len(both) - 1) // 2
+    print("    model pairs the two languages order oppositely: %d of %d (%.1f%%); "
+          "%d more pairs tie in at least one language"
+          % (disc, npairs, 100.0 * disc / npairs, tie))
 
     print("\n[6] prompt set pin (.wrapup/prompts/SHA256SUMS)")
     sums = os.path.join(PROMPTS, "SHA256SUMS")
