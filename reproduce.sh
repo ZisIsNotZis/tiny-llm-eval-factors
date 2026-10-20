@@ -158,6 +158,20 @@ else
 fi
 rm -f /tmp/reproduce_rp.$$
 
+if python3 checks/venv_shebang.py >/tmp/reproduce_vs.$$ 2>&1; then
+    record PASS "venv 入口点的 shebang 都指向存在的解释器"
+else
+    record FAIL "$(grep -m2 'FAIL\|  - ' /tmp/reproduce_vs.$$ | tr '\n' ' ')"
+fi
+rm -f /tmp/reproduce_vs.$$
+
+if python3 checks/venv_shebang_negative_control.py >/tmp/reproduce_vsn.$$ 2>&1; then
+    record PASS "venv shebang 检查的负控（假入口点 → FAIL 并点名；env 入口不误报）"
+else
+    record FAIL "venv shebang 检查的负控未通过"
+fi
+rm -f /tmp/reproduce_vsn.$$
+
 if python3 checks/ingest_protocol_negative_control.py >/tmp/reproduce_ip.$$ 2>&1; then
     record PASS "入库协议的负控（只有 fa 不同的两行各成一格、缺协议时明说用了默认值）"
 else

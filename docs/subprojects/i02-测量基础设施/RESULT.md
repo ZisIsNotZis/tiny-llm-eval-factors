@@ -230,3 +230,10 @@
 - evidence: `report_inputs/kv_evidence.json` 的 `long_context` 块由 `report_inputs/build_kv_evidence.py` 读 `a05` 的 `evidence/needle-retune/summary.json` 得出：8k f16 17/20 vs q4_0 13/20（−4）、16k 20/20 vs 20/20（0）、32k 14/20 vs 15/20（+1），阳性对照 0/20，可见性下限约 4/20。报告据此写：32k 上不可分辨、唯一 ≥4 的差出现在**最短**的 8k 上、方向证据不成立；局限写明（q8_0 本轮未重跑、40k 以上未测及代价）。
 - producer: `python3 report_inputs/build_kv_evidence.py --check`；`python3 checks/kv_evidence_negative_control.py`（第三例：把三档 delta 全改成 0 → 正文不再声称 8k 上有 ≥4 的差）
 
+## res52 :: venv 入口点的 shebang 有检查与 bootstrap：指向不存在的解释器一律 FAIL 并点名。
+
+- kind: measured
+- status: current
+- evidence: 新增 `checks/venv_shebang.py`（扫 `.wrapup/*/bin`，shebang 里是绝对路径且文件不存在的入口点 → exit 1 并列出路径与解释器；`#!/usr/bin/env …` 不误报）与 `bootstrap_venv.sh`（`./bootstrap_venv.sh .wrapup/lmenv requirements.txt`，用创建时的解释器重建 venv，随后跑同一检查）；两者都已接进 `reproduce.sh`。负控 `checks/venv_shebang_negative_control.py`：造一个 shebang 指向 `/nonexistent/python3` 的假入口点 → FAIL 且点名该入口点、同时不误报 env 入口；只含 env 入口的目录 → PASS。
+- producer: `python3 checks/venv_shebang.py`；`python3 checks/venv_shebang_negative_control.py`
+

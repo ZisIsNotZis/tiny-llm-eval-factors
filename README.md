@@ -6,6 +6,7 @@ This repository is a reproducible research workbench for measuring local languag
 
 ```bash
 sudo apt-get install -y fonts-noto-cjk       # 图表字体：被复现条件的一部分，见下
+./bootstrap_venv.sh .wrapup/lmenv requirements.txt   # 需要跑 lm-eval 时重建 venv（venv 不入库）
 python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测，含 matplotlib 依赖）
 ./reproduce.sh                               # 核对输入并从库重建报告，约 40 秒
 ```
