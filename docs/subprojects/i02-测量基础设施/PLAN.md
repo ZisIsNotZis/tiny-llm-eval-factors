@@ -107,16 +107,25 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 - budget: 无外部算力，报告重建一次
 - 状态: 完成
 
+### wp13 :: 统一各子项目 Markdown 事实形状
+
+- owner: meta
+- AC: 所有子项目的 `PLAN.md`/`RESULT.md` 用同一种事实形状（当前 i02 的形状是 `## <id> :: <一行事实>` 加 `- key: value` 坐标），使 `make_report.py` 能读全各家的节点，或明确决定报告只读 yaml。
+- 证据: `python3 docs/check_docs.py` 的 `shape not parsed` 一行当前点名 4 个文件（`a12`、`i01` 各两份）。
+- deps: 无（这是 meta 层的格式裁决，i02 只提供解析器与证据）
+- budget: 一轮裁决
+- 状态: 待派
+
 ### wp11 :: 独立复核与落地
 
 - owner: meta→reviewer
 - AC: 一个全新上下文的 reviewer 对 M1 的七条达成条件逐条给出 verdict；本条完成前 M1 不得宣称达成。
-- deps: wp1–wp12
+- deps: wp1–wp13
 - budget: 一轮复核
 - 状态: 待派（阻断项：本子项目运行时没有可用的递归派工工具，无法自行派出 reviewer）
 
 ## 读法：还剩哪些、当前在哪、下一个派给谁
 
-- 还剩：wp11（独立复核）。
-- 当前：wp1–wp10、wp12 已完成，等独立复核。
-- 下一个派给：meta 派 reviewer 复核 wp1–wp10、wp12 与 M1 七条。
+- 还剩：wp13（格式裁决，meta 所有）、wp11（独立复核）。
+- 当前：wp1–wp10、wp12 已完成；等 wp13 的裁决与 wp11 的独立复核。
+- 下一个派给：meta 派 reviewer 复核 wp1–wp10、wp12 与 M1 七条；wp13 由 meta 裁决。

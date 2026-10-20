@@ -16,6 +16,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 sys.path.insert(0, ".wrapup")
+sys.path.insert(0, "report_inputs")
+import eval_status  # noqa
 import mktables  # noqa
 
 CON = sqlite3.connect("file:experiments.sqlite?mode=ro", uri=True)
@@ -57,7 +59,9 @@ CANON = {b: p for b, p in BENCH}
 LBL = {
     "humaneval": "代码 HumanEval", "humaneval_plus": "代码 HumanEval+", "mbpp": "代码 MBPP",
     "mbpp_plus": "代码 MBPP+", "multipl_e": "多语言代码",
-    "multipl_e_cpp": "多语言代码 C++", "multipl_e_py": "多语言代码 Python", "mmlu": "知识 MMLU",
+    "multipl_e_cpp": "多语言代码 C++", "multipl_e_py": "多语言代码 Python",
+    "MultiPL-E C++": "多语言代码 C++", "MultiPL-E Python": "多语言代码 Python",
+    "mmlu": "知识 MMLU",
     "arc_challenge": "科学 ARC-c", "truthfulqa_mc2": "真实 TruthfulQA", "gsm8k": "推理 GSM8K",
     "ifeval": "指令 IFEval",
     # 连字符键（规范协议用的键）
@@ -70,7 +74,6 @@ LBL = {
 }
 
 BPWMAP = json.load(open(".wrapup/bpw_map.json"))
-EVAL_STATUS = "report_inputs/eval_status.json"
 QAT_PAIRS = [
     ("gemma-4-12B-it", "UD-Q4_K_XL", "m140-qat-gemma12b-q4", "m141-native-gemma12b-q4"),
     ("gemma-4-31B-it", "UD-Q4_K_XL", "m142-qat-gemma31b-q4", "m143-native-gemma31b-q4"),
@@ -868,9 +871,11 @@ def render_table(t):
                 tds.append("<td class='nr'>—</td>")
             elif unit == "tok_s":
                 tds.append("<td>%.1f <span class='nr'>(%s)</span></td>" % (c[0], c[1] if c[1] else 0))
+            elif c[1] is None:
+                tds.append("<td title='该格没有可唯一配对的逐题产物'>%.4f "
+                           "<span class='nr'>(题量未知)</span></td>" % c[0])
             else:
-                tds.append("<td>%.4f <span class='nr'>(%s)</span></td>"
-                           % (c[0], c[1] if c[1] is not None else "n?"))
+                tds.append("<td>%.4f <span class='nr'>(%s)</span></td>" % (c[0], c[1]))
         out.append("<tr><td>%s</td><td>%s</td>%s</tr>" % (html.escape(c1), html.escape(c2), "".join(tds)))
     out.append("</table></div>")
     return "\n".join(out)
@@ -918,7 +923,7 @@ def gsq_tables():
              "counts": {k: sum(1 for r in rows if r[2].get(k)) for k in ks}, "data_cols": len(ks)}]
 
 
-MPL_LANGS = ["cpp", "py", "js", "java", "rs", "rb"]
+MPL_LANGS = list(eval_status.LANGS)
 MPL_LANG_LBL = {"cpp": "C++", "py": "Python", "js": "JS", "java": "Java", "rs": "Rust", "rb": "Ruby"}
 BFCL_BENCH = [
     ("bfcl-simple_python", "单轮·简单"), ("bfcl-multiple", "单轮·多函数"),
@@ -954,6 +959,10 @@ def mpl_protocol_label(proto):
     return "·".join([base] + extra)
 
 
+# 同一条协议串下存了两个不同测量值的格（库内无法区分），报告把它列出来。
+ambiguous = []
+
+
 def table_mpl_langs():
     """MultiPL-E per language: one row per (model, display label), columns = languages.
 
@@ -968,18 +977,24 @@ def table_mpl_langs():
     for model, proto, lang, score, n, _tag in rows:
         label = mpl_protocol_label(proto)
         grouped.setdefault((model, label), {}).setdefault(lang, []).append((proto, score, n))
+    ambiguous.clear()
     out = []
     for (model, label), per_lang in sorted(grouped.items()):
         merged = {}
         for lang, vals in per_lang.items():
-            proto, score, n = vals[0]
-            for other_proto, other_score, _n in vals[1:]:
-                if other_score != score:
-                    raise SystemExit(
-                        f"MultiPL-E 行键冲突：{model} 的标签 {label!r} 在语言 {lang} 上，"
-                        f"{proto!r} 得 {score} 而 {other_proto!r} 得 {other_score}；"
-                        f"同标签不同值必须分行并让标签可区分，不能静默取其一。")
-            merged[lang] = (score, n if n is not None else 161)
+            # 重复测量（同格多次入库）是一个数；同一标签下出现两个不同的数，说明协议串把
+            # 一个面板的多个取值（如 m31 的 top_k 扫描，K=1 是贪心地板）折进了同一串，
+            # 库内没有列说明哪一行是哪个取值。此时不能只显示一个数而不说：取测量次数
+            # 较多的那个，并在报告里列出另一个值，缺陷归入库侧（见 result.res32）。
+            counts = collections.Counter(sc for _p, sc, _n in vals)
+            if len(counts) > 1:
+                pick = counts.most_common(1)[0][0]
+                ambiguous.append((model, label, lang, pick, sorted(counts)))
+            else:
+                pick = vals[0][1]
+            n = (vals[0][2] if vals[0][2] is not None
+                 else eval_status.n_for(lang, pick, eval_status.hints_from_label(vals[0][0])))
+            merged[lang] = (pick, n)
         if not merged:
             continue
         out.append((model, label, merged, [model]))
@@ -1011,6 +1026,27 @@ def table_bfcl():
             "rows": [(a, b, c) for a, b, c, _m in out], "row_models": [m for *_, m in out],
             "counts": {k: sum(1 for _a, _b, c, _m in out if c.get(k)) for k in keys},
             "data_cols": len(keys)}
+
+
+def mpl_ambiguous_note():
+    """同一条协议串下存了两个不同测量值的格：逐条列出来，不只在表里显示一个数。
+
+    行键是「模型 + 显示标签」，标签省掉不参与区分的附加段；当这些附加段其实分开了一
+    个面板的多个取值（m31 的 top_k 扫描把 K=1 与 K=200 写进同一条协议串）时，库内没有
+    列能说明哪一行是哪个取值，报告因此不能只显示一个数而不说。
+    """
+    if not ambiguous:
+        return ""
+    items = []
+    for model, label, lang, pick, values in ambiguous:
+        others = "、".join(f"{v:.4f}" for v in values if v != pick)
+        items.append(f"<code>{html.escape(model.replace('.gguf', ''))}</code> 的 "
+                     f"{html.escape(label)} · {MPL_LANG_LBL.get(lang, lang)}：表中取 {pick:.4f}"
+                     f"（测量次数较多），同一条协议串下还存着 {others}")
+    return ("<li><b>行键无法区分的格（数据缺陷，逐条列出而不静默取其一）：</b>"
+            + "；".join(items) + "。这些格来自 m31 的 top_k 扫描：它把 K=1（贪心地板）与 K=200（不截断）"
+            "两种取值写进了同一条协议串，库内没有列说明哪一行属于哪个取值；"
+            "处置归入库侧（<code>docs/result/result.yaml</code> 的协议串记录），报告只如实显示两个值。</li>")
 
 
 def fig_mpl_langs(t):
@@ -1073,13 +1109,38 @@ def fig_bfcl(t):
     return out
 
 
+TESTFRAC_SUMMARY = ".wrapup/m41_summary.jsonl"
+
+
+def _testfrac_n():
+    """每格题量取 m41 部分给分汇总里记的 n（该文件随仓库分发）；取不到就没有题量。
+
+    这张表的分数是「每道题通过的测试比例」的均值，不是 pass/n，所以 pass/n 的配对
+    找不回它的题量，只能读汇总自己记的值；绝不填一个默认题数。
+    """
+    out = {}
+    try:
+        with open(TESTFRAC_SUMMARY, encoding="utf-8") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except Exception:
+                    continue
+                if r.get("lang") and r.get("n") and r.get("mean_frac") is not None:
+                    out[(r["lang"], round(float(r["mean_frac"]), 9))] = int(r["n"])
+    except FileNotFoundError:
+        return {}
+    return out
+
+
 def table_testfrac():
+    tf_n = _testfrac_n()
     cells = {}
     for model, arm, lang, score in CON.execute(
             "SELECT model,_bench,language,_score FROM experiments "
             "WHERE run_tag='m41-testfrac' AND _score IS NOT NULL"):
         a = arm.replace("testfrac-", "")
-        cells.setdefault((model, a), {})[lang] = (score, 161)
+        cells.setdefault((model, a), {})[lang] = (score, tf_n.get((lang, round(score, 9))))
     out = [(m, a, d, [m]) for (m, a), d in sorted(cells.items()) if d]
     keys = MPL_LANGS
     return {"title": "部分给分（每测试通过比例）", "c1_name": "模型文件", "c2_name": "方案类别",
@@ -1249,15 +1310,9 @@ def _eval_status_index():
     文件缺失时构建失败——这份输入不存在不等于 0 份文件。
     DB 行不带 mres 文件名，所以报告用「语言 + 通过数/题数 == _score」把库行与评测文件配对。
     """
-    if not os.path.exists(EVAL_STATUS):
-        raise SystemExit(f"报告输入缺失：{EVAL_STATUS}（由 report_inputs/build_eval_status.py 生成）；"
-                         f"不渲染任何数字，也不把它当成 0。")
     idx = {}
-    for rec in json.load(open(EVAL_STATUS))["files"]:
-        base = re.sub(r"(-chat)?(_fixed)?$", "", rec["file"][:-len("_eval.json")])
-        lang = next((l for l in MPL_LANGS if base.endswith("-" + l) or base.endswith("_" + l)), None)
-        st = collections.Counter(rec["status"])
-        idx.setdefault((lang, int(rec["pass"]), int(rec["n"])), []).append((rec["file"], st))
+    for rec in eval_status.records():
+        idx.setdefault((rec["lang"], rec["pass"], rec["n"]), []).append((rec["file"], rec["status"]))
     return idx
 
 
@@ -1572,6 +1627,7 @@ def main():
          "它的 py 行来自 m161 重测（<code>ctx=2048 --jinja</code>），所以同一个模型的 cpp 与 py 是两套设置，"
          "不能拿来互相解释（<code>docs/result/result.yaml::res22</code>）。</li>"
          "<li><b>看图要点：</b>热力图中一行内的横向差异 = 语言效应；空白（NaN）= 未测，绝不当作 0。</li>"
+         + mpl_ambiguous_note() +
          "</ul>"),
         ("十四、工具调用（BFCL）：协议 × 类别",
          "X = 工具调用协议（提示式 <code>bfcl-prompt</code> vs 原生 <code>bfcl-native-tools</code>，以及多轮官方协议）；"

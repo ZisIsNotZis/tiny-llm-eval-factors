@@ -8,76 +8,90 @@
 
 - kind: citation
 - status: current
-- evidence: 三条 run_tag（m142/m143/m145）在 `experiments` 里 0 行；DiffusionGemma 在本机运行时加载不了该架构，本轴登记为 `GATE-FAIL`。
+- evidence: 三条 run_tag（m142/m143/m145）在 `experiments` 里 0 行；`m144`（同模型 QAT 臂）有 8 行，说明差异在文件而非模型；DiffusionGemma 在本机运行时加载不了该架构，登记为 `GATE-FAIL`。
 - producer: `sqlite3 experiments.sqlite "SELECT count(*) FROM experiments WHERE run_tag IN ('m142-qat-gemma31b-q4','m143-native-gemma31b-q4','m145-native-gemma26b-a4b-q4')"` → `0`
-- 登记册: `non_measurements.tsv` 逐格给出状态、原因与证据；报告把它渲染成独立登记表。
+- 登记册: `non_measurements.tsv` 逐格给出状态、发生了什么、证据与对应事实；报告把它渲染成独立登记表，`checks/report_check.py` 逐条核对在场。
 
-## res15 :: 当前规模：`experiments.sqlite` 3231 行、211 个模型文件名、60 种非空协议；另有 1881 行是 `protocol` 为空的历史行。
+## res15 :: 当前规模：`experiments.sqlite` 3231 行、211 个模型文件名、60 种非空协议；另有 1881 行是 `protocol` 为空的历史行；MultiPL-E 有 192 个「模型 / 协议 / 语言」格。
 
 - kind: citation
 - status: current
-- producer: `sqlite3 experiments.sqlite "SELECT count(*), count(DISTINCT model), count(DISTINCT protocol), sum(protocol IS NULL OR protocol='') FROM experiments"` → `3231|211|60|1881`
+- producer: `sqlite3 experiments.sqlite "SELECT count(*), count(DISTINCT model), count(DISTINCT protocol), sum(protocol IS NULL OR protocol='') FROM experiments"` → `3231|211|60|1881`；192 由 `python3 checks/db_check.py` 打印
 
 ## res23 :: 重复测量行缺陷已修：重复的 bare 副本按测量身份去重，`ingest_mpl` 改为入库前按 `MEASUREMENT_IDENTITY` 预检，重跑插入 0 行。
 
 - kind: measured
 - status: current
-- evidence: 行数 3311→3231；enriched 副本 2172 行前后不变，只存一份的 bare cell 未动；按身份分组的重复组从 80 降到 0；`PRAGMA integrity_check` ok；备份 `experiments.sqlite.bak40`。
-- producer: `python3 migrate_db.py` 连跑两次，第二次打印 `rows 3231 -> 3231` 且 `removed 0 bare duplicate(s)`
+- evidence: 行数 3311→3231；enriched 副本 2172 行前后不变；按身份分组的重复组从 80 降到 0；`PRAGMA integrity_check` ok。
+- producer: `python3 migrate_db.py` 连跑两次：两次都打印 `rows 3231 -> 3231`、`removed 0 bare duplicate(s)`、`integrity: ok | fk issues: 0`
 
 ## res24 :: 干净 clone 一条命令重建 `report.html`，与已提交版本逐字节相同。
 
 - kind: measured
 - status: current
-- evidence: 在 `git clone` 出的空树里执行 `./reproduce.sh` 退出 0；报告 9.2 MB、82 张图；本机实测构建 33 s（12 核）。
-- producer: `./reproduce.sh`（依次核对依赖、提示集哈希、报告输入、`checks/db_check.py`、陈旧根路径、文档检查、构建并 `git diff --exit-code report.html`）
+- evidence: `./reproduce.sh` 退出 0；报告 10277111 字节、sha256 `a6b755ef90a929dd7b4adfbfa57e6339bb60b92f8d7643bc14f78748f56c36c7`、86 张图；本机实测报告构建 34 s、全流程约 50 s（12 核 CPU，无 GPU）。
+- producer: `./reproduce.sh`
 
-## res25 :: 报告除数据库外的输入是有限的、都随仓库分发，缺任何一个都会让构建失败而不是渲染出 0。
+## res25 :: 报告除数据库外的输入是有限的、都随仓库分发；缺任何一个都让构建失败或让检查变红，不会渲染出 0。
 
 - kind: citation
 - status: current
-- evidence: 三个输入：`.wrapup/mktables.py`（建表逻辑）、`.wrapup/bpw_map.json`（有效位宽）、`report_inputs/eval_status.json`（评测状态直方图，由 `report_inputs/build_eval_status.py` 从不可入库的 `.wrapup/mres/*_eval.json` 抽取）。提示集 `.wrapup/prompts/humaneval-{cpp,py,js,java,rb,rs}.jsonl` 与 `SHA256SUMS` 随仓库分发。
-- producer: `grep -n "open(\|import mktables\|mres/" make_report.py`
+- evidence: 四个输入：`.wrapup/mktables.py`（建表逻辑）、`.wrapup/bpw_map.json`（有效位宽）、`report_inputs/eval_status.json`（317 份评测的状态直方图，由 `report_inputs/build_eval_status.py` 从不可入库的 `.wrapup/mres/*_eval.json` 抽取）、`docs/subprojects/i02-测量基础设施/non_measurements.tsv`（非测量登记册）。`report_inputs/eval_status.py` 是它们唯一的读取口。
+- producer: `python3 report_inputs/build_eval_status.py --check`；`./reproduce.sh` 的「报告输入」一行
 
 ## res26 :: 提示集及其 SHA256 可核对：6 份 HumanEval 多语言提示在仓库内，`sha256sum -c` 通过。
 
 - kind: citation
 - status: current
-- producer: `cd .wrapup/prompts && sha256sum -c SHA256SUMS`
 - evidence: `humaneval-py.jsonl` = `ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb`；其余五份见 `SHA256SUMS`。
+- producer: `cd .wrapup/prompts && sha256sum -c SHA256SUMS`
 
-## res27 :: `.wrapup/` 的可执行脚本不再引用已退役的绝对根路径；历史记录类文件（`*.log`/`*.txt`/`*.json`）保持原样，改写它们会伪造运行记录。
-
-- kind: measured
-- status: current
-- evidence: 118 个 `*.sh` 与 11 个 `*.py` 改成脚本自身相对路径（`REPO_ROOT`），每个都过 `bash -n` / `py_compile`；检查脚本把记录类文件列为豁免。
-- producer: `python3 checks/stale_roots.py`
-
-## res28 :: MultiPL-E 两处表格缺陷按行键修复：行键从 `(model, protocol)` 改为「模型 + 全部区分列的取值」，显示标签仍省掉不参与区分的附加段。
+## res27 :: `.wrapup/` 的可执行脚本不再引用已退役的绝对根路径；历史记录类文件保持原样，改写它们会伪造运行记录。
 
 - kind: measured
 - status: current
-- evidence: 修复前同一模型的两个协议串（`multipl-e-raw-t0.3-768` 与 `mpl-raw-t0.3-768;topk-set=…;anchors …`）落到同一标签 `raw·temp=0.3`，Qwen3.5-2B 的三个量化档各出现两行同名同值；合并后这三组各剩一行。同标签而数值不一致的情况在构建时报错，不静默取其一。
-- producer: `python3 checks/report_check.py`
+- evidence: 118 个 `*.sh` 改成 `REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"` 并逐个过 `bash -n`；11 个 `*.py` 改成按 `__file__` 定位并逐个过 `py_compile`。`*.log`/`*.txt`/`*.json`/`*.out`/`*.args` 保留当时的路径，检查里声明为豁免。
+- producer: `python3 checks/stale_roots.py`（`--fix` 是幂等迁移）
 
-## res29 :: 标准基准列不再把 MultiPL-E 的 C++ 与 Python 池化成一个数，而是两列各自成列；单语言只有格的模型，另一列留空。
-
-- kind: measured
-- status: current
-- evidence: 池化会掩盖符号反转（py−cpp 在 51 个双语言模型上从 −0.267 到 +0.186），故列名带语言，缺失格渲染 `-`。
-- producer: `python3 checks/report_check.py`（逐格核对每个 MultiPL-E 列等于其语言子集的聚合）
-
-## res30 :: 数据库变更前的编号备份与变更后的检查都由工具执行，不靠记忆。
+## res28 :: 逐语言表的行键从 `(model, protocol)` 改为「模型 + 显示标签」，同标签同值合并，同标签不同值逐条列出。
 
 - kind: measured
 - status: current
-- evidence: `migrate_db.py` 启动时先复制出下一个未占用的 `experiments.sqlite.bakN`，结束时打印 `integrity` 与 `fk issues`；`checks/db_check.py` 只读地复核完整性、外键、非空/取值域和重复身份组。
-- producer: `python3 migrate_db.py && python3 checks/db_check.py`
+- evidence: 修复前按 `(model, protocol)` 分组得到 83 行，其中 3 组两行同标签；现在 80 行，行标签唯一。3 个格的同一条协议串下存着两个不同分数（m31 的 top_k 扫描把 K=1 与 K=200 写进同一串），报告把两个值都印出来并在该节逐条说明，不静默取其一。
+- producer: `python3 checks/report_check.py`（行标签唯一性 + 多值格的两个值都必须出现）
 
-## res31 :: 文档检查的 schema 标准缺失是外部阻断：`/home/z/vibe/AGENTS.docs.schema.yaml` 不存在，`docs/check_docs.py` 因此不能宣称通过。
+## res29 :: 标准基准列不再把 MultiPL-E 的 C++ 与 Python 池化：基准列 10→11、整表 12→13 列，轴 A/B/C 等 8 张表各多一条 series。
+
+- kind: measured
+- status: current
+- evidence: 池化会掩盖语言层反转：51 个双语言模型上，符号检验有 169/1275 对模型在两语言下给出严格相反的次序，py−cpp 的区间与中位数以 a12 的 `RESULT.md` 现值为准。单语言有格的模型另一列留空并渲染 `-`，不填 0、不用另一语言代替。
+- producer: `python3 checks/report_check.py`（逐格核对每个 MultiPL-E 列等于其语言子集自己的取值）
+
+## res30 :: 印在分数旁边的题量来自该格自己的产物，不来自全局默认题数。
+
+- kind: measured
+- status: current
+- evidence: 通过率列按「通过数 / 题数 == 分数」找候选，再用该格协议串给出的 facet（`ctx=`、`kv=`）在产物文件名里消歧——`pass=0` 时分数本身分不开 60 题探针与 161 题整格，facet 能分开；部分给分列按 `m41_summary.jsonl` 记的 `mean_frac` 配对。实测 rs 格印 155、java 格印 158、m30 的零探针与 0.0167 格都印 60；确实定不下来的格印「题量未知」，不退化成裸分数、也不填默认题数（当前 2 个）。
+- producer: `python3 checks/report_check.py`（416 个格逐格核对）
+
+## res31 :: 数据库变更由工具保证：`migrate_db.py` 启动时先产生下一个编号备份，结束时打印完整性；`checks/db_check.py` 只读复核完整性与清洁度。
+
+- kind: measured
+- status: current
+- evidence: 在库副本上连跑两次，两次都打印 `rows 3231 -> 3231`、`integrity: ok | fk issues: 0`，且两次运行后的数据逐行相同（按 rowid 排序的整表摘要相同）；每次运行前自动生成 `experiments.sqlite.bak1`、`.bak2`。
+- producer: `python3 migrate_db.py`（在库副本目录里跑）；`python3 checks/db_check.py`
+
+## res32 :: 文档检查的 schema 标准缺失是外部阻断：`/home/z/vibe/AGENTS.docs.schema.yaml` 不存在，`docs/check_docs.py` 因此不能宣称通过，但它把不依赖 schema 的集合级不变量真跑并打印。
 
 - kind: citation
 - status: current
-- evidence: 各层 schema 以 `$ref: "docs@1"` 引用该标准；仓库内没有任何副本。集合级不变量（id 唯一、`from` 可解析、`_text` 唯一且非空）不依赖它，仍在跑。
+- evidence: 各层 schema 以 `$ref: "docs@1"` 引用该标准，仓库内没有任何副本。不依赖它的集合级不变量照常跑并打印：id 在文件内唯一、每个 `from` 可解析、`_text` 互不相同且非空。
 - producer: `python3 docs/check_docs.py` → 打印不变量结果并以退出码 2 点名缺失路径
-- 需要谁的授权: 该标准属于 `/home/z/vibe` 的策略层，不在本仓库内；解除需要 meta 决定是补上该文件，还是授权把 `docs@1` 的当前内容落到本仓库并改写 `RESEARCH_DOCS_STANDARD` 默认值。
+- 需要谁的授权: 该标准属于 `/home/z/vibe` 的策略层，不在本仓库内；解除需要 meta 决定是补上该文件，还是授权把 `docs@1` 的当前内容落到本仓库并改写 `RESEARCH_DOCS_STANDARD` 的默认值。
+
+## res33 :: 各子项目的 Markdown 事实形状尚未统一，因此只有 i02 的 `PLAN.md`/`RESULT.md` 的节点会进入报告；另有四个文件（`a12`、`i01` 各两份）不提供可解析的事实。
+
+- kind: citation
+- status: current
+- evidence: `docs/check_docs.py` 的 `shape not parsed` 一行逐文件点名；报告「待分析」一节的节点数因此少于各子项目实际登记的节点数。
+- producer: `python3 docs/check_docs.py`

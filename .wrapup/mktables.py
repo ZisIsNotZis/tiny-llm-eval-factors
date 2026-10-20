@@ -24,7 +24,9 @@ iterations -- treat the following as the contract, not a suggestion:
     rows shown and the number of benchmark columns that carry data, so a thin
     table is obvious at a glance.
  8. Every score cell carries its n_items, e.g. `0.3720 (164)`, so the reader
-    can recompute an item-level SE.  No score is ever printed without its n.
+    can recompute an item-level SE.  The n is that cell's own: for MultiPL-E it
+    comes from the cell's per-item artefact, never from a global default, and a
+    cell whose artefact cannot be paired prints its score with no n at all.
     (In the speculative-decoding tok/s block the parenthesised number is the
     number of measurements behind the mean, not an item count.)
 
@@ -40,6 +42,7 @@ import json
 import os
 import re
 import sqlite3
+import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -87,20 +90,12 @@ M55_RECIPES = [
 con = sqlite3.connect("file:%s?mode=ro" % DB, uri=True)
 
 # ---- per-language MultiPL-E item counts -----------------------------------
-# MultiPL-E rows carry no n_items; the raw *_summary.jsonl files do.  Same
-# derivation as the retired mktables.py (most common n per language).
-_lang_n = collections.defaultdict(list)
-for _f in glob.glob(os.path.join(HERE, "*_summary.jsonl")):
-    for _line in open(_f):
-        try:
-            _r = json.loads(_line)
-        except Exception:
-            continue
-        if _r.get("lang") and _r.get("n"):
-            _lang_n[_r["lang"]].append(_r["n"])
-LANG_N = {k: collections.Counter(v).most_common(1)[0][0] for k, v in _lang_n.items()}
-LANG_N.setdefault("cpp", 161)
-LANG_N.setdefault("py", 161)
+# MultiPL-E rows carry no n_items, but each cell's own per-item artefact does, so
+# the item count comes from report_inputs/eval_status.json via eval_status.n_for().
+# A cell whose artefact cannot be paired prints a score with no n, never a default.
+REPO = os.path.dirname(HERE)
+sys.path.insert(0, os.path.join(REPO, "report_inputs"))
+import eval_status  # noqa: E402
 
 
 # ---- row helpers ----------------------------------------------------------
@@ -122,13 +117,15 @@ def bench_key(bench, family, language=None):
 
 
 # MultiPL-E comparability: C++ and Python are separate columns and are never
-# pooled.  A single mean over the two hides the sign of the language effect --
-# across the 51 models that carry both languages, 566 of 1275 rank pairs disagree
-# in direction and py-cpp runs from -0.267 to +0.186 (median +0.019).  A language
-# a model never ran stays absent (NaN), which the report renders as `-` and never
-# plots; it is never filled from the other language.  Legacy panels ran other
-# languages per model (gemma-4-12b java/js/rb/rs only); those stay in the DB for
-# per-language studies and out of these columns.
+# pooled.  A single mean over the two hides the sign of the language effect: on
+# the 51 models that carry both languages, a sign test finds 169 of 1275 model
+# pairs ordered strictly the other way in the two languages, and py-cpp runs from
+# -0.2671 to +0.1863 (median +0.0186) -- current values and method live in
+# docs/subprojects/a12-多语言代码 MultiPL-E/RESULT.md.  A language a model never
+# ran stays absent (NaN), which the report renders as `-` and never plots; it is
+# never filled from the other language.  Legacy panels ran other languages per
+# model (gemma-4-12b java/js/rb/rs only); those stay in the DB for per-language
+# studies and out of these columns.
 CANON_MPL = ("cpp", "py")
 
 
@@ -138,7 +135,7 @@ def query_cells_by(where, extra="''", params=()):
     A MultiPL-E row lands in the column of its own language (`multipl_e_cpp`,
     `multipl_e_py`); the two are never averaged into one number, so a language a
     model never ran is simply an absent cell.  MultiPL-E rows carry no n_items in
-    the database, so their cell takes the per-language item count from LANG_N.
+    the database, so their cell takes the item count of its own per-item artefact.
     Every other row keeps its own (_score, n_items).
     """
     q = ("SELECT model, %s, _bench, bench_family, _score, n_items, language "
@@ -150,7 +147,9 @@ def query_cells_by(where, extra="''", params=()):
             continue
         k = bench_key(bench, fam, lang)
         if k is not None:
-            cells[(model, tag)][k] = (score, n if n is not None else LANG_N.get(lang, 161))
+            cells[(model, tag)][k] = (
+                score, n if n is not None
+                else eval_status.n_for(lang, score, eval_status.hints_from_label(tag)))
     return cells
 
 
@@ -543,7 +542,7 @@ def axis_spec(o):
         if score is not None:
             k = bench_key(bench, fam, lang)
             if k is not None:
-                sc[key][k] = (score, nit if nit is not None else LANG_N.get(lang, 161))
+                sc[key][k] = (score, nit if nit is not None else eval_status.n_for(lang, score))
 
     tok_cells = {k: {b: (sum(v) / len(v), len(v)) for b, v in per.items()}
                  for k, per in tok.items()}

@@ -12,6 +12,24 @@
    }
   },
   {
+   "file": "i01-slot-np1-p1-py-chat_eval.json",
+   "n": 161,
+   "pass": 145,
+   "status": {
+    "Exception": 16,
+    "OK": 145
+   }
+  },
+  {
+   "file": "i01-slot-np1-p2-py-chat_eval.json",
+   "n": 161,
+   "pass": 145,
+   "status": {
+    "Exception": 16,
+    "OK": 145
+   }
+  },
+  {
    "file": "m1-qwen4b-q2-cpp_eval.json",
    "n": 161,
    "pass": 55,

@@ -1,3 +1,8 @@
-numpy
-scipy
-scikit-learn
+# 报告与检查所需的最小集合（实测于 Python 3.12.3；`./reproduce.sh` 会先核对它们是否可导入）
+numpy==2.5.4
+matplotlib==3.11.2
+PyYAML==6.0.3
+jsonschema==4.26.0
+referencing==0.37.0
+scipy==1.18.1
+scikit-learn==1.9.1
