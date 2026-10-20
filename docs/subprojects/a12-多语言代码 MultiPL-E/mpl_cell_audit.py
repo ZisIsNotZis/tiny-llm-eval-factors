@@ -23,9 +23,10 @@ exact command, so a saved capture is bound to a tree instead of to a claim.
 
 Exit 0 = every scored cell traced, no all-Exception cell carries a score, the prompt
 set matches its pin, every cell the report prints carries its own protocol and item
-count, and no stored protocol lost a setting at ingest.  Exit 1 = at least one of
-those failed (the offending rows are printed).  Exit 2 = the DB is missing.  A NULL
-cell is a declared non-measurement: it is listed, never failed.
+count, and no stored protocol lost or invented a setting at ingest (the one recorded
+annotation exception is printed, never silent).  Exit 1 = at least one of those failed
+(the offending rows are printed).  Exit 2 = the DB is missing.  A NULL cell is a
+declared non-measurement: it is listed, never failed.
 """
 from __future__ import annotations
 
@@ -46,6 +47,9 @@ WRAPUP = os.path.join(REPO, ".wrapup")
 PROMPTS = os.path.join(WRAPUP, "prompts")
 
 LANGS = ["cpp", "py", "js", "java", "rs", "rb"]
+# A findings list is a count plus its rows; the count is the fact, the rows are evidence.
+# 200 keeps ordinary failures whole and a broken report readable.
+MAX_LISTED = 200
 
 
 def revision():
@@ -84,18 +88,33 @@ def script_sha256():
 
 
 def protocol_settings(proto):
-    """(settings, trailing label) of a protocol string.
+    """Normalised protocol string: the settings, with the panel label dropped.
 
     `mpl-raw-greedy-768-third-family-code` names the frozen settings up to the token
-    count and then a panel label; the database keeps the settings and records the
-    panel in `run_tag`.  Two cells may only share a protocol when this settings part
-    is equal, so a mismatch here means a setting was lost or two protocols were
-    relabelled into one.
+    count and then a panel label, which the database records in `run_tag` instead.
+    Everything after the first `;` is a real setting (`ctx=`, `kv=`, `tmpl=`, `fa=`,
+    `prefix=`, `topk-set=`), so the whole string is compared and not just the head: a
+    check that stops at the `;` cannot see the fields it claims to verify.
     """
-    head = (proto or "").strip().split(";")[0]
+    raw = (proto or "").strip()
+    head, _sep, tail = raw.partition(";")
     m = re.match(r"^(.*?-\d+)(-.*)?$", head)
-    settings, label = (m.group(1), m.group(2) or "") if m else (head, "")
-    return settings.replace("mpl-raw-", "multipl-e-raw-", 1), label
+    settings = (m.group(1) if m else head).replace("mpl-raw-", "multipl-e-raw-", 1)
+    return settings + (";" + tail if tail else "")
+
+
+# The one stored protocol that carries settings its panel summary never wrote: the m6b
+# panel's gemma-4-12b Q3 cpp cell is stored as
+# `mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified` (that run's real context and its
+# unchecked template path), while the summary line reproducing the score carries the bare
+# `mpl-chat-nothink-greedy-768`.  The stored string is the correct one -- `.wrapup/m6b.log`
+# has `n_ctx_slot = 4096` and `run_m6b.sh` starts the server without `--jinja` -- so the
+# cell stays and the disagreement is named here instead of being hidden by a looser
+# comparison.  Documented in RESULT.md under "不混协议".
+PROTOCOL_NOTE_EXCEPTIONS = {
+    ("gemma-4-12b-it-UD-Q3_K_XL.gguf", "cpp",
+     "mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified"): "m6b run config, summary wrote no ctx/tmpl",
+}
 RAW_GREEDY = "multipl-e-raw-greedy-768"
 
 
@@ -273,13 +292,17 @@ def report_mpl_cells(path):
 
 
 def main() -> int:
+    global DB
     report_path = os.path.join(REPO, "report.html")
     if "--report" in sys.argv:
         report_path = os.path.abspath(sys.argv[sys.argv.index("--report") + 1])
+    if "--db" in sys.argv:
+        DB = os.path.abspath(sys.argv[sys.argv.index("--db") + 1])
     print("a12 MultiPL-E cell audit")
     print("  audited revision : %s" % revision())
     print("  script sha256    : %s" % script_sha256())
     print("  command          : %s %s" % (os.path.basename(sys.executable), " ".join(sys.argv)))
+    print("  database         : %s" % DB)
     print("  report           : %s" % report_path)
     print("  dirty paths      : %s" % dirty_files())
     if not os.path.exists(DB):
@@ -456,7 +479,10 @@ def main() -> int:
         for c in scored:
             by_model_lang[(c["model"], c["lang"])].append(
                 (make_report.mpl_protocol_label(c["protocol"]), round(c["score"], 4), c["n"]))
+        skipped_no_n = 0
         for model, label, lang, score, n in shown:
+            if n is None:
+                skipped_no_n += 1
             alts = [a for a in by_model_lang[(model, lang)] if a[0] == label]
             if not alts:
                 stale.append((model, label, lang, score, "no stored cell under this row's protocol label"))
@@ -468,8 +494,12 @@ def main() -> int:
                               "printed n=%s, artefact n=%s" % (n, sorted({a[2] for a in alts}))))
         print("    report cells read: %d; not belonging to their protocol row: %d"
               % (len(shown), len(stale)))
-        for row in stale[:20]:
+        print("    item counts compared: %d; cells skipped because the report prints no n: %d"
+              % (len(shown) - skipped_no_n, skipped_no_n))
+        for row in stale[:MAX_LISTED]:
             print("      MISMATCH: %s" % (row,))
+        if len(stale) > MAX_LISTED:
+            print("      … %d more (not listed)" % (len(stale) - MAX_LISTED))
         print("    report mtime %s, DB mtime %s"
               % (int(os.path.getmtime(report_path)), int(os.path.getmtime(DB))))
 
@@ -490,24 +520,35 @@ def main() -> int:
                      "the split is i02's work package (PLAN.md WP7)" if pooled else
                      "no standard table pools cpp+py"))
 
-    print("\n[9] no stored protocol lost a setting at ingest")
-    relabel = []
+    print("\n[9] no stored protocol lost or invented a setting at ingest (full string, `;` fields included)")
+    relabel, noted = [], []
     for c in cells:
         if not c["via_summary"]:
             continue
         lines = summary_lines(c["source_file"]) or {}
         # A panel can hold several lines with the same score under different settings
         # (m27's temperature sweep reproduces the greedy floor), so the stored protocol
-        # is wrong only when none of them carries the stored settings.
+        # is wrong only when none of them carries it.
         cands = [p for sc, _n, p in lines.get(c["lang"], []) if sc == c["score"]]
         if not cands:
             continue
-        have, _t = protocol_settings(c["protocol"])
-        if not any(protocol_settings(p)[0] == have for p in cands):
-            relabel.append((c["model"], c["lang"], cands[0], c["protocol"]))
-    print("    cells whose summary settings differ from the stored protocol: %d" % len(relabel))
-    for row in relabel[:20]:
+        want = protocol_settings(c["protocol"])
+        if any(protocol_settings(p) == want for p in cands):
+            continue
+        if (c["model"], c["lang"], want) in PROTOCOL_NOTE_EXCEPTIONS:
+            noted.append((c["model"], c["lang"], want, PROTOCOL_NOTE_EXCEPTIONS[
+                (c["model"], c["lang"], want)]))
+            continue
+        relabel.append((c["model"], c["lang"], cands[0], want))
+    print("    stored protocols that disagree with every summary line of their score: %d"
+          % len(relabel))
+    for row in relabel[:MAX_LISTED]:
         print("      RELABELLED: summary %r -> stored %r (%s %s)" % (row[2], row[3], row[0], row[1]))
+    if len(relabel) > MAX_LISTED:
+        print("      … %d more (not listed)" % (len(relabel) - MAX_LISTED))
+    print("    recorded exceptions (stored string is the correct one): %d" % len(noted))
+    for row in noted:
+        print("      NOTED: %s %s %r -- %s" % row)
 
     print("\n[10] cells the per-language table cannot hold apart (row key lacks a column)")
     by_key = collections.defaultdict(list)
@@ -517,8 +558,10 @@ def main() -> int:
     same = sum(1 for v in by_key.values() if len(v) > 1) - len(lost)
     print("    (model, protocol, language) keys: %d from %d scored rows; %d keys repeat the "
           "same value (duplicate ingest), %d keys disagree" % (len(by_key), len(scored), same, len(lost)))
-    for k, v in lost.items():
+    for k, v in list(lost.items())[:MAX_LISTED]:
         print("      ONE ROW HIDES OTHERS: %s %s %s -> %s" % (k[0], k[1], k[2], v))
+    if len(lost) > MAX_LISTED:
+        print("      … %d more (not listed)" % (len(lost) - MAX_LISTED))
 
     print("    OPEN (i02): a row key without the varied column hides the other rows; the "
           "sampling axis measures that column, this table cannot" if lost else
@@ -526,9 +569,9 @@ def main() -> int:
 
     ok = not untraced and not bad and not drift and not stale and not relabel
     print("\n%s" % ("PASS: every scored cell traces to a stored artefact, no all-Exception cell "
-                    "carries a score, no stored protocol lost a setting, the prompt set matches "
-                    "its pin, and every cell the report prints belongs to its own protocol row"
-                    if ok else
+                    "carries a score, no stored protocol lost or invented a setting, the prompt "
+                    "set matches its pin, and every cell the report prints belongs to its own "
+                    "protocol row" if ok else
                     "FAIL: see the untraced / all-Exception / relabelled / drift / mismatch rows above"))
     return 0 if ok else 1
 

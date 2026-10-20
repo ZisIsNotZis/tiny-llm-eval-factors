@@ -25,7 +25,7 @@
 ## 报告：报告印出的每个格都属于它自己那一行协议，且是库中已存的格
 
 - 前提：本节的数字来自工作树里的 `report.html`（i02 的未提交改动已重生成它）；捕获 `evidence/audit-7025d71-worktree.txt` 的首部把这三个未提交文件逐个列了出来。对 HEAD 里那份报告跑同一审计的结果见「HEAD 的报告有两处缺陷」。
-- 结论：`report.html` 第十三节（多语言代码）逐语言表现有 80 行（= 模型 × 协议标签）、186 个有值格，全部通过 `[7]` 的行归属检查（值在该行协议标签下存在、题量等于产物题量）；缺的格数为 0。
+- 结论：`report.html` 第十三节（多语言代码）逐语言表现有 80 行（= 模型 × 协议标签）、186 个有值格，全部通过 `[7]` 的行归属检查（值在该行协议标签下存在、题量等于产物题量）；归属不符 0 格；题量比对了 180 格，另外 6 格因为报告不印 n 而跳过——正是 m30 的 60 题探针，它们是 `WP9` 要修的那一类。
 - 结论：库中按 (模型, 协议串, 语言) 有 192 个键、按 (模型, 协议标签, 语言) 有 186 个键，差的 6 个是标签碰撞：m31-topk 的协议串（`mpl-raw-t0.3-768;topk-set=…`）与 m27 的 `multipl-e-raw-t0.3-768` 渲染成同一个标签 `raw·temp=0.3`，于是 3 个模型 × 2 语言各有一行被并掉。其中 3 个键的两条记录值不同（m31 的 `top_k=1` 锚点等于贪心地板值），被并掉的那条值不再出现在报告里，见「表里被并掉的格」。
 - 证据：报告覆盖行自报 cpp 79 / py 66 / js 21 / java 12 / rs 8 / rb 6，合计 186。
 - 复算：审计脚本 `[7]` 与 `[10]` 段。
@@ -72,6 +72,7 @@
 ## 两语言分歧：拆列的依据
 
 - 结论：51 个同时有 cpp 与 py 的模型里，py−cpp 的差值最小 −0.2671、中位数 +0.0186、最大 +0.1863，其中 29 个模型的 |差值|>0.05；两语言对 169/1275 对模型（13.3%）给出严格相反的次序，另有 13 对在至少一种语言上打平。这是 meta 裁决「标准列的 MultiPL-E 格拆成 C++ 与 Python 两列」的依据（`PLAN.md`「已裁决」），i02 已在工作树里落地（尚未提交，见「标准列已不池化」）。
+- 撤回：早先报给 meta 的 566/1275 作废。错因是拿两个已排好序的列表按模型名逐个比对，而不是逐对比较差值符号；同一批数据按严格相反得 169/1275、把打平也算进去得 182、按秩反转得 177，三种口径里没有 566。
 - 证据：169/1275 是按「两个模型在两语言下的差值符号相反」逐对判定得到的；报告第十三节的逐语言表把同一模型的 raw/chat 分成两行、六种语言各占一列，行键是 (模型, 协议)，没有跨语言或跨协议的合并。
 - 复算：审计脚本 `[5]` 段；或直接 `python3 -c "import sqlite3,itertools;con=sqlite3.connect('file:experiments.sqlite?mode=ro',uri=True);d={};[d.setdefault(m,{}).__setitem__(l,s) for m,l,s in con.execute(\"SELECT model,language,_score FROM experiments WHERE bench_family='humaneval-multipl-e' AND protocol='multipl-e-raw-greedy-768' AND language IN ('cpp','py') AND _score IS NOT NULL\")];b=[(m,v['cpp'],v['py']) for m,v in d.items() if 'cpp' in v and 'py' in v];sg=lambda x:(x>0)-(x<0);print(len(b),sum(1 for (m1,c1,p1),(m2,c2,p2) in itertools.combinations(b,2) if sg(c1-c2)*sg(p1-p2)<0))"`；行键证据 `grep -n "cells.setdefault((model, proto)" make_report.py`（`table_mpl_langs`）。
 
@@ -85,15 +86,16 @@
 
 - 结论：对 `git show HEAD:report.html` 跑审计，`[7]` 报 32 个格的题量与产物不符——java 格印 `(161)` 而 java 的满格题数是 158，rs 格印 `(161)` 而 rs 是 155，m30 的六格印 `(161)` 而那批探针只有 60 题。原因是 MPL 行不带 `n_items`，旧报告代码对缺失的题数用了硬编码 161。这 32 格的值本身仍属正确的行，错的是它声称的题量，所以「两个 95% 区间不能按 161 算」这类误读是真实风险。
 - 结论：同一份 HEAD 报告仍是 8 个池化的「多语言代码」单列（见上一条）。
-- 证据：`evidence/audit-7025d71-head-report.txt` 的 `[7]` 段逐格列出 `printed n=161, artefact n=[158]/[155]/[60]`；`[8]` 段报 8 个池化表。
+- 证据：对 HEAD 报告运行时的 `[7]` 段**列出全部 32 行**（脚本上限 200 行，超出才截断并报剩余数），每行都是 `printed n=161, artefact n=[158]/[155]/[60]`；`[8]` 段报 8 个池化表。
 - 复算：`git show HEAD:report.html > /tmp/h.html && python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py" --report /tmp/h.html`（退出 1）。i02 的工作树改动已把题量改成语言自己的满格数、把带 n 的打印只留给有 n 的格，所以工作树捕获为 0 个不符。
 
 ## 不混协议：行的身份由协议串决定
 
 - 结论：报告的标准列取 MultiPL-E 时只读 `protocol='multipl-e-raw-greedy-768'`（`mktables.py::load_standard`），逐语言表的行键是 (模型, 协议标签)，所以采样温度、长上下文 KV、chat 三种设置不会进入同一格；取样轴的 (模型, 温度) / (模型, top_k) / (模型, 协议) 三组键在库中没有任何一个跨两个协议（0 个）。
-- 结论：`[9]` 段进一步核对「summary 里的设置」与「库里的协议串」：244 个格里没有一格在入库时丢掉或换掉设置（0 个）。协议串尾部 `-third-family-code` 这类后缀是面板名而不是设置，面板名记在 `run_tag` 里。
-- 证据：`mktables.py::load_standard` 的 where 子句；`table_mpl_langs` 的行键；三组键的跨协议计数为 0。
-- 复算：`grep -n "bench_family='humaneval-multipl-e'" .wrapup/mktables.py`；审计脚本 `[2]`/`[9]` 段。
+- 结论：`[9]` 段比对 summary 行与库中协议串的**完整**字符串（`;` 后面的 `ctx=`、`kv=`、`tmpl=`、`fa=`、`prefix=`、`topk-set=` 全部参与，头部只在去掉 `-third-family-code` 这类面板名后比较，面板名记在 `run_tag` 里）：244 个格里 0 格无法解释地丢了或换了设置，另有 1 格是登记的例外。
+- 例外：gemma-4-12b Q3 的 chat cpp 格，库里是 `mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified`，而 summary 里同分值（130/161=0.8075）的那一行只写 `mpl-chat-nothink-greedy-768`。库里的串是对的：`.wrapup/m6b.log` 记着 `n_ctx_slot = 4096`，`.wrapup/run_m6b.sh` 启动时没有 `--jinja`，所以 ctx 与「模板未核对」这两段正是那次运行的设置，summary 少写了它们而不是库多写了。因此该格的值与协议串都不改库，例外在脚本的 `PROTOCOL_NOTE_EXCEPTIONS` 里逐键登记、每次运行都打印出来。
+- 证据：`mktables.py::load_standard` 的 where 子句；`table_mpl_langs` 的行键；三组键的跨协议计数为 0；`[9]` 段对含 `;` 的 42 格做全串比对，唯一不一致就是上面的例外。
+- 复算：`grep -n "bench_family='humaneval-multipl-e'" .wrapup/mktables.py`；审计脚本 `[2]`/`[9]` 段；负控的第三种污染往库里加一段 `;ctx=99999`，`[9]` 必须报 `RELABELLED` 并退出 1。
 
 ## 表里被并掉的格：3 个格的值被同一行标签遮住（open，归 i02）
 

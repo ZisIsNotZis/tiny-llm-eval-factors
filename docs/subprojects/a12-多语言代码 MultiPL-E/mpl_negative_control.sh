@@ -73,10 +73,36 @@ CORRUPT_N=$?
 sed -n '/\[7\]/,/\[8\]/p' "$WORK/corrupt_n.txt"
 echo "exit=$CORRUPT_N"
 
+echo "== corrupt case 3: a stored protocol gains a ';' field its summary never had"
+sqlite3 "$REPO/experiments.sqlite" ".backup '$WORK/db.sqlite'"
+python3 - "$WORK/db.sqlite" <<'INJECT'
+import sqlite3
+import sys
+
+con = sqlite3.connect(sys.argv[1])
+cur = con.execute(
+    "UPDATE experiments SET protocol = protocol || ';ctx=99999' "
+    "WHERE model='Bonsai-27B-Q1_0.gguf' AND language='cpp' "
+    "AND protocol='multipl-e-raw-greedy-768'")
+print("  rows changed: %d" % cur.rowcount)
+con.commit()
+con.close()
+INJECT
+python3 "$AUDIT" --db "$WORK/db.sqlite" > "$WORK/corrupt_db.txt" 2>&1
+CORRUPT_DB=$?
+sed -n '/\[9\]/,/\[10\]/p' "$WORK/corrupt_db.txt"
+if grep -q "RELABELLED" "$WORK/corrupt_db.txt"; then
+  echo "  [9] reported the injected field (RELABELLED present)"
+else
+  echo "  [9] did NOT report the injected field"
+  CORRUPT_DB=0
+fi
+echo "exit=$CORRUPT_DB"
+
 echo "== verdict"
-if [ "$CLEAN" -eq 0 ] && [ "$CORRUPT_PROTO" -ne 0 ] && [ "$CORRUPT_N" -ne 0 ]; then
-  echo "PASS: clean report accepted (exit 0); protocol-row corruption rejected (exit $CORRUPT_PROTO); item-count corruption rejected (exit $CORRUPT_N)"
+if [ "$CLEAN" -eq 0 ] && [ "$CORRUPT_PROTO" -ne 0 ] && [ "$CORRUPT_N" -ne 0 ] && [ "$CORRUPT_DB" -ne 0 ]; then
+  echo "PASS: clean run accepted (exit 0); protocol-row corruption rejected (exit $CORRUPT_PROTO); item-count corruption rejected (exit $CORRUPT_N); injected ';' field rejected (exit $CORRUPT_DB)"
   exit 0
 fi
-echo "FAIL: clean exit=$CLEAN, protocol corruption exit=$CORRUPT_PROTO, item-count corruption exit=$CORRUPT_N"
+echo "FAIL: clean exit=$CLEAN, protocol corruption exit=$CORRUPT_PROTO, item-count corruption exit=$CORRUPT_N, db-protocol corruption exit=$CORRUPT_DB"
 exit 1
