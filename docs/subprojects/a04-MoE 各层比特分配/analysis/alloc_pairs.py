@@ -67,6 +67,24 @@ def is_moe(name):
     return EXPERT_BUCKET in ALLOC[name]["classes"]
 
 
+def family_key(name):
+    """同一套 base 权重的机械判据：参数数相同。名字不参与。"""
+    return ALLOC[name]["n_params"]
+
+
+def moe_groups(family=None):
+    """{族名: [文件...]}，按参数数分组；族名取组内 a01 family_of 最短的那个。"""
+    groups = {}
+    for n in ALLOC:
+        if is_moe(n) and (family is None or family in n):
+            groups.setdefault(family_key(n), []).append(n)
+    out = {}
+    for members in groups.values():
+        label = sorted({a01_family(n) for n in members}, key=len)[0]
+        out[label] = members
+    return out
+
+
 def l1_pw(a, b):
     """参数加权 L1 分配距离（比特/参数）。两侧必须同参数数，否则不是同一套 base 权重。"""
     if ALLOC[a]["n_params"] != ALLOC[b]["n_params"]:
@@ -114,10 +132,7 @@ def print_bounds(family=None):
     而 `max|Δb_其余|` 取语料里该族观测到的层桶跨度（保守取最大跨度）。
     专家占比 91.5% 时，这个上界不到 0.3 比特/参数：**专家层拿多少比特几乎就是总比特**。
     """
-    fams = {}
-    for n in ALLOC:
-        if is_moe(n) and (family is None or family in n):
-            fams.setdefault(n.split("-UD-")[0].split("-m55-")[0].split("-a04-")[0].replace("Qwen_", ""), []).append(n)
+    fams = moe_groups(family)
     print("%-18s %8s %8s %9s %11s %12s" %
           ("族", "专家占比", "层桶占比", "层桶跨度", "专家Δ上界", "专家Δ观测"))
     for fam, files in sorted(fams.items()):
@@ -187,10 +202,7 @@ def print_infeasible(family=None):
     这是 `RESULT.md::expert-bound` 的逐对版本：不需要任何新测量，只读两份入库夹具，
     所以干净 clone 里同样成立（不存第二份夹具，避免同一个事实两个家）。
     """
-    fams = {}
-    for n in ALLOC:
-        if is_moe(n) and (family is None or family in n):
-            fams.setdefault(n.split("-UD-")[0].split("-m55-")[0].split("-a04-")[0].replace("Qwen_", ""), []).append(n)
+    fams = moe_groups(family)
     print("%-40s %-40s %7s %7s %9s %8s" %
           ("A", "B", "Δbpw", "L1_pw", "专家Δ", "可钉住"))
     n_inf = n_pin = 0
