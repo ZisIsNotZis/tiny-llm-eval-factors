@@ -14,11 +14,20 @@
 ## 当前状态
 
 - 已完成：`WP1`（三层文档：`plan.yaml`/`result.yaml` 迁入本目录并删除）、`WP2`（`analysis/profiles.py` 与 `analysis/alloc_pairs.py`）、`WP3`（三策略分类 + 钉住对照总账：16 格全跨 0、最大半宽 0.135；架构上界 0.025–0.513 比特/参数）。
-- 在办：`WP4`（钉住档的「均匀 @4.5」控制臂：`llama-quantize --tensor-type 'token_embd=Q4_K' … Q4_K_S`，dry-run 实测 4565.94 MiB 对 `exq4` 的 4517.03 MiB，Δbpw ≈ 0.049）。
+- 在办：`WP4` 的 GPU 部分（已完成：量化与轮廓入库；排队：两个面板 + 入库入库）。
 - 下一个派给谁：**本层编排者自己做 `WP2`**，因为运行时不提供 subagent 接口（见下条）；`WP6` 的独立复核由 **meta 派 fresh-context reviewer**。
 - **递归不可用（运行时不提供 subagent 接口）**：本层编排者只有 shell/读写工具，没有派孙工具，所以分析、脚本与测量由编排者自己执行。这与派工契约里「可派孙」不一致，按 `@fail_loud` 写在这里而不是假装派过。
 - 资源额度（由 meta 分配，本层不自行扩张）：GPU 7%、CPU 5%；GPU 一律 `bash .wrapup/gpu_locked.sh`，起服前看 `nvidia-smi` 的 `memory.free` 并用实测需求判断，起服后断言 server 自报 `n_slots`。
 - 未测（不是 0）：**总比特钉住、且配置为「专家桶 2.6」或「专家桶 4.5」的对照语料里不存在**（`RESULT.md::unmeasured-pivot-extreme`）——语料只有两对 `L1_pw = 0.381` 的钉住对照，两对的专家桶都在 3.5–3.8 这个窄带里，所以「专家层该压多低」要 `WP4` 现建配方才能判；逐题结果不落库，所以区间是非配对的；复现负控（同格重跑）本层未跑。
+
+## GPU 队列（本层唯一的排队项）
+
+| 排队项 | 需要什么 | 当前状态 | 触发条件 | 预计 GPU 分钟 |
+|---|---|---|---|---|
+| `WP4` 三臂面板：`m164-a04-uni45` 的 lm-eval 五基准 + EvalPlus code | 显存：该臂 4.5 GB 权重 + KV（8192 ctx×1 slot），实测峰值看 `nvidia-smi` 的空闲（开跑时 18.3 GB 空闲、另一仓库占 5.2 GB）；持 `/tmp/llama_gpu.lock` | lm-eval 面板**已启动**（PID 在 `.wrapup/m164_lmeval.out`），mmlu / arc 已出，truthfulqa / gsm8k / ifeval 未完；code 面板未开始 | lm-eval 面板退出后（`.wrapup/mres/m164-a04-uni45/lmeval_panel.json` 出现）立即接 `bash .wrapup/codepanel.sh /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf m164-a04-uni45` | lm-eval ≤14 + code ≤16 ≈ ≤30（预估值，均为 `m134` 的实测锚点） |
+| 入库入库 | `migrate_db.py`（唯一入库路径）+ 先做编号备份 | 等两个面板都出完 | `.wrapup/mres/m164-a04-uni45/evalplus.json` 存在且 `code.DONE` 写出 | 0（CPU，≤10 分钟） |
+
+等待期间只做不占 GPU 的活：`--infeasible`（逐对能不能被钉住）、`RESULT.md` 事实、`run_all.py` 断言。
 
 ## 工作包
 
@@ -27,7 +36,7 @@
 | WP1 文档归位 | 本层编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 的 `plan6` 与 `result.yaml` 的 `res8` 已迁入并删除这两个文件；`python3 docs/check_docs.py` 退出 0；按路径点名提交在 main | — | 1 会话 | **完成** |
 | WP2 受控分配对照装置 | 本层编排者 | `analysis/alloc_pairs.py` 一条命令枚举**全部**同参数文件对，逐对打印 Δbpw、参数加权分配距离 `L1_pw`、逐类比特向量差、逐基准差值 + Newcombe 区间 + 该格 `n_items`；按 `|Δbpw| ≤ 0.05 / 0.15 / 0.45` 三档分类；协议串不等即判「不可比」并打印；把「同比特钉住且 `L1_pw` 大」的对单独列出（有/无都要打印计数） | WP1 | ≤40 CPU 分钟 | **完成**（`--pairs/--pinned/--summary/--bounds/--pair`；区间与取格口径直接复用 `a03` 的 `pairs.py`） |
 | WP3 三策略判定 | 本层编排者 | 从实测轮廓按机械规则把文件分成 ≥3 个策略（均匀 / 非专家优先 / 专家优先），每策略给出：(a) 同比特钉住档内的对照，或 (b) 明确写「该策略在语料里没有钉住总比特的对照」并给出缺的臂；每条带区间与半宽；不得跨族池化 | WP2 | ≤40 CPU 分钟 | **完成**（`RESULT.md::strategies`/`pinned-null`/`expert-bound`/`inversion-contrast`/`inseparability`/`strategy-verdict`；专家优先策略缺钉住对照 → 交 `WP4`） |
-| WP4 钉住档的第三臂 | 本层编排者 | 用 `llama-quantize --tensor-type 'token_embd=Q4_K' … Q4_K_S`（dry-run 实测 4565.94 MiB）造一臂**均匀 @≈4.53**，与语料里唯一的**专家优先**文件 `m55-exq4`（4517.03 MiB / 4.483）构成钉住对照（Δbpw ≈ 0.049，落在 ≤0.05 档）；轮廓入库成夹具并过漂移检查；在同协议六基准面板上跑一次（`n_items` 与库内既有格一致）；结论按 `WP2` 同一口径读 | WP3 | 量化 ≤150 s CPU（实测锚点 63.8/106.3/145.5 s，`.wrapup/m55_prebuild.log`）；面板 ≤27 分钟 GPU（实测锚点：五基准 11.8–13.4 分钟 `.wrapup/m55_std.log`，code 11.5–15.2 分钟 `.wrapup/mres/m92-lfm25-8b-a1b-m55-exq2/.timings`） | **在办** |
+| WP4 钉住档的第三臂 | 本层编排者 | 用 `llama-quantize --tensor-type 'token_embd=Q4_K' … Q4_K_S` 造一臂**均匀 @4.53**，与语料里唯一的**专家优先**文件 `m55-exq4`（4.483）构成钉住对照（Δbpw +0.048，落在 ≤0.05 档，`L1_pw` 0.176）；轮廓入库成夹具并过漂移检查；在同协议六基准面板上跑一次（`n_items` 与库内既有格一致） | WP3 | 量化 207 s CPU（已用）；面板 ≤30 分钟 GPU（实测锚点：五基准 11.8–13.4 分钟 `.wrapup/m55_std.log`，code 11.5–15.2 分钟 `.wrapup/mres/m92-…/.timings`） | **在办**：量化与轮廓入库**已完成**（`RESULT.md::own-arm`、`analysis/fixtures/alloc_a04.json`、`--check` 通过）；面板在 GPU 队列里 |
 | WP5 Tier-1A 判定与资源结论 | 本层编排者 | `plan6` 的假设（F16 源 ~70 GB）给出判定（成立 / 否定 / 有界）并写清资源结论：需要什么源（实测尺寸，不引 70 GB 而不验）、多少 CPU/GPU、买到多少分；语料分不开的部分登记未测 | WP3, WP4 | ≤30 CPU 分钟 | 待办 |
 | WP6 独立复核 | fresh-context reviewer（meta 派） | 每条 AC 一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；必须真跑命令 | WP2–WP5 | ≤30 分钟/份 | 待派 |
 | WP7 收口与报告建议 | 本层编排者 | `analysis/run_all.py` 全部预期成立且 `--selftest` 翻红；`RESULT.md` 每个数字有证据 + 复算命令；给 `report.html` 第六节的「专家层该压多低」建议按本层证据给出保留/收窄/撤回与其否证条件；不改 `report.html` | WP2–WP6 | ≤40 CPU 分钟 | 待办 |

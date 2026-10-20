@@ -1,0 +1,54 @@
+{
+ "generated_by": "docs/subprojects/a04-MoE 各层比特分配/analysis/build_fixture.py",
+ "models": {
+  "LFM2.5-8B-A1B-a04-uni45.gguf": {
+   "bpw_data": 4.523203706427521,
+   "bpw_file": 4.530987199383014,
+   "classes": {
+    "attn": {
+     "bits": 4.566666666666666,
+     "bytes": 35913728,
+     "params": 62914560
+    },
+    "embed": {
+     "bits": 4.500214842071546,
+     "bytes": 147464192,
+     "params": 262146048
+    },
+    "ffn-dense": {
+     "bits": 4.833333333333333,
+     "bytes": 53215232,
+     "params": 88080384
+    },
+    "ffn-expert": {
+     "bits": 4.515151515151516,
+     "bytes": 4374659072,
+     "params": 7751073792
+    },
+    "norm": {
+     "bits": 32.0,
+     "bytes": 396288,
+     "params": 99072
+    },
+    "other": {
+     "bits": 4.5101311751231,
+     "bytes": 170314496,
+     "params": 302101184
+    },
+    "router": {
+     "bits": 32.0,
+     "bytes": 5767168,
+     "params": 1441792
+    }
+   },
+   "command": "llama-quantize --tensor-type 'token_embd=Q4_K' /home/z/hf/LFM2.5-8B-A1B-BF16.gguf /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf Q4_K_S",
+   "dry_run_mib": 4565.94,
+   "file": "LFM2.5-8B-A1B-a04-uni45.gguf",
+   "n_bytes": 4795968864,
+   "n_params": 8467856832,
+   "role": "均匀控制臂（pinned 到 m55-exq4 的 4.483）",
+   "source": "/home/z/hf/LFM2.5-8B-A1B-BF16.gguf"
+  }
+ },
+ "note": "轮廓由 a03 的 alloc.profile 从 gguf 头算出；本文件是它的冻结副本。"
+}

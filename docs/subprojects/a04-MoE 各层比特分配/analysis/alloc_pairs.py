@@ -44,6 +44,17 @@ import pairs as a03  # noqa: E402  —— 区间、协议、取格口径由 a03 
 
 ALLOC = json.loads((A03_ANALYSIS / "fixtures" / "alloc_map.json").read_text(encoding="utf-8"))["models"]
 
+# 本层自建的臂（语料里没有的配置）在 `fixtures/alloc_a04.json`，由 `build_fixture.py` 从 gguf
+# 头重建。把它合并进轮廓表，并把它的 bpw 注进 a03 的 BPW_MAP（否则 a03.load 会把未知文件
+# 跳过）：本层不手改 `.wrapup/bpw_map.json` 那份共享数据，自建文件的位宽只从自己的夹具读。
+OWN_FIXTURE = HERE.parent / "fixtures" / "alloc_a04.json"
+if OWN_FIXTURE.exists():
+    _own = json.loads(OWN_FIXTURE.read_text(encoding="utf-8"))["models"]
+    for _name, _row in _own.items():
+        _row["source_path"] = "/home/z/hf/" + _name
+        ALLOC[_name] = _row
+        a03.BPW_MAP[_name] = _row["bpw_file"]
+
 # 方向判定只看「层上真正驻留的桶」：attn / 稠密 FFN / 共享专家。
 # embed 被 K-quant 的模板钉在 4.5–8.5（同一族内 3.438–8.500 都出现过），是另一套机制，
 # 单独打印而不参与方向；norm / router 按 f32 固定；`other` 是混杂桶，同样不参与。
@@ -106,7 +117,7 @@ def print_bounds(family=None):
     fams = {}
     for n in ALLOC:
         if is_moe(n) and (family is None or family in n):
-            fams.setdefault(n.split("-UD-")[0].split("-m55-")[0].replace("Qwen_", ""), []).append(n)
+            fams.setdefault(n.split("-UD-")[0].split("-m55-")[0].split("-a04-")[0].replace("Qwen_", ""), []).append(n)
     print("%-18s %8s %8s %9s %11s %12s" %
           ("族", "专家占比", "层桶占比", "层桶跨度", "专家Δ上界", "专家Δ观测"))
     for fam, files in sorted(fams.items()):
@@ -162,6 +173,47 @@ def print_summary(family=None):
     return 0
 
 
+def expert_span_bound(files):
+    """一族在钉住约束下专家桶能吃到的最大跨度（比特/参数）= (1−s_exp)/s_exp × 层桶跨度。"""
+    ref = ALLOC[files[0]]
+    s_exp = ref["classes"][EXPERT_BUCKET]["params"] / ref["n_params"]
+    layers = [b_layer(n) for n in files]
+    return (1 - s_exp) / s_exp * (max(layers) - min(layers))
+
+
+def print_infeasible(family=None):
+    """逐对判「能不能被钉住」：专家桶跨度超过族上界的配对，不可能靠其余桶反向摆动抵平。
+
+    这是 `RESULT.md::expert-bound` 的逐对版本：不需要任何新测量，只读两份入库夹具，
+    所以干净 clone 里同样成立（不存第二份夹具，避免同一个事实两个家）。
+    """
+    fams = {}
+    for n in ALLOC:
+        if is_moe(n) and (family is None or family in n):
+            fams.setdefault(n.split("-UD-")[0].split("-m55-")[0].split("-a04-")[0].replace("Qwen_", ""), []).append(n)
+    print("%-40s %-40s %7s %7s %9s %8s" %
+          ("A", "B", "Δbpw", "L1_pw", "专家Δ", "可钉住"))
+    n_inf = n_pin = 0
+    for fam, files in sorted(fams.items()):
+        if len(files) < 2:
+            continue
+        bound = expert_span_bound(files)
+        for a, b in itertools.combinations(sorted(files, key=lambda n: ALLOC[n]["bpw_file"]), 2):
+            dbpw = ALLOC[b]["bpw_file"] - ALLOC[a]["bpw_file"]
+            span = abs(b_expert(a) - b_expert(b))
+            ok = span <= bound
+            n_pin += ok
+            n_inf += not ok
+            print("%-40s %-40s %+7.3f %7.3f %9.3f %8s" %
+                  (a.replace("LFM2.5-8B-A1B-", ""), b.replace("LFM2.5-8B-A1B-", ""),
+                   dbpw, l1_pw(a, b), span, "是" if ok else "不可能"))
+        print("    （%s 的专家桶上界 %.3f 比特/参数）" % (fam, bound))
+    print()
+    print("可钉住 %d 对、不可能钉住 %d 对。不可能的那些配对里，专家桶的跨度已经超出"
+          "其余桶反向摆动能在总比特上抵平的幅度，所以它们必然同时改了总比特。" % (n_pin, n_inf))
+    return 0
+
+
 def print_strategies():
     files = [n for n in ALLOC if is_moe(n)]
     files.sort(key=lambda n: (strategy(n), b_expert(n)))
@@ -171,7 +223,7 @@ def print_strategies():
         m = ALLOC[n]
         share = 100.0 * m["classes"][EXPERT_BUCKET]["params"] / m["n_params"]
         print("%-8s %-14s %-40s %6.3f %6.3f %6.3f %7.3f %6.2f%%" %
-              (strategy(n), n.split("-UD-")[0].split("-m55-")[0].replace("Qwen_", ""), n,
+              (strategy(n), n.split("-UD-")[0].split("-m55-")[0].split("-a04-")[0].replace("Qwen_", ""), n,
                m["bpw_file"], b_expert(n), b_layer(n), b_embed(n), share))
     counts = {}
     for n in files:
@@ -244,6 +296,7 @@ def main(argv=None):
     ap.add_argument("--pinned", action="store_true", help="只打印 |Δbpw|≤0.15 且 L1_pw≥0.30 的配对")
     ap.add_argument("--bounds", action="store_true", help="打印钉住总比特时专家桶能挪多少的上界")
     ap.add_argument("--summary", action="store_true", help="钉住 MoE 配对的总账（格数 / 不含 0 数 / 最大半宽）")
+    ap.add_argument("--infeasible", action="store_true", help="逐对判能不能被钉住（只读入库夹具）")
     ap.add_argument("--pair", nargs=2, metavar=("A", "B"), default=None)
     ap.add_argument("--family", default=None)
     args = ap.parse_args(argv)
@@ -258,6 +311,8 @@ def main(argv=None):
     if args.bounds:
         print_bounds(args.family)
         return 0
+    if args.infeasible:
+        return print_infeasible(args.family)
     if args.summary:
         return print_summary(args.family)
     print_strategies()

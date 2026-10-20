@@ -133,6 +133,26 @@
 - repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --pairs --family LFM2.5-8B`
 - 说明：这一条是「本语料不能把所有配对都判成分配对照」的机械反例：`L1_pw ≈ |Δbpw|` 的对必须排除在分配判定之外（`AGENTS.md` 第 2 条）。
 
+### own-arm :: 本层自建的第三臂是 `LFM2.5-8B-A1B-a04-uni45.gguf`：`llama-quantize --tensor-type 'token_embd=Q4_K' <BF16> <out> Q4_K_S`，dry-run 报 4565.94 MiB、实测落盘 4,573,810,000 字节、`quantize time = 206998.52 ms`；轮廓实测 attn 4.567 / embed 4.500 / 稠密 FFN 4.833 / 专家 4.515 / `other` 4.510，有效位宽 4.531，策略判为**均匀**（专家桶 4.515 vs 层桶 4.722，差 0.21 ≤ 0.5）。它与 `m55-exq4`（4.483 / 专家 4.500 / 层桶 2.952）构成 `Δbpw = +0.048`、`L1_pw = 0.176` 的**钉住对照**，而两者专家桶只差 0.015——分配差全在非专家桶上（embed 2.063、`other` 1.873、稠密 FFN 1.937、attn 1.536）。
+- author: measurement
+- from: result.expert-bound
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `analysis/fixtures/alloc_a04.json`（由 `build_fixture.py --write` 从 gguf 头生成，`--check` 漂移检查通过）；构建耗时与 dry-run 尺寸在同一夹具的 `dry_run_mib` / `command` 字段；落盘尺寸 `stat -Lc%s /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf`
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/build_fixture.py" --check`；`python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --infeasible | grep a04-uni45`
+- 说明：分数**未测**——它在 `WP4` 的 GPU 队列里（见 `PLAN.md` 的排队项），没跑之前不写任何分数。
+
+### unpinnable-pairs :: 把「能不能被钉住」逐对算一遍：在 4 个有 ≥2 份文件的 MoE 族里，**可钉住 3 对、不可能钉住 17 对**（20 对总数的 85% 不可能）。不可能的那些正好是分数差最大的那些（`exq2`–`exq4` 专家桶差 1.875 对 0.513 的上界、`GLM` 三档 1.552 对 0.025 的上界）。
+- author: measurement
+- from: result.expert-bound
+- scope: general
+- status: current
+- kind: measured
+- evidence: 只读两份入库夹具（a03 的 `alloc_map.json` 与本层的 `alloc_a04.json`），不读仓库外文件，所以干净 clone 里同样成立
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --infeasible`
+- 说明：这是「现有语料能不能判分配」的机械回答——结论不是「效果不存在」，而是**85% 的同族文件对根本不能被摆到同总比特下**，能摆的只有 3 对，而那 3 对实测全部不可分辨（`pinned-null`）。
+
 ## 四、判定（`kind: analysis`）
 
 ### strategy-verdict :: 三个策略各自能说到哪一步：**均匀 vs 非专家优先**在钉住档内有 2 对对照（`L1_pw` 均 0.381）→ 结论是**不可分辨**（16/16 格跨 0，最大半宽 0.135）；**均匀 vs 专家优先**在语料里只有一对非钉住的对照（`L1_pw` 0.696、`Δbpw` +0.601）→ 只能给出打包结论「掉 0.16–0.27」；**专家优先的钉住对照语料里不存在**，而 `expert-bound` 说明它在本架构上最多只能挪 0.5 比特，所以「专家层该压多低」的钉住版本必须现造一臂（`WP4`）。
