@@ -152,3 +152,10 @@
 - evidence: 那张表的行键是「模型 + 显示协议标签」，标签有意省掉不参与区分的附加段；m31 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，于是 3 个格在一个标签下存了两个分数。报告第十三节把两个值并排印出并写明取用规则，**没有数值丢失**；给行键加 `top_k` 维度要改库结构，代价远大于收益，因此 meta 裁决按已记录的限制结项，不改数据模型。审计脚本据此把该项从「OPEN (i02)」视为已记录限制。
 - producer: `python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`（`[10]` 三个 `ONE ROW HIDES OTHERS`）；报告第十三节「行键无法区分的格」
 
+## res42 :: per-item 评测产物随仓库分发，因此「每个已评分格都能追到落盘产物」这条断言在干净 clone 里可验证。
+
+- kind: measured
+- status: current
+- evidence: 入库 `.wrapup/mres/*_eval.json` 337 个、3,621,143 字节（`.wrapup/mres/` 其余内容——逐题 samples `.jsonl`、探针转储——仍是可重算的分布物，继续忽略）。判据是 `@regeneration_cost`：承载断言且不能重算的产物随仓库走，能重算的分布物不入库。每个 `_eval.json` 自包含（`lang`/`n`/`pass`/`score`/`details[{name,pass,status}]`），不引用任何未入库文件，所以没有遗留的悬空依赖。干净 clone 里 `mpl_cell_audit.py` 从 exit 1 变 exit 0，`reproduce.sh` 的「eval_status.json 与落盘产物一致性」从 SKIP 变 PASS（15 PASS / 0 SKIP / 0 FAIL），报告哈希不变。
+- producer: `git ls-files .wrapup/mres | wc -l`；干净 clone 里 `python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`；`./reproduce.sh`
+

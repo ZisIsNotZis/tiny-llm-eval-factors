@@ -41,7 +41,9 @@ python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测
 - `make_report.py` produces the derived `report.html`; do not edit the generated report by hand.
 - `checks/` holds the infrastructure checks: database integrity and cleanliness, report-versus-artefact
   agreement, and retired absolute paths.
-- `.wrapup/` contains local run outputs, downloaded corpora, and other regenerable or resumable experiment artifacts; its ignore rules keep those out of Git unless a specific durable evidence artifact is intentionally promoted. The prompt set (`.wrapup/prompts/`) and the report's inputs (`report_inputs/`) are deliberately tracked.
+- `.wrapup/` holds run outputs, downloaded corpora and other regenerable experiment artifacts. What ships is decided by one criterion (`@regeneration_cost`): **an artefact ships when it carries an assertion and cannot be recomputed from what ships; it stays out when it is a rebuildable distribution.**
+  - **Ships (evidence):** `.wrapup/prompts/` (the prompt set plus `SHA256SUMS`), `.wrapup/mres/*_eval.json` (the per-item eval artefacts: 337 files, 3.45 MB — they are what makes "no all-Exception cell carries a score" and every printed item count checkable in a fresh clone), the panel scripts and `*_summary.jsonl` they produced, `bpw_map.json`, and everything under `report_inputs/`.
+  - **Does not ship (rebuildable cache):** `.wrapup/mres/*.jsonl` per-item samples, venvs (`lmenv/`, `msenv/`, `evalpy/`, `bfclenv/`, `mplenv/`), `jars/`, run logs, `dl_ready/`, `ppl_corpora/`.
 
 Unknown, blocked, or unmeasured results must remain distinct from zero or a negative result. Consult the owning plan/result entries before interpreting any number, and preserve the recorded workload and protocol alongside comparisons.
 

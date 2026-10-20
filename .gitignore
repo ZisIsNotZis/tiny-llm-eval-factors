@@ -19,8 +19,13 @@ __pycache__/
 experiments.sqlite.bak*
 .pi/
 
-# raw per-panel artifacts (regenerable; keep scripts + *_summary.jsonl only)
+# raw per-panel artifacts: only the per-item eval artefacts ship, because they are
+# the evidence behind "no all-Exception cell carries a score" and the item counts;
+# everything else under mres/ (samples .jsonl, probe dumps) is rebuildable and stays out.
 .wrapup/mres/
+!.wrapup/mres/
+.wrapup/mres/*
+!.wrapup/mres/*_eval.json
 .wrapup/*.log
 .wrapup/jars/
 .wrapup/evalpy/
