@@ -6,19 +6,19 @@
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
-   "text": "独立复核未派：本子项目运行时没有递归派工工具，`wp11` 的 reviewer 要由 meta 派出；在此之前 M1 不得宣称达成。"
+   "text": "独立复核未派：i02 侧没有待做的工作包了，`wp11` 的 reviewer 由 meta 派出（owner: meta）；在它的增量结论回来之前 i02 不再开新工作。"
   },
   {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
-   "text": "`m31` 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，库内没有列区分——报告已把两个值都印出，但处置归入库侧（协议串应带上实际 top_k）。"
+   "text": "`m31` 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，库内没有列区分（owner: 入库侧，非 i02 工作包）——报告已把两个值都印出并写明取用规则。"
   },
   {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
-   "text": "长上下文的 KV 精度结论只覆盖短上下文，长上下文仍属未测；它由 a05 拥有，本子项目只保证「未测 ≠ 0」在报告里可见。"
+   "text": "长上下文的 KV 精度结论只覆盖短上下文（owner: a05，非 i02 工作包）；i02 只保证「未测 ≠ 0」在报告里可见。"
   }
  ],
  "sections": [

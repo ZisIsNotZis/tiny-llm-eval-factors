@@ -6,15 +6,27 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 
 ## 里程碑 M1 :: 研究结束 — 测量基础设施可被外人独立复现与审计
 
-达成条件（全部为真才算达成）：
+达成条件（全部为真才算达成；每条后面的括号是它现在由哪条事实证明）：
 
-1. 干净 clone 后一条命令 `./reproduce.sh` 从库与仓库内输入重建 `report.html`，与已提交的 `report.html` 逐字节相同；
-2. `migrate_db.py` 连跑两次插入 0 行，`PRAGMA integrity_check` ok，`checks/db_check.py` 绿；
-3. 提示集与其 SHA256 可在干净 clone 内一条命令核对；
-4. 非测量（`BLOCKED-on-VRAM` / `GATE-FAIL` / `NOT-RUN`）在报告里与 0 分开可见，且每条有证据；
-5. MultiPL-E 表无同名同值的重复行，行键与显示标签一一对应；
-6. `.wrapup/` 里可执行脚本不再硬编码已退役的绝对根路径；
-7. 文档检查的阻断状态被记录或解除，并点名缺失的确切文件。
+1. ✅ 干净 clone 后一条命令 `./reproduce.sh` 从库与仓库内输入重建 `report.html`，与已提交的 `report.html` 逐字节相同（`RESULT.md::res24`）；
+2. ✅ `migrate_db.py` 连跑两次插入 0 行，`PRAGMA integrity_check` ok，`checks/db_check.py` 绿（`RESULT.md::res31`、`RESULT.md::res23`）；
+3. ✅ 提示集与其 SHA256 可在干净 clone 内一条命令核对（`RESULT.md::res26`）；
+4. ✅ 非测量（`BLOCKED-on-VRAM` / `GATE-FAIL`）在报告里与 0 分开可见，且每条有证据（`RESULT.md::res14`）；
+5. ✅ MultiPL-E 表无同名同值的重复行，行键与显示标签一一对应（`RESULT.md::res28`）；
+6. ✅ `.wrapup/` 里可执行脚本不再硬编码已退役的绝对根路径（`RESULT.md::res27`）；
+7. ✅ 文档检查不再是阻断：`docs@1` 标准有了仓库内的家，`docs/check_docs.py` 以 0 通过并有负控（`RESULT.md::res32`）。
+
+## AC 状态（子项目登记表里那一行，逐条对到事实）
+
+| # | 登记表里的 AC | 状态 | 证明 | 复算命令 |
+|---|---|---|---|---|
+| 1 | 干净 clone 一条命令复现报告与数据 | 完成 | `RESULT.md::res24` | `git clone <repo> x && cd x && ./reproduce.sh` |
+| 2 | DB 幂等，完整性检查绿 | 完成 | `RESULT.md::res31`、`RESULT.md::res23` | `python3 migrate_db.py` 连跑两次；`python3 checks/db_check.py` |
+| 3 | 提示集 / 哈希可查 | 完成 | `RESULT.md::res26` | `cd .wrapup/prompts && sha256sum -c SHA256SUMS` |
+| 4 | 表格行键与陈旧根路径修完 | 完成 | `RESULT.md::res28`（行键）、`RESULT.md::res27`（根路径） | `python3 checks/report_check.py`；`python3 checks/stale_roots.py` |
+| 5 | docs 检查：解决或显式阻塞 | 完成（已解决，不是阻塞） | `RESULT.md::res32` | `python3 docs/check_docs.py`；`python3 checks/docs_schema_negative_control.py` |
+
+另有两项由本子项目负责、也已落地，但不在登记表那一行里：报告的「未测 ≠ 0」与两列不池化（`RESULT.md::res29`、`RESULT.md::res30`）、未解问题派生索引（`RESULT.md::res33`）。
 
 ## 工作包
 
@@ -125,12 +137,13 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 
 ## 未解问题
 
-- 独立复核未派：本子项目运行时没有递归派工工具，`wp11` 的 reviewer 要由 meta 派出；在此之前 M1 不得宣称达成。
-- `m31` 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，库内没有列区分——报告已把两个值都印出，但处置归入库侧（协议串应带上实际 top_k）。
-- 长上下文的 KV 精度结论只覆盖短上下文，长上下文仍属未测；它由 a05 拥有，本子项目只保证「未测 ≠ 0」在报告里可见。
+- 独立复核未派：i02 侧没有待做的工作包了，`wp11` 的 reviewer 由 meta 派出（owner: meta）；在它的增量结论回来之前 i02 不再开新工作。
+- `m31` 的 `top_k` 扫描把 K=1（贪心地板）与 K=200（不截断）写进同一条协议串，库内没有列区分（owner: 入库侧，非 i02 工作包）——报告已把两个值都印出并写明取用规则。
+- 长上下文的 KV 精度结论只覆盖短上下文（owner: a05，非 i02 工作包）；i02 只保证「未测 ≠ 0」在报告里可见。
 
 ## 读法：还剩哪些、当前在哪、下一个派给谁
 
-- 还剩：wp13（格式裁决，meta 所有）、wp11（独立复核）。
-- 当前：wp1–wp10、wp12 已完成；等 wp13 的裁决与 wp11 的独立复核。
-- 下一个派给：meta 派 reviewer 复核 wp1–wp10、wp12 与 M1 七条；wp13 由 meta 裁决。
+- 还剩：只有 `wp11`（独立复核，owner: meta）。
+- 当前：`wp1`–`wp10`、`wp12`、`wp13` 全部完成；M1 七条达成条件都已为真；`AC 状态` 一节逐条对到事实。
+- 下一个派给：meta 派 reviewer 对 `9a80742` 之后的增量做结论；i02 在这之前不开新工作包。
+- 明确没做到、也不由 i02 做的（照实记）：其他子项目 89 条事实的来源仍是已退役的 `.scratch/originals`（`RESULT.md::res35` 有清点命令），报告层面已停止把它们当来源引用，迁移归各自持有层。
