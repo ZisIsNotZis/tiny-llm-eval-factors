@@ -132,7 +132,56 @@
 - repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --adjacent`
 - 会推翻它：用同一口径重算得到相反的多数方向，或某列的反例多到超过升的数目。
 
-## 三、migrated 与撤回
+
+## 三、极低位宽与三元（plan2 的另一半，WP4）
+
+### ternary-offcurve :: 家族内可判的那一例是 GLM-4.7-Flash：UD-TQ1_0（2.226 比特/权重）的 HumanEval+ 0.4634、GSM8K 0.49，而同家族 UD-Q2_K_XL（3.176）是 0.7622 / 0.82、UD-Q3_K_XL（3.682）是 0.7500 / 0.84——低比特档比 3.176 档低 29.9 pp（HumanEval+）与 33.0 pp（GSM8K），而 3.176→3.682 这一档只动 −1.2 pp / +2.0 pp。
+- author: measurement
+- from: result.qw2b-panel
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `m88-glm47flash-tq1` 与 `m*-glm47flash-*` 面板行；有效位宽在 `.wrapup/bpw_map.json`
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --panel "GLM-4.7-Flash"`
+- 说明：这是「极低位宽离轨」在本库里唯一能**在家族内**判的一例（同 base 权重、同协议）。它落在家族线上方还是下方要看定义：按「3.176→3.682 已走平」外推，2.226 应该还在 0.75 附近，实测 0.4634，即**远低于外推线**。
+- 会推翻它：同族补一个 2.2–2.6 比特的非三元文件后差值消失（那说明是比特数而不是三元方案造成的）。
+
+### lowbit-spread :: 在 2.23–2.28 这个窄比特带里，4 个有 HumanEval+ 的文件从 0.4817（Ternary-Bonsai-1.7B-Q2_0_g64）到 0.8902（Ternary-Bonsai-27B-Q2_g64），跨度 40.9 pp——同一比特预算下分数由 base 模型决定，不由比特数决定。
+- author: measurement
+- from: result.ternary-offcurve
+- scope: general
+- status: current
+- kind: measured
+- evidence: `.wrapup/bpw_map.json` 的位宽 + `humaneval-plus` 行
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"`（`lowbit-spread` 那两条）
+- 说明：`Bonsai-27B-Q1_0`（1.131 比特）的 HumanEval+ 是 0.8293，比库里任何 3.0–4.0 比特档都高（该区间最高是 gemma-4-26B-A4B 的 0.9390，但那是 26B MoE），这类文件是**按三元原生训练**的，不是从高位宽压下来的，所以它们不能放进「更多比特→更高分」的曲线里；B1 对它们的前提（同一家族的位宽阶梯）不成立，正确结论是**不可判**而不是「离轨」。
+- 会推翻它：找到同 base、同训练精度、只有比特分配不同的三元文件对，使比特数与分数同向。
+
+### m55-exq-inversion :: 同一 base 权重、同协议下，LFM2.5-8B-A1B 的 m55-exq4（4.483 比特/权重）在 HumanEval+ 0.1341、MBPP+ 0.2381、MMLU 0.2873、GSM8K 0.53 上全面低于 m55-exq2（2.918）的 0.2866 / 0.3280 / 0.4265 / 0.78，四列的 95% 区间都不含 0——**多 1.56 比特反而低**，幅度比 Qwen3.5-2B 那对更大。
+- author: measurement
+- from: result.b1-heplus-only
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `m92-lfm25-8b-a1b-m55-exq2`、`m133-m55-exq2` 与 m55 的 exq4 面板行；两文件同一 base 权重（`m55` 是本地自建的逐层比特分配配方）
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --pair "LFM2.5-8B"/exq2/exq4`
+- 说明：这条把「有效位宽不是质量的充分统计量」从「一个 2B 模型的怪现象」升级为**同一 base 权重上的可重复现象**，而且它不依赖厂商方案的故事——变的是比特**放在哪些层**（a04 的轴）。
+- 会推翻它：复测 exq2/exq4 两格得到相反方向，或发现两文件不是同一 base 权重。
+
+## 四、12B 原生档 MMLU（plan7b，WP5 的 CPU 部分）
+
+### gemma12b-mmlu-uniform :: gemma-4-12B 的 MMLU 从 UD-Q3_K_XL（4.046）到原生 UD-Q4_K_XL（4.949）跳 +22.59 pp（0.4178 → 0.6436，912 题），而同期 HumanEval+ 动 0.0000、MBPP+ +0.0106、IFEval +0.0300；这个跳在 61 个科目上是均匀的——51 个科目上升、中位科目差 +0.250、没有全对或全错的科目。
+- author: measurement
+- from: result.gemma12b-mmlu-jump
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `.wrapup/mres/m105-gemma-12b-q3kxl/lmeval_mmlu_*.json` 与 `.wrapup/mres/m141-native-gemma12b-q4/lmeval_mmlu_*.json` 的逐科目 `acc`；两次运行的 `cmd.txt` 逐字相同（同一个 shim、`--tasks mmlu --limit 100`、`max_length=8192`）
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/mmlu_subjects.py"`
+- 说明：均匀平移说明不是少数科目坏了，而是整体判分条件变了；且库里这个文件只有**一次**测量，没有重复可比。剩下的两个候选是「原生 Q4 档这个文件真的更好」与「MMLU 这一列的判分条件在两个文件上不同（模板/分词/似然归一）」——后者需要一次同 shim 的复测或一次生成式 MMLU 对照才能判，见 `PLAN.md` 的 GPU 队列。
+- 会推翻它：同 shim 复测得到与 0.6436 差 0.05 以上的值。
+
+## 五、migrated 与撤回
 
 ### res1 :: 权重量化位宽：同一模型家族内，从较低比特档到下一档，多数情况下分数上升，但每一列都有反例——33 对相邻档里 HumanEval+ 有 9 对、MBPP+ 7 对、MMLU 4 对、ARC-c 8 对、GSM8K 5 对、IFEval 5 对是下降，「普遍上升」的原措辞已按 `adjacent-majority` 收窄。
 - author: measurement
@@ -177,7 +226,7 @@
 - repro: `sqlite3 -header -column experiments.sqlite "SELECT model,language,_score,run_tag FROM experiments WHERE model LIKE 'Qwen3.5-2B%' AND protocol='multipl-e-raw-greedy-768' ORDER BY model,language"`
 - retracted: 原 res5 的跨语言池化列（…4.11→0.0920…）已撤回：一是把不同语言集平均成一个数（`i01::res16` 已判不可比），二是 0.0920 用库内该模型 multi-e 行的等权平均复算不出来（cpp+js+py = 0.1201、cpp+js+py+rb+rs = 0.0862）。
 
-## 四、分析（`kind: analysis`，不覆盖任何数字）
+## 六、分析（`kind: analysis`，不覆盖任何数字）
 
 ### an1 :: 量化位宽该选多大，取决于该家族自己的曲线拐点；但按当前数据只有 Qwen3.5-2B 能估出拐点（3.66–4.93 比特/权重，按基准不同），其余 20 条 series 只有 2–3 个位宽点、拐点不可估，所以「多数家族的主要抬升出现在 4–5 比特/权重」这句话目前没有逐家族的拐点估计支撑，它只来自把各家族的位宽点放在一起看的整体印象。
 - author: agent

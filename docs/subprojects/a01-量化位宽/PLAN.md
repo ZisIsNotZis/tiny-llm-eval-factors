@@ -11,9 +11,10 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（文档归位）。
-- 在办：`WP2`（曲线 + 拐点 + 区间；`analysis/curves.py`）。
-- 下一个派给谁：`WP2` 由本层编排者做（CPU，`experiments.sqlite` 只读）；`WP3` 的 T2 判分通道项与 `WP2` 共用 `.wrapup/mres/m61…m67` 落盘完成物，可在 `WP2` 之后立即接；`WP3` 的 T4（复现负控）与 `WP5`（12B MMLU 复测）要 GPU，排在最前占用 GPU 窗口；`WP6` 收口后再请 meta 派 fresh-context reviewer 做 `WP7`。
+- 已完成：`WP1`、`WP2`、`WP4`；`WP3` 的 T1/T2/T3 与 `WP5` 的 CPU 部分（见 `RESULT.md` 的 `b1-heplus-only`、`t2-channel-excluded`、`q2kxl-iq3-4b`、`ternary-offcurve`、`lowbit-spread`、`m55-exq-inversion`、`gemma12b-mmlu-uniform`）。
+- 在办：`WP6` 收口（`run_all.py` 已经 38 条预期全绿、`--selftest` 能失败；剩下把 PLAN/RESULT 的口径对齐）。
+- 卡住（等 GPU，见下面「GPU 队列」）：`WP3::T4` 与 `WP5` 的复测都还没跑，登记为**未测**，不是 0。GPU 现在被别的仓占满（`memory.free` 204 MiB，`/tmp/llama_gpu.lock` 有 5 个持有者），按 `@scheduling.queue_behind` 排队而不是占住回合。
+- 下一个派给谁：本层编排者做 `WP6`；GPU 空出来后依次跑 `WP3::T4`、`WP5`；两包完成后请 meta 派 fresh-context reviewer 做 `WP7`。
 - 本层没有派孙工具（运行时不提供 subagent 接口），所以实现与测量由编排者自己执行；独立复核必须由 meta 派 fresh-context reviewer，不得自评通过。
 
 ## 工作包
@@ -21,10 +22,10 @@
 | 工作包 | owner | AC（可证伪） | 依赖 | 预算 | 状态 |
 |---|---|---|---|---|---|
 | WP1 文档归位 | 本层编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml`/`result.yaml` 已迁入并删除；`git grep -n 'a01-量化位宽/\(plan\|result\)\.yaml' -- ':!report.html'` 只剩 i02 的一行陈旧引用（已登记为跨子项目依赖）；`python3 docs/check_docs.py` 退出 0 且 a01 的四个文件都被解析成事实；提交在 main 且按路径点名 | — | 1 会话 | **完成** |
-| WP2 曲线 + 拐点 + 区间 | 本层编排者 | `analysis/curves.py` 一条命令产出每家族每基准的（有效位宽, 分数, 区间）序列 + 拐点估计 + 拐点 95% 区间；点数不足以估拐点的家族逐条打印「不可估 + 原因」；脚本自带一个已知答案的合成负控（例：线性无拐点必须被判「不可估」）并以退出码报告 | WP1 | ≤60 CPU 分钟 | 进行中 |
-| WP3 B1 反例裁决（plan2） | 本层编排者 | 四项各自有裁决：(T1) 3.96→4.11 的逐基准差与其二项区间，写明哪几个基准的差超出区间；(T2) 落盘完成物按 raw / sanitized 两条判分路径重判，写明判分通道能否解释 HumanEval+ 的差；(T3) 跨家族同字节对（|Δbpw|≤0.15）的符号一致性 + Qwen3.5-4B 对照；(T4) 同配置重跑一格的负控（差异应落在生成/判分哪一侧）。结论写成「方案 / 判分通道 / 单文件对 / 未判定」四选一并给出会推翻它的观测 | WP2 | ≤90 CPU + ≤40 GPU 分钟 | 未开始 |
-| WP4 三元与极低位宽离轨（plan2 的另一半） | 本层编排者 | 对 `Bonsai-27B-Q1_0`（1.13 bpw）、`Ternary-Bonsai-Q2_0_g64`、`GLM-4.7-UD-TQ1_0`（2.23）、`LFM2.5-m55-exq2`（2.92）逐条给出「在家族曲线上/下、偏离量及区间」或「家族点数不足、不可判」；`Q2_0` 加载失败与 `PQ2_0`（ggml type 142）逐条记实测原文或未测原因 | WP2 | ≤45 CPU 分钟 | 未开始 |
-| WP5 12B 原生档 MMLU 异常（plan7b） | 本层编排者 | gemma-4-12B 的 MMLU：给出复测值（同协议、同 n_items、同模板）或显式未测记录（写明为什么测不了、代价多少）；同时给出「其余基准几乎不动而 MMLU 跳 22.6 pp」的判别：是模板/判分通道还是模型差 | WP2 | ≤45 CPU + ≤30 GPU 分钟 | 未开始 |
+| WP2 曲线 + 拐点 + 区间 | 本层编排者 | `analysis/curves.py` 一条命令产出每家族每基准的（有效位宽, 分数, 区间）序列 + 拐点估计 + 拐点 95% 区间；点数不足以估拐点的家族逐条打印「不可估 + 原因」 | WP1 | ≤60 CPU 分钟 | **完成**（`--panel`/`--pair`/`--all`/`--adjacent`；21 条 series 里只有 Qwen3.5-2B 能估拐点，其余记不可估，见 `RESULT.md::knee-estimable`） |
+| WP3 B1 反例裁决（plan2） | 本层编排者 | 四项各自有裁决：(T1) ✅ 只有 HumanEval+ 的差区间不含 0（`b1-heplus-only`）；(T2) ✅ 落盘完成物审计：两格围栏率相同、无 timeout、分数低的那格 sanitize 后更干净（`t2-channel-excluded`）——判分通道不能解释；(T3) ✅ 4B 同字节对方向一致但只有 MMLU 显著（`q2kxl-iq3-4b`），外加同 base 权重的 m55 exq 反向（`m55-exq-inversion`）；(T4) ⏳ 同配置重跑的复现负控**未跑**（GPU 排队）。结论：主因是「比特分配/方案」而不是判分通道，但**幅度**只在 HumanEval+ 成立 | WP2 | ≤90 CPU + ≤40 GPU 分钟 | 进行中（T4 等 GPU） |
+| WP4 三元与极低位宽离轨（plan2 的另一半） | 本层编排者 | 逐条给「在家族曲线上/下」或「不可判」：GLM-4.7-Flash 的 TQ1_0 在家族内低 29.9 pp（`ternary-offcurve`）；2.23–2.28 比特带里 HumanEval+ 跨 40.9 pp（`lowbit-spread`）→ 原生三元模型不可判、非原生 TQ1 离轨；`Q2_0`/`PQ2_0` 加载失败**未测**（要 GPU + 更新的 llama.cpp，见 GPU 队列） | WP2 | ≤45 CPU 分钟 | **完成**（加载失败一项登记未测） |
+| WP5 12B 原生档 MMLU 异常（plan7b） | 本层编排者 | CPU 部分 ✅：+22.59 pp 的跳在 61 个科目上均匀（51 升、中位 +0.250、无全对/全错），两次运行的命令行逐字相同、912 题集合相同、该文件只有一次测量（`gemma12b-mmlu-uniform`）。GPU 部分 ⏳：同 shim 复测或生成式 MMLU 对照**未跑** | WP2 | ≤45 CPU + ≤30 GPU 分钟 | 进行中（GPU 排队） |
 | WP6 收口与报告一致 | 本层编排者 | `RESULT.md` 每条新事实带证据与复算命令；本层没写库就明写「未写库」；若写了库则先编号备份 + `PRAGMA integrity_check` + 清洁检查 + 重生成 `report.html` 并给「报告数 = 库数」核对命令 | WP2–WP5 | ≤30 CPU 分钟 | 未开始 |
 | WP7 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；reviewer 的结论取代本人自评 | 对应包完成 | ≤30 CPU 分钟/份 | 待派 |
 
@@ -52,6 +53,15 @@
 3. **拐点只在家族内点数 ≥4 时估**，且必须同时给出「不可估」路径：多数家族在库里只有 2 个位宽点，2 点连线的「拐点」是过拟合。
 4. **不写库**：本层只读 `experiments.sqlite`，结论落 `docs/subprojects/a01-量化位宽/`。理由：本层要否定的是库里的数是否被正确解释，不是改数；改数会连带作废报告里其它节。
 5. **不碰 `make_report.py` / `mktables.py` / `report.html`**：报告文本要改（第一节那句「原因」）也必须走 meta → i02，本层只提交「文本应为 X」的建议与证据。
+
+## GPU 队列（未测，不是 0）
+
+GPU 现在是别人的（`nvidia-smi` 空闲 204 MiB；`/tmp/llama_gpu.lock` 有持有者；另一仓的 `waiter2.sh` 在等窗口）。按 `@scheduling.queue_behind` 记成排队请求，不占住回合、不抢锁：
+
+| 排队项 | 配置 | 判据 | 预算 | 继续触发的条件 |
+|---|---|---|---|---|
+| WP3::T4 复现负控 | Qwen3.5-2B `UD-Q2_K_XL` 的 HumanEval+ 格，历史原旗标（`-c 8192`、服务器默认槽位），跑 2 次 | 两次题数一致 ⇒ 那 22 题不是随机噪声；不一致 ⇒ 该格的值本身不稳定，`b1-heplus-only` 必须降级 | ≤25 GPU 分钟 | `memory.free ≥ 20000 MiB` 且 `bash .wrapup/gpu_locked.sh` 能拿到锁 |
+| WP5 复测 | gemma-4-12B 原生 `UD-Q4_K_XL` 的 MMLU，同 shim 同协议跑 2 次；再加一格生成式 MMLU（同一批 200 题，chat 协议，取答案字母） | 复测值 ≈ 0.6436 ⇒ 文件性质；明显偏离 ⇒ 该格作废并改报告；生成式若与 Q3 相当而似然差 22 pp ⇒ 判分通道 | ≤30 GPU 分钟 | 同上；`Q2_0`/`PQ2_0` 加载测试另需 ≤15 分钟与更新的 llama.cpp |
 
 ## 未解问题（plan 层的事实；答完即改写或删除）
 

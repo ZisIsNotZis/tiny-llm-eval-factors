@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""a01 量化位宽：本层全部结论的可执行检查（一条命令，退出码即结论）。
+
+    python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"          # 检查全部预期
+    python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py" --selftest  # 负控：故意改坏一条预期
+
+退出 0 = 每条预期都成立；1 = 至少一条不成立（打印是哪条）；2 = 数据不足（缺文件/缺行）。
+
+每条预期对应 `RESULT.md` 里的一个事实 id，命名与那条事实一致。数据只读 `experiments.sqlite`
+与 `.wrapup/mres/*`，不写库、不改报告。
+"""
+from __future__ import annotations
+
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import curves                                             # noqa: E402
+import channel_audit                                      # noqa: E402
+
+DIVERGED = []
+COUNT = 0
+
+
+def expect(ok, fact, detail):
+    global COUNT
+    COUNT += 1
+    print(("  OK   " if ok else "  FAIL ") + f"{fact:<24} :: {detail}")
+    if not ok:
+        DIVERGED.append(fact)
+
+
+def pair_rows(cc, needle, qa, qb):
+    """返回 {(bench): (kA, nA, kB, nB, lo, hi)}，与 curves.py --pair 同一口径。"""
+    res = curves.panel(cc, needle)
+    for _fam, pts in res["families"].items():
+        qs = [p["quant"] for p in pts]
+        if any(qa.lower() in q.lower() for q in qs) and any(qb.lower() in q.lower() for q in qs):
+            A = next(p for p in pts if qa.lower() in p["quant"].lower())
+            B = next(p for p in pts if qb.lower() in p["quant"].lower())
+            out = {}
+            for bench in curves.BENCH_ORDER:
+                sa, sb = A["scores"].get(bench), B["scores"].get(bench)
+                if not sa or not sb:
+                    continue
+                ka, na = round(sa["score"] * sa["n_items"]), sa["n_items"]
+                kb, nb = round(sb["score"] * sb["n_items"]), sb["n_items"]
+                lo, hi = curves.newcombe_diff(ka, na, kb, nb) if bench not in curves.NON_COUNT else (None, None)
+                out[bench] = (ka, na, kb, nb, lo, hi)
+            return out
+    return None
+
+
+def main(argv):
+    cc = curves.con()
+    selftest = "--selftest" in argv
+
+    # ---- b1-heplus-only：Qwen3.5-2B 的 3.961 → 4.109，只有 HumanEval+ 分得开
+    q2 = pair_rows(cc, "qwen3.5-2b", "IQ3_XXS", "Q2_K_XL")
+    expect(q2 is not None and len(q2) >= 6, "b1-heplus-only", f"配对行数 {0 if q2 is None else len(q2)}（需 ≥6）")
+    if q2:
+        lo, hi = q2["humaneval-plus"][4], q2["humaneval-plus"][5]
+        expect(lo > 0, "b1-heplus-only", f"HumanEval+ 差区间 [{lo:+.4f}, {hi:+.4f}] 不含 0")
+        for b in ("gsm8k", "ifeval", "mbpp-plus", "mmlu", "arc_challenge"):
+            lo2, hi2 = q2[b][4], q2[b][5]
+            expect(lo2 < 0 < hi2, "b1-heplus-only", f"{curves.SHORT[b]} 差区间 [{lo2:+.4f}, {hi2:+.4f}] 跨 0")
+
+    # ---- q2kxl-iq3-4b：4B 同字节对，方向一致但只有 MMLU 显著
+    q4 = pair_rows(cc, "qwen3.5-4b", "IQ3_XXS", "Q2_K_XL")
+    expect(q4 is not None and "mmlu" in q4, "q2kxl-iq3-4b", f"4B 配对行数 {0 if q4 is None else len(q4)}")
+    if q4:
+        lo, hi = q4["mmlu"][4], q4["mmlu"][5]
+        expect(lo > 0, "q2kxl-iq3-4b", f"MMLU 差区间 [{lo:+.4f}, {hi:+.4f}] 不含 0")
+        lo2, hi2 = q4["humaneval-plus"][4], q4["humaneval-plus"][5]
+        expect(lo2 < 0 < hi2, "q2kxl-iq3-4b", f"HumanEval+ 差区间 [{lo2:+.4f}, {hi2:+.4f}] 跨 0")
+
+    # ---- t2-channel-excluded：判分通道不能解释那 22 题
+    rows = {}
+    for panel in ("m63-qwen-2b-iq3xxs", "m64-qwen-2b-q2kxl"):
+        rows[panel] = channel_audit.audit(panel, "humaneval")
+    a, b = rows["m63-qwen-2b-iq3xxs"], rows["m64-qwen-2b-q2kxl"]
+    expect(a and b, "t2-channel-excluded", "两格落盘完成物都在")
+    if a and b:
+        expect(a["fence_raw"] / a["n"] > 0.9 and b["fence_raw"] / b["n"] > 0.9, "t2-channel-excluded",
+               f"原始完成物围栏率 {a['fence_raw']}/{a['n']} 与 {b['fence_raw']}/{b['n']}（两格同样处理）")
+        expect("timeout" not in a["plus_status"] and "timeout" not in b["plus_status"], "t2-channel-excluded",
+               f"两格 plus 状态都没有 timeout：{a['plus_status']} / {b['plus_status']}")
+        expect(b["syntax_err_san"] <= a["syntax_err_san"] and b["no_def_san"] <= a["no_def_san"],
+               "t2-channel-excluded",
+               f"分数更低的那格 sanitize 后更干净：语法错 {b['syntax_err_san']} ≤ {a['syntax_err_san']}、"
+               f"无 def {b['no_def_san']} ≤ {a['no_def_san']}（方向与「通道把 b 判坏」相反）")
+
+    # ---- knee-estimable：只有 Qwen3.5-2B 的 series 有 ≥4 个位宽点、能估拐点
+    import numpy as np
+    rng = np.random.default_rng(20261020)
+    p2b = curves.panel(cc, "qwen3.5-2B")["families"].get("Qwen3.5-2B", [])
+    expect(len(p2b) >= 4, "knee-estimable", f"Qwen3.5-2B 位宽点数 {len(p2b)}")
+    if len(p2b) >= 4:
+        k, ci = curves.knee([(p["bpw"], round(p["scores"]["humaneval-plus"]["score"] * p["scores"]["humaneval-plus"]["n_items"]),
+                             p["scores"]["humaneval-plus"]["n_items"]) for p in p2b], rng)
+        expect(k is not None and not isinstance(ci, str), "knee-estimable",
+               f"HumanEval+ 拐点 {k} 区间 {ci}")
+    glm = curves.panel(cc, "GLM-4.7-Flash")["families"].get("GLM-4.7-Flash", [])
+    expect(len(glm) == 3, "knee-estimable", f"GLM-4.7-Flash 只有 {len(glm)} 点（<4，故不可估）")
+
+    # ---- adjacent-majority：每列相邻档多数上升
+    models = sorted({r[0] for r in cc.execute("SELECT DISTINCT model FROM experiments")})
+    fams = {}
+    for m in models:
+        bw = curves.bpw_of(m)
+        if bw is not None:
+            fams.setdefault(curves.series_key(m), []).append((bw, m))
+    pos = {bch: 0 for bch in curves.BENCH_ORDER}
+    neg = {bch: 0 for bch in curves.BENCH_ORDER}
+    for _key, items in fams.items():
+        items.sort()
+        for (b1, m1), (b2, m2) in zip(items, items[1:]):
+            for bench in curves.BENCH_ORDER:
+                r1 = cc.execute("SELECT _score FROM experiments WHERE model=? AND _bench=? AND protocol=? AND _score IS NOT NULL",
+                                (m1, bench, curves.BENCH[bench])).fetchone()
+                r2 = cc.execute("SELECT _score FROM experiments WHERE model=? AND _bench=? AND protocol=? AND _score IS NOT NULL",
+                                (m2, bench, curves.BENCH[bench])).fetchone()
+                if not r1 or not r2:
+                    continue
+                if r2[0] > r1[0]:
+                    pos[bench] += 1
+                elif r2[0] < r1[0]:
+                    neg[bench] += 1
+    for bench in curves.BENCH_ORDER:
+        expect(pos[bench] > neg[bench], "adjacent-majority",
+               f"{curves.SHORT[bench]} 升 {pos[bench]} / 降 {neg[bench]}")
+
+    # ---- m55-exq-inversion：同 base 权重上比特更多反而更低
+    ex = pair_rows(cc, "LFM2.5-8B", "exq2", "exq4")
+    expect(ex is not None, "m55-exq-inversion", f"LFM2.5 原生 K 系列的 exq2/exq4 配对 {0 if ex is None else len(ex)} 列")
+    if ex:
+        for bench in ("humaneval-plus", "mbpp-plus", "mmlu", "gsm8k"):
+            lo, hi = ex[bench][4], ex[bench][5]
+            expect(lo > 0, "m55-exq-inversion", f"{curves.SHORT[bench]}（少 1.56 比特反而高）区间 [{lo:+.4f}, {hi:+.4f}] 不含 0")
+
+    # ---- ternary-offcurve：GLM-4.7-Flash 的 TQ1 比它自己 3.176 比特档低 30 pp
+    glm_tq1 = next((p for p in glm if "TQ1" in p["quant"]), None)
+    glm_q2 = next((p for p in glm if p["quant"].endswith("Q2_K_XL")), None)
+    expect(glm_tq1 is not None and glm_q2 is not None, "ternary-offcurve", "GLM 的 TQ1_0 与 Q2_K_XL 都在")
+    if glm_tq1 and glm_q2:
+        d = glm_q2["scores"]["humaneval-plus"]["score"] - glm_tq1["scores"]["humaneval-plus"]["score"]
+        expect(d > 0.2, "ternary-offcurve", f"Q2_K_XL(3.176) − TQ1_0(2.226) 的 HumanEval+ 差 {d:+.4f} > 0.20")
+        d2 = glm_q2["scores"]["gsm8k"]["score"] - glm_tq1["scores"]["gsm8k"]["score"]
+        expect(d2 > 0.2, "ternary-offcurve", f"GSM8K 差 {d2:+.4f} > 0.20")
+
+    # ---- lowbit-spread：2.23–2.28 比特带里 HumanEval+ 跨 42.7 pp
+    band = []
+    for m in models:
+        bw = curves.bpw_of(m)
+        if bw is None or not (2.23 <= bw <= 2.28):
+            continue
+        r = cc.execute("SELECT _score FROM experiments WHERE model=? AND _bench='humaneval-plus'"
+                       " AND protocol=? AND _score IS NOT NULL",
+                       (m, curves.BENCH["humaneval-plus"])).fetchone()
+        if r:
+            band.append((bw, m, r[0]))
+    if band:
+        lo_m = min(band, key=lambda t: t[2])
+        hi_m = max(band, key=lambda t: t[2])
+        expect(hi_m[2] - lo_m[2] > 0.3, "lowbit-spread",
+               f"2.23–2.28 比特带 {len(band)} 个文件：HumanEval+ {lo_m[2]:.4f}（{lo_m[1]}）– "
+               f"{hi_m[2]:.4f}（{hi_m[1]}），跨 {hi_m[2]-lo_m[2]:.4f}")
+
+    # ---- gemma12b-mmlu-uniform：12B 原生档 MMLU 跳 22.6 pp 且科目上均匀
+    def cell(model, bench):
+        r = cc.execute("SELECT _score, n_items FROM experiments WHERE model=? AND _bench=? AND protocol=? AND _score IS NOT NULL",
+                       (model, bench, curves.BENCH[bench])).fetchone()
+        return r
+
+    nat = "gemma-4-12b-it-UD-Q4_K_XL.gguf"
+    q3 = "gemma-4-12b-it-UD-Q3_K_XL.gguf"
+    mn, mq = cell(nat, "mmlu"), cell(q3, "mmlu")
+    expect(mn and mq, "gemma12b-mmlu-uniform", "两档的 MMLU 行都在")
+    if mn and mq:
+        expect(mn[0] - mq[0] > 0.2, "gemma12b-mmlu-uniform",
+               f"MMLU {mq[0]:.4f} → {mn[0]:.4f}（{mn[0]-mq[0]:+.4f} > 0.20，n={mn[1]}）")
+        for bench in ("humaneval-plus", "mbpp-plus", "ifeval"):
+            a2, b2 = cell(nat, bench), cell(q3, bench)
+            if a2 and b2:
+                expect(abs(a2[0] - b2[0]) < 0.05, "gemma12b-mmlu-uniform",
+                       f"{curves.SHORT[bench]} 只动 {a2[0]-b2[0]:+.4f}（<0.05，与 MMLU 的跳不同量级）")
+
+    # 负控：把 HumanEval+ 的区间判断反过来，脚本必须失败
+    if selftest:
+        print("\n[selftest] 故意断言「HumanEval+ 的差区间跨 0」，预期失败：")
+        lo, hi = q2["humaneval-plus"][4], q2["humaneval-plus"][5]
+        expect(lo < 0 < hi, "b1-heplus-only", f"[selftest] 反过来的断言 [{lo:+.4f}, {hi:+.4f}] 跨 0")
+
+    print(f"\nSUMMARY: {COUNT} 条预期，{len(DIVERGED)} 条不成立 {DIVERGED if DIVERGED else ''}")
+    return 1 if DIVERGED else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
