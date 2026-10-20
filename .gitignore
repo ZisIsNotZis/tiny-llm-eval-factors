@@ -35,3 +35,6 @@ experiments.sqlite.bak*
 .wrapup/javac.*.args
 
 figures/
+
+# transient buffers: no fact lives here, safe for any agent to delete
+.tmp/
