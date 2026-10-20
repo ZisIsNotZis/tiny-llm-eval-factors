@@ -16,6 +16,8 @@
      → `RESULT.md::kv-db-columns`
   F. m29 入库会让 fa=on/fa=off 在报告行标签里合并：在**库副本**上跑一次 ingest + 报告行分组。
      → `RESULT.md::kv-m29-ingest-decision`
+  G. 两个口径的对照：分数差 vs 逐题翻转，以及哪些对被旧结论判成「无差异」却在翻。
+     → `RESULT.md::kv-two-metrics`
 
 只读：真库开 `mode=ro`；F 只改 `.tmp/` 下的副本。不改 `report.html`，不调 `migrate_db.py` 的写入口。
 
@@ -165,6 +167,75 @@ def m30_padded():
            "49k 格过半完成物以 “// canonical Python solution (reference):” 开头")
 
 
+# ------------------------------------------------- G: 分数差 vs 逐题翻转
+
+def m130_items(tag, key):
+    p = WR / f"mres/m130-kv/codegen/{tag}/humaneval/m130-kv-{tag}_openai_temp_0.0_eval_results.json"
+    ev = json.load(open(p))["eval"]
+    return {k: v[0][key] == "pass" for k, v in ev.items()}
+
+
+def m29_items(tag, lang):
+    d = json.load(open(WR / f"mres/m29-{tag}-{lang}_eval.json"))
+    return {x["name"]: bool(x.get("pass")) for x in d["details"]}
+
+
+def flips(a, b):
+    lose = sum(1 for k in a if a[k] and not b[k])
+    gain = sum(1 for k in a if not a[k] and b[k])
+    return lose, gain, sum(a.values()), sum(b.values())
+
+
+def two_metrics():
+    """同一对配置在两个口径下的对照：分数差（旧结论唯一看的东西）与逐题翻转。"""
+    print("\n== G. 两个口径：分数差 vs 逐题翻转（同面板、同协议、贪心、单次运行）")
+    rows = []
+    # m130：逐题产物只有 HumanEval（base 与 plus 两套判分）；lm-eval 三列按 i01::res26 不落逐题。
+    for key in ("base_status", "plus_status"):
+        s = {t: m130_items(t, key) for t in ("f16_f16", "q8_0_q8_0", "q4_0_q4_0")}
+        for a, b in (("f16_f16", "q8_0_q8_0"), ("f16_f16", "q4_0_q4_0"), ("q8_0_q8_0", "q4_0_q4_0")):
+            lo, ga, pa, pb = flips(s[a], s[b])
+            rows.append((f"m130 HumanEval {key[:4]}", a, b, pb - pa, pa, lo, ga, 164))
+    panel = json.load(open(WR / "mres/m130-kv/variant_panel.json"))["rows"]
+    for bench in ("mmlu", "gsm8k", "ifeval"):
+        n = {"mmlu": 456, "gsm8k": 50, "ifeval": 50}[bench]
+        for a, b in (("f16/f16", "q8_0/q8_0"), ("f16/f16", "q4_0/q4_0"), ("q8_0/q8_0", "q4_0/q4_0")):
+            pa, pb = round(panel[a][bench] * n), round(panel[b][bench] * n)
+            rows.append((f"m130 {bench}", a, b, pb - pa, pa, None, None, n))
+    # m29：两条对比轴（V 变化、FA 变化），逐题产物是全量 161。
+    for m in ("q2", "q3"):
+        for lang in ("cpp", "py"):
+            lo, ga, pa, pb = flips(m29_items(f"{m}-faon_f16", lang), m29_items(f"{m}-faon_q8", lang))
+            rows.append((f"m29 {m} {lang}", "faon V=f16", "faon V=q8_0", pb - pa, pa, lo, ga, 161))
+    for m in ("q2", "q3"):
+        for lang in ("cpp", "py"):
+            lo, ga, pa, pb = flips(m29_items(f"{m}-faon_f16", lang), m29_items(f"{m}-faoff_f16", lang))
+            rows.append((f"m29 {m} {lang}", "fa=on V=f16", "fa=off V=f16", pb - pa, pa, lo, ga, 161))
+
+    print(f"  {'格':22s} {'A':13s} {'B':13s} {'Δ分':>6s} {'A分':>5s} {'丢':>3s} {'得':>3s} {'翻转':>4s} {'n':>4s}")
+    for cell, a, b, d, pa, lo, ga, n in rows:
+        flip = "—" if lo is None else f"{lo + ga:4d}"
+        los = "  —" if lo is None else f"{lo:3d}"
+        gas = "  —" if ga is None else f"{ga:3d}"
+        print(f"  {cell:22s} {a:13s} {b:13s} {d:+6d} {pa:5d} {los} {gas} {flip} {n:4d}")
+    print("  （'—' = 该列没有逐题产物：lm-eval 未开 --log_samples，i01::res26）")
+
+    scored = [(c, a, b, d, lo, ga) for c, a, b, d, _pa, lo, ga, _n in rows if lo is not None]
+    blind = [(c, a, b, d, lo, ga) for c, a, b, d, lo, ga in scored if d == 0 and lo + ga > 0]
+    worst = max(scored, key=lambda r: r[4] + r[5])
+    print(f"  分数差为 0 但逐题在翻的对：{[(c, d, lo, ga) for c, _a, _b, d, lo, ga in blind]}")
+    print(f"  翻转最多的对：{worst[0]} {worst[1]}→{worst[2]} Δ分 {worst[3]:+d}，丢 {worst[4]} 得 {worst[5]}")
+    expect("G1 存在分数差 0 而逐题集合不同的对（分数差看不见翻转）", len(blind) >= 2,
+           f"{len(blind)} 对：" + "、".join(f"{c} {lo}丢{ga}得" for c, _a, _b, _d, lo, ga in blind))
+    expect("G2 分数差完全不能预报逐题翻转（存在翻转 ≥5 倍分数差的对）",
+           any(lo + ga >= 5 * max(abs(d), 1) for _c, _a, _b, d, lo, ga in scored),
+           "、".join(f"{c} {lo + ga}翻/{d:+d}分" for c, _a, _b, d, lo, ga in scored
+                    if lo + ga >= 5 * max(abs(d), 1)))
+    expect("G3 翻转是双向的（有丢也有得，不是单调退化）",
+           sum(1 for _c, _a, _b, _d, lo, ga in scored if lo > 0 and ga > 0) >= 6,
+           f"{sum(1 for _c, _a, _b, _d, lo, ga in scored if lo > 0 and ga > 0)}/{len(scored)} 对同时有丢与得")
+
+
 # ---------------------------------------------------------------- E: 库内状态
 def db_state():
     print("\n== E. 库内状态（只读）")
@@ -236,6 +307,7 @@ def main():
     m30_null()
     m30_padded()
     db_state()
+    two_metrics()
     m29_collision()
     bad = [n for n, ok, _ in results if not ok]
     print(f"\n{len(results) - len(bad)}/{len(results)} 条预期成立"

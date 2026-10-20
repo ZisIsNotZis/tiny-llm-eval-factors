@@ -54,19 +54,19 @@
    "subproject": "a05-KV 缓存精度",
    "path": "docs/subprojects/a05-KV 缓存精度/PLAN.md",
    "heading": "未解问题",
-   "text": "**长上下文的 KV 效应仍未测，且现有 m30 的 16k/49k 格不能当覆盖。** 12 个加长格里 49k 的四个 KV 配置逐题状态完全相同（同哈希），16k 只到 0–1/60，而 58/60 与 56/60 个完成物在以填充段的注释开头——它测的是「模型续写前缀」这个伪像。要判定，需要一个有动态范围的测量（`llama-passkey` 类），预算 ≤30 GPU 分钟，按实测提示处理吞吐 23 800 tok/s 估，32k 提示约 1.4 s/格。"
+   "text": "**长上下文的 KV 效应仍未测，且现有 m30 的 16k/49k 格不能当覆盖。** 12 个加长格里 49k 的四个 KV 配置逐题状态完全相同（同哈希），16k 只到 0–1/60，而 58/60 与 56/60 个完成物在以填充段的注释开头——它测的是「模型续写前缀」这个伪像。已写死的补救设计在「GPU 队列」：针检索 + 只回答最后一行的指令，3 ctx × 4 KV × 20 条 + 1 阳性对照，推算 ≤5 GPU 分钟（预算 30）；若两者逐题仍全同，按「仍然全同」那条写成可见性下限并降档用 `llama-perplexity` 的 ΔPPL 复核。"
   },
   {
    "subproject": "a05-KV 缓存精度",
    "path": "docs/subprojects/a05-KV 缓存精度/PLAN.md",
    "heading": "未解问题",
-   "text": "**m29 进不了库：报告行标签会把 `fa=` 吞掉。** 在库副本上入库 12 个格后，`raw·kv=q8_0/f16` 这一个行标签下同时有 fa=on 与 fa=off 两条协议串：1 个格触发行键冲突提示（q2 cpp 18 vs 17），另 3 个格分数相同因而**静默合并**。前置条件是把 `make_report.mpl_protocol_label` 的保留段加上 `fa=`（i02/meta 拥有），在此之前入库等于让 a12 已经登记过的那个缺陷再长一遍。"
+   "text": "**m29 进不了库：报告行标签会把 `fa=` 吞掉。** 在库副本上入库 12 个格后，`raw·kv=q8_0/f16` 这一个行标签下同时有 fa=on 与 fa=off 两条协议串：1 个格触发行键冲突提示（q2 cpp 18 vs 17），另 3 个格分数相同因而**静默合并**。两条前置条件（满足其一即可重审）：行标签容纳 `fa=`（`make_report.mpl_protocol_label`），或报告改按完整协议串分行。两者都属消费侧，i02/meta 拥有；在此之前 m29 只以 `kv-short-m29` 与 `kv-two-metrics` 的形式留在 `RESULT.md`。"
   },
   {
    "subproject": "a05-KV 缓存精度",
    "path": "docs/subprojects/a05-KV 缓存精度/PLAN.md",
    "heading": "未解问题",
-   "text": "**短上下文的 KV 差只有点估计，没有配对区间。** m130 面板每配置单次运行，gsm8k/ifeval 是 `--limit 50`、mmlu 是 `--limit 8`/科目；只有 HumanEval 有逐题落盘（`eval_results.json`），lm-eval 三列按 `i01::res26` 不落逐题，所以那三列的差只能报计数（最多 4/50），不能报区间。"
+   "text": "**短上下文的 KV 差在 lm-eval 三列上没有逐题产物，翻转未测。** m130 面板每配置单次运行，gsm8k/ifeval 是 `--limit 50`、mmlu 是 `--limit 8`/科目；只有 HumanEval 有逐题落盘（`eval_results.json`），lm-eval 三列按 `i01::res26` 不落逐题，所以那三列的差只能报计数（最多 4/50），不能报翻转数、也不能报区间。"
   },
   {
    "subproject": "a05-KV 缓存精度",
