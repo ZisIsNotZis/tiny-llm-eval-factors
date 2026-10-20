@@ -939,17 +939,19 @@ def ingest_m161(con):
     return n
 
 
-# The two gemma-4-12B chat *cpp* cells m162 measured, and nothing else: m162 exists
+# The two gemma-4-12B chat *cpp* cells m163 measured, and nothing else: m163 exists
 # because 12B's only cpp cells sat under the m6b protocol string
 # (`;ctx=4096;tmpl=unverified`) while its py cells were re-measured under
 # `mpl-chat-nothink-greedy-768`, leaving it without a cpp+py pair under one protocol.
-M162_CHAT_CELLS = {("g12b-q2", "cpp"), ("g12b-q3", "cpp")}
+# The run id is m163, not m162, because i01's slot-reproduction experiment already
+# writes its status file as `m162`; two experiments under one tag cannot be told apart.
+M163_CHAT_CELLS = {("g12b-q2", "cpp"), ("g12b-q3", "cpp")}
 
 
-def ingest_m162(con):
-    """M162: gemma-4-12B MultiPL-E chat **cpp** Q2/Q3 under the canonical protocol.
+def ingest_m163(con):
+    """M163: gemma-4-12B MultiPL-E chat **cpp** Q2/Q3 under the canonical protocol.
 
-    run_m162_chat_cpp_12b.sh copies run_m161_chat_py.sh's server and generator flags
+    run_m163_chat_cpp_12b.sh copies run_m161_chat_py.sh's server and generator flags
     verbatim (ctx 2048, ``--jinja``, greedy, 768 max tokens, ``--strip-thought``,
     ``{"enable_thinking": false}``), so the protocol string is the canonical
     `mpl-chat-nothink-greedy-768` with no suffix: nothing deviates, and a suffix is
@@ -958,12 +960,12 @@ def ingest_m162(con):
 
     An all-Exception cell keeps `_score` NULL, as in m161.
     """
-    path = ".wrapup/m162_summary.jsonl"
+    path = ".wrapup/m163_summary.jsonl"
     if not os.path.exists(path):
-        print("  (no m162 summary)")
+        print("  (no m163 summary)")
         return 0
     con.execute("DELETE FROM experiments WHERE run_tag = ?",
-                ("m162-chat-cpp-gemma12b",))
+                ("m163-chat-cpp-gemma12b",))
     n = 0
     seen = set()
     for line in open(path):
@@ -972,22 +974,22 @@ def ingest_m162(con):
             continue
         r = json.loads(line)
         cell = (r["model"], r["lang"])
-        if cell not in M162_CHAT_CELLS:
+        if cell not in M163_CHAT_CELLS:
             continue
         statuses = r.get("statuses") or {}
         score = None if statuses and set(statuses) == {"Exception"} else r["score"]
         row = base_row(MPL_CHAT_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0,
                        score, None)
-        row.update({"run_tag": "m162-chat-cpp-gemma12b", "rep": 1,
+        row.update({"run_tag": "m163-chat-cpp-gemma12b", "rep": 1,
                     "ctx_size": 2048, "parallel_slots": 4,
                     "protocol": r.get("protocol", "mpl-chat-nothink-greedy-768"),
                     "language": r["lang"], "bench_family": "humaneval-multipl-e",
-                    "max_tokens": 768, "source_file": "m162_summary.jsonl"})
+                    "max_tokens": 768, "source_file": "m163_summary.jsonl"})
         insert(con, row); n += 1
         seen.add(cell)
-    missing = M162_CHAT_CELLS - seen
+    missing = M163_CHAT_CELLS - seen
     if missing:
-        print(f"  ! m162 summary lacks declared cells {sorted(missing)}")
+        print(f"  ! m163 summary lacks declared cells {sorted(missing)}")
     return n
 
 
@@ -1649,7 +1651,22 @@ def ingest_variant(con):
     return n
 
 
+def numbered_backup(path=DB):
+    """变更前先复制出下一个未占用的编号备份 `experiments.sqlite.bakN`。
+
+    备份是变更的前置条件而不是事后步骤：没有它就不能开始写库。
+    """
+    import shutil
+    n = 1
+    while os.path.exists(f"{path}.bak{n}"):
+        n += 1
+    dst = f"{path}.bak{n}"
+    shutil.copy2(path, dst)
+    return dst
+
+
 def main():
+    print(f"== backup: {numbered_backup()} ==")
     con = sqlite3.connect(DB)
     con.execute("PRAGMA foreign_keys=ON")
     before = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
@@ -1694,7 +1711,7 @@ def main():
         ("m58", ingest_m58), ("m59", ingest_m59), ("m60", ingest_m60),
         ("m50", ingest_m50), ("m51", ingest_m51), ("m52", ingest_m52),
         ("m54", ingest_m54), ("m26", ingest_m26), ("m6b", ingest_m6b),
-        ("m161", ingest_m161), ("m162", ingest_m162), ("m44", ingest_m44),
+        ("m161", ingest_m161), ("m163", ingest_m163), ("m44", ingest_m44),
         ("m36", ingest_m36),
         ("m33", ingest_m33), ("m35", ingest_m35),
         ("m38", ingest_m38), ("m39", ingest_m39),

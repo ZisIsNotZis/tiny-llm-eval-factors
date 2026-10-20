@@ -1,5 +1,5 @@
 #!/bin/bash
-# m162 — gemma-4-12b chat MultiPL-E **cpp** Q2/Q3 under the canonical chat protocol.
+# m163 — gemma-4-12b chat MultiPL-E **cpp** Q2/Q3 under the canonical chat protocol.
 #
 # WHY: 12b's only cpp chat cells live in m6b, whose protocol string carries
 # `;ctx=4096;tmpl=unverified` because that panel ran a different server
@@ -21,12 +21,12 @@
 # cell that does (as m6b's does).
 #
 # Run under the GPU flock:
-#   bash .wrapup/gpu_locked.sh bash .wrapup/run_m162_chat_cpp_12b.sh
+#   bash .wrapup/gpu_locked.sh bash .wrapup/run_m163_chat_cpp_12b.sh
 set -u
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$HERE" || exit 1
-LOG=$HERE/m162.log
-SUMMARY=$HERE/m162_summary.jsonl
+LOG=$HERE/m163.log
+SUMMARY=$HERE/m163_summary.jsonl
 MRES=$HERE/mres
 PROMPTS=${MULTIPLE_PROMPTS:-$HERE/prompts}
 PORT=${PORT:-8091}
@@ -36,7 +36,7 @@ PY=python3
 CHAT_KW='{"enable_thinking": false}'
 PROTOCOL="mpl-chat-nothink-greedy-768"
 CELLS="g12b-q2:gemma-4-12b-it-UD-Q2_K_XL.gguf g12b-q3:gemma-4-12b-it-UD-Q3_K_XL.gguf"
-TAGLOG="M162"
+TAGLOG="M163"
 
 mkdir -p "$MRES"
 : > "$SUMMARY"
@@ -115,13 +115,13 @@ row = {"model": tag, "lang": lang, "n": n, "pass": d["pass"],
        "score": score, "protocol": proto, "statuses": dict(st)}
 with open(dest, "a") as f:
     f.write(json.dumps(row) + "\n")
-print("[M162] recorded", tag, lang, "n=%d pass=%d score=%s" % (n, d["pass"], score), dict(st))
+print("[M163] recorded", tag, lang, "n=%d pass=%d score=%s" % (n, d["pass"], score), dict(st))
 PY
 }
 
 run_cell() {   # $1 tag  $2 lang  $3 model
   local tag="$1" lang="$2" model="$3"
-  local samples="$MRES/m162-${tag}-${lang}-chat.jsonl"
+  local samples="$MRES/m163-${tag}-${lang}-chat.jsonl"
   local t0 t1
   start_server "$model" || return 1
   t0=$(date +%s)
