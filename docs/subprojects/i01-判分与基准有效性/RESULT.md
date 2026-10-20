@@ -25,7 +25,7 @@
 - **gsm8k 入库用 `flexible-extract`，它取完成物里最后一个数字**：答案对但没写 `#### N` → strict 0.0 / flexible 1.0；答案是正确值但末尾另有数字 → strict 1.0 / flexible 0.0。逐例双向偏移，不能用一个常数修正；库里 `gsm8k-strict` 行数为 0，所以真实数据上的变体差未测。
 - **ifeval 的入库指标是 `prompt_level_strict_acc`**：空答案 0/100，通用废话 `"The answer to your question is 42."` 与 300 个重复词各 **9/100**——存在约 9 个百分点的、与模型无关的地板。
 - **mmlu/arc_challenge 的似然打平不报错**：`argmax` 静默取下标 0，实测平局格 `acc=0`；arc 入库的是 `acc_norm`、`acc` 未入库，两者在真实数据上的差未测。
-- **逐题状态不落盘**：`--log_samples` 未开，`.wrapup` 下 0 个 `samples_*.jsonl`；`results.json` 只有聚合，所以「全 timeout 的格」与「真 0 分的格」在产物里只能靠 `lmeval_run.py` 的 `errors/null` 区分。
+- **逐题状态不落盘**：`lmeval_run.py` 的命令行不含 `--log_samples`，所以**历史 lm-eval 运行没有逐题样本**；`results.json` 只有聚合，「全 timeout 的格」与「真 0 分的格」只能靠 `lmeval_run.py` 的 `errors/null` 区分。`.wrapup` 下现有的 **4 个 `samples_*.jsonl` 全部是 i01 自己在 2026-10-21 01:01–01:23 用 `--log_samples` 新跑出来的**（`i01-floor/gsm8k-*`），不是历史产物。
 - 状态：current。
 - 证据：`audits/lmeval.md`；实跑输出见该文档的复现命令。
 - 复现：`HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 .wrapup/lmenv/bin/python "docs/subprojects/i01-判分与基准有效性/audits/lmeval_audit.py"`（实跑 `exit=0`，18 条预期成立）。
@@ -36,7 +36,7 @@
 - `live_relevance` 的判分退化为「有没有调用」：bundled 数据集无该类的 `possible_answer`（实测 `exists=False`），代码因此写 `ok = len(calls) > 0`，一个不存在的函数名也判 PASS。
 - 匹配器单向宽容（实测 `arg_ok`）：`arg_ok(10,["10"])=True`、`arg_ok("10",[10])=False`、`arg_ok(True,[1])=True`、大小写与首尾空格折叠；且多余参数不检查（`call_ok` 只遍历标准答案的键）→ 这些方向都**向上**。
 - 聚合：summary 的 `score` 是按题加权（micro），库里每类别一行的自然聚合是按类别平均（macro），实测最大差 `m8` gr3b-q2 micro 0.3905 vs macro 0.1877（差 0.2028）；方向是 micro 偏高，因为 `live_irrelevance`（884/2251 题，奖励不调用）权重大。
-- 库里 123 条 BFCL 行的 `n_items` 全为 NULL，**从库本身算不出 micro**。
+- 库里 BFCL 行的 `n_items` 正在被 i02 回填：本会话内实测从「123 行全 NULL」变成「29 行 NULL / 94 行有值」，所以**行级快照不是事实**，要带时间读。稳定的事实是文件级的：多轮面板 summary（如 `.wrapup/m9_summary.jsonl`）只记 `accuracy`、没有任何 `n`/`count` 字段，所以**多轮类别的题量推不出自任何运行产物**，只能从 bundled 数据集数——而数据集不说明那次 run 实际用了多少题。因此「混合多轮与单轮的 BFCL 汇总无法按题加权」这条结论不依赖回填进度。
 - 历史 BFCL 预测文件没有留存（`.wrapup/bfcl_out` 为空），所以自研匹配器与官方 checker 的一致率**未测**，历史分数无法重判。
 - 状态：current。
 - 证据：`audits/bfcl.md`；`audits/bfcl_audit.py`。
@@ -59,7 +59,8 @@
   - 11 题上升里有 **7 题**是「同一批 token，只是 m26 那一份丢了缩进」，即 res20/res21 的旧后处理损伤类；
   - 其余 **4 题上升**与 **5 题下降全部**伴随**不同的 token**（不是缩进/围栏差异）。
 - **旧文本与今天的生成差异很大**：m26 存活文件与今天的完成物在 **76/161** 题上文本不同，其中 **66 题是 token 不同**、10 题只差缩进/围栏。既然今天的生成在两种槽位下都逐字节可复现，66 题 token 不同只能来自**输入变了**，唯一被记录到不同的候选是提示集（`/tmp/MultiPL-E/prompts` 已删除，无法逐字节比对）。
-- **131 这道锚点不可复现**：拿 m26 存活文本过两种后处理——原样/新版都得 **139/161**，旧版 `.strip()` 后处理得 **5/161**，都得不到 131/161。所以当初算出 131 的那份文本不在盘上（m26 的 py 样本文件已被修复后的快照覆盖），这是**证据持久性缺陷**，不是判分问题。
+- **131 这道锚点不可复现**（成立）：拿 m26 存活文本过两种后处理——原样/新版都得 **139/161**，旧版 `.strip()` 后处理得 **5/161**，都得不到 131/161；即算出 131 的那份文本不在盘上。
+- **「那份文本被覆盖」只是候选解释之一，不可证**：两条与本条相关的观测是（a）m26 存活文件与 `_fixed` 快照只差 **2/161**（`HumanEval_69_search`、`HumanEval_129_minPath`），所以它非常接近「修复后再落盘」的那一份；（b）`.wrapup/prompts/humaneval-py.jsonl` 的 mtime 是 **2026-10-14 20:51**，而 m26 那次 run 的 panel start 是 **2026-10-02 20:51:40**，即**测试集在这次 run 之后变过**。两条都只是线索：既不能证明旧文本被覆盖，也不能证明它是另一条从未落盘的生成流。按 `PLAN.md` 预注册的口径，这一项写成「**不可证**」，不写成事实。
 - **后果（这才是可用的结论）**：跨 run 比较这个 cell 时，未记录的输入差能造成 **±16/161（≈0.10）**量级的翻转，并让 66/161 的完成物 token 不同。所以任何两次 run 只有在**提示集哈希 + 后处理版本**都被钉住并记录时才可比；把 6/161 或 16/161 当噪声地板是错的——它不是噪声，是输入差。
 - 状态：current（裁决口径在 `PLAN.md` 的「plan15 的裁决口径」一节里先写死，实跑落在「四槽复现 145」那一支）。
 - 证据：`.wrapup/mres/i01-slot-{np1-p1,np1-p2,npauto-p1,npauto-p2}-py-chat{.jsonl,_eval.json}` 与 `i01-slot-{np1,npauto}-meta.json`；`m26-q38-27b-q3-py.jsonl`、`m26-q38-27b-q3-py_fixed_eval.json`。
@@ -97,13 +98,14 @@
 | MultiPL-E chat | `q38-27b-q3` py，`mpl-chat-nothink-greedy-768`，greedy，同提示集，`-np 1` 两次 | 161 | 161 | 0 / 0 | 0.0000 | 1.0000 |
 | MultiPL-E chat | 同上但历史原旗标（server 默认 → 4 槽），两次 | 161 | 161 | 0 / 0 | 0.0000 | 1.0000 |
 | EvalPlus chat | `2b q4` humaneval，temp=0，三次 | 164 | 164 | 0 / 0 | 0.0000 | 1.0000 |
-| lm-eval gsm8k | `Qwen3.5-2B-UD-Q3_K_XL`，reasoning-off，`--limit 100`，两次 | 100 | 100 | 0 / 0 | 0.0000 | 1.0000 |
+| lm-eval gsm8k | `Qwen3.5-2B-UD-Q3_K_XL`，`--reasoning off`，`--limit 100`，两次（生产配置） | 100 | 100 | 0 / 0 | 0.0000 | 1.0000（两次同为 71/100） |
 | BFCL 单轮 | `simple_python` native tools，`--limit 40`，两次 | 40 | 40（预测调用 0/40 不同；correct 10 vs 10） | 0 / 0 | 0.0000 | — |
 
 - **总结：在确定性解码 + 同一提示集 + 同一后处理版本下，chat 单次测量的噪声地板是 0 道题**——重复跑不会改变任何一道题的判定。
 - **适用边界（不得外推）**：上表全部是 greedy/temp=0 且样本被 `--limit` 截到 40/100/161/164。采样解码下地板**远不是 0**：同一个 cell（`2b q4` humaneval）在 temp=0.3 的 5 次重复里，逐题通过集合的两两 **Jaccard 只有 0.53–0.67**，每对 **上翻 8–15 题、下翻 6–12 题**，而分数只在 37→43（6/164）之间摆动——即**分数摆动会系统性地低估逐题不稳定**，采样协议下必须按逐题比，不能按分数比。
 - **与 `plan15` 的 ±16/161 严格区分**：地板 0 说的是「输入相同、重复跑」；±16/161 说的是「输入变了（提示集/后处理版本）」。两者不可相加、不可互相替代。本项目解读小差异的规则因此是：**提示集哈希 + 后处理版本相同 → 任何非零跨 run 差异都不是噪声；任一改变 → 先按 res29 判输入差，再谈显著性。**
-- 一处需要复核的细节：gsm8k 这一行的第一次测量（`gsm8k-noReasoning-flag-r{1,2}`）是在**漏传 `--reasoning off`** 的 server 上跑的，响应 content 为空、判分全为 `[invalid]`，那不是生产 cell；生产配置（`--reasoning off`）的重跑于 01:18 起、结果未出前该行的绝对值只作参考，但「两次完全相同」这一重复性结论在两种配置下都成立。
+- gsm8k 这一行用的是**生产配置重跑**：server 带 `--reasoning off`，01:18:27–01:20:51 与 01:20:51–01:23:43 两次 `rc=0`，两次都是 **71/100**，逐题 100/100 相同，响应非空（首题 `filtered=['26']`）。证据：`.wrapup/i01_noise_floor2.out`、`.wrapup/i01_noise_floor.log` 的 `rep=1/2 rc=0` 行、`.wrapup/mres/i01-floor/gsm8k-r{1,2}/samples_gsm8k_2026-10-21T01-2*.jsonl`。
+- 第一次尝试（`gsm8k-noReasoning-flag-r{1,2}`，11/100）是在**漏传 `--reasoning off`** 的 server 上跑的：响应 content 为空、判分多为 `[invalid]`，那不是生产 cell。它留在盘上只作为「这个旗标不能漏」的证据，**不进地板分母、不作为结论数**。
 - 状态：current。
 - 证据：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json`；`.wrapup/wres/humaneval/w1-2bq4-r{1,2,3}_openai_temp_{0.0,0.3}_eval_results.json`；`.wrapup/mres/i01-floor/{gsm8k-r*,gsm8k-noReasoning-flag-r*,bfcl-r*}`；`.wrapup/i01_noise_floor.log`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"`（实跑：四族 `identical==n`、`swing 0.0000`）；采样边界用 `w1-2bq4-r{1..5}_openai_temp_0.3_eval_results.json` 两两比。

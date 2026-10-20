@@ -36,7 +36,7 @@ import subprocess
 import sys
 import tempfile
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+REPO = os.environ.get("I01_REPO_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 MRES = os.path.join(REPO, ".wrapup", "mres")
 PROMPTS = os.path.join(REPO, ".wrapup", "prompts")
 RUNNER = os.path.join(REPO, ".wrapup", "mpl_run.py")
@@ -77,6 +77,7 @@ def main() -> int:
     for p in (samples_path, eval_path, prompt_path):
         if not os.path.exists(p):
             print("UNMEASURED: %s missing" % p)
+            print("EXIT 2: missing input is not a pass")
             return 2
 
     samples = {r["name"]: r["completion"] for r in load_jsonl(samples_path)}
@@ -84,6 +85,7 @@ def main() -> int:
     passing = [d["name"] for d in ev["details"] if d["pass"]]
     if not passing:
         print("UNMEASURED: %s has no passing item to build correct-answer variants from" % CELL)
+        print("EXIT 2: missing input is not a pass")
         return 2
     name = passing[0]
     body = samples[name]
@@ -118,6 +120,7 @@ def main() -> int:
                            capture_output=True, text=True)
         if r.returncode != 0:
             print("UNMEASURED: scorer failed: %s" % r.stderr[-400:])
+            print("EXIT 2: missing input is not a pass")
             return 2
         details = json.load(open(out))["details"]
 

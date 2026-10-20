@@ -28,7 +28,7 @@ import json
 import os
 import sys
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+REPO = os.environ.get("I01_REPO_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 MRES = os.path.join(REPO, ".wrapup", "mres")
 FLOOR = os.path.join(MRES, "i01-floor")
 MISSING = []
@@ -140,6 +140,8 @@ def main() -> int:
     print("  plan15's +/-16/161 (RESULT.md::res29) is an input difference, not part of it.")
     if MISSING:
         print("  unmeasured: %s" % ", ".join(sorted(set(MISSING))))
+        print("  EXIT 2: an unmeasured family is not a pass (missing input is not zero)")
+        return 2
     return 0
 
 

@@ -230,7 +230,15 @@ def main() -> int:
     tm = TaskManager()
     # one mmlu subject stands in for the 57-subject group: the scoring path is the same
     wanted = ["gsm8k", "ifeval", "truthfulqa_mc2", "arc_challenge", "mmlu_high_school_us_history"]
-    td = get_task_dict(wanted, task_manager=tm)
+    # The task definitions load their datasets, so an unavailable cache raises here
+    # rather than inside a task body; uncaught it would exit 1 and look like a verdict.
+    try:
+        td = get_task_dict(wanted, task_manager=tm)
+    except Exception as e:
+        print("UNMEASURED: task definitions could not be loaded (%s: %s)"
+              % (type(e).__name__, str(e)[:200]))
+        print("EXIT 2: missing input is not a pass")
+        return 2
     flat = {}
     for key, val in td.items():
         flat[key] = val

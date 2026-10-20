@@ -35,10 +35,11 @@ import subprocess
 import sys
 import tempfile
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+REPO = os.environ.get("I01_REPO_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 DATA = os.path.join(REPO, ".wrapup", "bfclenv", "lib", "python3.11", "site-packages", "bfcl_eval", "data")
 SCORER = os.path.join(REPO, ".wrapup", "bfcl_run.py")
 DIVERGED = []
+UNMEASURED = []   # a missing input is not a pass: it makes the run exit 2
 
 
 def note(ok, label, detail):
@@ -87,6 +88,7 @@ def gt_to_call(gt_list):
 def main() -> int:
     if not os.path.isdir(DATA):
         print("UNMEASURED: bundled BFCL dataset not found at %s" % DATA)
+        print("EXIT 2: missing input is not a pass")
         return 2
     print("scorer: %s (single-turn, in-repo); ground truth: %s" % (SCORER, DATA))
     print("shape of one ground-truth record:")
@@ -169,6 +171,7 @@ def main() -> int:
         path = os.path.join(REPO, ".wrapup", f)
         if not os.path.exists(path):
             print("  UNMEASURED: %s absent" % f)
+            UNMEASURED.append(f)
             continue
         rows = []
         for line in open(path):
@@ -191,22 +194,49 @@ def main() -> int:
              "worst gap=%.4f (%s model=%s: micro=%.4f macro=%.4f)" % (gap, f, model, micro, macro))
 
     print("\n[database] can the stored rows reproduce either aggregate?")
+    # i02 is backfilling n_items while this audit runs, so a snapshot of the count is
+    # NOT a stable assertion: it flipped from 21 to 29 NULL rows inside one session.
+    # What is stable is the file-level fact that the multi-turn panel summaries record
+    # only `accuracy`, so a multi-turn item count cannot come from any run artefact.
+    mt = os.path.join(REPO, ".wrapup", "m9_summary.jsonl")
+    if os.path.exists(mt):
+        rows = [json.loads(l) for l in open(mt) if l.strip()]
+        keys = set().union(*(r.keys() for r in rows)) if rows else set()
+        note(not ({"n", "count", "num", "items"} & keys),
+             "multi-turn panel summaries carry no item count",
+             "fields present: %s" % sorted(keys))
+    else:
+        print("  UNMEASURED: %s absent" % mt)
+        UNMEASURED.append("m9_summary.jsonl")
     try:
         import sqlite3
         con = sqlite3.connect("file:%s?mode=ro" % os.path.join(REPO, "experiments.sqlite"), uri=True)
+        total = con.execute("SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%'").fetchone()[0]
         nulls = con.execute("SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' "
                             "AND n_items IS NULL").fetchone()[0]
-        total = con.execute("SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%'").fetchone()[0]
-        cats = con.execute("SELECT count(DISTINCT _bench) FROM experiments WHERE bench_family LIKE 'bfcl%'").fetchone()[0]
-        print("  bfcl rows=%d, rows with n_items NULL=%d, distinct categories=%d" % (total, nulls, cats))
-        note(nulls == total, "bfcl rows carry no item count",
-             "%d/%d rows have n_items NULL, so a micro-average cannot be computed from the DB" % (nulls, total))
+        multi = con.execute("SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' "
+                            "AND _bench LIKE 'bfcl-multi_turn%'").fetchone()[0]
+        multi_null = con.execute("SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' "
+                                 "AND _bench LIKE 'bfcl-multi_turn%' AND n_items IS NULL").fetchone()[0]
+        print("  snapshot at this run: bfcl rows=%d, n_items NULL=%d, multi-turn rows=%d (NULL %d)"
+              % (total, nulls, multi, multi_null))
+        print("  i02 is backfilling n_items, so this split moves; treat it as a measurement")
+        print("  with a date, not as an invariant.  The consequence below does not depend on it:")
+        print("  the report renders per-category cells and no total, and any mixed aggregate")
+        print("  is item-weighted only for the rows that already carry n.")
     except Exception as e:
         print("  UNMEASURED: database not readable (%s)" % e)
+        UNMEASURED.append("database")
 
-    print("\nSUMMARY: %d expectation(s) diverged" % len(DIVERGED))
+    print("\nSUMMARY: %d expectation(s) diverged; %d input(s) unmeasured"
+          % (len(DIVERGED), len(UNMEASURED)))
     for d in DIVERGED:
         print("  diverged: " + d)
+    for u in UNMEASURED:
+        print("  unmeasured: " + u)
+    if UNMEASURED:
+        print("  EXIT 2: missing input is not a pass")
+        return 2
     return 0 if not DIVERGED else 1
 
 

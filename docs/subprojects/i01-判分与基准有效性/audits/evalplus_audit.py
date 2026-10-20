@@ -34,7 +34,7 @@ import os
 import sys
 import tempfile
 
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+REPO = os.environ.get("I01_REPO_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from evalplus.data import get_human_eval_plus, get_mbpp_plus  # noqa: E402
 from evalplus.evaluate import evaluate  # noqa: E402
@@ -46,6 +46,7 @@ from evalplus.eval._special_oracle import (  # noqa: E402
 HUMANEVAL_TASKS = ["HumanEval/0", "HumanEval/1", "HumanEval/2", "HumanEval/3", "HumanEval/4"]
 FENCE = "```python\n"
 DIVERGED = []
+UNMEASURED = []   # a missing input is not a pass: it makes the run exit 2
 
 
 def note(ok, label, detail):
@@ -185,6 +186,7 @@ def part_real_data(workdir, he, limit=8):
     raw, clean = base + ".raw.jsonl", base + ".jsonl"
     if not (os.path.exists(raw) and os.path.exists(clean)):
         print("  UNMEASURED: %s.raw.jsonl / .jsonl not present" % base)
+        UNMEASURED.append("wres real-data probe")
         return
     rows_raw = [json.loads(l) for l in open(raw)][:limit]
     rows_clean = [json.loads(l) for l in open(clean)][:limit]
@@ -224,9 +226,15 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as workdir:
         part_questions(workdir, he, mbpp)
         part_real_data(workdir, he)
-    print("\nSUMMARY: %d expectation(s) diverged" % len(DIVERGED))
+    print("\nSUMMARY: %d expectation(s) diverged; %d input(s) unmeasured"
+          % (len(DIVERGED), len(UNMEASURED)))
     for d in DIVERGED:
-        print("  " + d)
+        print("  diverged: " + d)
+    for u in UNMEASURED:
+        print("  unmeasured: " + u)
+    if UNMEASURED:
+        print("  EXIT 2: missing input is not a pass")
+        return 2
     return 0 if not DIVERGED else 1
 
 
