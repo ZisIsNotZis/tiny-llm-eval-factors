@@ -42,6 +42,16 @@
 - 证据：`audits/bfcl.md`；`audits/bfcl_audit.py`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/bfcl_audit.py"`（实跑 `exit=0`，14 条预期成立）。
 
+### res28 MultiPL-E 的判分是「程序退出码 0」，提前退出即可白拿（历史发生率为 0）（见 audits/multipl-e.md）
+
+- 后处理在**生成**侧（`mpl_run.py gen` 调 `strip_fences`），判分侧 `eval` 不剥任何东西：同一份正确解，带围栏原样 → `Exception` 判 fail；过 `strip_fences` → `OK` 判 pass；未闭合围栏过 `strip_fences` 也 pass；前面带散文的过 `strip_fences` 仍 fail。
+- 判据是编译后程序退出码 0，而数据集测试以 `assert` 追加在完成物之后，所以「函数体错误但 `raise SystemExit(0)`」被实测判 pass（对照：`pass` 单独判 fail）。cpp/js/java 的等价构造是 `exit(0);`/`process.exit(0)`/`System.exit(0);`，未逐个实测。
+- **该通道在历史语料里 0 发生**：扫描 `.wrapup/mres/*.jsonl` 共 68,584 条落盘完成物（325 个文件），含提前退出构造的 0 条；含 markdown 围栏的 2,096 条（3.06%）。
+- 状态直方图逐题记在 `_eval.json`（`OK/SyntaxError/Exception/Timeout`），汇总只在面板日志的 `recorded` 行里，文件本身没有直方图字段。
+- 状态：current。
+- 证据：`audits/multipl-e.md`、`audits/multipl_e_audit.py`。
+- 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/multipl_e_audit.py"`（实跑 `exit=0`，9 条预期成立）；语料扫描见该文档第 2、4 条。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
