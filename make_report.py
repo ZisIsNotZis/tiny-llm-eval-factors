@@ -1306,6 +1306,71 @@ def bfcl_aggregation_note():
     return "".join(parts)
 
 
+SIZE_CLAIMS = "report_inputs/size_claims.json"
+
+
+def size_claims_html():
+    """第二节的 X 说明与两句话：规模取数通道、真参数量覆盖、以及被数据反驳的部分。
+
+    数字全部来自 `report_inputs/size_claims.json`——它由 `a02` 的 `size_provenance.json` 与
+    `size_curves.json`（两个脚本产物）算出，不抄散文；把某个「区间不重叠」改成交叠，这句话就会
+    从「反驳」变成「分不出」。
+    """
+    if not os.path.exists(SIZE_CLAIMS):
+        raise SystemExit(f"报告输入缺失：{SIZE_CLAIMS}"
+                         f"（由 report_inputs/build_size_claims.py 生成）。")
+    d = json.load(open(SIZE_CLAIMS, encoding="utf-8"))
+    ch, truth, inv = d["channels"]["rows"], d["truth"], d["inversion"]
+    same = d["same_model_q3"]
+    q2max = d["q2_max_step"]
+    harness = d["harness_failures"]
+
+    def pct(x):
+        return f"{x * 100:.1f}%"
+
+    def ci(c):
+        return f"[{c[0] * 100:.1f}–{c[1] * 100:.1f}]"
+
+    out = ["<li><b>这一节的 X 不是「参数量」。</b>"
+           f"库内 {d['channels']['total_rows']} 行里，作为规模的数字标签真正能被信任的只有 "
+           f"<b>{ch.get('token-rounded', 0)}</b> 行；<b>{ch.get('size-null', 0)}</b> 行根本没有规模"
+           f"（恰好是全部带协议的新面板行：lm-eval 与 EvalPlus 一个不落），"
+           f"<b>{ch.get('undecidable', 0)}</b> 行不可判，其余 "
+           f"{ch.get('clamped-to-file-bytes', 0) + ch.get('two-times-file-bytes', 0) + ch.get('size-too-large-for-file', 0) + ch.get('label-below-total', 0)}"
+           f" 行是「标签 = 文件字节数 / 两份文件字节 / 至少大 8 倍 / 低于张量总数」这类与参数量无关的通道。"
+           f"所以读这一节时请把 X 理解成<b>实测参数量</b>：由 GGUF 张量求和得到，"
+           f"当前覆盖 <b>{truth['models']} 个模型文件 / {truth['rows']} 行</b>（{truth['rows'] * 100 // truth['of_total_rows']}% 的行），"
+           f"且<b>只能在同一家族 + 同一 tokenizer + 同一配方内比较</b>——跨家族比较无论如何都无效；"
+           f"另有 {d['skipped_no_recipe']} 个格没有配方后缀，无法归入任何配方内比较。</li>"]
+
+    out.append(f"<li><b>「同一配方下参数量越大分数越高」只在部分配方成立。</b>"
+               f"它在 Q3_K_XL 档成立；但在 gemma-4 的 Q2_K_XL 档"
+               + ("被反驳：" if not inv["overlap"] else "分不出（两步区间重叠）：") +
+               f"{inv['from']['label']}（{inv['from']['params_b']:.2f}B）{pct(inv['from']['score'])} {ci(inv['from']['ci'])} → "
+               f"{inv['to']['label']}（{inv['to']['params_b']:.2f}B）{pct(inv['to']['score'])} {ci(inv['to']['ci'])}，"
+               f"<b>{inv['delta'] * 100:+.1f} pp</b>，两个区间"
+               f"{'不重叠' if not inv['overlap'] else '重叠（分不出）'}。"
+               f"同一个 12B 在 Q3_K_XL 那一格是 {pct(same['score'])} {ci(same['ci'])}，"
+               f"比 Q2_K_XL 那一格高 {(same['score'] - inv['to']['score']) * 100:.1f} pp——"
+               f"所以这不是「规模回折」，而是那一格配方的问题。</li>")
+
+    out.append(f"<li><b>「小模型之间差距更大」也不是普遍规律。</b>"
+               f"在 Q2_K_XL 档里最大的一步正向跨度为 {q2max['from']['label']}"
+               f"（{q2max['from']['params_b']:.2f}B）→ {q2max['to']['label']}（{q2max['to']['params_b']:.2f}B）的 "
+               f"<b>{q2max['delta'] * 100:+.1f} pp</b>，此后到更大的尺寸反而变平；"
+               f"所以这句话只在 Q3_K_XL 档这类「还没到顶」的配方里成立。</li>")
+
+    if harness:
+        steps = "、".join(f"{h['recipe']} {h['bench']} {h['delta'] * 100:+.1f} pp" for h in harness)
+        out.append(f"<li><b>多语言代码上的大幅「反向」是 harness 失效，不是规模效应：</b>{steps}——"
+                   f"这些格的完成物是 Markdown 推理散文而不是代码（`a02` 的 `gemma4-mpl-harness` 记着"
+                   f"同一批文件在探针里 0/40），所以不能读成「模型越大代码越差」。</li>")
+
+    out.append("<li><b>看图要点：</b>B 图同色 = 同族，不同线型 / 标记 = 不同配方；"
+               "同一格内若两条线交叉，先怀疑配方而不是规模。</li>")
+    return "".join(out)
+
+
 SCHEME_EFFECTS = "report_inputs/scheme_effects.json"
 
 
@@ -1698,16 +1763,11 @@ def main():
          "原生那一支只有 1 个点，被本轴规则剔除；它们的正确对比位置是第三节（方案 / 厂商）——那里才是控制变量的地方，"
          "结果显示两者各基准分数都在噪声内一致，与“厂商标签测不出差异”一致。</li>"
          "</ul>"),
-        ("二、模型规模（参数量）",
-         "X = 模型参数量（单位 B）；Y = 各基准分数；系列 = 家族 + 量化配方。",
+        ("二、模型规模（实测参数量）",
+         "X = 实测参数量（GGUF 张量求和；同一个模型文件在不同行的标签并不等于参数量，见下）；"
+         "Y = 各基准分数；系列 = 家族 + 量化配方。只有同家族、同 tokenizer、同配方内的横向比较成立。",
          [T["B"]], fig_B(T["B"]),
-         "<ul>"
-         "<li>同一配方下，参数量越大分数越高。</li>"
-         "<li>小模型之间（0.8B→2B→4B）的差距通常比大模型之间更大——大模型已接近各自的分数上限，规模带来的边际收益变小。</li>"
-         "<li>规模还会影响低比特的表现：小模型在低比特的困难任务上会整体触底（见“量化位宽”一节里 2B 的曲线）。</li>"
-         "<li><b>看图要点：</b>B 图同色 = 同族，不同线型 / 标记 = 不同配方。Qwen3.5 的三条配方线都在 4B 附近到顶；"
-         "gemma-4 的线在 13B 附近有一个向下回折后再上抬的折点——这是不同尺寸在不同配方下的实测值，不是单调趋势。</li>"
-         "</ul>"),
+         "<ul>" + size_claims_html() + "</ul>"),
         ("三、量化方案 / 厂商",
          "X = 量化方案或厂商（在同一模型、相近的有效位宽区间内）；Y = 各基准分数。",
          [T["C"]], fig_C(T["C"]),

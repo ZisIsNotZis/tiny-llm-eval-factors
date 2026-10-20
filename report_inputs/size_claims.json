@@ -1,0 +1,114 @@
+{
+ "sources": [
+  "docs/subprojects/a02-模型规模/analysis/size_provenance.json",
+  "docs/subprojects/a02-模型规模/analysis/size_curves.json"
+ ],
+ "channels": {
+  "rows": {
+   "clamped-to-file-bytes": 190,
+   "label-below-total": 58,
+   "size-null": 1061,
+   "size-too-large-for-file": 67,
+   "token-rounded": 659,
+   "two-times-file-bytes": 86,
+   "undecidable": 1112
+  },
+  "models": {
+   "clamped-to-file-bytes": 12,
+   "label-below-total": 8,
+   "size-null": 70,
+   "size-too-large-for-file": 15,
+   "token-rounded": 74,
+   "two-times-file-bytes": 25,
+   "undecidable": 100
+  },
+  "total_rows": 3233
+ },
+ "truth": {
+  "models": 169,
+  "rows": 1970,
+  "of_total_rows": 3233
+ },
+ "skipped_no_recipe": 12,
+ "curves": {
+  "q2": 20,
+  "q3": 16,
+  "all": 63
+ },
+ "inversion": {
+  "bench": "humaneval",
+  "recipe": "Q2_K_XL",
+  "from": {
+   "label": "E4B",
+   "params_b": 7.5181,
+   "score": 0.7439,
+   "ci": [
+    0.6721,
+    0.8046
+   ]
+  },
+  "to": {
+   "label": "12b",
+   "params_b": 11.9074,
+   "score": 0.5427,
+   "ci": [
+    0.4663,
+    0.6171
+   ]
+  },
+  "delta": -0.2012,
+  "overlap": false
+ },
+ "same_model_q3": {
+  "score": 0.939,
+  "ci": [
+   0.8914,
+   0.9665
+  ],
+  "label": "12b",
+  "n_items": 164,
+  "params_b": 11.9074
+ },
+ "q2_max_step": {
+  "bench": "humaneval",
+  "lineage": "Qwen3.5",
+  "from": {
+   "label": "2B",
+   "params_b": 1.8818
+  },
+  "to": {
+   "label": "4B",
+   "params_b": 4.2058
+  },
+  "delta": 0.4634,
+  "overlap": false
+ },
+ "harness_failures": [
+  {
+   "bench": "humaneval-cpp",
+   "recipe": "Q3_K_XL",
+   "from": {
+    "label": "E4B",
+    "score": 0.7391
+   },
+   "to": {
+    "label": "26B-A4B",
+    "score": 0.0248
+   },
+   "delta": -0.7143
+  },
+  {
+   "bench": "humaneval-cpp",
+   "recipe": "Q2_K_XL",
+   "from": {
+    "label": "E4B",
+    "score": 0.472
+   },
+   "to": {
+    "label": "26B-A4B",
+    "score": 0.0559
+   },
+   "delta": -0.4161
+  }
+ ]
+}

@@ -61,6 +61,7 @@ missing_inputs=0
 for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json \
          report_inputs/open_questions.json report_inputs/paired_deltas.json \
          report_inputs/reproducibility.json report_inputs/scheme_effects.json \
+         report_inputs/size_claims.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -68,6 +69,11 @@ if [ "$missing_inputs" = 0 ]; then
     record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 report_inputs/build_size_claims.py --check >/dev/null 2>&1; then
+    record PASS "size_claims.json 与 a02 的通道/曲线产物一致"
+else
+    record WARN "size_claims.json 与 a02 的产物不一致：python3 report_inputs/build_size_claims.py"
 fi
 if python3 report_inputs/build_scheme_effects.py --check >/dev/null 2>&1; then
     record PASS "scheme_effects.json 与 a03 归因脚本的输出一致"
@@ -113,6 +119,13 @@ else
 fi
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
+if python3 checks/size_claims_negative_control.py >/tmp/reproduce_sc.$$ 2>&1; then
+    record PASS "第二节规模说法的负控（区间改重叠则从「反驳」变「分不出」）"
+else
+    record FAIL "第二节规模说法的负控未通过：python3 checks/size_claims_negative_control.py"
+fi
+rm -f /tmp/reproduce_sc.$$
+
 if python3 checks/scheme_effects_negative_control.py >/tmp/reproduce_se.$$ 2>&1; then
     record PASS "方案/厂商结论句的负控（显著则改口、区间加宽则精度跟着变）"
 else
