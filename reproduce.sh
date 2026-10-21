@@ -263,6 +263,13 @@ else
 fi
 rm -f /tmp/reproduce_oq.$$
 
+if python3 checks/refresh_guard_differential_control.py >/tmp/reproduce_rgd.$$ 2>&1; then
+    record PASS "「读不到输入就不删」的差分负控（干净 clone 里：带 guard 丢 0 行，去掉 guard 丢数百行）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_rgd.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_rgd.$$
+
 if python3 checks/all_exception_null_negative_control.py >/tmp/reproduce_aen.$$ 2>&1; then
     record PASS "全 Exception 写 NULL 的负控（全 Exception→NULL、有通过→实测、没记分数→NULL、旧写法→0.0）"
 else

@@ -150,6 +150,11 @@ INGEST_SKIPS = {}
 # 「读不到输入」是「不可得」，不是「没有变化」——两者混成一个退出码，假绿就回来了。
 UNAVAILABLE = []
 
+# `MIGRATE_WIDE_DELETE=1` 只给**差分负控**用：把三个面板 ingester 的删除范围换回旧写法
+# （`source_file LIKE 'mres/%'` 这类共享前缀），用来证明「读不到输入就不删」这条 guard 是承重的
+# ——去掉它在没有面板落盘产物的环境里会丢行，带上它一行不丢。
+WIDE_DELETE = os.environ.get("MIGRATE_WIDE_DELETE") == "1"
+
 
 def note_skip(run_tag, reason, name=""):
     INGEST_SKIPS.setdefault(run_tag, collections.Counter())[(reason, name)] += 1
@@ -1544,7 +1549,9 @@ def ingest_campaign(con):
             rebuildable.append(f"mres/{tag_dir}/lmeval_panel.json#%")
         if os.path.exists(os.path.join(d, "evalplus.json")):
             rebuildable.append(f"mres/{tag_dir}/evalplus.json")
-    if rebuildable:
+    if WIDE_DELETE:
+        con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%'")
+    elif rebuildable:
         con.execute("DELETE FROM experiments WHERE " + " OR ".join(
             "source_file LIKE ?" for _ in rebuildable), rebuildable)
     else:
@@ -1732,9 +1739,12 @@ def ingest_spec(con):
         print("  spec: 没有 spec_panel.json，保留现状不删")
         return 0
     # 只删这一轮会重建的那几个 tag 的产物，不用会被别的 ingester 共用的宽前缀。
-    con.execute("DELETE FROM experiments WHERE " + " OR ".join(
-        "source_file = ?" for _ in paths),
-        [f"mres/{os.path.basename(os.path.dirname(p))}/spec_panel.json" for p in paths])
+    if WIDE_DELETE:
+        con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%-spec-%'")
+    else:
+        con.execute("DELETE FROM experiments WHERE " + " OR ".join(
+            "source_file = ?" for _ in paths),
+            [f"mres/{os.path.basename(os.path.dirname(p))}/spec_panel.json" for p in paths])
     for path in paths:
         try:
             p = json.load(open(path))
@@ -1803,9 +1813,12 @@ def ingest_variant(con):
         UNAVAILABLE.append("variant")
         print("  variant: 没有 variant_panel.json，保留现状不删")
         return 0
-    con.execute("DELETE FROM experiments WHERE " + " OR ".join(
-        "source_file = ?" for _ in paths),
-        [f"mres/{os.path.basename(os.path.dirname(p))}/variant_panel.json" for p in paths])
+    if WIDE_DELETE:
+        con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%/variant_panel.json'")
+    else:
+        con.execute("DELETE FROM experiments WHERE " + " OR ".join(
+            "source_file = ?" for _ in paths),
+            [f"mres/{os.path.basename(os.path.dirname(p))}/variant_panel.json" for p in paths])
     for path in paths:
         try:
             p = json.load(open(path))
