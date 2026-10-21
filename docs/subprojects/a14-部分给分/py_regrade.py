@@ -212,6 +212,7 @@ def manifest():
     import sqlite3
     if not os.path.exists(DB):
         raise Missing(f"缺库 {DB}")
+    db_sha = sha256(DB)          # 库本身也是输入：rowid 只是该快照下的指针，别人的入库会让它漂
     con = sqlite3.connect(DB)
     con.row_factory = sqlite3.Row
     db = [dict(r) for r in con.execute(
@@ -221,7 +222,7 @@ def manifest():
     out = os.path.join("/tmp", "a14", "pyall")
     cols = ["tag", "run", "bench", "language", "model", "protocol_old", "identity_new", "n",
             "pass_old", "pass_new", "score_old", "score_new", "delta", "flips",
-            "corpus", "gen_corpus", "protocol_source", "db_rowids", "db_match", "db_models", "db_source_files", "db_protocols", "db_run_tags",
+            "corpus", "gen_corpus", "protocol_source", "db_rowids", "db_match", "db_models", "db_source_files", "db_protocols", "db_run_tags", "db_sha256",
             "summary_file"]
     rows = []
     for c in sorted(doc["cells"], key=lambda c: c["tag"]):
@@ -277,6 +278,7 @@ def manifest():
             "db_protocols": "|".join(sorted({r["protocol"] for r in dbhits})) if dbhits else "",
             "db_run_tags": ",".join(sorted({r["run_tag"] or "" for r in dbhits})) if dbhits else "",
             "summary_file": os.path.relpath(summary, REPO) if os.path.exists(summary) else "",
+            "db_sha256": db_sha,
         })
     os.makedirs(os.path.dirname(MANIFEST), exist_ok=True)
     with open(MANIFEST, "w", encoding="utf-8") as f:
@@ -289,6 +291,7 @@ def manifest():
     print(f"db_match: " + ", ".join(f"{k}={sum(1 for r in rows if r['db_match'] == k)}"
                                     for k in ("unique", "multi", "none")))
     print(f"protocol_old 已知 {sum(1 for r in rows if r['protocol_old'])}/{len(rows)} 行")
+    print(f"db_sha256={db_sha}（rowid 只在该快照下有效；库会被并发入库改写）")
     return 0
 
 

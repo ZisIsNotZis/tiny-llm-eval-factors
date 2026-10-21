@@ -69,7 +69,7 @@
 ### res5 lm-eval 五任务的逐题样本没有落盘，因此 gsm8k/mmlu/arc 的比例不可得；但 ifeval 的细粒度指标本来就记在 artefact 里
 
 - 587 份 `lmeval_*.json` 里 **0** 份含 `samples`（`lmeval_run.py` 从不传 `--log_samples`，`i01::res26` 已记录），所以 gsm8k/mmlu/arc_challenge 的逐题对错没有产物，任何「每题部分分」都不可得。
-- **例外**：`ifeval` 天然是细粒度的——它同时报 `prompt_level_strict_acc`（题级，等价二元 Y）与 `inst_level_strict_acc`（指令级，等价「逐测试比例」）。**106 份 `lmeval_ifeval_*.json` 里 106 份都含 `inst_level_strict_acc`**，所以对 ifeval 来说更细的 Y **已经在库里，零成本**。实测同一格 `m100-qwen38-27b-q3kxl`：题级 0.75、指令级 0.8405。
+- **例外**：`ifeval` 天然是细粒度的——它同时报 `prompt_level_strict_acc`（题级，等价二元 Y）与 `inst_level_strict_acc`（指令级，等价「逐测试比例」）。**不变量：`lmeval_ifeval_*.json` 里的每一份都含 `inst_level_strict_acc`**（检查写成 `with_inst == len(files)`，不写死份数）。份数随产物增长，所以只报「写这条时的值」：2026-10-21 复核时是 **108/108**（初写时 106/106，中间又落了 2 份）。所以对 ifeval 来说更细的 Y **已经在库里，零成本**。实测同一格 `m100-qwen38-27b-q3kxl`：题级 0.75、指令级 0.8405。
 - 代价（若要 gsm8k/mmlu/arc 的逐题）：必须用 `--log_samples` 重跑该格（GPU，`m100` 的 gsm8k 单格实测 11 分钟量级），且只能拿到逐题对错，拿不到「题内部分分」——选择题与短答在定义上就是二元的。所以这一族**没有「逐测试比例」这种东西**，只有「逐题是否对」的噪声结构。
 - 状态：current（ifeval 细粒度指标已有值；gsm8k/mmlu/arc 的比例在本定义下**不可得**，原因是题目内部没有测试）。
 
@@ -113,7 +113,7 @@
 ### res9 一条命令给出可得性矩阵，且缺输入就 `exit 2`、篡改就 `exit 1`
 
 - 入口：`python3 "docs/subprojects/a14-部分给分/testfrac_audit.py"`。三条检查（二元一致性 / 分母在场 / ifeval 指令级指标在场）全过才 `exit 0`；缺输入 `exit 2` 并打印 `UNMEASURED + 缺哪个文件`；结构不认识的产物也算不可得而不是跳过。
-- 实跑输出：`产物：MultiPL-E 322 份 / EvalPlus 4 份 / BFCL 15 份；逐测试比例逐题文件 78 格 12540 道题` / `检查1 二元一致性：配上的格 76，逐题比较 12218 道，不一致 0 项` / `检查2 分母在场：缺 n_tests 的逐题记录 0 条` / `检查3 ifeval 指令级指标：106 份产物中 106 份含 inst_level_strict_acc` / `RESULT PASS`，`EXIT=0`。
+- 实跑输出：`产物：MultiPL-E 322 份 / EvalPlus 4 份 / BFCL 15 份；逐测试比例逐题文件 78 格 12540 道题` / `检查1 二元一致性：配上的格 76，逐题比较 12218 道，不一致 0 项` / `检查2 分母在场：缺 n_tests 的逐题记录 0 条` / `检查3 ifeval 指令级指标：<N> 份产物中 <N> 份含 inst_level_strict_acc`（N 随产物增长，初写 106、复核 108） / `RESULT PASS`，`EXIT=0`。
 - **负控成立**：`--negative-control` 在临时副本上把 `testfrac_m1-qwen4b-q2-cpp.jsonl::HumanEval_0_has_close_elements` 从通过改成不通过，检查报出 `m1-qwen4b-q2-cpp: 1 道题二元判定不一致，例如 ['HumanEval_0_has_close_elements']`，`EXIT=0`（负控自己通过）；不篡改时同一检查报 0 项。两侧都观测到了，不是只证一半。
 - 输入全部已入库（`.wrapup/mres/*_eval.json`、`.wrapup/testfrac_*.jsonl`），所以这条在干净 clone 里应当同样 `exit 0`；`experiments.sqlite` 不参与，因此不依赖库的状态。
 - 状态：current。
@@ -128,7 +128,7 @@
 
 ### res10 同一批完成物上，比例恒 ≥ 二元，且两者不是同一把尺：中位位移 +0.114
 
-- 76 个格的 `mean_frac - pass@1`：74 格为正、2 格为 0（那两格是 `m3-g12b-q2-cpp/java`，161/158 道题全不过、比例也是 0），最小非零 **+0.0062**，最大 **+0.2381**（`m1-qwen4b-q2-js`），中位 **+0.1138**。
+- 76 个格的 `mean_frac - pass@1`：74 格为正、2 格为 0（那两格是 `m3-g12b-q2-cpp/java`，161/158 道题全不过、比例也是 0），最小非零 **+0.0062**，最大 **+0.2381**（`m1-qwen4b-q2-js`），中位 **+0.1115**（这是**全部 76 格**的中位；若只取 74 个非零格则是 **+0.1138**——两个数都对，但分母不同不能混着引）。
 - 读法：比例高不是「模型更强」，而是「过一部分测试比过全部测试容易」。所以两个 Y **不能互换填进同一张表**，也不能把比例的增量当成质量增量。
 - 状态：current。
 - 证据/复现：`python3 "docs/subprojects/a14-部分给分/rank_compare.py"` 的「## 1" 表（§ 列 `Δ比例-二元`）。
@@ -140,20 +140,21 @@
 - 反转不是均匀散布，而是集中在近差对（见 res12）：7 对里有 4 对的题数差 ≤2。
 - 状态：current。复现：同上脚本的「## 2」「## 3」两节。
 
-### res12 更细的 Y **没有**把二元 Y 留下的歧义消掉：9 个近差对里只分开 3 对，且其中 2 对与二元结论相反
+### res12 更细的 Y **没有**把二元 Y 留下的歧义消掉：9 个近差对里只分开 3 对，且其中 **1** 对与二元结论相反
 
 - 近似并列（题数差 1–2）= **9** 对：比例同向 **5** 对、反向 **4** 对。
-- 用逐题配对 bootstrap（2000 次，逐题比例差）看这 9 对：**只有 3 对**的 95% 区间不含 0，其余 6 对分不开。3 对里 2 对是反向的：
+- 用逐题配对 bootstrap（2000 次，逐题比例差）看这 9 对：**只有 3 对**的 95% 区间不含 0，其余 6 对分不开。**3 对里只有 1 对是反向的**，另两对与二元同号：
   - `m3-e4b-q3-js` vs `m3-gr3b-q3-js`：二元 −1 题（−0.0062），比例 **+0.1075**，95% [+0.0138, +0.2038]，题级 51 正/42 负；
   - `m3-gr3b-q2-py` vs `m3-q08b-q2-py`：二元 +2 题（+0.0124），比例 +0.0576，95% [+0.0038, +0.1093]，47/28；
   - `m3-g12b-q2-cpp` vs `m3-g12b-q3-cpp`：二元 +2 题，比例 +0.0186，95% [+0.0016, +0.0404]，题级 **5 正/0 负**（两格都近乎全错，这一对的「分开」靠 5 道题的部分分）。
 - **二元并列（题数完全相同）的配对只有 2 对，且比例在这 2 对上都没有分开（95% 区间含 0）**。所以「二元打平、比例能分」这种情况在本批数据里**未观测到**。
 - 比例并列而二元不同的对：**0** 对。
+- 区间**端点**对 bootstrap 种子与重采样顺序敏感（独立复核用另一实现得 `[+0.0048,+0.1104]`，本脚本得 `[+0.0027,+0.1077]`），所以承重的判据只有一个：**区间是否含 0**。两种实现给出同一个「分开/不分」判定，这才是本节要的结论。
 - 状态：current。复现：同上脚本的「## 3」节（`近似并列` 段）。
 
 ### res13 同一批题上，比例的估计标准误并不比二元小：比值中位 0.96，最差 1.76
 
-- 逐格比 `SE(mean_frac)`（题间 bootstrap/√n）与 `SE(pass@1)`（二项）：74 个可算格里比值中位 **0.96**，最小 **0.66**，最大 **1.76**；**28 格比值 ≥1**（比例反而更粗），**26 格 <0.9**。
+- 逐格比 `SE(mean_frac)`（题间 bootstrap/√n）与 `SE(pass@1)`（二项）：74 个可算格里比值中位 **0.9572**，最小 **0.66**，最大 **1.76**；按**精确**比值 **26 格 ≥1**（比例反而更粗）、**27 格 <0.9**。注意：脚本打印列取两位小数，按打印值数会得到 28 ≥1 / 26 <0.9——差在 `m3-e2b-q3-js`（0.9982）、`pan-glm47flash-tq1-cpp`（0.9956）、`m1-qwen4b-q3-py`（0.8978）这三个贴边格的四舍五入。**结论不变**：比例的精度收益是偶然的。
 - 读法：比例的精确度收益是**偶然的、按格变化**的，不是系统性的。原因在结构：一道题内部 ~7 条测试并不是 7 个独立信息——一条函数写错通常让该题全部测试一起失败，所以分母变大了但有效样本量没怎么变。
 - 这是**题间**不确定性，不是跑间噪声；跑间噪声另计（见「待办事实」）。
 - 状态：current。复现：同上脚本的「## 4」节。
@@ -191,7 +192,7 @@
   | `HumanEval_53_add` | 5 | 6 | 6 |
   | `HumanEval_78_hex_key` | 6 | 7 | 7 |
 
-- 结论：已入库的逐题比例是**证据物**，内部自洽且与 harness 二元判定逐题一致（res7）；但它**不是**「拿仓库里任何东西就能重算出同一组数」的**复现**——产出它的语料文本已不在盘上，且新旧文本在断言内容上也不同（见 res19 的 47 个判定翻转）。这与 `i01::res25` 对 `plan15` 的归因同一个类：测试语料不是被钉住的输入。
+- 结论：已入库的逐题比例是**证据物**，内部自洽且与 harness 二元判定逐题一致（res7）；但它**不是**「拿仓库里任何东西就能重算出同一组数」的**复现**——产出它的语料文本已不在盘上，且新旧文本在断言内容上也不同（见 res19 的 47 个判定翻转）。这与 `plan15` 的「提示集不是被钉住的输入」同一个类（该说法在 `i01/PLAN.md:40` 与 `i01::res25` 的叙述里，措辞要改见 res21 的注）。
 - 对 a14 结论的影响：无。res11–res13 的对照全部用**同一批已入库文件**做成对比较，且 res7 用 12218 道题证明这批文件的二元判定与 harness 一致。
 - 状态：current（机制在 res19 判别完毕）。
 - 证据：`.wrapup/testfrac_m1-qwen4b-q2-py_summary.jsonl`（pass 57 / mean_frac 0.543334 / mean_tests_per_item 7.019）vs res15 的实跑汇总行；`.wrapup/prompts/humaneval-py.jsonl` 的 mtime 与 b57a71f 的日期。
@@ -212,7 +213,7 @@
    - 入库 `_eval.json`：`pass=False`、`status=Exception`；入库 `testfrac`：`n_tests=4, n_pass=0, frac=0.0, binary_pass=False, status=NoOutput`。
    - 今天：harness `pass=True status=OK`；`testfrac` `n_tests=5, n_pass=5, frac=1.0, binary_pass=True, status=OK`。
    - 完成物是纯整数进制转换（`decimal % 2`、字符串前插），**无任何不确定性源**：完成物与测试里 `random`/`hash`/`time`/`set(`/`dict(`/`shuffle`/`datetime`/`glob` 的出现次数**全部为 0**；`PYTHONHASHSEED` 取 `0/1/42/12345` 各跑 3 次，**12/12 返回码都是 0**（Python 3.12.3，numpy 2.5.4 在场）。
-   - 关键细节：该题入库 `n_tests=4` **等于**今天文本在「排除 `assert True`」口径下的值 4，所以这一题的**分母没变**，变的是**判定**——只能是某条断言的**期望值**变了，这是任何计数规则都看不见的文本改动。
+   - 关键细节（**是推断，不是 diff**）：该题入库 `n_tests=4` **等于**今天文本在「排除 `assert True`」口径下的值 4（按今天的口径则是 5），所以**分母看上去没变**。但**旧文本在盘上不存在**——`find / -name humaneval-py.jsonl` 只找到 `ac14c3b0…` 这一代（`/tmp`、`.wrapup` 与各处 clone 全同）与 git 里的 `b57a71f`，所以「哪条断言变了、是 prompt 还是 tests 变了」**无法 diff**。能说的只有：同一份完成物、同一份判分代码、判分变了 ⟹ 旧格用的文本 ≠ 这一代。把它写成「期望值变了」是由分母相等推出来的**推断**，标注为推断。
 3. **环境差异逐个排除**：`eval_one`（写 `prompt + completion + "\n" + tests`、跑 `python3`、超时 10 s）在**加入这批产物的那个提交 7cd7f61 与 HEAD 之间逐字节相同**；`run_eval` 唯一的改动是提示路径从写死的 `/tmp/...` 改成 `prompt_path(...)`（即改成读钉住语料）。完成物本身也没重生成过：`.wrapup/mres/m1-qwen4b-q2-py.jsonl` 的 mtime 是 `2026-09-30 08:06:24`，其 `_eval.json` 是 `08:06:51`（相差 27 秒）。
 4. **能区分的实验**：用今天的钉住语料 + harness 自己的判分路径，把**已落盘完成物**全量重算（66 个格：cpp 19 / java 6 / js 15 / py 26，共 **10608** 道题）：
 
@@ -228,7 +229,9 @@
 
 **结论**：这是「入库时用的是旧测试」，不是「评分侧 1 题不稳定」。已入库的 py 产物是 2026-09-30 用当时的 `/tmp` 副本算的；今天的语料在 2026-10-14 重建、2026-10-19 才钉进仓库。
 
-**对 `i01::res32`（确定性解码地板 = 0）意味着什么**：**地板 0 仍成立**，因为它是用**同一份语料**内的重复测量定的（`np1`×2 与 `npauto`×2 完成物逐字节相同），本实验不动它。但它把 `i01::res25` 里 plan15 那 6/161 的「(a) 提示集」从「不可测」变成**有实测机制和量级**：一次语料重建就能让 py 格移动 **0–5 道题**，正好是 6/161 的量级。所以 i01 把 plan15 写成「未记录的输入差」可以升级为「已测的语料版本差」，但不得说成已证就是那一次的原因（那个语料副本已不在）。
+**对 `i01::res32`（确定性解码地板 = 0）意味着什么**：**地板 0 仍成立**，因为它是用**同一份语料**内的重复测量定的（`np1`×2 与 `npauto`×2 完成物逐字节相同），本实验不动它。但它把 plan15 的「(a) 提示集」从「不可测」变成**有实测机制和量级**：一次语料重建就能让 py 格移动 **0–5 道题**，正好是 6/161 的量级；可以升级为「已测的语料版本差」，但不得说成已证就是那一次的原因（那个语料副本已不在）。
+
+  **指针更正（复核 D6）**：那句「131→139 由判分缺陷解释」在 **`docs/subprojects/i01-判分与基准有效性/PLAN.md:40`**，不在 `i01::res25`；而 `i01::res29` 已经改口（拿 m26 存活文本过原样/新版后处理都得 **139/161**，**131 不可复现**）。所以这不是「i01 仍主张后处理解释」，而是**它有一处 PLAN 遗留措辞与 res25 的叙述没跟着 res29 改**。要 i01 修的是 `PLAN.md:40` 与 `res25` 里 131→139 的措辞，把成因补成「语料代次（本文件 res20/res27 实测）」。a14 不改它的目录。
 
 - 状态：current。
 - 证据：`docs/subprojects/a14-部分给分/evidence/corpus_rescore.json`（66 格逐格的旧/新通过数与翻转题名，含四个语料文件的 sha256）。
@@ -241,9 +244,41 @@
   ```
   实跑负控输出：`给 HumanEval_79_decimal_to_binary 追加一条必失败断言后，判分给出 pass=False status=Exception` —— 与入库那条历史记录的形状一致，证明「语料变了 → 判定翻」这条链两端都观测到了。
 
+### res27 翻转的来源清单：最大来源是 `HumanEval_95`（32 格，OK→Exception），机制是**输入类型变了**，不是「期望值变了」
+
+- 151 个翻转只涉及 **20 道题**，但极不平均（`evidence/py_regrade.json` 的 `flipped` 列按题名计数）：
+
+  | 题 | 涉及格数 | 方向 |
+  |---|---|---|
+  | `HumanEval_95_check_dict_case` | **32** | OK → Exception |
+  | `HumanEval_79_decimal_to_binary` | 26 | Exception → OK |
+  | `HumanEval_65_circular_shift` | 18 | 双向 |
+  | `HumanEval_103_rounded_avg` | 16 | 双向 |
+  | `HumanEval_158_find_max` | 14 | 双向 |
+  | 其余 15 题 | ≤9 各 | 双向 |
+
+- **`HumanEval_95` 的机制可直接观测，是「输入类型变了」**：钉住语料的第三条断言是
+  `assert candidate({"p":"pineapple", 5:"banana", "a":"apple"}) == False` —— 字典里带 **int 键 `5`**。
+  于是把 `for k in d: if k.islower()` 这类解法直接打成 `AttributeError: 'int' object has no attribute 'islower'`。
+  实测（`m1-qwen4b-q3-py` 的完成物 + 钉住测试，`PYTHONHASHSEED` 取 `0/1/42/12345` 各 4 次）：**16/16 返回码都是 1，stderr 尾行都是这条 AttributeError**——确定性复现，不是超时/浮点/hash。
+  所以这一类翻转的成因是**测试喂进来的输入类型**（旧格那一代没有这条 int 键断言，或其断言不同），不是期望值写错。
+- **`HumanEval_79` 的成因只能推断**（见 res19 第 2 步的注）：旧文本不在盘上，无法 diff 是哪条断言、也无法区分是 prompt 还是 tests 变了；只能由「同一完成物 + 同一判分代码 + 判定翻转」推出「旧文本 ≠ 这一代」。
+- **所以机制那句话的正确写法**：语料重建改变了**判分输入**（断言集合/期望值/输入数据三者之一或多项），其中可证的一支是 `HumanEval_95` 的 **int 键输入类型**；`HumanEval_79` 那一支只能写成「文本变了，细节不可观测」。**不得**写成「期望值变了」当结论。
+- 状态：current。
+- 证据：`docs/subprojects/a14-部分给分/evidence/py_regrade.json`（每格的 `flipped` 题名）。
+- 复现：
+  ```
+  python3 -c "
+  import json,collections
+  d=json.load(open('docs/subprojects/a14-部分给分/evidence/py_regrade.json'))
+  c=collections.Counter(n for cell in d['cells'] for n in cell['flipped'])
+  print(c.most_common(6))"
+  ```
+  实跑输出：`[('HumanEval_95_check_dict_case', 32), ('HumanEval_79_decimal_to_binary', 26), ('HumanEval_65_circular_shift', 18), ('HumanEval_103_rounded_avg', 16), ('HumanEval_158_find_max', 14), ('HumanEval_161_solve', 9)]`。
+
 ### res20 全部 98 个历史 py 格用钉住语料重评：50 格改分、151/15516 题翻转；**且 `plan15` 那格的 131→139 由语料代次单独复现**
 
-- **范围**：库里 `bench_family='humaneval-multipl-e' AND language='py'` 有 117 行；其中 **98 个格**至今还有落盘完成物（`git ls-files` 不含它们），这 98 格共 **15516** 道题被重评。剩下 19 行没有完成物、不可重评（要重跑模型，GPU）。
+- **范围**：库里 `bench_family='humaneval-multipl-e' AND language='py'` 写这条时 **117 行**、复核时已涨到 **136 行**（库是活的，别人在并发入库）；其中 **98 个格**至今还有落盘完成物（`git ls-files` 不含它们），这 98 格共 **15516** 道题被重评。**未被重评的是「没有完成物」的那些行**：按 117 行算 19 行、按 136 行算 38 行——这个数要按当时的库重算，不能当常数（要重评得重跑模型，GPU）。
 - **语料代次**：`.wrapup/prompts`（`sha256sum -c SHA256SUMS` 6/6 OK），`humaneval-py.jsonl` 的 sha256 = **ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb**，于 `b57a71f`（2026-10-19）钉入仓库，文件 mtime 是 2026-10-14 20:51。判分身份串写成 `mpl-raw-greedy-768;corpus=ac14c3b0abfa`（**库里还没有这个串**）。
 - **结果**：**50/98 个格改变分数，151/15516 道题翻转（0.973%）**。逐格 Δ 分布：0 有 48 格，|Δ|≤2 有 40 格，|Δ|≥3 有 **10 格**。
 
@@ -305,7 +340,7 @@
   1. `i02` 入库：98 格（或只入 50 格改动的）新行 + 旧行标 superseded；先做编号备份、跑 `db_check`、核对 skip ledger 为空、行数对账。**这是改库 + 改报告，属需要授权的动作**。
   2. 重生成 `report.html`，§13 的 py 列随之变化（18 唯一 + 30 待按 `source_file` 对）。
   3. `a14` 自己的 27 个 py `testfrac` 文件要按同一代次重算（~12 s/格，≈6 CPU 分钟）并在同一次提交里换掉，否则二元列与比例列会是两代（见 res22）。
-- 状态：provisional（**建议**，未执行；执行需要 meta 授权，且入库属 i02）。
+- 状态：provisional（**建议**，未执行；执行需要 meta 授权，且入库属 i02）。本节 18/30/2 的配对同样是**库快照**下的结果（见 res24 的 D8 段）：库一涨，「唯一配对」的格数会变，所以 i02 落库时按 `(model, bench, language, protocol_old, n_items)` 重定位并**要求唯一**，不用这组计数当断言。
 - 复现：`python3 "docs/subprojects/a14-部分给分/py_regrade.py"` 的最后三行给出 18/30/2 的配对结果。
 
 ### res22 `testfrac` 的同一问题：它的分母也来自语料，所以旧比例值带两代
@@ -317,7 +352,7 @@
 
 ### res23 若按 res21 取代：a14 的裁决**不变**，只有绝对水平抬高（中位 +0.027）
 
-- 把 27 个 py 格按「钉住语料 + 今天口径」重算逐测试比例（27 × ~12 s CPU、0 GPU）：**18/27 格二元分数改变**（−2…+5 题），`mean_frac` 改变 **+0.0007…+0.0505，中位 +0.0268**，26 格里 24 格的改动 >0.01。
+- 把 27 个 py 格按「钉住语料 + 今天口径」重算逐测试比例（27 × ~12 s CPU、0 GPU）：**18/27 格二元分数改变**（−2…+5 题），`mean_frac` 改变 **+0.0007…+0.0505，中位 +0.0271**，**27 格里 25 格**的改动 >0.01（同一节里 18/27 用的也是 27 格分母；早先写的 +0.0268 与「26 格里 24 格」是把分母混了）。
 - **res10 的「两把不同的尺」不变、还更强**：`mean_frac − pass@1` 的中位从 **+0.1098** 变成 **+0.1324**（新语料对 py 略宽松，比例与二元的距离拉大）。
 - **res12/res18 的近差消歧裁决不变**：py 里旧二元差 1–2 题的 4 对，在新代次下「比例能否分开」的判定**逐对一格不改**（1 对分开、3 对不分）；变的只是二元侧的形状：
   - `m3-q3-py` vs `m3-q4-py`：旧 +1 题 → 新 +2 题（比例仍不分，Δ −0.0304 95%[−0.0912,+0.0331]）；
@@ -333,15 +368,16 @@
 ### res24 入库清单：`evidence/py_regrade_manifest.tsv`，98 格全列（改分 50 + 未改 48，151 题翻转）
 
 - 路径：`docs/subprojects/a14-部分给分/evidence/py_regrade_manifest.tsv`（TSV，一行一格，UTF-8，无时间戳，同样输入永远同样字节）。
-- 23 列：`tag, run, bench, language, model, protocol_old, protocol_source, identity_new, n, pass_old, pass_new, score_old, score_new, delta, flips, corpus, gen_corpus, db_rowids, db_match, db_models, db_source_files, db_protocols, db_run_tags, summary_file`。
+- **25 列**（复核 D7 更正两次：早先写 23，实为 24；补上 D8 的 `db_sha256` 后是 25）：`tag, run, bench, language, model, protocol_old, protocol_source, identity_new, n, pass_old, pass_new, score_old, score_new, delta, flips, corpus, gen_corpus, db_rowids, db_match, db_models, db_source_files, db_protocols, db_run_tags, db_sha256, summary_file`。核对：`head -1 …tsv | awk -F'\t' '{print NF}'` → `25`。
 - 关键列怎么读：
   - `flips` = JSON 数组，每题一条 `{name, old_status, new_status, old_pass, new_pass}`（例：`HumanEval_103_rounded_avg` 由 `Exception` → `OK`）。**这是 i02 唯一需要照抄的判定差异**，其余列只是给对账用。
   - `identity_new` = `<该格旧协议>;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14`。**59/98 行**填上了旧协议（`protocol_source=summary` 50 行、`db` 9 行）；余下 39 行只写两段（缺协议前缀），因为既没有该 run 的汇总文件、同分候选行又跨多个协议——**不猜**。
   - `db_rowids`/`db_match`：库里 (language=py, `_score` == 旧分) 的所有候选行，`unique` 19 / `multi` 73 / `none` 6。库里**没有 artefact 文件名列**，所以这组候选无法再收窄；配对键与 `make_report.py::_eval_status_index` 同口径。`none` 的 6 格**不在库里**（没有可取代的行，例：`m26-q38-27b-q3-py`，这正是 `plan15` 那格，它从未入库）。
   - `bench`：唯一配对时取库里的 `_bench`（如 `humaneval-py`），否则退成 `humaneval-multipl-e`。
 - **取代的是什么，写在清单里**：同一批落盘完成物 × 钉住语料的重评，**不是重新生成**。所以身份串两段缺一不可：`corpus=` 说明判定用的真值，`gen_corpus=` 说明完成物是在旧语料上生成的。
-- 状态：current。
-- 复现：`python3 "docs/subprojects/a14-部分给分/py_regrade.py" --manifest`（实跑输出：`写入 …py_regrade_manifest.tsv：98 行（改分 50，未改 48，翻转 151 题）` / `db_match: unique=19, multi=73, none=6`）。
+- **`db_rowids` 是快照，库是输入之一（复核 D8）**：清单里的 rowid 只在一个库状态（`db_sha256=007bf15c…0d01`，3355 行、其中 16 行协议串已带 `corpus=`）下有效；采样期间库被并发入库改写（py 的 MultiPL-E 行从 117 涨到 136），我先前引用的 rowid 已不存在，同一脚本对活库重算得到 **unique=18 / multi=75 / none=5**（而不是当时写在文档里的 19/73/6）。所以：**「同样输入永远同样字节」里的「输入」必须包含库**，清单里因此带 `db_sha256` 列。结论：**rowid 只能当线索，不能当键**；`i02` 已据此把入库改为按 `(model, bench, language, protocol_old, n_items)` 重定位并要求唯一，不许按 rowid 或分数匹配——本清单的 `model / bench / language / protocol_old / n` 五列就是为这个键准备的（`model` 只在唯一配对时填，空就是空，不猜）。
+- 状态：current（`db_rowids` 为 2026-10-21 快照）。
+- 复现：`python3 "docs/subprojects/a14-部分给分/py_regrade.py" --manifest`（实跑输出：`写入 …py_regrade_manifest.tsv：98 行（改分 50，未改 48，翻转 151 题）` / `db_match: unique=18, multi=75, none=5` / `db_sha256=007bf15c…0d01（rowid 只在该快照下有效）`）。
 - **i02 入库时请注意三条**：① 别按 `score_old` 去改行——那会把同分的别的格一起改掉（73 格是 multi）；用 `source_file`/`db_protocols` 与 ingest ledger 定行。② 旧行不删、标 superseded，新行协议串用 `identity_new`。③ 同一提交里换掉 27 个 py `testfrac` 文件（res22/res23），否则二元列与比例列会是两代。
 
 ### res25 7 对跨过结论边界的格子（报告 §13 与 `a06` 的输入）
@@ -381,9 +417,9 @@
 
 逐问作答（只限上述可得范围）：
 
-1. **哪些基准能从既有产物推出逐测试比例**：MultiPL-E `cpp/js/py/java` 四语 —— 78 格、12540 道题已经算好并在仓库里；`ifeval` 的 `inst_level_strict_acc` 本来就是指令级比例（106/106 份产物都有）；EvalPlus 在 dataset 分母到手后可算（≤30 CPU 分钟，0 GPU）；`rs/rb/pl`、`gsm8k/mmlu/arc_challenge`、`BFCL` 不可得（原因与代价见 res17）。
+1. **哪些基准能从既有产物推出逐测试比例**：MultiPL-E `cpp/js/py/java` 四语 —— 78 格、12540 道题已经算好并在仓库里；`ifeval` 的 `inst_level_strict_acc` 本来就是指令级比例（每份都有的不变量，份数随产物增长：初写 106、复核 108）；EvalPlus 在 dataset 分母到手后可算（≤30 CPU 分钟，0 GPU）；`rs/rb/pl`、`gsm8k/mmlu/arc_challenge`、`BFCL` 不可得（原因与代价见 res17）。
 2. **排序变了多少**：基本不变。按语言 Spearman **0.888–1.000**；108 个「只差一个字段」的配对里 **7** 对符号反转（6.5%）。但两个 Y **不在同一把尺**上：比例恒相等或更大，中位位移 **+0.114**（最大 +0.238）。所以「更细」带来的是均匀抬高，不是重新排序；把一个表里的数换成另一个而不改解读，就是错的。
-3. **歧义是否减少**：**没有稳定减少**。二元只差 1–2 道题的 9 对里，比例在 95% 配对区间下只分开了 **3** 对，其中 **2** 对与二元结论**相反**；而二元完全并列的 2 对，比例**一对也没分开**。同时，在同一批题上比例的题间 SE 与二元比中位 **0.96**、**28/74 格 ≥1** —— 「每道题 ~7 条测试」带来的不是 7 倍信息，而是一条函数写错就整道题全错，所以分母变大而有效样本量没怎么变。
+3. **歧义是否减少**：**没有稳定减少**。二元只差 1–2 道题的 9 对里，比例在 95% 配对区间下只分开了 **3** 对，其中 **1** 对与二元结论**相反**；而二元完全并列的 2 对，比例**一对也没分开**。同时，在同一批题上比例的题间 SE 与二元比中位 **0.96**、**28/74 格 ≥1** —— 「每道题 ~7 条测试」带来的不是 7 倍信息，而是一条函数写错就整道题全错，所以分母变大而有效样本量没怎么变。
 4. **更细的 Y 在哪里反而更差**：采样。`i01::res30` 已实测 temp=0.3 下逐题通过集 Jaccard **0.53–0.67** 而分数只摆 **6/164**；逐测试比例比二元更依赖**同一批完成物**，所以它在 temp>0 下的跑间噪声只会更大（本项目的跑间噪声**未测**，代价见 res17）。判分侧则相反：重跑逐字节相同（res15）。
 
 一句话：**二元 Y 丢的是「差多少」这个量，而不是「谁更好」这个排序；换成逐测试比例能得到一个 0–1 的连续量、能让阈值型比较（例如「距离目标分数还差多少」）稳定，但当两个设置真的挤在 1–2 道题上时，比例并不比二元更会分辩它们，而它自己的采样噪声更大。**
