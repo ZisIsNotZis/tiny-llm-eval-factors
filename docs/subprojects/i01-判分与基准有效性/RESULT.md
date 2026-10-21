@@ -135,6 +135,16 @@
 - 证据：`audits/run_all.py`、`audits/scoring_logic_check.py`；`git ls-files .wrapup/mres | grep -c '_eval.json'`。
 - 复现：全树 `python3 "docs/subprojects/i01-判分与基准有效性/audits/run_all.py"` → `exit 0`；clone 模拟 `I01_REPO_ROOT=$(mktemp -d) python3 "…/audits/run_all.py"` → `exit 2` 并列出 `interpreter … absent` / `… missing`。
 
+### res35 门的契约：不可得要如实报，而不是算失败（假红已修）
+
+- **契约（判据是「退出码 + 输出标记」的组合，不是退出码本身）**：`exit 0 且有实测行` → 绿；`exit 2 且有 UNMEASURED 行` → **绿**（它正确地说了「拿不到」，这正是干净 clone 的形态）；`exit 0 但无实测行` → 红（假绿）；`exit 2 但无 UNMEASURED 行` → 红（静默放弃）；`exit 1` 或崩溃 → 红；**解释器缺失（venv 不随仓库分发）→ 绿·不可得**，因为那是「没有证据」而不是「结论错」。
+- **两个环境都实测 exit 0**：本机 `.wrapup/i01_gate_host.out` 与三份模拟 clone（空树 `i01_gate_clone.out`、只含跟踪脚本与 `.wrapup/mpl_run.py`/`bfcl_run.py` 的假 clone `i01_gate_fakeclone.out`），两次都是 `10 green, 0 red`；本机那次的实测行数分别是 bfcl 19 / noise_floor 5 / multipl_e 9 / lmeval 18 / evalplus 55。
+- **门自己也有负控（`--self-test`，实跑 `exit=0`）**：伪造的「exit 0 但什么都没测」→ 判 **红**；伪造的「UNMEASURED + exit 2」→ 判 **绿**。所以这个门既能失败，也不会把不可得误判成失败。
+- 假 clone 里 `run_all.py` 仍然是 **exit 2**（`LOGIC green` + `GATE green`，5 条 DATA 逐项报缺什么）——与 `res34` 的语义一致，不受本修影响。
+- 状态：current。
+- 证据：`.wrapup/i01_gate_selftest.out`、`.wrapup/i01_gate_host.out`、`.wrapup/i01_gate_clone.out`、`.wrapup/i01_gate_fakeclone.out`、`.wrapup/i01_run_all_fakeclone.out`。
+- 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/unmeasured_gate_check.py" --self-test`；同脚本不带参数跑本机；`I01_REPO_ROOT=$(mktemp -d)` 跑空树模拟。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
