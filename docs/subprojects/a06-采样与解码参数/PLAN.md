@@ -32,7 +32,7 @@
 |---|---|---|---|---|---|
 | WP1 文档归位 + 协议普查 | a06 编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 与 `result.yaml` 已删除且 `plan3`/`res10` 以 `## <id> :: <text>` 事实存活；`sampling_census.py` 退出 0，缺任一输入（库 / `m27_summary.jsonl` / `m31_summary.jsonl` / `variant_panel.json`）时退出 2；`python3 docs/check_docs.py` 退出 0 | — | 1 会话 | 完成 |
 | WP2 逐题判决在协议改变时移动多少 | a06 worker（CPU 槽） | 对 `.wrapup/mres/m27-*_eval.json` 与 `m31-*_eval.json` 逐题比 greedy 锚点与每个 temp>0 / top_k 设置，给出每 (模型, 语言, 设置) 的 up/down 翻转数与 Jaccard，并回答「净分数移动 vs 逐题翻转」是否与 i01 的 temp=0.3 五跑地板同量级；缺产物时 exit 2 | WP1 | 0.2 CPU 时 | 完成：`peritem_moves.py` 比完 36 对（3 档 × 2 语言 × 6 设置）退出 0；Jaccard 0.40–0.69，23/36 对净移动 ≤ 6 道题（与 i01 五跑地板不可分），最极端一格净 +1 而 15 上/14 下；负控在空临时树里 exit 2 |
-| WP3 厂商推荐采样臂（`plan3` 的受控检查） | i02 加档 + GPU worker 跑 | 队列 A 的 10 个格全部入库并按 `rank_survival.py --check` 通过：MultiPL-E 上 Q2/Q3/Q4 × cpp/py 6 格 + 标准列 Q3 × 4 个基准；「厂商档下 cpp 的 Q3-vs-Q4 是否仍反转」由 `rank_survival.py` 的 `vendor` 行给出 survived/inverted，不靠散文 | 队列 A 的触发条件（见下） | 58 GPU 分钟（实测 40 + 8，含 25% 余量） | 待派（值已就位，等 i02 加档） |
+| WP3 厂商推荐采样臂（`plan3` 的受控检查） | GPU worker 跑（i02 只提供 R2 的臂） | 队列 A 的 10 个格全部入库并按 `rank_survival.py --check` 通过：R1 的 MultiPL-E 6 格 + EvalPlus 1 格，R2 的 GSM8K/IFEval/MMLU 3 格；MMLU 必须仍为 `0.6075`（正控）；「厂商档下 cpp 的 Q3-vs-Q4 是否仍反转」由 `rank_survival.py` 的 `vendor` 行给出 survived/inverted | 队列 A 的触发条件（见下） | 63 GPU 分钟（R1 59 + R2 4，均含 25% 余量） | 待派（值已就位，等 i02 的加档提交落 main） |
 | WP4 规模次序在采样下是否存活 | GPU worker | 队列 B 落地后在 `rank_survival.py` 里多一条 `axis=size` 的 ladder（0.8B/2B/4B，Q2 与 Q3 各一条），`--check` 通过，并打印每个规模对的 survived/inverted——与量化档结论分开报告，不得合并成一个「排序结论」 | 队列 B 的触发条件；另需第二个模型家族的厂商值 | 34 GPU 分钟（4 格 × 6.7 × 1.25） | 待派（可裁：AC 不依赖它） |
 | WP5 独立复核 | fresh-context reviewer（meta 派） | 对本目录三份文档、`sampling_census.py`、`peritem_moves.py`、`rank_survival.py --check` 的输出给裁决，指出证据缺口；reviewer 的结论取代本人的自评 | meta 的裁决要求等 `WP3` 落地后再派 | 一次复核 | 待派（按 meta 裁决排在 WP3 之后） |
 | WP6 排序判据机械化 | a06 编排者 | `rank_survival.py --check` 退出 0；三个 fixture 入库；两处负控成立（篡改一个分值 → exit 1；缺库 → exit 2）；RESULT 的「py 45 个非平比较 0 反序 / cpp Q3-vs-Q4 5 个反序」由 fixture 一行一行吐出而非散文 | WP2 | 0.2 CPU 时 | 完成 |
@@ -84,20 +84,30 @@
 所以门槛写成「`memory.free ≥ 2 × 1.89 GiB = 3800 MiB`」（2 倍是给同卡上别的仓库任务的增长留头，不是圆整数偏好）。
 起服后必须断言 server 自报 `n_slots = 1`（`/tmp/a06_vram_probe.log` 里 `load_model: initializing, n_slots = 1, n_ctx_slot = 8192`）。
 
-**队列 A（`WP3`，AC 核心，必须先跑）**
+**队列 A（`WP3`，AC 核心，必须先跑）** —— 分两条路线，因为参数到达采样器的方式不同
 
-| 格 | cell | 题数 | 分钟 |
-|---|---|---|---|
-| A1–A6 | Qwen3.5-2B `UD-Q2_K_XL` / `UD-Q3_K_XL` / `UD-Q4_K_XL` × cpp / py，MultiPL-E raw，厂商档 | 161 × 6 | 40 |
-| A7–A10 | Qwen3.5-2B `UD-Q3_K_XL`，标准列 MMLU / GSM8K / IFEval / EvalPlus HumanEval，厂商档 | 456 / 50 / 50 / 164 | 8 |
-| 合计 | | | **≈48 分钟（预算 58）** |
+| 路线 | 格 | cell | 题数 | 分钟 |
+|---|---|---|---|---|
+| R1 服务端参数（`m31` 模式） | A1–A6 | Qwen3.5-2B `UD-Q2_K_XL`/`UD-Q3_K_XL`/`UD-Q4_K_XL` × cpp/py，MultiPL-E raw，`-c 4096` | 161 × 6 | 50 |
+| R1 | A7 | 同上 Q3，EvalPlus HumanEval（`evalplus.codegen --temperature 1.0`） | 164 | 9 |
+| R2 逐请求参数（i02 的 `variant_panel` 臂） | A8–A10 | Qwen3.5-2B Q3，GSM8K / IFEval / MMLU，`-c 8192` | 50 / 50 / 456 | 4 |
+| 合计 | | | | **≈63 分钟** |
 
-- 为什么是这三档两语言：反序出现在 **cpp 的 Q3-vs-Q4**，所以 cpp 是必须的；py 是「次序存活」那一侧的对照，缺了它就只能报一个语言。
-  Q2 不可省：它让 cpp 的三个档对（Q2Q3、Q2Q4、Q3Q4）全部可比，只报 Q3Q4 一个是单点结论。
-- 为什么标准列只跑 Q3：`m131` 用的就是 Q3，厂商档因此能直接插进已有的五档表当第六档，不需要新建面板。
-- 入库后的判据：`rank_survival.py` 的 `SELECTION` 里加一行 `("vendor", …, COUNTED)`
-  （`WHERE run_tag = '<i02 的 tag>'`），`--write` 后 `--check` 退出 0；`rank_summary.tsv` 的 cpp `Q3>Q4` 行由 `inverts` 或 `survives` 给出答案。
-- 触发条件（三条全满足才起服）：① `grep -c vendor-recommended .wrapup/variant_panel.py` ≥ 1 且该改动已在 main；
+- **为什么必须分两条路线**：`mpl_run.py` 的 raw 请求只带 `temperature`（`run_m31.sh` 的注释与代码都写了这一点），
+  `evalplus.codegen` 的 CLI 只有 `--temperature`。所以代码列上 `top_p/top_k/min_p/presence_penalty` 只能**在起服时**传：
+  `llama-server … -c 4096 --top-p 1.00 --top-k 20 --min-p 0.0 --presence-penalty 2.0 --seed 1234` + `mpl_run.py gen --temperature 1.0`，
+  与 `m31` 完全同一模式（`run_m31.sh:66-68`）。这条路线下 `/props` 会显示全部五个量，**`/props` 就是生效证明**。
+- **A7 是 i02 的 `CODEGEN_UNSUPPORTED` 漏掉的一格**：那道 guard 挡的是 `variant_panel` 自己的 codegen 调用；
+  走 R1 时 EvalPlus 拿到的是服务端默认的 `top_p/top_k/min_p/presence_penalty` 加 CLI 的 `--temperature 1.0`，四个量没有被丢。
+  若不愿走 R1，就把 A7 登记为「该臂的 code 列显式未测 + 理由」，**不要**用 temp 0.7 顶替。
+- **ctx 不同就不能混**：R1 用 `-c 4096` 是为了与 `m3`/`m27`/`m31` 的 cpp/py 锚点逐列同协议；R2 用 `-c 8192` 是为了与 `m131` 同协议。
+  两边的格**不许**互相池化，协议串会带 `sampling=` 段与各自的 ctx。
+- **A10 是正控不是测量**：MMLU 走对数似然、不采样，所以它在厂商档上必须仍是 `0.6075`；变了说明链路坏了，不是采样效应。
+- **seed 固定为 1234**：与 `m27`/`m31` 同 seed，使 R1 的六个格与既有锚点只差采样参数这一项。代价是单次抽样，分不开「一次抽样」与「分布」，
+  所以 R1 的结论只能写「在这一档取值下」，要分布就得加重复（见 `WP4` 之外的后续）。
+- 入库后的判据：`rank_survival.py` 的 `SELECTION` 加一行 `("vendor", …, WHERE run_tag = '<新 tag>' AND temp = '1.0'`, True)，
+  `--write` 后 `--check` 退出 0；`rank_summary.tsv` 的 cpp `Q3>Q4` 行由 `inverts` 或 `survives` 给出答案。
+- 触发条件（三条全满足才起服）：① `.wrapup/variant_panel.py` 的 `vendor-recommended` 改动**已提交到 main**（当前它还是工作区的 ` M`，不算数）；
   ② `bash .wrapup/gpu_locked.sh true` 能立刻拿到锁；③ `nvidia-smi --query-gpu=memory.free` ≥ 3800 MiB。
   任一不满足就排队，不占用槽。
 

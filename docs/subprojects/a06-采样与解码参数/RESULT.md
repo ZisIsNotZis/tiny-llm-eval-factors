@@ -132,6 +132,16 @@
 - repro: `bash .wrapup/gpu_locked.sh bash -c 'nvidia-smi --query-gpu=memory.free --format=csv,noheader; /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/f6d5376be1edb4d416d56da11e5397a961aca8ae/Qwen3.5-2B-UD-Q4_K_XL.gguf --port 8977 -c 8192 -np 1 -ngl 99 --jinja & sleep 20; nvidia-smi --query-gpu=memory.free --format=csv,noheader; curl -s http://127.0.0.1:8977/props | head -c 200; kill %1'`。
 - 限制：这是**空载**占用（无 prompt cache、无 batch），满负荷时 prompt cache 每条约 39.4–39.8 MiB（`server.log` 的 `alloc` 行），所以门槛取 2× 实测值而不是 1×。
 
+## res-two-routes :: 厂商臂的参数只能分两条路线到达采样器，因为两个客户端里只有一个自由度：`mpl_run.py` 的 raw 请求体只有 `prompt/temperature/n_predict/stop`（`mpl_run.py:146-150`），`evalplus.codegen` 的 CLI 只有 `--temperature`，所以代码列上的 `top_p/top_k/min_p/presence_penalty` 必须**在起服时**传（`run_m31.sh:66-68` 就是这么跑 `top_k` 的：`-c 4096 --top-p 0.95 --top-k $TK --min-p 0.05 --seed 1234`）；而 lm-eval 那条走 `--gen_kwargs`，五个量能逐请求传。
+
+- kind: measured
+- evidence: `.wrapup/mpl_run.py` 的 146–150 行与 157–160 行的 payload 字面量；`.wrapup/run_m31.sh` 的 66–68 行；`.wrapup/variant_panel.py` 的 `--gen_kwargs f"{kstr},max_gen_toks=1024"`（kstr 由 `kws` 拼出，厂商臂的五个键都在 `kws` 里）。
+- repro: `sed -n '140,170p' .wrapup/mpl_run.py`；`sed -n '60,70p' .wrapup/run_m31.sh`。
+- 后果（直接改队列）：① 代码列的厂商档走 `m31` 模式（服务端参数 + `--seed 1234`），这一路线下 `/props` 会显示全部五个量，所以 `/props` **是**生效证明；
+  ② lm-eval 路线的逐请求参数**不**会出现在 `/props`（它只反映服务端默认值，实测 `temperature=0.8`），所以那条路线不能拿 `/props` 当证明，只能靠 `--gen_kwargs` 的日志；
+  ③ `variant_panel.py` 里 i02 加的 `CODEGEN_UNSUPPORTED = {"vendor-recommended"}` 挡的是**它自己**的 codegen 调用，不覆盖 `m31` 模式，所以在 R1 上 EvalPlus 那一格仍然可测（`--temperature 1.0` + 服务端默认的其余四个量）。
+- 限制：`/props` 的这两种行为是一条**实测**结论的一部分（`res-vram-and-props` 里默认 `temperature=0.8`），但「逐请求参数不写进 `/props`」是从「`/props` 显示 0.8 而面板声明 0/0.3/0.7」推出的，没有单独读数；要坐实得在 lm-eval 路线跑一次并同时抓 `/props` 与 `--gen_kwargs` 日志。
+
 ## res-effect-control :: 「采样参数真的生效」的正确负控是**同 seed 下改一个参数看输出变不变**，不是「temp>0 所以两次输出应该不同」：同一个 seed=1234 下，`temperature=0` 两次请求逐字相同（确定性），`temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0` 两次请求也**逐字相同**（llama.cpp 每请求按 seed 重置 RNG），而把 `presence_penalty` 从 2.0 改成 0.0（其余不变）输出立刻改变。所以判据是：固定 seed 重复 → 全同；只改一个参数 → 必须不同；两者同时成立才证明参数进了采样器。
 
 - kind: measured
