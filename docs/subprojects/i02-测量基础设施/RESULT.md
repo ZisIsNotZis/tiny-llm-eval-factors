@@ -259,3 +259,11 @@
 - producer: `python3 checks/vendor_arm_negative_control.py`（协议串逐字含五个量、vendor ≠ greedy、top_k=1 ≠ top_k=200、标签不同）
 - 未验证（硬阻塞）: 服务端是否真按这五个量采样需要模型文件，本机已无 gguf；要跑的命令是 `python3 .wrapup/variant_panel.py --model <X.gguf> --tag a06-vendor-sampling --axis sampling`，证据取 `variant_panel.json` 的 `sampling_spec`、`server.log` 的采样回显与五列分数。`seed` 未固定，所以该臂的协议里不带 seed，重跑不保证逐字节一致——这一点必须随结果一起写。
 
+## res56 :: `vendor-recommended` 臂有入库路径且不与 greedy 合并；但「五个参数真的进了采样」在本机、本 build 上**未验证**（服务端判据两试皆不成立）。
+
+- kind: measured
+- status: current
+- evidence: **入库**：`ingest_variant` 现在把面板行的五个采样量写进 DB 列（`temp`/`top_p`/`top_k`/`min_p`/`presence_penalty`，一行 `seed` 也取面板值），协议串为 `variant-<axis>-<label>-<harness>;<sampling_spec>`。负控：同一面板里两份只差 `presence_penalty`（2.0 vs 0.0）的记录，入库为 **4 行（2 臂 × 2 基准）**、两条协议串不同、`presence_penalty` 列分别为 `0.0`/`2.0`，再跑一次行数不变（`python3 checks/variant_ingest_negative_control.py` → PASS）。**服务端（未验证）**：`audits/vendor_arm_probe.py` 在 Qwen3.5-2B-UD-Q2_K_XL 上按 `-c 8192 -np 1` 起服，同 `seed=1234` 请求两次输出**逐字相同**（seed 生效），但把 `presence_penalty` 2.0→0.0 与把 `top_k` 20→1 都**没有改变输出**，`/props` 只回显 `n_ctx=8192`（不回显采样默认值）。第三次想加 `temperature 0 vs 1.0` 的判据时 GPU 锁被 a06 的作业占着、`flock -w 240` 超时，那一步没跑。因此「五个量真的生效」仍是**未验证**，不是通过。
+- producer: `python3 checks/variant_ingest_negative_control.py`；`bash .wrapup/gpu_locked.sh python3 "docs/subprojects/i02-测量基础设施/audits/vendor_arm_probe.py"`（证据 `audits/vendor_arm_probe.json`）
+- 待查（给 a06）: 这个 llama-server build 的 OpenAI 端点是否吞掉 `top_k`/`min_p`/`presence_penalty`（`/props` 不回显，可能是原因），或必须用服务端 flag/`/props` 设置；a06 观察到 presence_penalty 改变输出用的是哪条通道，需要对齐后重跑这个探针。
+

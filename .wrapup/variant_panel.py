@@ -74,7 +74,7 @@ AXES = {
 
 
 # 厂商推荐采样的规范串：五个量全部写进来，顺序固定，缺一不可。
-SAMPLING_KEYS = ("temperature", "top_p", "top_k", "min_p", "presence_penalty")
+SAMPLING_KEYS = ("temperature", "top_p", "top_k", "min_p", "presence_penalty", "seed")
 # evalplus 的 CLI 只接受 --temperature，其余四个量传不进去：该臂的 codegen 一律显式跳过，
 # 记为「不支持」，绝不用默认值顶替（否则那些格会被当成按厂商推荐采样测出来的）。
 CODEGEN_UNSUPPORTED = {"vendor-recommended"}

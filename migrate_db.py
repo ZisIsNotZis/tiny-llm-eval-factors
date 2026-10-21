@@ -1668,13 +1668,18 @@ def ingest_variant(con):
                     # would otherwise want to record.
                     "cache_type_k_draft": kpart, "cache_type_v_draft": vpart,
                     "reasoning": "off", "spec_type": "none", "spec_draft_n_max": "0",
+                    # 采样参数一律从面板行里取；缺省只在面板确实没记时才用（并留痕）。
+                    # 之前 top_p/min_p/presence_penalty 被写死成 0.95/0.05/0.0，于是
+                    # 「厂商推荐采样」那一臂会与 greedy 落成同一个测量身份。
                     "temp": str(samp.get("temperature", 0.0)),
-                    "top_p": "0.95", "top_k": str(samp.get("top_k", 40)),
-                    "min_p": "0.05", "presence_penalty": "0.0",
+                    "top_p": str(samp.get("top_p", 0.95)),
+                    "top_k": str(samp.get("top_k", 40)),
+                    "min_p": str(samp.get("min_p", 0.05)),
+                    "presence_penalty": str(samp.get("presence_penalty", 0.0)),
                     "_bench": bench, "_score": val, "_bad_rate": None,
                     "_wall_time": None, "_tok_s": None, "_file_size": None,
                     "run_tag": tag, "rep": 1, "ctx_size": 8192, "parallel_slots": 1,
-                    "seed": None,
+                    "seed": samp.get("seed"),
                     # 采样参数写进协议串：只写标签名会让「厂商推荐」「greedy」在报告行里合并
                     # （top_k 与 fa 都踩过这个坑）。`sampling=` 段来自面板的 variant_panel.json。
                     "protocol": (f"variant-{axis}-{label}-"

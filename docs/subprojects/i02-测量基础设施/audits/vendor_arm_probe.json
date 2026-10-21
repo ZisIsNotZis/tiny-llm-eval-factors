@@ -1,0 +1,32 @@
+{
+ "model": "/home/z/hf/Qwen3.5-2B-UD-Q2_K_XL.gguf",
+ "server_defaults": {
+  "n_ctx": 8192
+ },
+ "request": {
+  "model": "x",
+  "messages": [
+   {
+    "role": "user",
+    "content": "List the first 40 positive integers, separated by commas. No other words."
+   }
+  ],
+  "max_tokens": 64,
+  "seed": 1234,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "top_k": 20,
+  "min_p": 0.0,
+  "presence_penalty": 2.0
+ },
+ "same_seed_twice_identical": true,
+ "presence_penalty_change_changes_output": false,
+ "top_k_change_changes_output": false,
+ "outputs": {
+  "a": "",
+  "b": "",
+  "c": "",
+  "d_top_k1": ""
+ },
+ "verdict": "FAIL"
+}
