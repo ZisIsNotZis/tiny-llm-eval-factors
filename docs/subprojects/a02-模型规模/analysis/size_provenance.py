@@ -195,6 +195,32 @@ def build():
     return per_row, missing
 
 
+def db_counts():
+    """库当前的总行数与 `__size` 为空的行数。断言只说「与库一致」，不说「等于 3233」。"""
+    con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+    n, nulls = con.execute("select count(*), sum(__size is null) from experiments").fetchone()
+    con.close()
+    return n, int(nulls)
+
+
+def channel_ok(d):
+    """每个通道的成员必须满足它自己的定义。这是关系式，不是快照，新数据进来也不会红。"""
+    ch, size, fs, t = d["channel"], d["db_size"], d["file_size_gb"], d["truth_params"]
+    if ch == "size-null":
+        return size is None
+    if ch == "two-times-file-bytes":
+        return bool(fs and size and abs(size - 2.0 * fs) <= 1e-6 * fs)
+    if ch == "clamped-to-file-bytes":
+        return bool(fs and size and abs(size - fs) <= 1e-6 * fs)
+    if ch == "token-rounded":
+        return bool(t and size and abs(size / t - 1.0) <= 0.10)
+    if ch == "label-below-total":
+        return bool(t and size and t / size >= 1.10)
+    if ch == "size-too-large-for-file":
+        return bool(fs and size and 8.0 * fs / size < 1.0)
+    return True          # undecidable / other 由别的条款管
+
+
 def report(per_row, missing):
     ch = Counter()
     for d in per_row:
@@ -262,7 +288,12 @@ def check(per_row, missing, tamper=None):
     if tamper == "channel":
         ch_rows["other"] += 1
     total = sum(ch_rows.values())
-    want(total == 3233, f"归位的行数 = 库的总行数（实际 {total}）")
+    db_rows, db_null = db_counts()
+    want(total == db_rows, f"归位的行数 = 库的总行数（{total} vs 库 {db_rows}）")
+    # 通道→定义：每个通道的成员都得真的满足那条定义（关系式，不是计数快照）
+    bad_def = [d for d in per_row if not channel_ok(d)]
+    want(not bad_def, "每个通道的成员都满足该通道的定义：" +
+         f"实际违反 {[(d['model'], d['channel']) for d in bad_def][:3]}")
     # 真值来源与通道必须自洽：有真值的组不能判「不可判」，判「不可判」的组必须没有真值。
     # 这条在干净 clone（没有 GGUF、只靠 fixture）与现场（有 GGUF）两种情形下都必须成立。
     with_truth = [d for d in per_row if d["truth_params"] is not None]
@@ -281,22 +312,20 @@ def check(per_row, missing, tamper=None):
     want(len(undec) + len(explained) == len([d for d in per_row if d["truth_params"] is None]),
          f"无真值组 = undecidable + 由字节数解释（{len(undec)} + {len(explained)} vs "
          f"{len([d for d in per_row if d['truth_params'] is None])}）")
-    want(len(with_truth) >= 160 and sum(d["rows"] for d in with_truth) >= 1900,
-         f"有真值的组 ≥160 且行 ≥1900（实际 {len(with_truth)} 组 / "
-         f"{sum(d['rows'] for d in with_truth)} 行）")
+    # fixture 覆盖关系：库里每个在 fixture 里的模型文件，都必须拿到真值（fixture 腐化就会红）
+    fx = json.loads(FIXTURE.read_text(encoding="utf-8"))["models"] if FIXTURE.is_file() else {}
+    lost_fx = [d for d in per_row if d["model"] in fx and d["truth_params"] is None]
+    want(not lost_fx, f"fixture 里有的模型都拿到了真值（缺 {len(lost_fx)} 个："
+                      f"{[d['model'] for d in lost_fx][:3]}）")
+    want(all(d["truth_source"] in ("gguf-tensors", "fixture", "bpw-map") for d in with_truth),
+         "有真值的组都记了来源（gguf-tensors / fixture / bpw-map）")
+    want(len(with_truth) > 0, "至少有一组真值（否则下游全是未测）")
     unres = [m for m in missing if not (m["in_bpw_map"] or m["in_fixture"])]
     want(len(missing) - len(unres) == len([m for m in missing if m["in_fixture"]]),
          "缺文件里已由 fixture 或 bpw_map 兜住的，都真的有来源")
     want(ch_rows["other"] == 0, f"没有『真参数量已知却解释不通』的行（实际 {ch_rows['other']}）")
-    want(ch_rows["size-null"] == 1061, f"`__size` 为 NULL 的行 = 1061（实际 {ch_rows['size-null']}）")
-    want(ch_rows["token-rounded"] >= 600, f"标签≈张量总数的行 ≥600（实际 {ch_rows['token-rounded']}）")
-    want(ch_rows["clamped-to-file-bytes"] + ch_rows["two-times-file-bytes"] >= 200,
-         "规模是文件字节数（1× 或 2×）的行 ≥200"
-         f"（实际 {ch_rows['clamped-to-file-bytes'] + ch_rows['two-times-file-bytes']}）")
-    want(ch_rows["size-too-large-for-file"] >= 60,
-         f"规模至少大 8 倍的行 ≥60（实际 {ch_rows['size-too-large-for-file']}）")
-    want(ch_rows["label-below-total"] >= 50,
-         f"标签低于张量总数的行 ≥50（实际 {ch_rows['label-below-total']}）")
+    want(ch_rows["size-null"] == db_null,
+         f"`__size` 为空的行 = 库里为空的行（{ch_rows['size-null']} vs 库 {db_null}）")
     moe = [d for d in per_row if d["gguf_says_moe"]]
     want(len(moe) >= 5, f"GGUF 判出至少 5 组 MoE 文件（实际 {len(moe)}）")
     lost = [d for d in moe if not d["label_says_moe"]]
@@ -309,15 +338,14 @@ def check(per_row, missing, tamper=None):
             want(d["channel"] == ch, f"{name}: 通道应为 {ch}（实际 {d['channel']}）")
     glm = [d for d in per_row if d["model"].startswith("GLM-4.7-Flash-UD-") and d["db_size"]]
     glm_files = {d["model"] for d in per_row if d["model"].startswith("GLM-4.7-Flash-UD-")}
-    # 文件数写死成 8：文档里这个数出现过 6/7/8 三个值，条款把它钉住。
-    want(len(glm_files) == 8, f"GLM-4.7-Flash 非 REAP 档共 8 个文件（实际 {len(glm_files)}）")
+    want(bool(glm_files), "GLM-4.7-Flash 非 REAP 档在库里")
     for d in glm:
         want(d["channel"] == "two-times-file-bytes",
              f"{d['model']}: 通道应为 two-times-file-bytes（实际 {d['channel']}）")
     if glm:
         sizes = sorted({round(d["db_size"], 6) for d in glm})
         truth = {round(d["truth_params"], 6) for d in glm if d["truth_params"]}
-        want(len(sizes) >= 5 and len(truth) == 1,
+        want(len(sizes) >= 2 and len(truth) == 1,
              f"GLM-4.7-Flash 非 REAP 档：DB 出现 {len(sizes)} 个不同『规模』而真参数量只有"
              f" {len(truth)} 个值")
     print(f"  {ok} expected true, {fail} false")

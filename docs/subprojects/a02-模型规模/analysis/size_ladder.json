@@ -346,7 +346,7 @@
   },
   "x_db_size": {
    "usable": false,
-   "why": "`__size` 覆盖率 61%（252/416 行有值）；2 个模型有多个值，8 个通道错"
+   "why": "`__size` 覆盖率 59%（252/426 行有值）；2 个模型有多个值，8 个通道错"
   },
   "recipes_checked": 3,
   "detail": {
@@ -813,7 +813,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 49%（379/779 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 46%（379/821 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 3,
   "detail": {
@@ -1142,7 +1142,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 51%（70/137 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 46%（70/151 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -1382,7 +1382,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 94%（786/838 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 93%（786/842 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -1798,7 +1798,7 @@
   },
   "x_db_size": {
    "usable": false,
-   "why": "`__size` 覆盖率 53%（40/76 行有值）；2 个模型有多个值，8 个通道错"
+   "why": "`__size` 覆盖率 47%（40/85 行有值）；2 个模型有多个值，8 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -2617,7 +2617,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 69%（44/64 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 61%（44/72 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -2686,7 +2686,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 7%（6/85 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 6%（6/96 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 1,
   "detail": {
@@ -2910,7 +2910,7 @@
   },
   "x_db_size": {
    "usable": false,
-   "why": "`__size` 覆盖率 29%（8/28 行有值）；0 个模型有多个值，2 个通道错"
+   "why": "`__size` 覆盖率 27%（8/30 行有值）；0 个模型有多个值，2 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -2966,7 +2966,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 11%（4/38 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 10%（4/40 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -3068,7 +3068,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 17%（4/24 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 14%（4/28 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -3114,7 +3114,7 @@
   },
   "x_db_size": {
    "usable": true,
-   "why": "`__size` 覆盖率 33%（10/30 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 26%（10/38 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -3160,7 +3160,7 @@
   },
   "x_db_size": {
    "usable": false,
-   "why": "`__size` 覆盖率 11%（4/36 行有值）；0 个模型有多个值，2 个通道错"
+   "why": "`__size` 覆盖率 10%（4/40 行有值）；0 个模型有多个值，2 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -3325,7 +3325,7 @@
   },
   "x_db_size": {
    "usable": false,
-   "why": "`__size` 覆盖率 15%（2/13 行有值）；0 个模型有多个值，0 个通道错"
+   "why": "`__size` 覆盖率 12%（2/16 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},
@@ -3422,6 +3422,36 @@
   "x_db_size": {
    "usable": false,
    "why": "`__size` 覆盖率 100%（2/2 行有值）；0 个模型有多个值，0 个通道错"
+  },
+  "recipes_checked": 0,
+  "detail": {},
+  "monotone_in_truth": null,
+  "inversions": []
+ },
+ "LFM2.5-a04-uni45": {
+  "files": {
+   "LFM2.5-8B-A1B-a04-uni45.gguf": {
+    "label": "8B-A1B",
+    "truth": 8.467856832,
+    "sizes": [],
+    "channels": [
+     "size-null"
+    ],
+    "score": 0.6219512195121951,
+    "n": 164
+   }
+  },
+  "x_truth": {
+   "usable": false,
+   "why": "1/1 个文件有实测参数量（全部）"
+  },
+  "x_label": {
+   "usable": false,
+   "why": "0 个文件标签=真参数量，0 个标签不是参数量"
+  },
+  "x_db_size": {
+   "usable": false,
+   "why": "`__size` 覆盖率 0%（0/10 行有值）；0 个模型有多个值，0 个通道错"
   },
   "recipes_checked": 0,
   "detail": {},

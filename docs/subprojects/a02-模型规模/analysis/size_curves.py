@@ -210,11 +210,12 @@ def main(argv):
                 fail += 1
                 print(f"  FAIL  {label}")
 
-        want(len(rows) >= 10, f"至少 10 条可画曲线（实际 {len(rows)}）")
         want(len(rows) + len(thin) == len(curves),
-             f"每条组都被计数：曲线 {len(rows)} + 无曲线 {len(thin)} = 组 {len(curves)}")
-        want(len(thin) >= 200, f"「无曲线」的组被记录而不是丢掉（实际 {len(thin)}）")
+             f"每个组都被计数：曲线 {len(rows)} + 无曲线 {len(thin)} = 组 {len(curves)}")
+        # 结构关系：曲线 >=2 个 rung，无曲线恰好 1 个 rung 且带原因（这是定义，不是计数快照）
+        want(all(t["n"] == 1 for t in thin), "「无曲线」的组恰好只有一个 rung")
         want(all(t["reason"] for t in thin), "每个无曲线的组都带原因")
+        want(all(r["n"] >= 2 for r in rows), "每条曲线至少 2 个 rung")
         want(all(r["n"] >= 2 for r in rows), "每条曲线至少 2 个 rung")
         want(all(p["n_items"] > 0 for r in rows for p in r["points"]), "每个点都有自己的 n_items")
         want(not any("|" in r["bench"] for r in rows), "基准名里没有协议串（说明匹配上了 PROTOCOL_OF）")

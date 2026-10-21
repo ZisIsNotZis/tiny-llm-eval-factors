@@ -340,7 +340,7 @@
       0.0719,
       0.1698
      ],
-     "replicates": 3
+     "replicates": 2
     },
     {
      "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
@@ -466,7 +466,7 @@
       0.092,
       0.1982
      ],
-     "replicates": 3
+     "replicates": 2
     },
     {
      "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
@@ -5545,7 +5545,7 @@
    "reason": "only one measured-parameter rung",
    "model": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
    "params_b": 1.8818,
-   "score": 0.66
+   "score": 0.665
   },
   {
    "lineage": "Qwen3.5",
@@ -5600,7 +5600,7 @@
    "reason": "only one measured-parameter rung",
    "model": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
    "params_b": 1.8818,
-   "score": 0.55
+   "score": 0.575
   },
   {
    "lineage": "Qwen3.5",
@@ -6232,17 +6232,6 @@
   {
    "lineage": "Ternary-Bonsai",
    "recipe": "Q2_g64",
-   "bench": "humaneval-cpp",
-   "language": "cpp",
-   "n": 1,
-   "reason": "only one measured-parameter rung",
-   "model": "Ternary-Bonsai-27B-Q2_g64.gguf",
-   "params_b": 26.896,
-   "score": 0.6957
-  },
-  {
-   "lineage": "Ternary-Bonsai",
-   "recipe": "Q2_g64",
    "bench": "humaneval-plus",
    "language": "python",
    "n": 1,
@@ -6250,17 +6239,6 @@
    "model": "Ternary-Bonsai-27B-Q2_g64.gguf",
    "params_b": 26.896,
    "score": 0.8902
-  },
-  {
-   "lineage": "Ternary-Bonsai",
-   "recipe": "Q2_g64",
-   "bench": "humaneval-py",
-   "language": "py",
-   "n": 1,
-   "reason": "only one measured-parameter rung",
-   "model": "Ternary-Bonsai-27B-Q2_g64.gguf",
-   "params_b": 26.896,
-   "score": 0.764
   },
   {
    "lineage": "Ternary-Bonsai",
@@ -6572,12 +6550,12 @@
   }
  ],
  "skipped_cells": {
-  "no recipe": 12
+  "no recipe": 18
  },
  "group_counts": {
-  "with_recipe": 328,
+  "with_recipe": 326,
   "curve_ge2": 63,
-  "thin_lt2": 265
+  "thin_lt2": 263
  },
  "protocol_of": {
   "humaneval": "evalplus-0.3.1-openai-chat-greedy-base",

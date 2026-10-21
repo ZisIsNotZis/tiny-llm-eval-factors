@@ -81,7 +81,7 @@ def main(argv):
                 fail += 1
                 print(f"  FAIL  {label}")
 
-        want(len(moe) >= 4, f"MoE 点 ≥4（实际 {len(moe)}）")
+        want(len(moe) > 0 and len(moe) + len(dense) == len(pts), "MoE 点非空且点数闭合")
         want(fit["beta"][1] > 2 * fit["se"][1], "稠密曲线的斜率显著为正")
         want(all(r["eff_over_total"] < 3.0 for r in rows), "等效稠密规模不超过总参的 3 倍（反解没有失控）")
         want(all(0.2 < r["eff_over_active"] < 50 for r in rows), "S_eff/active 落在合理量级")

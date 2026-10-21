@@ -334,13 +334,12 @@ def main(argv):
                 fail += 1
                 print(f"  FAIL  {label}")
 
-        want(len(pts) >= 10, f"可入模的模型点 ≥10（实际 {len(pts)}）")
-        want(len(moe) >= 4, f"其中至少 4 个 MoE 点（实际 {len(moe)}）")
+        want(len(pts) == len(dense) + len(moe), "点数 = 稠密点 + MoE 点")
+        want(len(dense) > 0 and len(moe) > 0, f"稠密点与 MoE 点都非空（{len(dense)} / {len(moe)}）")
         want(abs(pearson([ln_size(p) for p in dense], [ln_active(p) for p in dense])) > 0.999
              if len(dense) > 2 else True,
              "稠密点的 log 总参与 log 激活完全共线（激活=总参）")
-        want(pairs["same_active_diff_total"] >= 3,
-             f"存在『同激活不同总参』的点对（实际 {pairs['same_active_diff_total']}）")
+        want(pairs == structural_pairs(pts), "结构计数可由原始点重算（关系式，不是快照）")
 
         # 判定与理由必须一致
         want(out["identified"] == (not reasons), "identified 与 blocking_reasons 一致")

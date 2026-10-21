@@ -29,6 +29,17 @@
    "eff_over_total": 0.08
   },
   {
+   "model": "LFM2.5-8B-A1B-a04-uni45.gguf",
+   "family": "LFM2.5-a04-uni45",
+   "total_b": 8.468,
+   "active_b": 1.686,
+   "score": 0.622,
+   "n_items": 164,
+   "effective_dense_b": 5.38,
+   "eff_over_active": 3.19,
+   "eff_over_total": 0.64
+  },
+  {
    "model": "LFM2.5-8B-A1B-UD-Q2_K_XL.gguf",
    "family": "LFM2.5",
    "total_b": 8.468,

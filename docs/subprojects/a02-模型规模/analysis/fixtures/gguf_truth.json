@@ -115,6 +115,25 @@
    "tensor_bytes": 3994875648,
    "unknown_ggml_types": []
   },
+  "LFM2.5-8B-A1B-a04-uni45.gguf": {
+   "active_params": 1685667264,
+   "arch": "lfm2moe",
+   "bpw_file": 4.531,
+   "bpw_tensors": 4.5232,
+   "expert_bpw": 4.5152,
+   "expert_count": 32,
+   "expert_params": 7751073792,
+   "expert_tensor_bytes": 4374659072,
+   "expert_used": 4,
+   "file_bytes": 4795968864,
+   "file_size_gb": 4.795968864,
+   "n_params": 8467856832,
+   "shared_bpw": 4.6103,
+   "shared_params": 716783040,
+   "shared_tensor_bytes": 413071104,
+   "tensor_bytes": 4787730176,
+   "unknown_ggml_types": []
+  },
   "LFM2.5-8B-A1B-m55-Q3_K_M.gguf": {
    "active_params": 1685667264,
    "arch": "lfm2moe",
