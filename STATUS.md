@@ -18,7 +18,7 @@
 
 仍开放，均不得记为通过：
 
-1. **`report_inputs/size_claims.json` 与 a02 的产物不一致**：`python3 report_inputs/build_size_claims.py --check` exit 1，而 `./reproduce.sh` 只记 WARN 就继续，所以报告第二节停在这个旧值上仍判绿。工作包：该里程碑表里的 `p-entry1`，紧接着的 `p-entry2` 是让它必须被处理而不是被记录。
+1. **输入漂移仍只记 WARN**：`p-entry1` 已结项——`size_claims.json` 跟着 a02 重生成到 3364 行 / 170 组 / 77 文件，`python3 report_inputs/build_size_claims.py --check` exit 0，`./reproduce.sh` 在 `ba817d7` 上 exit 0 且判报告逐字节可重建。仍开放的是 `p-entry2`：`./reproduce.sh` 遇到「输入与其来源不一致」只记 WARN 就继续，所以下一次漂移仍会带着旧值判绿。
 2. **三类未测不是 0**：`BLOCKED-on-VRAM`（已定价、未买）、`GATE-FAIL`（本环境缺运行时）、「本环境不可测」；入口 `docs/subprojects/i02-测量基础设施/RESULT.md::res72`。
 3. **已记录的两条测量限制**（属 i02 的验收边界，不是缺陷待办）：表格行键容纳不下 `top_k`（`docs/subprojects/i02-测量基础设施/RESULT.md::res41`）、审计只能证明值在面板多重集里而非逐格归属。
 
@@ -32,4 +32,4 @@
 
 ## 下一步
 
-按仓内已写明的顺序：`r-entry1` → `r-entry2` / `r-entry3` → `r-entry4`（本次推进已做）→ `p-entry1` 的 `size_claims` 漂移裁决 → `p-entry2` 把这类 WARN 判成 FAIL。未测项按 `docs/plan/subprojects.md` 的三类读法对待，不并入本文件的「当前状态」。
+按仓内已写明的顺序：`p-entry2`（把「输入与其来源不一致」的 WARN 判成 FAIL，负控是一个故意改坏的输入使 `./reproduce.sh` 非零退出）→ `p-entry3`（下一层证据行：35 个被点名却未入库的 `.wrapup/…`，其中 9 个 `.log` 共 9.3 MB）。`p-entry1` 已结项，证据见 `docs/plan/subprojects.md` 的 `entry` 节末。未测项按 `docs/plan/subprojects.md` 的三类读法对待，不并入本文件的「当前状态」。

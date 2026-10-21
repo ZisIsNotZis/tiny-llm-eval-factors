@@ -81,6 +81,8 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
+已结项：`r-entry1`–`r-entry4`、`p-entry1`。`p-entry1` 的证据在 `ba817d7` 上：`python3 report_inputs/build_size_claims.py --check` exit 0（`size_claims.json` 跟着 a02 重生成到 3364 行 / 170 组 / 77 文件），`./reproduce.sh` exit 0 且末行判「报告可从库重建，且与仓库里的 `report.html` 逐字节相同」。未结项：`p-entry2`、`p-entry3`。
+
 ## 共享仓库的写权（避免互相踩）
 
 1. **push 归 meta**：子项目只提交自己的路径，**不 `git push`**、不 `git reset`、不 rebase 共享历史。提交必须带显式路径——`git commit -m … -- <path>…`，**不要用裸 `git commit`**：索引是共享的，别人 `git add` 之后你一提交就会把他的暂存一起定型（已经发生过两次：`i01` 的 PLAN 被扫进 `a06` 的提交，`a06` 的四个文件被扫进 `i01` 的提交）。分支修复只有 meta 做，且在独立 worktree 里做。这条是踩出来的：一次并发 `push` 把远端 rebase 了一份提交、本地又留了一份，另有一次 `reset` 让别人已提交的两个提交从 main 上消失。
