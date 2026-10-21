@@ -1,0 +1,80 @@
+{
+ "recorded_at": "2026-10-21T01:41:49+00:00",
+ "writer": "python3 gate.py --record",
+ "model": "/home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf",
+ "control": "/home/z/hf/gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+ "runners": {
+  "llama-diffusion-cli": "0.4.1-dev (build 4399, commit 4bc272fd72)",
+  "llama-server": "0.4.1-dev (build 4399, commit 4bc272fd72)",
+  "llama-cli": "0.4.1-dev (build 4399, commit 4bc272fd72)"
+ },
+ "header": {
+  "arch": "diffusion-gemma",
+  "n_params": 25250987068,
+  "file_bytes": 16806810208,
+  "data_bytes": 16790985619,
+  "data_offset": 15824589,
+  "n_tensors": 692,
+  "bpw_file": 5.324721813920339,
+  "bpw_tensors": 5.319708278740148,
+  "gguf_version": 3,
+  "alignment": 32
+ },
+ "header_meta": {
+  "block_count": 30,
+  "embedding_length": 2816,
+  "expert_count": 128,
+  "expert_used_count": 8,
+  "context_length": 262144,
+  "attention.causal": false,
+  "attention.sliding_window": 1024,
+  "attention.shared_kv_layers": 0,
+  "attention.key_length": 512,
+  "attention.value_length": 512,
+  "diffusion.canvas_length": 256
+ },
+ "control_header": {
+  "arch": "gemma4",
+  "n_params": 4647450147,
+  "file_bytes": 3184496736
+ },
+ "attempts": [
+  {
+   "cmd": "llama-diffusion-cli -m /home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf -ngl 0 -n 4 -p def add(a, b):",
+   "rc": 1,
+   "arch_error": "diffusion-gemma",
+   "tail": "0.00.584.893 E llama_model_load: error loading model: unknown model architecture: 'diffusion-gemma'\n0.00.584.909 E llama_model_load_from_file_impl: failed to load model\n0.00.584.911 E error: failed to load model '/home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf'"
+  },
+  {
+   "cmd": "llama-server -m /home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf -ngl 0 -c 512 --port 8199 --host 127.0.0.1",
+   "rc": 1,
+   "arch_error": "diffusion-gemma",
+   "tail": "0.01.161.260 E srv    load_model: failed to load model, '/home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf'\n0.01.161.262 I srv    operator(): operator(): cleaning up before exit...\n0.01.167.898 E srv  llama_server: exiting due to model loading error"
+  }
+ ],
+ "control_attempt": {
+  "cmd": "llama-server -m /home/z/hf/gemma-4-E2B-it-UD-Q4_K_XL.gguf -ngl 0 -c 2048 -t 8 --port 8200 --host 127.0.0.1",
+  "health_ok": true,
+  "token": true,
+  "arch_error": null,
+  "tail": "0.39.052.763 I slot print_timing: id  3 | task 0 |    graphs reused =          3\n0.39.052.815 I slot      release: id  3 | task 0 | stop processing: n_tokens = 15, truncated = 0\n0.39.053.738 I srv    operator(): operator(): cleaning up before exit...",
+  "ok": true
+ },
+ "control_ok": true,
+ "price": {
+  "weights_bytes": 16790985619,
+  "weights_gib": 15.638,
+  "kv_upper_bytes_per_token": 491520,
+  "kv_upper_gib_at_4096": 1.875,
+  "kv_upper_gib_at_8192": 3.75,
+  "bf16_weights_bytes": 50501974136,
+  "bf16_weights_gib": 47.03,
+  "gpu": {
+   "total_mib": 24564,
+   "used_mib": 7290,
+   "free_mib": 16819,
+   "compute_apps_mib": 6704
+  }
+ },
+ "verdict": "GATE-FAIL"
+}
