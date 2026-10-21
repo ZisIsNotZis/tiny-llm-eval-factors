@@ -143,17 +143,23 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 
 ## 当前在做什么 / 下一步（接手先读这一节）
 
-- 当前（最近一次提交 `d097bf4`）：报告 §11 已按 `a10` 的四条建议改完并有两向负控；`reproduce.sh` 顶部
-  `export A10_NO_GGUF=1`，干净 clone 不再假绿；doc id 作用域已改为「文件」（`res60`）。
+- 当前（最近一次提交 `3542b8f`）：
+  1. ✅ 干净 clone 里那条**假 WARN** 已清：`kv_evidence.json` 本身没落后，是 `build_kv_evidence.py --check`
+     把「a05 的脚本看不到 `.wrapup/mres`（不随仓库分发）」当成「索引过期」。现在脚本崩溃 → exit 2 并点名缺失路径，
+     `reproduce.sh` 把 2 记 SKIP（无法当场核对）、1 记 WARN（真过期），负控 `checks/kv_evidence_unavailable_control.py`。
+  2. ✅ `open_questions.json` 跟上 `a11` 的提交（a11 的 PLAN.md 没有「未解问题」一节，跳过计数 6→7），报告重建。
 - 下一步（按优先级）：
-  1. 报告第六节按 `a06` 的厂商臂实测改：MultiPL-E 六格丢题 −17/−19/−35/−36/−31/−32、EvalPlus −35；
-     「10 倍塌陷」只是基线小造成的相对放大；`presence_penalty` 假设已被否掉（置 0 后仍 2/40）。
-     数字从 `a06` 的 `RESULT.md` 与其 `mres/m165-vendor/*` 产物派生，不手抄，配「把丢题数改成 0 →
-     文字改口」的负控。
-  2. `kv_evidence.json` 与 `a05` 最新脚本输出对齐（当前是 WARN，不是 FAIL）。
-  3. 保持干净 clone 0 FAIL；任何子项目提交新产物后重建对应派生索引与报告。
+  1. **`a14` 的 py 取代入库**（meta 已授权；清单 `docs/subprojects/a14-部分给分/evidence/py_regrade_manifest.tsv`，
+     sha256 `c6534dd4…`，98 格 = 改分 50 / 未改 48）。红线：不按 `score_old` 改行（`multi` 73 格）、
+     `none` 6 格不在库（不新造）、`protocol_old` 只到 59/98（定不出就进 skip ledger）、身份串
+     `<old_proto>;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14` 两段都要。行数对账 **+50**；
+     旧行标 `superseded_by`（不删不改写）。同一提交里换掉 27 个 py `testfrac`（`evidence/py_testfrac_regrade.json`），
+     否则二元列与比例列是两代。§13 影响面：18 唯一配对可直接改、30 格要按 `source_file` 逐条对、2 格不在表（`m26` 两行）；
+     7 对近差结论会翻，文字必须改。
+  2. 之后：`a07`（spec-decode 是否逐字节同贪心）/`a08`（thinking 开关是另一协议，不是重跑）/`a11`（扩散：`未测` + 门槛 + 价格，不写 0）落地时接报告。
 - 阻塞/风险：报告只依赖库 + `report_inputs/*` 派生索引；索引落后于子项目产物时 `reproduce.sh` 报 WARN，
-  必须显式重建，不会自动通过。
+  必须显式重建，不会自动通过。工作树里的 `experiments.sqlite` 常有别的子项目未提交的写入，
+  所以 `report.html` 一律在 HEAD 的干净 clone 里重建再拷回，避免把未提交的库改动烤进报告。
 
 ## 读法：还剩哪些、当前在哪、下一个派给谁
 
