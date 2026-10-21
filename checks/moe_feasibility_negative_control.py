@@ -38,9 +38,22 @@ def main():
         print(f"2) over_bound set to 0     : text flips to 分配比较: {changed}")
         if not changed:
             print("FAIL: 把 18 改成 0 后正文仍说预算比较——说明这段写死了"); print(t[:400]); return 1
+        # 3) 把 HumanEval+ 的第三臂差改成「预算项」的 0.0086 → 文字必须说「差异可由预算解释」/不再是分配效应
+        d3 = json.loads(BASE.read_text(encoding="utf-8"))
+        for x in d3["third_arm"]["deltas"]:
+            if x["bench"] == "HumanEval+":
+                x["delta"] = d3["third_arm"]["budget_humaneval_plus"]
+        p3 = tmp / "budget.json"
+        p3.write_text(json.dumps(d3, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        t3 = rendered(p3)
+        changed = ("不是预算能解释的" in base and "不是预算能解释的" not in t3
+                   and "可由预算解释" in t3)
+        print(f"3) HumanEval+ set to budget : text says 可由预算解释: {changed}")
+        if not changed:
+            print("FAIL: 把 +0.4695 改成 0.0086 后正文仍说「不是预算能解释的」"); print(t3[:500]); return 1
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
-    print("PASS: 预算比较/分配比较的措辞由超界计数决定")
+    print("PASS: 预算比较/分配比较与「预算能否解释」的措辞都由索引里的数字决定")
     return 0
 
 if __name__ == "__main__":

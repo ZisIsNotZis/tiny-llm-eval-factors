@@ -244,3 +244,10 @@
 - evidence: 第四节由 `report_inputs/moe_feasibility.json` 渲染，该索引由 `report_inputs/build_moe_feasibility.py` 读 `a04` 的 `analysis/fixtures/pin_feasibility.json` 得出：上界公式 `(1−share_expert)/share_expert × layer_swing`，四族上界 GLM 0.025 / LFM 0.513 / Qwen3.6 0.251 / gemma 0.256；超出上界的那些对实测跨度 0.54–1.91，22 对里 18 对超界（4 对可钉住）；可用结论只到「策略分类是事实（非专家优先 12 / 均匀 2 / 专家优先 1）」与「2 对钉住对照 16 格全跨 0、最大半宽 0.135」，不写成「哪种分配更好」。
 - producer: `python3 report_inputs/build_moe_feasibility.py --check`；`python3 checks/moe_feasibility_negative_control.py`（把 18 改成 0 → 正文从「预算比较」改口成「分配比较」）
 
+## res54 :: 报告第四节把「分配」与「预算」分开：第三臂（均匀 4.531 vs 专家优先 4.483）6 列可分辨，差不是预算能解释的。
+
+- kind: measured
+- status: current
+- evidence: 第四节新增段落由 `report_inputs/build_moe_feasibility.py` 读 `a04` 的 `RESULT.md::third-arm-pinned` 与 `fixtures/pin_feasibility.json` 生成：`Δbpw = +0.048`、`L1_pw = 0.176`，HumanEval+ +0.4695 [+0.3720,+0.5535]、HumanEval +0.4817、MBPP+ +0.3439、MBPP +0.4339、MMLU +0.1952、GSM8K +0.2400 六列不含 0，ARC-c/IFEval +0.0900 跨 0；按本族斜率 `Δbpw` 只值 HumanEval+ 0.0086（全部预算项 +0.0064…+0.0097），远小于观测，方向是均匀更好。适用边界写明「同族 LFM2.5-8B-A1B、同 base、单一家族，不外推」，并记 Tier-1A 桶内结构未测（约 47 GPU 分钟）。库侧核对：`experiments` 3323 行、`a04-uni45` 的 humaneval / humaneval-plus 两格各 164 题、分数 0.6220 / 0.6037，`checks/db_check.py` PASS，备份 `bak18`/`bak19` 在位。
+- producer: `python3 report_inputs/build_moe_feasibility.py --check`；`python3 checks/moe_feasibility_negative_control.py`（第三例：把 +0.4695 改成预算项的 0.0086 → 正文改口成「这个差可由预算解释」）
+

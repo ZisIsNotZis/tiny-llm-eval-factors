@@ -44,5 +44,74 @@
  "over_span_max": 1.9119,
  "pinned": {
   "pairs": 4
+ },
+ "third_arm": {
+  "fact": "third-arm-pinned",
+  "source": "docs/subprojects/a04-MoE 各层比特分配/RESULT.md",
+  "deltas": [
+   {
+    "bench": "HumanEval+",
+    "delta": 0.4695,
+    "lo": 0.372,
+    "hi": 0.5535,
+    "resolvable": true
+   },
+   {
+    "bench": "HumanEval",
+    "delta": 0.4817,
+    "lo": 0.3838,
+    "hi": 0.5654,
+    "resolvable": true
+   },
+   {
+    "bench": "MBPP+",
+    "delta": 0.3439,
+    "lo": 0.2761,
+    "hi": 0.407,
+    "resolvable": true
+   },
+   {
+    "bench": "MBPP",
+    "delta": 0.4339,
+    "lo": 0.3669,
+    "hi": 0.4947,
+    "resolvable": true
+   },
+   {
+    "bench": "MMLU",
+    "delta": 0.1952,
+    "lo": 0.151,
+    "hi": 0.2383,
+    "resolvable": true
+   },
+   {
+    "bench": "GSM8K",
+    "delta": 0.24,
+    "lo": 0.1081,
+    "hi": 0.3606,
+    "resolvable": true
+   },
+   {
+    "bench": "ARC-c",
+    "delta": 0.09,
+    "lo": -0.0459,
+    "hi": 0.2213,
+    "resolvable": false
+   },
+   {
+    "bench": "IFEval",
+    "delta": 0.09,
+    "lo": -0.0467,
+    "hi": 0.2221,
+    "resolvable": false
+   }
+  ],
+  "budget_share_min": 0.0064,
+  "budget_share_max": 0.0097,
+  "budget_humaneval_plus": 0.0086,
+  "dbpw": 0.048448,
+  "l1_pw": 0.176148,
+  "boundary": "同族（LFM2.5-8B-A1B）、同 base 权重、单一模型家族，不得外推成跨家族结论",
+  "untested": "Tier-1A 的桶内结构仍无对照（需另造一臂，约 47 GPU 分钟）"
  }
 }

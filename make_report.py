@@ -1339,6 +1339,36 @@ def moe_feasibility_html():
                "（非专家优先 12 对 / 均匀 2 对 / 专家优先 1 对），而<b>有区间的钉住对照只有 2 对</b>"
                "（16 个格全部跨 0、最大半宽 0.135，见 <code>a04</code> 的 <code>pinned-null</code>）——"
                "那是「不可分辨」，不是「哪种分配更好」。</li>")
+    ta = d.get("third_arm")
+    if ta and ta.get("deltas"):
+        resolved = [x for x in ta["deltas"] if x["resolvable"]]
+        unresolved = [x for x in ta["deltas"] if not x["resolvable"]]
+        hep = next((x for x in ta["deltas"] if x["bench"] == "HumanEval+"), None)
+        budget = ta.get("budget_humaneval_plus")
+        explained = (hep is not None and budget is not None
+                     and abs(hep["delta"]) <= max(abs(ta["budget_share_max"] or 0), abs(budget)) * 2)
+        out.append(f"<li><b>第三臂把这个前提反过来用了一次：钉住总比特、只改分配。</b>"
+                   f"均匀（4.531 bpw）对专家优先（4.483 bpw），"
+                   f"<code>Δbpw = {ta['dbpw']:+.3f}</code>、<code>L1_pw = {ta['l1_pw']:.3f}</code>；"
+                   f"{len(resolved)} 列区间不含 0（"
+                   + "、".join(f"{x['bench']} {x['delta']:+.4f}" for x in resolved)
+                   + "），"
+                   + (f"{len(unresolved)} 列跨 0（" + "、".join(x["bench"] for x in unresolved) + "）"
+                      if unresolved else "全部列都可分辨")
+                   + "。</li>")
+        if hep is not None and budget is not None and explained:
+            out.append(f"<li><b>这个差可由预算解释：</b>观测到的 HumanEval+ {hep['delta']:+.4f} 与"
+                       f"<code>Δbpw = {ta['dbpw']:+.3f}</code> 按本族斜率算出的 {budget:+.4f} 相当，"
+                       f"所以先按预算差读，不归因给层分配。</li>")
+        elif hep is not None and budget is not None:
+            out.append(f"<li><b>这个差不是预算能解释的：</b>按本族实测斜率，"
+                       f"<code>Δbpw</code> 只值 HumanEval+ {budget:.4f}，"
+                       f"而观测是 <b>{hep['delta']:+.4f}</b>——"
+                       f"全部预算项加起来也只有 {ta['budget_share_min']:+.4f}…{ta['budget_share_max']:+.4f}。"
+                       f"方向是<b>均匀更好</b>：把注意力/稠密层压到约 2.95 去喂专家，在钉住总比特下明确更差。"
+                       f"适用边界：{html.escape(ta['boundary'])}；{html.escape(ta['untested'])}。</li>")
+        out.append("<li><b>与前面那条不矛盾，是补全：</b>「均匀 vs 非专家优先」这一维仍不可分辨"
+                   "（16 格全跨 0、下限 0.135），而「均匀 vs 专家优先」这一维现在有钉住对照且显著。</li>")
     out.append("<li><b>看图要点：</b>D 图三根柱的总比特不同（3.88 / 2.92 / 4.48），"
                "所以柱高差里既有分配效应也有预算效应，读的时候不能只归给分配。</li>")
     return "".join(out)
