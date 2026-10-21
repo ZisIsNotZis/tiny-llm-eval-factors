@@ -13,9 +13,11 @@ Writes `.wrapup/mres/m165-vendor/histograms.jsonl`, one line per cell, and print
 the same table.  Re-runnable while the arm is still running: it only reads the
 `*_eval.json` products that exist.
 
-Run from the repository root:
+Run from the repository root (defaults to the vendor arm directory; pass --dir for
+another product directory, e.g. the M1 mechanism probe):
 
     python3 "docs/subprojects/a06-采样与解码参数/cell_histograms.py"
+    python3 "docs/subprojects/a06-采样与解码参数/cell_histograms.py" --dir .wrapup/mres/m165-mechanism
 
 Exit status: 0 when at least one cell was read; 2 when the product directory or
 every `*_eval.json` is missing (a histogram of nothing must not exit 0).
@@ -45,6 +47,10 @@ FLOOR_SHARE = 0.05
 
 
 def main(argv):
+    global OUT, DEST
+    if argv and argv[0] in ("--dir",):
+        OUT = os.path.join(ROOT, argv[1]) if not os.path.isabs(argv[1]) else argv[1]
+        DEST = os.path.join(OUT, "histograms.jsonl")
     if not os.path.isdir(OUT):
         print(f"UNMEASURED: no product directory {OUT}", file=sys.stderr)
         return 2
