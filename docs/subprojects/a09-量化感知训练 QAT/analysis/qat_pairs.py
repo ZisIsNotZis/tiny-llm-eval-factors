@@ -15,8 +15,9 @@ X = 「这份 gguf 是否经过 QAT 训练」；Y = 基准分数。只读 `exper
 口径（`docs/subprojects/a09-量化感知训练 QAT/AGENTS.md`）：
 
   * 一族 = 去掉 `-qat` / `-it` / `-ud` 的血统根名（保留尺寸、大小写不敏感）；跨族不是受控比较。
-  * 规范协议与区间定义借用 `a01::curves`（`BENCH` / `newcombe_diff` / `wilson` / `rows_for`），
-    不复制；gguf 头解析借用 `a03::analysis/alloc.py`，不复制。
+  * 规范协议（9 个基准的 `protocol` 串）、逐格选取与 `bpw_map` 借用 `a03::analysis/pairs.py`；
+    两比例差区间（Newcombe method 10）借用 `a01::curves`；gguf 头解析与张量分类借用
+    `a03::analysis/alloc.py`。三份都只 import、不复制，它们改名时本层要报错而不是静默换口径。
   * `truthfulqa_mc2` 的 `acc` 是概率质量均值（`i01::res26`），那一列只报差值，不套二项区间。
   * 不池化：基准、族、协议之间绝不平均。
   * 未测 ≠ 0：缺文件、缺比特、缺那一侧的测量都打印「未测」并写进汇总，不画成 0。
@@ -316,8 +317,8 @@ def main(argv=()):
         if not natives:
             unmeasured(f"pair:{q}", f"族 {fam} 里没有同标称档 {quant} 的原生文件行")
             continue
+        qp = panel_of(cc, q)
         for n in natives:
-            qp = panel_of(cc, q)
             np_ = panel_of(cc, n)
             shared = [b for b in BENCH_ORDER if b in qp and b in np_]
             state = "MATCHED" if shared else "NO_DATA"
