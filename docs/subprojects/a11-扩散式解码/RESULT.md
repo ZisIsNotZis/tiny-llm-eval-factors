@@ -79,6 +79,6 @@
 - kind: citation
 - status: current
 - from: result.res2
-- evidence: 干净 clone 里 `./reproduce.sh` 退出 0、36 条 PASS、2 条 WARN（另一条是 a05 的 `kv_evidence.json`）；`git diff report.html` 的唯一差异是「未解问题」索引页脚与列表多了 a11 一节与条目
+- evidence: 干净 clone（HEAD 919215d）里 `./reproduce.sh` 退出 0、37 条 PASS、1 条 WARN，那一条就是本子项目引起的 `open_questions.json`；`git diff report.html` 的唯一差异是「未解问题」索引的页脚（跳过的子项目少一个）与列表（多了 a11 的四条）
 - producer: `python3 report_inputs/build_open_questions.py --check` → `FAIL: … is stale`；`./reproduce.sh` → `WARN open_questions.json 与 PLAN.md 不一致`
 - 交回 meta 的一句：下次重生成报告输入与 `report.html` 时带上 a11（它现在有「未解问题」一节），本子项目不越权改那两个文件。
