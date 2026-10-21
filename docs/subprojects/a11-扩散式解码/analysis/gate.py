@@ -201,24 +201,42 @@ def main(argv):
         print(f"      {control.get('tail', '')}")
 
     gpu = gpu_state()
+    kv_true = gguf_header.kv_true_bytes(hdr["meta"], 4096)
+    weights_gib = round(hdr["data_bytes"] / 2**30, 3)
+    kv_true_gib = round(kv_true / 2**30, 3) if kv_true else None
     price = {
         "weights_bytes": hdr["data_bytes"],
-        "weights_gib": round(hdr["data_bytes"] / 2**30, 3),
-        "kv_upper_bytes_per_token": kv_b,
-        "kv_upper_gib_at_4096": round(kv_b * 4096 / 2**30, 3) if kv_b else None,
-        "kv_upper_gib_at_8192": round(kv_b * 8192 / 2**30, 3) if kv_b else None,
+        "weights_gib": weights_gib,
+        # 上界口径：不认滑窗、不认 *_swa 小头维，只当「头部自洽」的参照，不是需求
+        "kv_bound_bytes_per_token": kv_b,
+        "kv_bound_gib_at_4096": round(kv_b * 4096 / 2**30, 3) if kv_b else None,
+        # 真值口径：按层记账（滑窗层只留 min(ctx, window) 个 token、用 *_swa 头维）
+        "kv_true_bytes_at_4096": kv_true,
+        "kv_true_gib_at_4096": kv_true_gib,
+        "bound_over_true": round(kv_b * 4096 / kv_true, 2) if (kv_b and kv_true) else None,
+        "weights_plus_true_kv_gib": (round(weights_gib + kv_true_gib, 3)
+                                     if kv_true_gib is not None else None),
+        "fits_given_true_kv": (bool((weights_gib + kv_true_gib) * 1024 <= gpu["free_mib"])
+                               if (kv_true_gib is not None and gpu) else None),
         "bf16_weights_bytes": hdr["n_params"] * 2,
         "bf16_weights_gib": round(hdr["n_params"] * 2 / 2**30, 2),
         "gpu": gpu,
     }
-    print("\n  价格（装不装得下）：")
-    print(f"    权重 {price['weights_gib']:.2f} GiB；KV 上界 "
-          f"{price['kv_upper_bytes_per_token']:,} B/token → 4096 ctx "
-          f"{price['kv_upper_gib_at_4096']} GiB、8192 ctx {price['kv_upper_gib_at_8192']} GiB")
-    print(f"    bf16 权重（另一个运行时要的量）= n_params×2 = {price['bf16_weights_gib']} GiB")
+    print("\n  价格（装不装得下）：两个口径并列，别把上界当需求")
+    print(f"    权重 {price['weights_gib']:.3f} GiB")
+    print(f"    KV 上界（不认滑窗）{price['kv_bound_gib_at_4096']} GiB @4096 ctx；"
+          f"KV 真值（按层，滑窗 1024 + *_swa 头维）{kv_true_gib} GiB @4096 ctx"
+          f"（上界/真值 = {price['bound_over_true']} 倍）")
     if gpu:
+        print(f"    权重 + KV 真值 = {price['weights_plus_true_kv_gib']} GiB vs 当时空闲 "
+              f"{gpu['free_mib'] / 1024:.2f} GiB → "
+              f"{'当时可容纳' if price['fits_given_true_kv'] else '塞不下'}；"
+              "llama.cpp 的 compute buffer 没算，加它之后是否仍可容纳**未测**")
         print(f"    卡：总 {gpu['total_mib']} MiB / 已用 {gpu['used_mib']} MiB / "
               f"空闲 {gpu['free_mib']} MiB；别的进程占 {gpu['compute_apps_mib']} MiB")
+    print(f"    bf16 权重（另一个运行时要的量）= n_params×2 = {price['bf16_weights_gib']} GiB"
+          f" > 整张卡 {gpu['total_mib'] / 1024:.1f} GiB" if gpu else
+          f"    bf16 权重 = {price['bf16_weights_gib']} GiB")
 
     gate_failed = all(a["arch_error"] == hdr["arch"] for _n, a in attempts)
     if control_ok and gate_failed:

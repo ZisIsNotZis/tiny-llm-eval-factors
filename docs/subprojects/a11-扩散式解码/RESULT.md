@@ -21,14 +21,15 @@
 - producer: `python3 docs/subprojects/a11-扩散式解码/analysis/run_all.py --live`（49 条，含 L1 现场重放）
 - 这条门槛的含义要读准：**不是**「llama.cpp 不支持扩散解码」（它支持 4 个扩散架构），也**不是**「文件坏了」（`res3`），而是「这一族的键没人实现」。
 
-## res3 :: 失败不是文件坏：该 GGUF 头部可解析（v3、692 张量、30 层、128 专家用 8、非因果注意力、`diffusion.canvas_length = 256`），参数量 25,250,987,068, 位宽 5.3247 bpw。
+## res3 :: 失败不是文件坏：该 GGUF 头部可解析（v3、692 张量、30 层、128 专家用 8、非因果注意力、`diffusion.canvas_length = 256`、`tokenizer.ggml.mask_token_id = 4`），参数量 25,250,987,068, 位宽 5.3247 bpw；但**解码回路不在文件里，也不在本机任何运行时里**——它在 `transformers` 的生成代码里（`res12`），读代码可定，我们没读。
 
 - kind: measured
 - status: current
 - from: result.res1
-- evidence: `analysis/fixtures/headers.json` 里该文件的头部，逐张量形状/类型/偏移/字节；`attention.causal = false` 与 `diffusion.canvas_length = 256` 是「这确实是块扩散解码器」的两条直接证据
+- evidence: `analysis/fixtures/headers.json` 里该文件的头部，逐张量形状/类型/偏移/字节；`attention.causal = false`、`diffusion.canvas_length = 256` 与词表里的 `mask_token_id = 4` 是「这确实是掩码式块扩散解码器」的三条直接证据
 - producer: `python3 docs/subprojects/a11-扩散式解码/analysis/gguf_header.py /home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf`；夹具由 `python3 …/analysis/record_headers.py` 重取
-- 参数量与位宽由张量表独立重算过（`run_all.py` 的 A1/A3 两条），不是从文件名推的。
+- 参数量与位宽由张量表独立重算过（`run_all.py` 的 A1/A3 两条），不是从文件名推的；张量集合的差（`res11`）说明这是同一主干加一个解码头。
+- 修正（复核指出）：旧写法把「协议未知」当成结论。实际是**读代码可定、我们没读**：`transformers 5.17.0` 的 `generation_diffusion_gemma.py` 里默认 `max_denoising_steps = 48`、块内判据是 `EntropyBoundSampler.accept_canvas`（`res12`）；缺的是权重与许可，不是回路描述。
 
 ## res4 :: 对照侧已有一半：同主干自回归双胞胎 `gemma-4-26B-A4B-it-qat-UD-Q4_K_XL` 参数量 25,233,142,046（与 a02 入库真值逐位一致、位宽与 `bpw_map` 一致），与扩散臂只差 +0.0707%；但已入库的 QAT 臂位宽是 4.5176（差 0.807 bpw），位宽最接近的 `UD-Q4_K_XL`（5.3932，差 0.068）正是 nm3 里**未测**的 m145。
 
@@ -39,31 +40,33 @@
 - producer: `python3 docs/subprojects/a11-扩散式解码/analysis/run_all.py`（C2/C3/C4/C5/C6 四条）
 - 结论：即使明天有人实现了这个架构，「位宽匹配的对照」也还差一个未测臂——这是两笔账，不是一笔。
 
-## res5 :: 价格：要实现这个架构才谈得上测；测的话这一轴要独占卡约 17.5 GiB（权重 15.64 GiB + 4096 ctx 的 KV 上界 1.875 GiB），记录时卡上另有 6.7 GB 外部占用、空闲 16.4 GiB；换 transformers 路线则要 bf16 47.03 GiB，超过整张卡 24.0 GiB 必须 offload，而且仓库的评测面是 llama-server HTTP，扩散解码只存在于 llama.cpp 的 CLI 示例里。
+## res5 :: 价格分两个口径：权重 15.638 GiB；KV **上界** 1.875 GiB@4096（不认滑窗，是 bound 不是需求）、KV **真值** 0.273 GiB@4096（按层：25 层滑窗只留 1024 token 且用 `*_swa` 头维、5 层全局留满），上界/真值 = 6.86 倍；按真值算权重+KV = **15.911 GiB**，**当时空闲 21.73 GiB（更早一次记录是 16.42 GiB）→ 当时可容纳**；llama.cpp 的 compute buffer 没算，加它之后是否仍可容纳**未测**。换 transformers 路线要 bf16 47.03 GiB > 整张卡 24.0 GiB，必须 offload。
 
 - kind: measured
 - status: current
 - from: result.res1
-- evidence: `analysis/fixtures/diffusion_gate.json` 的 `price`：`weights_bytes = 16,790,985,619`（= 头部 `data_bytes`）、`kv_upper_bytes_per_token = 491,520`（30 层 × 8 kv 头 × (512+512) × 2 B）、`bf16_weights_gib = 47.03`（`n_params × 2`）、`gpu = {total 24564, used 7290, free 16819, compute_apps 6704}` MiB
+- evidence: `analysis/fixtures/diffusion_gate.json` 的 `price`：`weights_bytes = 16,790,985,619`（= 头部 `data_bytes`）、`kv_bound_bytes_per_token = 491,520`、`kv_true_bytes_at_4096 = 293,601,280`、`bound_over_true = 6.86`、`weights_plus_true_kv_gib = 15.911`、`fits_given_true_kv = true`、`bf16_weights_gib = 47.03`、`gpu = {total 24564, free 22254, compute_apps 1164}` MiB（更早一次记录 `git show f0dd74c:…/diffusion_gate.json` 的空闲是 16819 MiB，同样 ≥ 15.911）
 - producer: `python3 docs/subprojects/a11-扩散式解码/analysis/run_all.py`（F1–F6）；`python3 …/analysis/gate.py`
-- KV 那个数是**上界**：`attention.shared_kv_layers = 0` 但 `attention.sliding_window = 1024`，真值更小；本机没有真值，所以不往下推（`res7`）。
+- 修正（复核指出）：旧写法把 KV **上界**当成需求，得出「需求 17.5 GiB > 空闲 16.4 GiB ⇒ 就算支持也得独占卡」。那个判决是上界造出来的：真 KV 只有 0.273 GiB（上界是它的 6.9 倍），按真值算那次其实**塞得进去**。「17.5 GiB」这个数不再作为可引用的需求出现，上界只保留为「头部自洽」的参照。
+- 仍未测的那一半：llama.cpp 的 compute buffer（与 `n_batch`/`n_ctx`/GPU 层数相关）没算，所以「加它之后是否仍可容纳」没有结论；要判就得在能加载该架构的运行时上实测占用。
 
-## res6 :: 可复现装置：干净 clone 里 `run_all.py` 46 条全成立（头部 / 名表 / 记录 / 价格四组），`--selftest` 的 8 条负控全部按预期翻红，本机 `--live` 49 条全成立；缺 live 输入时退出 2（未验证），不是通过。
+## res6 :: 可复现装置：干净 clone 里 `run_all.py` **46 条**全成立（头部 / 名表 / 对照 / 记录 / 价格五组），`--selftest` 的 11 条负控全部按预期翻红，本机 `--live` **50 条**全成立；缺 live 输入时退出 2（未验证），不是通过。
 
 - kind: measured
 - status: current
 - from: result.res2
-- evidence: `analysis/run_all.py` 的 46 条与 `analysis/run_all.py --live` 的 49 条输出；8 条负控各自翻红的具体检查名（如把 `diffusion-gemma` 塞进名表 → `D1` 红；把负控改成没加载起来 → `E4` 红；改一张张量维度 → `A1` 红）
+- evidence: `analysis/run_all.py` 的 46 条与 `analysis/run_all.py --live` 的 50 条输出；11 条负控各自翻红的具体检查名（把 `diffusion-gemma` 塞进名表 → `D1` 红；把负控改成没加载起来 → `E4` 红；改一张张量维度 → `A1` 红；把真值 KV 改回上界 → `F2` 红；把「当时可容纳」改成装不下 → `F4` 红；抹掉 `accept_canvas` 标记 → `C7` 红）
 - producer: `python3 docs/subprojects/a11-扩散式解码/analysis/run_all.py`；`… --selftest`；`… --live`
-- 干净 clone 里没有 gguf 与二进制，所以现场重放这一段是 exit 2 而不是「绿」：`--live` 是那一半的唯一入口。
+- 计数口径：`--live` 比 46 多出的 4 条是 L1–L4（现场重放门槛、头部漂移、架构名表漂移、venv 里的 diffusion_gemma 代码漂移），它们要盘上的 gguf / llama.cpp 源码 / venv，干净 clone 里退出 2 而不是「绿」。
 
-## res7 :: 记录的三个限制：(a) 门槛的现场重放只能在有 gguf 与 llama.cpp 二进制的机器上做，干净 clone 里它退出 2；(b) KV 是上界公式，共享 KV 与滑窗会让真值更小，本机没有实测占用可对；(c) 上游 bf16 权重不在本机，47.03 GiB 是 `n_params×2` 的推算，那个仓库的存在与许可证**未知**。
+## res7 :: 记录的三个限制：(a) 门槛的现场重放只能在有 gguf 与 llama.cpp 二进制的机器上做，干净 clone 里它退出 2；(b) 真值 KV 是按层记账的**上界内**口径，`attention.shared_kv_layers = 0` 时才准（本文件就是 0），本机没有实测占用可对；(c) 第三条路（同模型换运行时）是**代码在、权重不在**：`transformers 5.17.0` 的 `diffusion_gemma` 就在本机 venv 里（`res12`），缺的是 bf16 权重（`n_params×2 = 47.03 GiB`）与许可证。
 
 - kind: citation
 - status: current
 - from: result.res5
-- evidence: `run_all.py` 的 `[note]` 行与 `gate.py` 的退出码 2 路径；`analysis/fixtures/headers.json` 里只有 Q4_K_M 一份 GGUF；(c) 的证据是本机 `/home/z/hf` 下该模型只有 GGUF 一个 repo（`models--unsloth--diffusiongemma-26B-A4B-it-GGUF`，16 GB）
-- producer: `ls /home/z/hf/models--unsloth--diffusiongemma-26B-A4B-it-GGUF/blobs` → 1 个 blob（16,028.2 MiB）
+- evidence: `run_all.py` 的 `[note]` 行与 `gate.py` 的退出码 2 路径；`analysis/fixtures/headers.json` 里只有 Q4_K_M 一份 GGUF；(c) 的证据是本机 `/home/z/hf` 下该模型只有 GGUF 一个 repo（`models--unsloth--diffusiongemma-26B-A4B-it-GGUF`，16 GB）而 `.wrapup/lmenv` 里 `transformers-5.17.0` 带 `models/diffusion_gemma/`
+- producer: `ls /home/z/hf/models--unsloth--diffusiongemma-26B-A4B-it-GGUF/blobs` → 1 个 blob（16,028.2 MiB）；`python3 …/analysis/transformers_code.py`
+- 修正（复核指出）：旧写法把 (c) 写成「上游仓库的存在与许可证未知」，把「代码在不在」和「权重在不在」混成一件。代码在，缺的是权重与许可；许可证仍未查（未测，不是已知不可用）。
 
 ## res8 :: 登记册里 nm4 的结论（GATE-FAIL）仍然成立，但它的证据指向 `.wrapup/axes_diffusion_gate.log`，那份日志没有入库（`git ls-files .wrapup` 里没有它），所以从 clone 出来的读者打不开它；本子项目的 `res1`–`res6` 给出同一事实的入库版证据。
 
@@ -90,3 +93,21 @@
 - from: result.res2
 - evidence: `docs/plan/plan.yaml::plan1` 的 `_text`（该文件已由 meta 迁移删除，原文见 `git show 021e6b8^:docs/plan/plan.yaml`，第 51 行）；本目录 `analysis/` 与 `fixtures/` 是新增的产物
 - producer: `git show 021e6b8^:docs/plan/plan.yaml | sed -n 51p`
+
+## res11 :: 可比性的来源不止参数量：扩散文件是双胞胎的**严格父集**，多出来的正好 34 个张量——30 个 `blk.{0..29}.enc_layer_output_scale.weight` 与 4 个 self-conditioning 张量（`self_cond_down/up/gate/pre_norm.weight`），后者是扩散模型独有构件；双胞胎一个也不多。
+
+- kind: measured
+- status: current
+- from: result.res3
+- evidence: `analysis/fixtures/headers.json` 两份张量表的名称集合：`diffusion-only = 34`（30 + 4）、`twin-only = 0`
+- producer: `python3 docs/subprojects/a11-扩散式解码/analysis/run_all.py`（A2 两条，逐名比对）
+- 读法：一对「同一主干 + 一个额外解码头」的模型才配得上「解码器」这个自变量；参数量的差 +0.0707%（`res4`）正是这 34 个张量加上 `embedding_length_per_layer_input` 的效应，不是换了模型。
+
+## res12 :: 第三条路的「代码在」是可核对的：本机 venv 里 `transformers 5.17.0` 带 `models/diffusion_gemma/`，有 `DiffusionGemmaForBlockDiffusion`、生成配置默认 `max_denoising_steps = 48`、块内判据 `EntropyBoundSampler.accept_canvas`，`canvas_length` 的 docstring 原文是「block length in block diffusion」；缺的是权重与许可，不是解码回路。
+
+- kind: measured
+- status: current
+- from: result.res3
+- evidence: `analysis/fixtures/transformers_code.json`（`transformers-5.17.0.dist-info`、三个文件的 sha256、四个标记、`configuration_diffusion_gemma.py:170`）
+- producer: `python3 docs/subprojects/a11-扩散式解码/analysis/transformers_code.py`（`--record` 落夹具，`--check` 与 live venv 比漂移）
+- 这是 `res7(c)` 的依据，也是后续接手人的入口：要提取扩散解码协议，读 `generation_diffusion_gemma.py` 的 `max_denoising_steps` 与 `accept_canvas`，而不是猜；本子项目没有做这一步（未测，不冒充）。

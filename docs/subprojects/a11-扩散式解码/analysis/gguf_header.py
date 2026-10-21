@@ -126,6 +126,8 @@ def read_header(path, shapes=True):
         "bpw_tensors": data_bytes * 8 / n_params if n_params else None,
         "tensor_dims": nested,
         "meta": meta,
+        "token_ids": {k.rsplit(".", 1)[-1]: v for k, v in kv.items()
+                       if k.startswith("tokenizer.ggml.") and k.endswith("_token_id")},
         "ggml_type_hist": _hist(t["type"] for t in tensors),
     }
     if shapes:
@@ -148,10 +150,11 @@ def _hist(types):
 
 
 def kv_upper_bound(meta, bytes_per_elem=2):
-    """每 token 的 KV 上界（f16）：层 × kv 头 × (k 长 + v 长) × 2 B。
+    """每 token 的 KV **上界**（f16）：全层 × 最大 kv 头数 × (k 长 + v 长) × 2 B，再乘满 ctx。
 
-    这是**上界**：`attention.shared_kv_layers` 与 `attention.sliding_window` 都会让它变小，
-    头部里没有逐层归属，所以不往下推。用它判「装不装得下」，不用它当实测占用。
+    它不认滑窗，也不认 `*_swa` 的小头维，所以它是上界而**不是需求**：本文件上界是真值的 6.9 倍
+    （实测见 `RESULT.md::res5`）。要用它判「装不装得下」就会把结论带偏，判装不装得下要用
+    `kv_true_bytes`。保留它是因为上界不依赖逐层归属，可以当「头部自洽」的参照。
     """
     def g(*names):
         for n in names:
@@ -167,6 +170,38 @@ def kv_upper_bound(meta, bytes_per_elem=2):
     if None in (n_layer, kv_head, k_len, v_len):
         return None
     return int(n_layer * kv_head * (k_len + v_len) * bytes_per_elem)
+
+
+def kv_true_bytes(meta, n_ctx, bytes_per_elem=2):
+    """按层记账的**真值** KV 字节数（f16）：滑窗层只留 `min(ctx, sliding_window)` 个 token 且用
+    `*_swa` 的头维，全局层留满 ctx 且用全量头维。
+
+    头部里有逐层归属（`attention.sliding_window_pattern` 与逐层 `head_count_kv`），所以这一口径是
+    确定的，不是估算：本机 30 层 = 25 层滑窗（8 头 × 256+256）+ 5 层全局（2 头 × 512+512），
+    4096 ctx 下 293,601,280 B = 0.273 GiB。`attention.shared_kv_layers` 非 0 的文件这一口径会偏大
+    （本文件它是 0）。
+    """
+    n_layer = meta.get("block_count")
+    heads = meta.get("attention.head_count_kv")
+    k_full = meta.get("attention.key_length")
+    v_full = meta.get("attention.value_length")
+    if None in (n_layer, heads, k_full, v_full):
+        return None
+    if not isinstance(heads, list):
+        heads = [heads] * n_layer
+    pattern = meta.get("attention.sliding_window_pattern")
+    if not isinstance(pattern, list) or len(pattern) != n_layer:
+        pattern = [False] * n_layer
+    k_swa = meta.get("attention.key_length_swa", k_full)
+    v_swa = meta.get("attention.value_length_swa", v_full)
+    window = meta.get("attention.sliding_window")
+    total = 0
+    for i in range(n_layer):
+        if pattern[i] and window:
+            total += heads[i] * (k_swa + v_swa) * bytes_per_elem * min(n_ctx, int(window))
+        else:
+            total += heads[i] * (k_full + v_full) * bytes_per_elem * n_ctx
+    return int(total)
 
 
 def main(argv):

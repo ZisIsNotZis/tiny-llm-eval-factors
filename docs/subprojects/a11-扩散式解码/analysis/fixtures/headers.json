@@ -6700,7 +6700,14 @@
      "offset": 16790974336,
      "type": 0
     }
-   ]
+   ],
+   "token_ids": {
+    "bos_token_id": 2,
+    "eos_token_id": 1,
+    "mask_token_id": 4,
+    "padding_token_id": 0,
+    "unknown_token_id": 3
+   }
   },
   "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf": {
    "alignment": 32,
@@ -13087,7 +13094,15 @@
      "offset": 14233211840,
      "type": 0
     }
-   ]
+   ],
+   "token_ids": {
+    "bos_token_id": 2,
+    "eos_token_id": 1,
+    "eot_token_id": 106,
+    "mask_token_id": 4,
+    "padding_token_id": 0,
+    "unknown_token_id": 3
+   }
   }
  },
  "producer": "python3 record_headers.py",

@@ -1,0 +1,20 @@
+{
+ "canvas_docstring_line": "configuration_diffusion_gemma.py:170",
+ "files": {
+  "configuration_diffusion_gemma.py": "97da22012853c9b597b3a86800540b6f48e8f8f80e514883e3ab391363c597c9",
+  "generation_diffusion_gemma.py": "19eb26c4415d0c7b1431327f542a0abd8134ca5d4954f6d2301a58256c447348",
+  "modeling_diffusion_gemma.py": "7a89e97dd188f40162a789bdea381a5975253a99d2f0695abc1532532212a755"
+ },
+ "has_bf16_weights": null,
+ "markers": {
+  "accept_canvas": true,
+  "canvas_docstring": true,
+  "denoise_steps_default": true,
+  "denoise_steps_default_value": 48,
+  "model_class": true,
+  "sampler_class": true
+ },
+ "package_dir": "/home/z/vibe/local_lm_research/.wrapup/bfclenv/lib/python3.11/site-packages/transformers/models/diffusion_gemma",
+ "transformers_dist": "transformers-5.17.0.dist-info",
+ "venv_site_packages": "/home/z/vibe/local_lm_research/.wrapup/bfclenv/lib/python3.11"
+}
