@@ -33,6 +33,7 @@ from __future__ import annotations
 import collections
 import glob
 import hashlib
+import csv
 import itertools
 import json
 import os
@@ -121,8 +122,8 @@ RAW_GREEDY = "multipl-e-raw-greedy-768"
 def mpl_rows():
     con = sqlite3.connect("file:%s?mode=ro" % DB, uri=True)
     rows = con.execute(
-        "SELECT model, protocol, language, _score, n_items, run_tag, source_file "
-        "FROM experiments WHERE bench_family='humaneval-multipl-e' "
+        "SELECT model, protocol, language, _score, n_items, run_tag, source_file, "
+        "superseded_by FROM experiments WHERE bench_family='humaneval-multipl-e' "
         "ORDER BY source_file, model, language").fetchall()
     con.close()
     return rows
@@ -145,6 +146,99 @@ def summary_lines(source_file):
         if "lang" in r and "score" in r:
             out[r["lang"]].append((r["score"], r.get("n"), r.get("protocol")))
     return out
+
+
+A14_EVIDENCE = os.path.join(REPO, "docs", "subprojects", "a14-部分给分", "evidence")
+REGRADE_MANIFEST = os.path.join(A14_EVIDENCE, "py_regrade_manifest.tsv")
+TESTFRAC_LEDGER = os.path.join(A14_EVIDENCE, "py_testfrac_regrade.json")
+SCORE_DIGITS = 6
+
+
+def corpus_of(protocol):
+    """The pinned-corpus hash a `;corpus=` protocol carries, or None."""
+    m = re.search(r";corpus=([^;]+)", protocol or "")
+    return m.group(1) if m else None
+
+
+def _int_or_none(v):
+    try:
+        return int(float(v))
+    except (TypeError, ValueError):
+        return None
+
+
+def regrade_rows():
+    """a14's two regrade artefacts, indexed for lineage.
+
+    `manifest` rows key on (corpus, language, score_new, model, summary file) -- the
+    pass-rate regrade of `multipl-e-raw-greedy-768;corpus=...`.  `testfrac` cells key on
+    (tag, mean_frac_new) -- the per-test-fraction regrade, whose ledger names no model,
+    so `tags_by_model` (only the manifest names models) is the bridge between the two.
+    """
+    manifest = []
+    if os.path.exists(REGRADE_MANIFEST):
+        with open(REGRADE_MANIFEST, encoding="utf-8") as fh:
+            for r in csv.DictReader(fh, delimiter="\t"):
+                try:
+                    models = json.loads(r["db_models"]) if r["db_models"] else []
+                except ValueError:
+                    models = []
+                manifest.append({"tag": r["tag"], "corpus": r["corpus"],
+                                 "language": r["language"],
+                                 "score_new": float(r["score_new"]), "models": models,
+                                 "n": _int_or_none(r["n"]),
+                                 "summary": os.path.basename(r["summary_file"] or "")})
+    tags_by_model = collections.defaultdict(set)
+    for r in manifest:
+        for m in r["models"]:
+            tags_by_model[m].add(r["tag"])
+    testfrac = []
+    if os.path.exists(TESTFRAC_LEDGER):
+        with open(TESTFRAC_LEDGER, encoding="utf-8") as fh:
+            testfrac = json.load(fh).get("cells", [])
+    return {"manifest": manifest, "testfrac": testfrac, "tags_by_model": tags_by_model}
+
+
+def regrade_one(rec, regrade, superseded, lang_n):
+    """Fill a `;corpus=` record from a14's artefact, and require its old row's pointer.
+
+    A re-scored value cannot appear in the old panel summary by construction, so a
+    summary hit on such a row would be a coincidence of values rather than evidence
+    about this cell; the regrade ledger is therefore the only route for these rows.
+    """
+    model, proto, lang = rec["model"], rec["protocol"], rec["lang"]
+    base = proto.split(";corpus=")[0]
+    score = round(rec["score"], SCORE_DIGITS)
+    if "per-test fraction" in base:
+        artefact = "py_testfrac_regrade.json"
+        tags = regrade["tags_by_model"].get(model, set())
+        hits = [c for c in regrade["testfrac"] if c["tag"] in tags
+                and round(float(c["mean_frac_new"]), SCORE_DIGITS) == score]
+        n_of = {c["tag"]: _int_or_none(c.get("n")) for c in regrade["testfrac"]}
+    else:
+        artefact = "py_regrade_manifest.tsv"
+        hits = [r for r in regrade["manifest"]
+                if r["corpus"] == corpus_of(proto) and r["language"] == lang
+                and model in r["models"]
+                and round(r["score_new"], SCORE_DIGITS) == score
+                and r["summary"] == os.path.basename(rec["source_file"] or "")]
+        n_of = {r["tag"]: r["n"] for r in regrade["manifest"]}
+    rec["regrade_src"] = artefact
+    rec["regrade_linked"] = proto in superseded.get((model, lang, base), set())
+    tags = {h["tag"] for h in hits}
+    if len(tags) != 1:
+        rec["regrade_why"] = ("%s: no entry matching this (model, language, corpus, score, "
+                              "summary)" % artefact if not tags
+                              else "%s: %d entries match, the row cannot be pinned to one tag"
+                              % (artefact, len(tags)))
+        return
+    rec["via_regrade"] = tags.pop()
+    rec["n"] = n_of.get(rec["via_regrade"]) or lang_n.get(lang)
+    if not rec["regrade_linked"]:
+        rec["regrade_why"] = ("%s names tag %r but no old row under protocol %r carries "
+                              "superseded_by pointing at this row"
+                              % (artefact, rec["via_regrade"], base))
+        rec["via_regrade"] = None
 
 
 def language_item_counts():
@@ -208,8 +302,22 @@ def own_eval_files(cell, candidates):
 
 
 def cells_with_lineage(rows, idx, lang_n):
-    """One record per stored cell: its item count, artefact source and eval hits."""
+    """One record per stored cell: its item count, artefact source and eval hits.
+
+    The evidence source follows the row's generation.  A cell scored on the corpus its
+    own panel used is traced through that panel's summary or per-item eval.  A cell a14
+    re-scored on the pinned corpus carries `;corpus=` and is traced only through a14's
+    regrade artefacts, plus the requirement that the row it replaced still points at it
+    through `superseded_by`; the two routes cannot be unified because a re-scored value
+    is by definition absent from the old summary, so a summary hit there would be a
+    coincidence of values rather than evidence about this cell.
+    """
     out = []
+    regrade = regrade_rows()
+    superseded = collections.defaultdict(set)
+    for row in rows:
+        if row[7]:
+            superseded[(row[0], row[2], row[1])].add(row[7])
     per_file = collections.defaultdict(list)
     for row in rows:
         per_file[row[6] or ""].append(row)
@@ -220,10 +328,16 @@ def cells_with_lineage(rows, idx, lang_n):
         # sub-multiset of the file's, consumed once per DB cell.
         pool = collections.Counter((lang, round(sc, 9)) for lang, ls in (lines or {}).items()
                                    for sc, _n, _p in ls)
-        for model, proto, lang, score, _n_items, tag, _src in group:
+        for model, proto, lang, score, _n_items, tag, _src, _sup in group:
             rec = {"model": model, "protocol": proto, "lang": lang, "score": score,
                    "run_tag": tag, "source_file": src, "n": None,
-                   "via_summary": False, "eval": [], "own_eval": [], "own_match": None}
+                   "via_summary": False, "via_regrade": None, "regrade_src": None,
+                   "regrade_why": None, "regrade_linked": False,
+                   "eval": [], "own_eval": [], "own_match": None}
+            if score is not None and corpus_of(proto):
+                regrade_one(rec, regrade, superseded, lang_n)
+                out.append(rec)
+                continue
             if score is not None:
                 key = (lang, round(score, 9))
                 if pool[key] > 0:
@@ -318,20 +432,33 @@ def main() -> int:
           % (len(cells), len(scored), len(nulls), {l: lang_n.get(l) for l in LANGS}))
 
     print("\n[1] lineage: does each scored cell trace to a stored artefact?")
-    untraced = [c for c in scored if not c["via_summary"] and not c["own_eval"]]
+    untraced = [c for c in scored
+                if not c["via_summary"] and not c["own_eval"] and not c["via_regrade"]]
     via_eval = [c for c in scored if not c["via_summary"] and c["own_eval"]]
+    via_regrade = [c for c in scored if c["via_regrade"]]
     no_eval = [c for c in scored if not c["own_eval"]]
-    print("    scored cells traced          : %d/%d (via summary %d, via per-item eval %d)"
-          % (len(scored) - len(untraced), len(scored), len(scored) - len(untraced) - len(via_eval),
-             len(via_eval)))
+    print("    scored cells traced          : %d/%d (via summary %d, via per-item eval %d, "
+          "via a14 regrade %d)"
+          % (len(scored) - len(untraced), len(scored),
+             len(scored) - len(untraced) - len(via_eval) - len(via_regrade),
+             len(via_eval), len(via_regrade)))
     print("    untraced                     : %d" % len(untraced))
+    for c in via_regrade:
+        print("      regrade trace: %-40s %-5s %r <- a14 %s [tag %s]; the row it replaced "
+              "carries superseded_by -> this protocol"
+              % (c["model"], c["lang"], c["score"], c["regrade_src"], c["via_regrade"]))
     for c in via_eval:
         print("      eval-only trace: %-40s %-6s %r <- %s (%s match)"
               % (c["model"], c["lang"], c["score"], [b for b, _s in c["own_eval"]],
                  c["own_match"]))
     for c in untraced:
-        print("      UNTRACED: %-40s %-24s %-5s %r (summary %s, n=%s)"
-              % (c["model"], c["protocol"], c["lang"], c["score"], c["source_file"], c["n"]))
+        if corpus_of(c["protocol"]):
+            print("      UNTRACED: %-40s %-24s %-5s %r (%s) -- %s"
+                  % (c["model"], c["protocol"], c["lang"], c["score"],
+                     c["source_file"], c["regrade_why"]))
+        else:
+            print("      UNTRACED: %-40s %-24s %-5s %r (summary %s, n=%s)"
+                  % (c["model"], c["protocol"], c["lang"], c["score"], c["source_file"], c["n"]))
     one = sum(1 for c in scored if len(c["eval"]) == 1)
     many = sum(1 for c in scored if len(c["eval"]) > 1)
     print("    scored cells with no per-item eval: %d/%d (older panels stored only the panel "

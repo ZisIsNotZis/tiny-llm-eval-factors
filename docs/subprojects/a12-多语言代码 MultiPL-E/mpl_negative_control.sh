@@ -11,7 +11,13 @@
 #      `mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified`) is moved into that model's
 #      `raw` row, so the value is stored but under another protocol;
 #   2. a printed `(161)` becomes `(160)` on a cell that exists exactly once, so the
-#      value is right and the item count it claims is not.
+#      value is right and the item count it claims is not;
+#   3. a stored protocol gains a `;ctx=99999` field its summary never had;
+#   4. a per-item artefact that raised on every item gets a stored `0.0` back, so a
+#      non-measurement claims to be a score -- and, on the other side of the same
+#      section, every `;corpus=` row must still trace to a14's regrade ledger (the
+#      clean run asserts the 12 regrade traces, so a green run means those rows were
+#      not silently dropped from the lineage check).
 #
 # Run from the repository root:
 #
@@ -99,10 +105,48 @@ else
 fi
 echo "exit=$CORRUPT_DB"
 
+echo "== corrupt case 4: a cell whose artefact raised on every item gets a stored 0.0"
+sqlite3 "$REPO/experiments.sqlite" ".backup '$WORK/db_zero.sqlite'"
+python3 - "$WORK/db_zero.sqlite" <<'INJECT'
+import sqlite3
+import sys
+
+# The canonical gemma-4-12b Q2 js cell is NULL because all 161 items raised.  Writing
+# 0.0 back is exactly the defect the rule forbids: a non-measurement claiming a score.
+con = sqlite3.connect(sys.argv[1])
+cur = con.execute(
+    "UPDATE experiments SET _score = 0.0 WHERE model='gemma-4-12b-it-UD-Q2_K_XL.gguf' "
+    "AND language='js' AND protocol='multipl-e-raw-greedy-768' AND _score IS NULL")
+print("  rows changed: %d" % cur.rowcount)
+con.commit()
+con.close()
+INJECT
+python3 "$AUDIT" --db "$WORK/db_zero.sqlite" > "$WORK/corrupt_zero.txt" 2>&1
+CORRUPT_ZERO=$?
+sed -n '/all-Exception/,+2p' "$WORK/corrupt_zero.txt"
+if grep -q "gemma-4-12b-it-UD-Q2_K_XL.gguf *js" "$WORK/corrupt_zero.txt"; then
+  echo "  [4] reported the zeroed non-measurement and named the cell"
+else
+  echo "  [4] did NOT name the zeroed non-measurement"
+  CORRUPT_ZERO=0
+fi
+echo "exit=$CORRUPT_ZERO"
+
+echo "== normal regrade rows (the other half of case 4: they must stay traced)"
+if grep -q "via a14 regrade 12" "$WORK/clean.txt"; then
+  echo "  clean run traced 12 rows to a14's regrade ledger"
+  REGRADE_OK=0
+else
+  echo "  clean run did NOT report 12 regrade traces"
+  grep -m2 "scored cells traced" "$WORK/clean.txt"
+  REGRADE_OK=1
+fi
+
 echo "== verdict"
-if [ "$CLEAN" -eq 0 ] && [ "$CORRUPT_PROTO" -ne 0 ] && [ "$CORRUPT_N" -ne 0 ] && [ "$CORRUPT_DB" -ne 0 ]; then
-  echo "PASS: clean run accepted (exit 0); protocol-row corruption rejected (exit $CORRUPT_PROTO); item-count corruption rejected (exit $CORRUPT_N); injected ';' field rejected (exit $CORRUPT_DB)"
+if [ "$CLEAN" -eq 0 ] && [ "$REGRADE_OK" -eq 0 ] && [ "$CORRUPT_PROTO" -ne 0 ] \
+   && [ "$CORRUPT_N" -ne 0 ] && [ "$CORRUPT_DB" -ne 0 ] && [ "$CORRUPT_ZERO" -ne 0 ]; then
+  echo "PASS: clean run accepted (exit 0) with 12 regrade traces; protocol-row corruption rejected (exit $CORRUPT_PROTO); item-count corruption rejected (exit $CORRUPT_N); injected ';' field rejected (exit $CORRUPT_DB); zeroed non-measurement rejected (exit $CORRUPT_ZERO)"
   exit 0
 fi
-echo "FAIL: clean exit=$CLEAN, protocol corruption exit=$CORRUPT_PROTO, item-count corruption exit=$CORRUPT_N, db-protocol corruption exit=$CORRUPT_DB"
+echo "FAIL: clean exit=$CLEAN, regrade traces=$REGRADE_OK, protocol corruption exit=$CORRUPT_PROTO, item-count corruption exit=$CORRUPT_N, db-protocol corruption exit=$CORRUPT_DB, zeroed non-measurement exit=$CORRUPT_ZERO"
 exit 1
