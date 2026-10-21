@@ -159,6 +159,9 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 - 本轮追加（`res68`）：**全 Exception 的格入库写 NULL**（`migrate_db.py::summary_score`，四处共用：
   `ingest_mpl`/`ingest_m27`/`ingest_m165`/`_ingest_mpl_ctx`），负控在库副本上造三行 + 一条「旧写法必须写出 0.0」
   的差分。库内那 4 行的数据修缮归 `a12`（`migrations/null_all_exception_cells.py`），i02 只保证不再写出来。
+- 本轮收尾（`res69`/`res70`）：m165 的 R1 来源清单与三个 `variant_panel.json` 入库（承载断言的证据随仓库走，
+  干净 clone 里 a12 的审计 exit 0）；4 行 `third-family-code` 的 `n_items` 按产物分母回填（java 158 / rs 155）；
+  「读不到输入就不删」改成**差分**负控（去掉 guard 丢 898 行、带上丢 0 行）。
 - **未做（下一轮）**：
   1. 38 格 py 仍未取代：其中 8 格是**同一 summary 内多行**（同 model+协议+n），需要另一条能切开的键
      （例如该行 `completed_at`/`rep`，或 a14 补一份逐格 eval 文件指纹）；其余是清单两列互相矛盾或全无候选。

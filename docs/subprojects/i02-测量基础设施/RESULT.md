@@ -389,3 +389,30 @@
   `ingest_m41`（比例）不写二元分数。库内那 4 行的数据修缮由 `a12` 的 `migrations/null_all_exception_cells.py` 做
   （备份 + 完整性 + 行数不变 + 幂等），i02 只保证**不再写出来**。
 - producer: `python3 checks/all_exception_null_negative_control.py`；`python3 migrate_db.py`（幂等，第二次净改 0 行）
+
+## res69 :: 承载断言的证据随仓库走：m165 的 R1 来源清单与三个 variant_panel.json 入库，干净 clone 里 a12 的审计 exit 0。
+
+- kind: measured
+- status: current
+- evidence: `a12` 的审计在干净 clone 里 exit 1，卡在 3 条 m165 vendor 行——它们的 `source_file` 指向
+  `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl`，而 `.gitignore` 只放行 `*_eval.json`，于是
+  「库里有行、证据不在仓库里」。放行四个小文件（合 ~7 KB）：`m165-vendor/vendor_r1_summary.jsonl`（R1 七行清单）、
+  `m165-vendor` / `m130-kv` / `m131-sampling` 的 `variant_panel.json`（§10 面板的采样规格，也是那些
+  variant-* 行的唯一来源）。写法上父目录被 `.wrapup/mres/*` 忽略时文件级 `!` 不生效，所以先放行子目录
+  `!.wrapup/mres/*/` 再放行文件，其余内容（samples、probe dump、面板原始 json）继续忽略。
+  验证：干净 clone `db58584` 里 `python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`
+  **exit 0**（341/341 已评分格都追到证据：summary 251 / per-item eval 78 / a14 清单 12，untraced 0）；
+  同 clone 里 `./reproduce.sh` exit 0（44 PASS / 0 WARN / 0 FAIL）。
+- producer: `git check-ignore -v .wrapup/mres/m165-vendor/vendor_r1_summary.jsonl`（无输出＝已放行）；
+  `python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`
+
+## res70 :: 「读不到输入就不删」的 guard 是承重的：干净 clone 里去掉它丢 898 行，带上它丢 0 行。
+
+- kind: measured
+- status: current
+- evidence: 差分负控 `checks/refresh_guard_differential_control.py` 在**干净 clone**（`.wrapup/mres` 只有
+  随仓库分发的 3 个面板文件）里跑两次完整 refresh：带 guard 时 `mres/%` 行 933 → 933（丢 0）、
+  `migrate_db.py` exit 2；把 `MIGRATE_WIDE_DELETE=1` 打开（删除范围换回旧写法 `source_file LIKE 'mres/%'`）后
+  933 → 35（丢 **898** 行）。同一个 clone、同一个库副本，只有这一处开关不同——所以丢行是那条删除范围造成的，
+  不是环境差异。开关只给这条负控用，默认关闭。
+- producer: `python3 checks/refresh_guard_differential_control.py`（输出里 `1)`/`2)`/`3)` 三行就是前后对照）
