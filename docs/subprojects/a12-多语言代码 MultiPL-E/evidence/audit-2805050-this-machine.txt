@@ -1,19 +1,18 @@
-# captured in a clean clone of revision c8b628e (git clone /home/z/vibe/local_lm_research /tmp/a12-clone4), report.html sha256 6d5db1ad0d800954805546a0113e5bf596e5a35b9b57e01fcd71faaf417273c3
-# command: cd /tmp/a12-clone4 && python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
-# datetime: 2026-10-21 10:30:01 CST  exit: 1
-# WHY RED: the 3 untraced rows are m165 vendor rows whose source_file is 'mres/m165-vendor/vendor_r1_summary.jsonl'; .gitignore:27 ignores .wrapup/mres/*, so that summary is not distributed. Not an a12 rule failure -- the same class as the *_eval.json gap i02 closed in f7187c1.
+# captured for revision 2805050 (HEAD), report.html sha256 6d5db1ad0d800954805546a0113e5bf596e5a35b9b57e01fcd71faaf417273c3
+# command: python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
+# datetime: 2026-10-21 10:34:51 CST  exit: 0   (this machine; the audit reads no uncommitted path)
 a12 MultiPL-E cell audit
-  audited revision : 58d64892aa666e01016125b3e611bce06e66388b
+  audited revision : 280505095efddc301370e39c381462e19ba67c66
   script sha256    : f1c81b0e8f489400f55ba366f190844c19a40634346874aa406fdf39c64d1e47
   command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py
-  database         : /tmp/a12-clone4/experiments.sqlite
-  report           : /tmp/a12-clone4/report.html
-  dirty paths      : 0 dirty path(s) in the tree; uncommitted among the ones this audit reads: none
+  database         : /home/z/vibe/local_lm_research/experiments.sqlite
+  report           : /home/z/vibe/local_lm_research/report.html
+  dirty paths      : 39 dirty path(s) in the tree; uncommitted among the ones this audit reads: experiments.sqlite
 MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cpp': 161, 'py': 161, 'js': 161, 'java': 158, 'rs': 155, 'rb': 161}
 
 [1] lineage: does each scored cell trace to a stored artefact?
-    scored cells traced          : 338/341 (via summary 244, via per-item eval 82, via a14 regrade 12)
-    untraced                     : 3
+    scored cells traced          : 341/341 (via summary 251, via per-item eval 78, via a14 regrade 12)
+    untraced                     : 0
       regrade trace: NVIDIA-Nemotron-3-Nano-4B-UD-Q2_K_XL.gguf py    0.6521739130434783 <- a14 py_regrade_manifest.tsv [tag m10-nem4b-q2-py]; the row it replaced carries superseded_by -> this protocol
       regrade trace: NVIDIA-Nemotron-3-Nano-4B-UD-Q3_K_XL.gguf py    0.6645962732919255 <- a14 py_regrade_manifest.tsv [tag m10-nem4b-q3-py]; the row it replaced carries superseded_by -> this protocol
       regrade trace: Ornith-1.5-9B-Q4_K_M.gguf                py    0.4409937888198758 <- a14 py_regrade_manifest.tsv [tag m10-orn9b-q4-py]; the row it replaced carries superseded_by -> this protocol
@@ -67,8 +66,8 @@ MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cp
       eval-only trace: LFM2.5-8B-A1B-UD-Q3_K_XL.gguf            py     0.037267080745341616 <- ['m10-lfm25-8b-q3-py_eval.json', 'pan-lfm25-8a1b-q3-py_eval.json'] (pair-only match)
       eval-only trace: Qwen3.5-2B-UD-IQ3_XXS.gguf               cpp    0.18012422360248448 <- ['mt1-iq3-2b-cpp_eval.json', 'pan-qwen2b-iq3xxs-cpp_eval.json'] (pair-only match)
       eval-only trace: Qwen3.5-2B-UD-IQ3_XXS.gguf               py     0.19875776397515527 <- ['mt1-iq3-2b-py_eval.json', 'pan-qwen2b-iq3xxs-py_eval.json'] (pair-only match)
-      eval-only trace: Qwen3.5-2B-UD-Q2_K_XL.gguf               cpp    0.11180124223602485 <- ['m27-q2-t0.0-cpp_eval.json', 'm27-q2-t0.3-cpp_eval.json', 'm27-q2-t0.6-cpp_eval.json', 'm29-q2-faon_f16-cpp_eval.json', 'm29-q2-faon_q8-cpp_eval.json', 'm3-iq2m-cpp_eval.json', 'm3-q2-cpp_eval.json', 'm31-q2-tk1-cpp_eval.json', 'm31-q2-tk20-cpp_eval.json', 'm31-q2-tk200-cpp_eval.json', 'm31-q2-tk40-cpp_eval.json', 'm31-q2-tk64-cpp_eval.json', 'pan-qwen2b-q2kxl-cpp_eval.json'] (pair-only match)
-      eval-only trace: Qwen3.5-2B-UD-Q2_K_XL.gguf               py     0.13664596273291926 <- ['m27-q2-t0.0-py_eval.json', 'm29-q2-faon_q8-py_eval.json', 'm3-q2-py_eval.json', 'm31-q2-tk1-py_eval.json', 'pan-qwen2b-q2kxl-py_eval.json'] (pair-only match)
+      eval-only trace: Qwen3.5-2B-UD-Q2_K_XL.gguf               cpp    0.11180124223602485 <- ['m3-iq2m-cpp_eval.json', 'm3-q2-cpp_eval.json', 'm27-q2-t0.0-cpp_eval.json', 'm27-q2-t0.3-cpp_eval.json', 'm27-q2-t0.6-cpp_eval.json', 'm29-q2-faon_f16-cpp_eval.json', 'm29-q2-faon_q8-cpp_eval.json', 'm31-q2-tk20-cpp_eval.json', 'm31-q2-tk40-cpp_eval.json', 'm31-q2-tk64-cpp_eval.json', 'm31-q2-tk1-cpp_eval.json', 'm31-q2-tk200-cpp_eval.json', 'pan-qwen2b-q2kxl-cpp_eval.json'] (pair-only match)
+      eval-only trace: Qwen3.5-2B-UD-Q2_K_XL.gguf               py     0.13664596273291926 <- ['m3-q2-py_eval.json', 'm27-q2-t0.0-py_eval.json', 'm29-q2-faon_q8-py_eval.json', 'm31-q2-tk1-py_eval.json', 'pan-qwen2b-q2kxl-py_eval.json'] (pair-only match)
       eval-only trace: Qwen3.5-4B-UD-IQ3_XXS.gguf               cpp    0.37888198757763975 <- ['mt1-iq3-4b-cpp_eval.json', 'pan-qwen4b-iq3xxs-cpp_eval.json'] (pair-only match)
       eval-only trace: Qwen3.5-4B-UD-IQ3_XXS.gguf               py     0.40993788819875776 <- ['mt1-iq3-4b-py_eval.json', 'pan-qwen4b-iq3xxs-py_eval.json'] (pair-only match)
       eval-only trace: Qwen3.5-4B-UD-Q2_K_XL.gguf               cpp    0.3416149068322981 <- ['m1-qwen4b-q2-cpp_eval.json', 'pan-qwen4b-q2kxl-cpp_eval.json'] (pair-only match)
@@ -95,7 +94,7 @@ MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cp
       eval-only trace: Llama-3.2-3B-Instruct-Q2_K.gguf          py     0.2981366459627329 <- ['pan-llama32-3b-q2-py_eval.json'] (pair-only match)
       eval-only trace: Llama-3.2-3B-Instruct-Q3_K_M.gguf        cpp    0.34782608695652173 <- ['pan-llama32-3b-q3-cpp_eval.json', 'pan-phi4mini-q3-cpp_eval.json'] (pair-only match)
       eval-only trace: Llama-3.2-3B-Instruct-Q3_K_M.gguf        py     0.4968944099378882 <- ['pan-llama32-3b-q3-py_eval.json'] (pair-only match)
-      eval-only trace: Phi-4-mini-instruct-Q2_K.gguf            cpp    0.018633540372670808 <- ['m163-g12b-q2-cpp-chat_eval.json', 'pan-phi4mini-q2-cpp_eval.json'] (pair-only match)
+      eval-only trace: Phi-4-mini-instruct-Q2_K.gguf            cpp    0.018633540372670808 <- ['pan-phi4mini-q2-cpp_eval.json', 'm163-g12b-q2-cpp-chat_eval.json'] (pair-only match)
       eval-only trace: Phi-4-mini-instruct-Q2_K.gguf            py     0.024844720496894408 <- ['pan-phi4mini-q2-py_eval.json'] (pair-only match)
       eval-only trace: Phi-4-mini-instruct-Q3_K_M.gguf          cpp    0.34782608695652173 <- ['pan-llama32-3b-q3-cpp_eval.json', 'pan-phi4mini-q3-cpp_eval.json'] (pair-only match)
       eval-only trace: Phi-4-mini-instruct-Q3_K_M.gguf          py     0.4658385093167702 <- ['pan-phi4mini-q3-py_eval.json'] (pair-only match)
@@ -104,13 +103,6 @@ MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cp
       eval-only trace: Ornith-1.5-9B-Q5_K_M.gguf                rb     0.4658385093167702 <- ['pan-orn9b-q5-rb_eval.json'] (pair-only match)
       eval-only trace: Ornith-1.5-9B-Q5_K_M.gguf                rs     0.5483870967741935 <- ['pan-orn9b-q5-rs_eval.json'] (pair-only match)
       eval-only trace: gemma-4-12b-it-UD-Q2_K_XL.gguf           cpp    0.024844720496894408 <- ['m6b-g12b-q2-cpp_fixed_eval.json'] (tag match)
-      eval-only trace: Qwen3.5-2B-UD-Q2_K_XL.gguf               cpp    0.006211180124223602 <- ['m3-iq2xxs-cpp_eval.json'] (pair-only match)
-      eval-only trace: Qwen3.5-2B-UD-Q3_K_XL.gguf               cpp    0.024844720496894408 <- ['m10-g26b-q3-cpp_eval.json'] (pair-only match)
-      eval-only trace: Qwen3.5-2B-UD-Q3_K_XL.gguf               py     0.043478260869565216 <- ['m10-g26b-q3-py_eval.json'] (pair-only match)
-      eval-only trace: Qwen3.5-2B-UD-Q4_K_XL.gguf               cpp    0.037267080745341616 <- ['m3-gr3b-q2-cpp_eval.json'] (pair-only match)
-      UNTRACED: Qwen3.5-2B-UD-Q2_K_XL.gguf               mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,top_p=1.00,top_k=20,min_p=0.0,presence_penalty=2.0 py    0.018633540372670808 (summary mres/m165-vendor/vendor_r1_summary.jsonl, n=161)
-      UNTRACED: Qwen3.5-2B-UD-Q3_K_XL.gguf               mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,top_p=1.00,top_k=20,min_p=0.0,presence_penalty=2.0;bench=evalplus-humaneval python 0.3597560975609756 (summary mres/m165-vendor/vendor_r1_summary.jsonl, n=None)
-      UNTRACED: Qwen3.5-2B-UD-Q4_K_XL.gguf               mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,top_p=1.00,top_k=20,min_p=0.0,presence_penalty=2.0 py    0.07453416149068323 (summary mres/m165-vendor/vendor_r1_summary.jsonl, n=161)
     scored cells with no per-item eval: 15/341 (older panels stored only the panel summary; the summary is then the artefact of record)
     (language, pass, n) key matches one file: 141 cells; several files: 185 cells (the key is not model-unique, so it proves a file reproduces the cell, not that the file is this model's)
     eval keys with >1 file       : 65 (the report accepts only identical status histograms for those)
@@ -218,7 +210,7 @@ MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cp
 [7] every cell the report prints belongs to its own protocol row
     report cells read: 194; not belonging to their protocol row: 0
     item counts compared: 194; cells skipped because the report prints no n: 0
-    report mtime 1792549796, DB mtime 1792549796
+    report mtime 1792549796, DB mtime 1792549889
 
 [8] standard-column pooling state in the report
     standard tables with ONE pooled MultiPL-E column: 0
@@ -237,4 +229,4 @@ MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cp
       ONE ROW HIDES OTHERS: Qwen3.5-2B-UD-Q4_K_XL.gguf mpl-raw-t0.3-768;topk-set=1,20,40,64,200;anchors K=1(greedy floor),K=200(no truncation) py -> [(0.2733, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk'), (0.3168, 'm31-topk')]
     OPEN (i02): a row key without the varied column hides the other rows; the sampling axis measures that column, this table cannot
 
-FAIL: see the untraced / all-Exception / relabelled / drift / mismatch rows above
+PASS: every scored cell traces to a stored artefact, no all-Exception cell carries a score, no stored protocol lost or invented a setting, the prompt set matches its pin, and every cell the report prints belongs to its own protocol row
