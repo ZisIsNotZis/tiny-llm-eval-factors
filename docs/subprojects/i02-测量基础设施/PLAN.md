@@ -143,38 +143,26 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 
 ## 当前在做什么 / 下一步（接手先读这一节）
 
-- 当前（最近一次提交 `3542b8f`）：
-  1. ✅ 干净 clone 里那条**假 WARN** 已清：`kv_evidence.json` 本身没落后，是 `build_kv_evidence.py --check`
-     把「a05 的脚本看不到 `.wrapup/mres`（不随仓库分发）」当成「索引过期」。现在脚本崩溃 → exit 2 并点名缺失路径，
-     `reproduce.sh` 把 2 记 SKIP（无法当场核对）、1 记 WARN（真过期），负控 `checks/kv_evidence_unavailable_control.py`。
-  2. ✅ `open_questions.json` 跟上 `a11` 的提交（a11 的 PLAN.md 没有「未解问题」一节，跳过计数 6→7），报告重建。
-- 下一步（按优先级）：
-  1. **`a14` 的 py 取代入库**（meta 已授权；清单 `docs/subprojects/a14-部分给分/evidence/py_regrade_manifest.tsv`，
-     sha256 `c6534dd4…`，98 格 = 改分 50 / 未改 48）。红线：不按 `score_old` 改行（`multi` 73 格）、
-     `none` 6 格不在库（不新造）、`protocol_old` 只到 59/98（定不出就进 skip ledger）、身份串
-     `<old_proto>;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14` 两段都要。行数对账 **+50**；
-     旧行标 `superseded_by`（不删不改写）。同一提交里换掉 27 个 py `testfrac`（`evidence/py_testfrac_regrade.json`），
-     否则二元列与比例列是两代。§13 影响面：18 唯一配对可直接改、30 格要按 `source_file` 逐条对、2 格不在表（`m26` 两行）；
-     7 对近差结论会翻，文字必须改。
-  2. 之后：`a07`（spec-decode 是否逐字节同贪心）/`a08`（thinking 开关是另一协议，不是重跑）/`a11`（扩散：`未测` + 门槛 + 价格，不写 0）落地时接报告。
-- **py 取代入库的逐格对账（已做，库内一个字都还没改）**：50 个改分格按
-  `db_rowids` → `db_models` → `db_run_tags` → （`protocol_old`，否则 `db_source_files`）逐条对，
-  结果 **20 格唯一确定 / 28 格定不下来 / 2 格不在库**：
-  - 2 格不在库：`m26-q38-27b-q2-py`、`m26-q38-27b-q3-py`（`db_match=none`，从未入库）→ 记「未入库」，**不新造行**；
-  - 28 格里 5 格连候选行都对不上（`m21-bonsai-q2g64`、`m27-q4-t0.3`、`m31-q4-tk20/40/64/200`），
-    另 1 格两行同协议同分（`m3-gr3b-q3`），其余 22 格是同一个分数落在 2–4 行、协议候选 2–3 个。
-    下一轮用 a12 的 `mpl_cell_audit.py`（按 `(model, run_tag, source_file)` 认格）先跑一遍，
-    仍定不下来的进 skip ledger 并写明原因——**不按分数改行**。
-- **两条需要拍板/需要改代码的决定**（记在这里，因为改库前必须先定）：
-  1. 「旧行标 superseded」在库里没有承载物（`experiments` 无该列，a13 先例只靠协议串区分新旧行，
-     表达不出「谁取代了谁」）。拟加一列可空 `superseded_by`（填取代行的协议串），旧行的分数与协议串**不改写**；
-     这是本次唯一触碰表结构的动作，属 i02 的 `migrate_db.py`，但机制不是 meta 指定的，**按 assumed 记，请 meta 复核**。
-  2. §13 的选取规则要改 `.wrapup/mktables.py::load_standard`：目前 MultiPL-E 格只认
-     `protocol='multipl-e-raw-greedy-768'`，带 `corpus=` 的新行会被它排除，于是「取代」在报告里不生效；
-     改成「有 corpus 串的格以它为准，没有的用旧行」，并在 §13 印出 py 的语料代次。
+- 已完成（最近提交 `0b68086`）：kv 那条假 WARN 已清（不可得 ≠ 过期，带负控）；`open_questions` 跟上 a11；
+  a14 的 py 语料取代入库（**11 行** `corpus=` + 11 个 `superseded_by` 指针，按活库身份认行，
+  `checks/py_corpus_regrade_check.py` 逐行核对 PASS、旧记录 0 行丢失）；`mres/%` 宽前缀删除收窄
+  （`checks/mres_prefix_delete_negative_control.py`：探针行跑两次仍在、924 行一条不丢）；
+  `superseded_by` 列 + 悬空指针断言 + 两条负控（指针、报告过滤）；报告 §13 有语料代次表注。
+- **未做，按优先级**：
+  1. **第二个 P1（比 mres 那条更隐蔽）**：refresh 会改写别人修正过的行——14 行 BFCL 多轮格的
+     `n_items` 被抹回 NULL（a13 从官方 ledger 回填的）、32 行 `variant-*` 协议串被追加
+     `;sampling=default`（把「没记录采样」写成「采样=默认」，属编造）。改前状态在
+     `experiments.sqlite.bak30`。要做的：每个 ingester 只改 `(run_tag, source_file)` 自身前缀内的行；
+     `n_items`/`protocol` 只能「读现值，为空才补写」并记 ledger；回填那 14 + 32 行；负控造三行分属
+     三个 ingester 的行，跑两次 refresh 断言逐字未变。
+  2. **py 取代的收尾**：38 条 skip ledger 逐格原因已给出，但 §13 只按总数给了语料代次表注，
+     未逐格标注；`a14` 的 27 个 py `testfrac` 值尚未随二元列换到同一代（`evidence/py_testfrac_regrade.json`），
+     这是「两列各说一代」的口子；§15 的绝对水平中位 +0.027 与 7 对近差翻转的文字也未改。
+  3. `a07`（spec-decode 是否逐字节同贪心）/`a08`（thinking 开关是另一协议）/`a11`（扩散：`未测` + 门槛 + 价格，不写 0）落地时接报告。
 - 阻塞/风险：报告只依赖库 + `report_inputs/*` 派生索引；索引落后于子项目产物时 `reproduce.sh` 报 WARN，
-  必须显式重建，不会自动通过。工作树里的 `experiments.sqlite` 常有别的子项目未提交的写入，
-  所以 `report.html` 一律在 HEAD 的干净 clone 里重建再拷回，避免把未提交的库改动烤进报告。
+  必须显式重建。工作树里的 `experiments.sqlite` 常有别的子项目未提交的写入，所以 `report.html`
+  一律在 HEAD 的干净 clone 里重建再拷回，避免把未提交的库改动烤进报告。
+  当下 `reproduce.sh` 在本机工作树里还有 2 条 WARN（size_claims / open_questions，都因别的子项目正在改它们的事实源）。
 
 ## 读法：还剩哪些、当前在哪、下一个派给谁
 
