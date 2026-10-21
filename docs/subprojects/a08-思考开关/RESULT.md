@@ -20,7 +20,7 @@
 
 | 类 | 机制（同一对臂里被测量到的） | 实测差 |
 |---|---|---|
-| 知识-对数似然（mmlu，n=912） | 不生成：分数来自 prompt logprob；原始 completions 端点对 `--reasoning` 逐字无反应 | 0.622807 vs 0.622807，**0 题（逐位相同）** |
+| 知识-对数似然（mmlu，n=912） | 不生成：分数来自 prompt logprob；原始 completions 端点对 `--reasoning` 逐字无反应 | 0.622807 vs 0.622807（**聚合值与 stderr 相同；逐题集合未验证**，见 res7） |
 | 抽取（ifeval，n=25） | 23/25 题把 4096 全花在思考上，`content` 拿不到完整响应 | 0.60 → **0.04**（−14 题），token 15×，墙钟 8.7× |
 | 推理（gsm8k，n=100） | 26/100 题撞满 4096，其余题也付 ≈1990 token/题 | 0.67 → **0.34**（−33 题），墙钟 3.35× |
 
@@ -96,7 +96,7 @@ arc_challenge `off` 72、truthfulqa_mc2 `off` 79（`on` 都是 0）；humaneval 
 - repro: fixtures 里逐对可查；`python3 -c` 汇总见下一条命令的输出
   （`--check` 只保证 fixture 与重算一致，不重算这两个统计量，所以它们是**从 fixture 读出的派生值**）。
 
-## res3 :: 打开思考的生成代价是每题 1.6k–4k token，而且最差的几档直接把 4096 预算打满
+## res3 :: 打开思考的生成代价是每题 0.5k–4k token，而且最差的几档直接把 4096 预算打满
 
 7 个 2B 档的 on 格可以逐请求数出来（它们的 panel 只跑了 gsm8k，日志能归给这一格）：
 
@@ -110,8 +110,6 @@ arc_challenge `off` 72、truthfulqa_mc2 `off` 79（`on` 都是 0）；humaneval 
 | Q4_K_XL | 1990 | 26/100 | 0.34 | 664.3 s |
 | Q5_K_XL | 2369 | 40/100 | 0.12 | 815.1 s |
 | granite-4.1-3b-Q2_K | 491 | **10/100** | 0.12 | 211.0 s |
-| Q5_K_XL | 2369 | 40/100 | 0.12 | 815.1 s |
-| granite-3b-Q2_K | 491 | 0/100 | 0.12 | 211.0 s |
 
 - evidence: `fixtures/thinking_cells.tsv` 的 `gen_tokens` / `gen_per_item` / `cap_hits` 列；
   原始日志随仓库走（`fixtures/logs/<tag>.server.log.gz` 加 `log_sha256`）。
