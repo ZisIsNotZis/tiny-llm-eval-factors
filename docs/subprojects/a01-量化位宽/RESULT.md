@@ -138,6 +138,18 @@
 - 会推翻它：用同一口径重算得到相反的多数方向，或某列的反例多到超过升的数目。
 
 
+### t4-reproducible :: 「分数低的那一格」的生成是可复现的：Qwen3.5-2B `UD-Q2_K_XL` 在历史原旗标下重跑，32 道争议题（UD-IQ3_XXS 判过、UD-Q2_K_XL 判不过）加 8 道对照共 40 题跑两遍，**两遍 40/40 逐字节相同，且 40/40 与 `m64` 面板落盘的历史完成物逐字节相同**——所以那 22 题的差不是「同配置跑两次」的随机噪声。
+- author: measurement
+- from: result.b1-heplus-only
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `analysis/t4_result.json`（`identical_p1_p2=40`、`identical_to_history=40`、`n_slots=1`、`n_ctx=8192`、`elapsed_s=228.7`、`parallel_with` 记了并行的两个作业）；stdout 记 `peak_vram_mib=1548`；落盘完成物在 `.wrapup/mres/a01-t4/t4-p{1,2}.raw.jsonl`（本地产物，不入库）
+- repro: `setsid nohup python3 "docs/subprojects/a01-量化位宽/analysis/gpu_t4.py" > .wrapup/a01_t4.out 2>&1 &`（自己等显存、自己断言 `n_slots/n_ctx`、跑完写 `analysis/t4_result.json`）
+- 覆盖边界：只重跑了这 40 题，不是全 164 题；因此本条证明的是「这条生成路线在这个文件上逐字节确定」，而不是「39/164 这个数在任意重复下不变」——后者由 `i01::res25` 的同路线证据支持（chat 贪心 `-np 1` 两次逐字节相同）。
+- 资源实测与例外：峰值显存 **1548 MiB**（≤4 GB 条件成立），两遍共 **228.7 s = 3.8 GPU 分钟**——**超了 registry 并发例外的 3 分钟上限 0.8 分钟**；并行于 a06 的 `m165-vendor`（1752 MiB）与 i02 的 vendor 探针（3118 MiB），空闲显存全程 ≥17.4 GB，未影响对方。教训：这类臂按 **2.7 s/题**（`-np 1` 每题重新 prefill）而不是面板历史的 1.33 s/题估成本。
+- 会推翻它：同路线再跑出现任一题翻转；或发现历史 `m64` 完成物与本臂不是同一提示集（那样 40/40 相同反而是提示集写死的证据）。
+
 ## 三、极低位宽与三元（plan2 的另一半，WP4）
 
 ### ternary-offcurve :: 家族内可判的那一例是 GLM-4.7-Flash：UD-TQ1_0（2.226 比特/权重）的 HumanEval+ 0.4634、GSM8K 0.49，而同家族 UD-Q2_K_XL（3.176）是 0.7622 / 0.82、UD-Q3_K_XL（3.682）是 0.7500 / 0.84——低比特档比 3.176 档低 29.9 pp（HumanEval+）与 33.0 pp（GSM8K），而 3.176→3.682 这一档只动 −1.2 pp / +2.0 pp。
