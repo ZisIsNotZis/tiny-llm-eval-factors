@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -53,7 +54,15 @@ HINT = {
 
 
 def find_gguf(name):
-    """按文件名在 mscache / HF 缓存 / 本地目录里找；找不到返回 None（调用方登记不可得）。"""
+    """按文件名在 mscache / HF 缓存 / 本地目录里找；找不到返回 None（调用方登记不可得）。
+
+    `A10_NO_GGUF=1` 把仓库外的整个搜索面关掉。这不是花活：干净 clone 里 gguf **本就不存在**，
+    而如果 clone 恰好跑在这台有 /home/z/hf 的机器上，搜索会「恰好」成功，让「看不到输入时退出非 0」
+    这条验收变成假绿。关掉搜索面后：`build_fixture.py --check` 必须退 2，`run_all.py` 仍必须退 0
+    （它只用夹具）。
+    """
+    if os.environ.get("A10_NO_GGUF"):
+        return None
     hint = HINT.get(name, "*")
     for pat in CANDIDATES:
         for p in sorted(Path("/").glob(pat.format(name=name, hint=hint).lstrip("/"))):

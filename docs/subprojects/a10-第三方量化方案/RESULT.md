@@ -68,6 +68,16 @@
 - repro: `python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py"`（`no-spec` 打印 `[('none', '0')]`）
 - 说明：与 `tensor-set` 合起来，「-mtp 后缀意味着结构性差异」这个假设被两条独立读数否掉：张量集合相同，且解码时没有用投机草稿。
 
+### fixture-binding :: 本层两条证据的一半在仓库外——分数格在 `experiments.sqlite`（入库），但**有效位宽与逐张量分配来自 `*.gguf` 头**（不入库，单个文件 10–14 GB）——所以九个文件的测量结果冻结成入库夹具 `analysis/fixtures/a10_map.json`（`238d0228…`），每个条目自带推导证据（`n_bytes` / `n_params` / `n_tensors` / 逐类 bits / 逐张量比特指纹）。干净 clone 里 `run_all.py` 不读任何仓库外的文件，因此 36 条断言在那里同样成立。
+
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- evidence: 夹具 sha256 见本节开头的绑定表；`analysis/build_fixture.py --check` 在本机有源时逐项比对（输出「夹具与源一致」）
+- repro: 有源：`python3 "docs/subprojects/a10-第三方量化方案/analysis/build_fixture.py" --check`（退出 0）；**把仓库外的搜索面关掉**：`A10_NO_GGUF=1 python3 ".../build_fixture.py" --check`（退出 **2**，逐条打印「盘上找不到该 gguf」）；同一关断下 `A10_NO_GGUF=1 python3 ".../run_all.py"` 仍退出 **0**（36 条，只用夹具）。干净 clone：`git clone --depth 1 file://$PWD /tmp/a10clone && cd /tmp/a10clone && python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py"`（退出 0，36 条）；同一 clone 里 `python3 ".../protocol_identity.py"` 退出 **2**（`.wrapup/mres/*` 不入库）
+- 说明：这条是为「看不到输入的检查必须失败」而设的——干净 clone 若恰好跑在这台有 `/home/z/hf` 的机器上，`find_gguf` 会「恰好」成功，把「缺输入退出非 0」变成假绿；`A10_NO_GGUF=1` 就是用来打红它的开关。`--selftest` 的第三条（`A10_NO_GGUF` 之外的三份错误副本）证明断言本身会翻红，两者一起才算「检查有效」。
+
 ## 二、位置：第三方档相对原生阶梯（`kind: measured`）
 
 ### ladder-own-step :: 本族原生阶梯**不单调**：2.878 → 3.850（Δbpw = +0.971）这一步在 9 列里有 **7 列是负的**——HE −0.0549、HE+ −0.0610、MBPP −0.0185、MBPP+ −0.0238、ARC-c −0.0200、GSM8K −0.0200、IFEval −0.0800，只有 MMLU +0.0329 与 TruthfulQA +0.0500 是正的；第二步 3.850 → 4.173（Δbpw = +0.324）在 8 列上是正的、TruthfulQA 恰好 0.0000。没有一列的两步段斜率都是负的，也没有一列的区间不含 0。
