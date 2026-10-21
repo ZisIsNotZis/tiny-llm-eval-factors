@@ -7,7 +7,7 @@
 
 - 审计：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`，退出 0 = 谱系、全 Exception、协议设置、提示集哈希、报告行归属五项全绿。
 - 负控：`bash "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_negative_control.sh"`，退出 0 = 干净报告通过、两处人为篡改都被拒。
-- 已存捕获（文件名带短 revision，首部记 `report.html` 的 sha256 `6d5db1ad0d800954…`）：`evidence/audit-373c14c-this-machine.txt`（本机 HEAD，退出 0）、`evidence/negative-control-373c14c.txt`（退出 0，四处篡改全被拒）、`evidence/audit-373c14c-clean-clone.txt`（干净 clone，**退出 1**，原因见下）。
+- 已存捕获（文件名带短 revision，首部记 `report.html` 的 sha256 `6d5db1ad0d800954…`）：`evidence/audit-c8b628e-this-machine.txt`（本机 HEAD，退出 0）、`evidence/negative-control-c8b628e.txt`（退出 0，四处篡改全被拒）、`evidence/audit-c8b628e-clean-clone.txt`（干净 clone，**退出 1**，原因见「谱系」的限制）。
 
 ## 审计的负控能力：四处篡改都被拒
 
