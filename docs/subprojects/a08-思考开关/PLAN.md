@@ -45,7 +45,7 @@ AC（可证伪）：
 | WP2 | 跑预算对齐的受控臂，**一次调用一条臂**：gsm8k off@4096、mmlu off/on（16/科）、ifeval off/on（25 题） | a08 worker | WP1；GPU 锁 | 实测 ≈20 GPU 分钟（off 臂 198 s、mmlu 两臂 434 s、ifeval 两臂 623 s，含加载） | 六条臂全得数（一条失败一次 `rc=port-busy` 记在账上后重跑成功）；`n_slots = 1`、preflight 全绿 | **完成** |
 | WP3 | 入库：编号备份 → `migrate_db.py` → 行数对账 → 重算 fixture | a08 worker | WP2 | CPU 分钟级 | 两次入库：3323→3331（+8 = 本轴 5 + a06 3）、3355→3355（全列多重集 0/0）；`bak30`/`bak48` 都 integrity ok | **完成** |
 | WP4 | `RESULT.md` 结论 + 未测清单 + 报告面交接说明 | a08 worker | WP3 | CPU 分钟级 | 三类基准各一对（reasoning/extraction/knowledge-loglik）、code 类显式未测；每条结论带 `- evidence:` 与 `- repro:` | **完成** |
-| WP5 | 独立复核（fresh reviewer，非本 worker） | meta 派 | WP4 | 一次复核预算 | 干净 clone 里 `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"` 贴出命令与退出码；P1 类缺陷为零 | **待派** |
+| WP5 | 独立复核（fresh reviewer，非本 worker） | meta 派 | WP4 | 一次复核预算 | 干净 clone 里 `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"` 贴出命令与退出码；P1 类缺陷为零。作者已自测 clone rc=0（`RESULT.md::res5`），但**自测不算复核** | **待派** |
 
 ## 已知的坑（从别的子项目继承，不改）
 

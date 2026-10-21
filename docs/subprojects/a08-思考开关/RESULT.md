@@ -113,6 +113,9 @@
 - 复算：`--check` 在**没有** `.wrapup/mres` 的环境里也绿（`A08_MRES=/nonexistent ... --check` 实测 rc=0），
   因为面板 json 与日志 gz 随仓库走、sha256 绑定原文件。
 - 负控：`--selftest` 把一份 fixture 副本改一行，检查必须变红（实测 rc=0 且打印 `PASS negative control`）。
+- **干净 clone 里绿**：`git archive HEAD | tar -x -C /tmp/clone` 后在该目录跑
+  `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"` → **rc=0**（28 对逐字一致、负控变红、
+  5 条 rc=0 的臂身份闭合、三类基准各一对）。clone 里没有 `.wrapup/`，所以这条绿不依赖作者工作树。
 - repro: `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"`
 
 ## res6 :: 预算对齐的对照（WP2 的第一刀）：同一模型、同一 4096 预算，只改 `--reasoning`
