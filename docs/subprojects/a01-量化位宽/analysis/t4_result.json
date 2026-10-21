@@ -51,7 +51,7 @@
  "server_flags": "-m /home/z/hf/Qwen3.5-2B-UD-Q2_K_XL.gguf --port 8917 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off",
  "n_slots": 1,
  "n_ctx": 8192,
- "peak_vram_mib": null,
+ "peak_vram_mib": 1548,
  "passes": [
   {
    "pass": 1,
@@ -70,5 +70,6 @@
  "identical_p1_p2": 40,
  "differing": [],
  "identical_to_history": 40,
- "disputed_covered": 32
+ "disputed_covered": 32,
+ "peak_vram_mib_source": "实跑 stdout（该次运行的 gpu_t4.py 只打印未写入 JSON；修复后重跑会写入同一个键）"
 }

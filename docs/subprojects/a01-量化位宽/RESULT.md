@@ -144,7 +144,7 @@
 - scope: specific
 - status: current
 - kind: measured
-- evidence: `analysis/t4_result.json`（`identical_p1_p2=40`、`identical_to_history=40`、`n_slots=1`、`n_ctx=8192`、`elapsed_s=228.7`、`parallel_with` 记了并行的两个作业）；stdout 记 `peak_vram_mib=1548`；落盘完成物在 `.wrapup/mres/a01-t4/t4-p{1,2}.raw.jsonl`（本地产物，不入库）
+- evidence: `analysis/t4_result.json`（`identical_p1_p2=40`、`identical_to_history=40`、`n_slots=1`、`n_ctx=8192`、`elapsed_s=228.7`、`parallel_with` 记了并行的两个作业）；`peak_vram_mib=1548` 与 `elapsed_s=228.7` 都在同一个 JSON 里（该次运行的脚本只打印未写入，事后按 stdout 补录并注明来源）；落盘完成物在 `.wrapup/mres/a01-t4/t4-p{1,2}.raw.jsonl`（本地产物，不入库，重跑即重生成）
 - repro: `setsid nohup python3 "docs/subprojects/a01-量化位宽/analysis/gpu_t4.py" > .wrapup/a01_t4.out 2>&1 &`（自己等显存、自己断言 `n_slots/n_ctx`、跑完写 `analysis/t4_result.json`）
 - 覆盖边界：只重跑了这 40 题，不是全 164 题；因此本条证明的是「这条生成路线在这个文件上逐字节确定」，而不是「39/164 这个数在任意重复下不变」——后者由 `i01::res25` 的同路线证据支持（chat 贪心 `-np 1` 两次逐字节相同）。
 - 资源实测与例外：峰值显存 **1548 MiB**（≤4 GB 条件成立），两遍共 **228.7 s = 3.8 GPU 分钟**——**超了 registry 并发例外的 3 分钟上限 0.8 分钟**；并行于 a06 的 `m165-vendor`（1752 MiB）与 i02 的 vendor 探针（3118 MiB），空闲显存全程 ≥17.4 GB，未影响对方。教训：这类臂按 **2.7 s/题**（`-np 1` 每题重新 prefill）而不是面板历史的 1.33 s/题估成本。

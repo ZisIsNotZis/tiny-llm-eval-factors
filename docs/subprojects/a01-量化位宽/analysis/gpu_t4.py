@@ -178,7 +178,7 @@ codegen({target!r}, dec, "humaneval", greedy=True)
         same12 = [t for t in common if p1[t] == p2[t]]
         same_hist = [t for t in common if t in hist and p1[t] == hist[t]]
         log.update({
-            "elapsed_s": round(elapsed, 1), "n_common": len(common),
+            "elapsed_s": round(elapsed, 1), "peak_vram_mib": peak, "n_common": len(common),
             "identical_p1_p2": len(same12),
             "differing": [t for t in common if p1[t] != p2[t]],
             "identical_to_history": len(same_hist),
