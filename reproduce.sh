@@ -6,6 +6,8 @@
 # 它按顺序核对：运行时依赖 → 提示集哈希 → 报告输入 → 数据库完整性与清洁度 →
 # 陈旧根路径 → 文档检查 → 从库重建 report.html 并与仓库里那份逐字节对比 →
 # 报告与产物一致。任何一步失败都以非零退出，缺输入的那一步不会被当成 0。
+# 「报告输入与来源不一致」是 FAIL，不是 WARN：记下来继续，等于让下一次漂移带着旧值判绿。
+# 如果只想跑这一节（负控用它，因为整条链路要两分钟）：REPRODUCE_INPUTS_ONLY=1 ./reproduce.sh
 set -u
 # 干净 clone 里没有 /home/z/hf 的 gguf。子项目里凡是「glob 到本机路径就算过」的检查，在这里会**假绿**；
 # 所以显式声明本次没有 gguf 源，让那些检查报「未核对」而不是通过（a10 的 build_fixture.py --check 就是这样）。
@@ -22,6 +24,30 @@ record() {  # record <状态> <说明>
 }
 
 say() { printf '%s\n' "$*"; }
+
+# 报告输入与来源的一致性：13 条判断只有一个家（checks/report_inputs_drift.py），
+# 本函数只把它的结论翻译成复现核对表里的行；漂移必须让整条命令非零退出。
+check_report_inputs() {
+    local line st text
+    while IFS= read -r line; do
+        st=${line%%$'\t'*}
+        text=${line#*$'\t'}
+        case "$st" in
+            PASS) record PASS "$text" ;;
+            SKIP) record SKIP "$text" ;;
+            FAIL) record FAIL "$text" ;;
+        esac
+    done < <(python3 checks/report_inputs_drift.py)
+}
+
+if [ "${REPRODUCE_INPUTS_ONLY:-0}" = "1" ]; then
+    # 只跑报告输入一节：负控要在一个故意改坏的输入上看到非零退出，不必等整条链路跑完。
+    check_report_inputs
+    for line in "${RESULTS[@]}"; do say "  $line"; done
+    [ "$FAILED" = 1 ] && { say "FAILED：报告输入与其来源不一致。"; exit 1; }
+    say "OK：报告输入与其来源一致（只看这一节）。"
+    exit 0
+fi
 
 # 1) 运行时依赖：缺什么就说什么，不靠 traceback 才发现
 if python3 - <<'PY'
@@ -81,22 +107,9 @@ if python3 checks/readme_counts.py >/dev/null 2>&1; then
 else
     record FAIL "README 与 git ls-files 不一致：python3 checks/readme_counts.py"
 fi
-if python3 report_inputs/build_bfcl_judge.py --check >/dev/null 2>&1; then
-    record PASS "bfcl_judge.json 与 a13 的判分器事实一致"
-else
-    record WARN "bfcl_judge.json 与 a13 的事实不一致：python3 report_inputs/build_bfcl_judge.py"
-fi
-if python3 report_inputs/build_sampling_collapse.py --check >/dev/null 2>&1; then
-    record PASS "sampling_collapse.json 与 a06 的事实一致"
-else
-    record WARN "sampling_collapse.json 与 a06 的事实不一致：python3 report_inputs/build_sampling_collapse.py"
-fi
-out=$(python3 report_inputs/build_spec_decode.py --check 2>&1); rc=$?
-case "$rc" in
-    0) record PASS "spec_decode.json 与 a07 的证据一致" ;;
-    2) record SKIP "$(printf '%s' "$out" | grep -m1 '^UNVERIFIED:' | sed 's/^UNVERIFIED: //')" ;;
-    *) record WARN "spec_decode.json 与 a07 的证据不一致：python3 report_inputs/build_spec_decode.py" ;;
-esac
+# 报告输入与来源：漂移判 FAIL，看不到来源判 SKIP（缺席不是漂移）。逐条判断在
+# checks/report_inputs_drift.py，它的负控是 checks/report_inputs_drift_negative_control.py。
+check_report_inputs
 
 if python3 checks/spec_decode_negative_control.py >/tmp/reproduce_sd.$$ 2>&1; then
     record PASS "第七/八节的负控（差异改 0 → 正文改口；地板改有差异 → 构建失败）"
@@ -110,11 +123,6 @@ if python3 checks/sampling_collapse_negative_control.py >/dev/null 2>&1; then
 else
     record FAIL "第六节厂商档口径的负控未通过"
 fi
-if python3 report_inputs/build_gsq.py --check >/dev/null 2>&1; then
-    record PASS "gsq.json 与 a10 的事实一致"
-else
-    record WARN "gsq.json 与 a10 的事实不一致：python3 report_inputs/build_gsq.py"
-fi
 if python3 checks/gsq_negative_control.py >/dev/null 2>&1; then
     record PASS "第十一节第三方方案口径的负控（1 格改 0 → 全部测不出）"
 else
@@ -125,57 +133,12 @@ if python3 checks/bfcl_judge_negative_control.py >/dev/null 2>&1; then
 else
     record FAIL "第十四节判分器口径的负控未通过"
 fi
-if python3 report_inputs/build_moe_feasibility.py --check >/dev/null 2>&1; then
-    record PASS "moe_feasibility.json 与 a04 的可行性 fixture 一致"
+if python3 checks/report_inputs_drift_negative_control.py >/tmp/reproduce_rid.$$ 2>&1; then
+    record PASS "报告输入漂移判 FAIL 的负控（改坏一个输入 → 非零退出并点名；缺输入 → SKIP 不误判）"
 else
-    record WARN "moe_feasibility.json 与 a04 的 fixture 不一致：python3 report_inputs/build_moe_feasibility.py"
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_rid.$$ | cut -c1-200)"
 fi
-if python3 report_inputs/build_bfcl_gap.py --check >/dev/null 2>&1; then
-    record PASS "bfcl_gap.json 与现有 BFCL 汇总一致"
-else
-    record WARN "bfcl_gap.json 与 BFCL 汇总不一致：python3 report_inputs/build_bfcl_gap.py"
-fi
-# a05 的证据脚本要 `.wrapup/mres` 落盘产物；干净 clone 里没有，所以这里必须把「索引过期」与「看不到输入」分开：
-# 前者是 WARN（可重建），后者是 SKIP（索引无法当场核对，随仓库分发的那份即权威，不算通过）。
-out=$(python3 report_inputs/build_kv_evidence.py --check 2>&1); rc=$?
-case "$rc" in
-    0) record PASS "kv_evidence.json 与 a05 的证据脚本输出一致" ;;
-    2) record SKIP "$(printf '%s' "$out" | grep -m1 '^UNVERIFIED:' | sed 's/^UNVERIFIED: //')" ;;
-    *) record WARN "kv_evidence.json 与 a05 的脚本输出不一致：python3 report_inputs/build_kv_evidence.py" ;;
-esac
-out=$(python3 report_inputs/build_size_claims.py --check 2>&1); rc=$?
-case "$rc" in
-    0) record PASS "size_claims.json 与 a02 的通道/曲线产物一致" ;;
-    2) record SKIP "$(printf '%s' "$out" | grep -m1 '^UNVERIFIED:' | sed 's/^UNVERIFIED: //')" ;;
-    *) record WARN "size_claims.json 与 a02 的产物不一致：python3 report_inputs/build_size_claims.py" ;;
-esac
-if python3 report_inputs/build_scheme_effects.py --check >/dev/null 2>&1; then
-    record PASS "scheme_effects.json 与 a03 归因脚本的输出一致"
-else
-    record WARN "scheme_effects.json 与 a03 的脚本输出不一致：python3 report_inputs/build_scheme_effects.py"
-fi
-if python3 report_inputs/build_reproducibility.py --check >/dev/null 2>&1; then
-    record PASS "reproducibility.json 与 i01 的地板/幅度事实一致"
-else
-    record WARN "reproducibility.json 与 i01 的事实不一致：python3 report_inputs/build_reproducibility.py"
-fi
-if python3 report_inputs/build_paired_deltas.py --check >/dev/null 2>&1; then
-    record PASS "paired_deltas.json 与 a01 的配对差事实一致"
-else
-    record WARN "paired_deltas.json 与 a01 的事实不一致：python3 report_inputs/build_paired_deltas.py"
-fi
-if python3 report_inputs/build_open_questions.py --check >/dev/null 2>&1; then
-    record PASS "open_questions.json 与各子项目 PLAN.md 的「未解问题」一节一致"
-else
-    record WARN "open_questions.json 与 PLAN.md 不一致：python3 report_inputs/build_open_questions.py"
-fi
-if python3 report_inputs/build_eval_status.py --check >/dev/null 2>&1; then
-    record PASS "eval_status.json 与现有落盘产物一致"
-elif [ ! -d .wrapup/mres ]; then
-    record SKIP "eval_status.json 与落盘产物的一致性（本机无 .wrapup/mres 产物，随仓库分发的那份即权威）"
-else
-    record WARN "eval_status.json 与落盘产物不一致：python3 report_inputs/build_eval_status.py"
-fi
+rm -f /tmp/reproduce_rid.$$
 
 # 5) 数据库
 if python3 checks/db_check.py >/tmp/reproduce_db_check.$$ 2>&1; then
