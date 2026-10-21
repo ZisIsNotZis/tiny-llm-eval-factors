@@ -1,12 +1,12 @@
-# captured in a clean clone of revision 2805050 (git clone /home/z/vibe/local_lm_research /tmp/a12-clone5), report.html sha256 6d5db1ad0d800954805546a0113e5bf596e5a35b9b57e01fcd71faaf417273c3
-# command: cd /tmp/a12-clone5 && python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
-# datetime: 2026-10-21 10:34:51 CST  exit: 0   (dirty paths: 0)
+# captured in a clean clone of revision d8a844e (git clone /home/z/vibe/local_lm_research /tmp/a12-clone6), report.html sha256 6d5db1ad0d800954805546a0113e5bf596e5a35b9b57e01fcd71faaf417273c3
+# command: cd /tmp/a12-clone6 && python3 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py'
+# datetime: 2026-10-21 10:36:13 CST  exit: 0   (dirty paths: 0)
 a12 MultiPL-E cell audit
-  audited revision : 280505095efddc301370e39c381462e19ba67c66
+  audited revision : d8a844efac9c722309d7e1f6529c77f0c4a282e0
   script sha256    : f1c81b0e8f489400f55ba366f190844c19a40634346874aa406fdf39c64d1e47
   command          : python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py
-  database         : /tmp/a12-clone5/experiments.sqlite
-  report           : /tmp/a12-clone5/report.html
+  database         : /tmp/a12-clone6/experiments.sqlite
+  report           : /tmp/a12-clone6/report.html
   dirty paths      : 0 dirty path(s) in the tree; uncommitted among the ones this audit reads: none
 MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cpp': 161, 'py': 161, 'js': 161, 'java': 158, 'rs': 155, 'rb': 161}
 
@@ -210,7 +210,7 @@ MultiPL-E cells in the DB: 349 (scored 341, NULL 8); full-cell item counts: {'cp
 [7] every cell the report prints belongs to its own protocol row
     report cells read: 194; not belonging to their protocol row: 0
     item counts compared: 194; cells skipped because the report prints no n: 0
-    report mtime 1792550074, DB mtime 1792550074
+    report mtime 1792550169, DB mtime 1792550169
 
 [8] standard-column pooling state in the report
     standard tables with ONE pooled MultiPL-E column: 0

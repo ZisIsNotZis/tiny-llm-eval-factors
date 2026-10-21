@@ -1,6 +1,6 @@
-# captured for revision 2805050 (HEAD), report.html sha256 6d5db1ad0d800954805546a0113e5bf596e5a35b9b57e01fcd71faaf417273c3
+# captured for revision d8a844e (HEAD), report.html sha256 6d5db1ad0d800954805546a0113e5bf596e5a35b9b57e01fcd71faaf417273c3
 # command: bash 'docs/subprojects/a12-多语言代码 MultiPL-E/mpl_negative_control.sh'
-# datetime: 2026-10-21 10:34:51 CST  exit: 0  (four corruptions rejected; clean run exit 0 with 12 regrade traces)
+# datetime: 2026-10-21 10:36:13 CST  exit: 0
 == clean run
 
 PASS: every scored cell traces to a stored artefact, no all-Exception cell carries a score, no stored protocol lost or invented a setting, the prompt set matches its pin, and every cell the report prints belongs to its own protocol row
@@ -11,7 +11,7 @@ exit=0
     report cells read: 195; not belonging to their protocol row: 1
     item counts compared: 195; cells skipped because the report prints no n: 0
       MISMATCH: ('gemma-4-12b-it-UD-Q2_K_XL.gguf', 'raw', 'cpp', 0.0248, "no stored cell under this row's protocol label")
-    report mtime 1792550083, DB mtime 1792549889
+    report mtime 1792550164, DB mtime 1792549889
 
 [8] standard-column pooling state in the report
 exit=1
@@ -21,7 +21,7 @@ exit=1
     report cells read: 194; not belonging to their protocol row: 1
     item counts compared: 194; cells skipped because the report prints no n: 0
       MISMATCH: ('gemma-4-12b-it-UD-Q2_K_XL.gguf', 'chat', 'cpp', 0.0186, 'printed n=160, artefact n=[161]')
-    report mtime 1792550084, DB mtime 1792549889
+    report mtime 1792550165, DB mtime 1792549889
 
 [8] standard-column pooling state in the report
 exit=1
