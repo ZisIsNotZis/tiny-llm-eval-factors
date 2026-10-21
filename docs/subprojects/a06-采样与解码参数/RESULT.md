@@ -257,9 +257,10 @@
 
 ## 七、报告里 temp>0 的格该怎么读
 
-## report-temp-cells :: `report.html` 第六节（采样 / 解码参数）里的 temp>0 格（`mpl-raw-t0.3-768`、`mpl-raw-t0.6-768`、`mpl-raw-t0.3-768;topk-set=…`、`variant-sampling-temp0.3/0.7-*`）不是固定协议分数的「更宽松版本」，也不能与贪心格同权读：它们是**不同的格**，逐题集合与贪心格不同：MultiPL-E 161 题上净差 11–15 道题、逐题翻转 15–21 道，Jaccard 0.40–0.56，而分数只差 0.04–0.09；所以正确的读法是「该格的协议就是它的身份，跨协议只读方向、不读差值的显著性」，并且方向在 python 上稳、在 cpp 上不稳——一个读者从第六节读到「温度压低代码分」是安全的，读到「Q3 比 Q4 好」是不安全的（贪心下 Q3>Q4，temp>0 下 Q3<Q4）；也不能把「两格分数相同」读成「两格测的是同一个东西」（Q3 py 净 0 而 8 上/8 下）。
+## report-temp-cells :: 报告第六节该写的第一句：**厂商推荐档不是温和采样，而是把代码列打掉 17–36 道题；它看起来像「10 倍塌陷」只是因为那几格的基线只有 39–44 道题；因此「固定协议比厂商档更宽容，且是数量级差别」只在相对意义上成立，绝对量级与其他格同档。** `report.html` 第六节（采样 / 解码参数）里的 temp>0 格（`mpl-raw-t0.3-768`、`mpl-raw-t0.6-768`、`mpl-raw-t0.3-768;topk-set=…`、`variant-sampling-temp0.3/0.7-*`）不是固定协议分数的「更宽松版本」，也不能与贪心格同权读：它们是**不同的格**，逐题集合与贪心格不同：MultiPL-E 161 题上净差 11–15 道题、逐题翻转 15–21 道，Jaccard 0.40–0.56，而分数只差 0.04–0.09；所以正确的读法是「该格的协议就是它的身份，跨协议只读方向、不读差值的显著性」，并且方向在 python 上稳、在 cpp 上不稳——一个读者从第六节读到「温度压低代码分」是安全的，读到「Q3 比 Q4 好」是不安全的（贪心下 Q3>Q4，temp>0 下 Q3<Q4）；也不能把「两格分数相同」读成「两格测的是同一个东西」（Q3 py 净 0 而 8 上/8 下）。
 
 - kind: measured
-- evidence: `level-order-cpp-inverts`、`peritem-reshuffle`、`peritem-net-hides-flips`、`topk-not-inert-at-temp0.3`、`score-moves-m131`；报告第六节的标签碰撞（`m31` 的 `top_k` 格与 `m27` 的 `t0.3` 格挤成同一个 `raw·temp=0.3` 标签）已由 a12 登记给 i02，a06 只提供上面这三条的数值证据。
+- 第六节的核心结论按这个顺序写：① 厂商档把代码列打掉 17–36 道题（`vendor-loss-is-absolute`），且 `SyntaxError`/`Exception` 占 91–99%（`vendor-collapse-has-two-forms`）——是失效机制变化，不是能力小退步；② 在该采样值下量化阶梯**不可分辨**（`vendor-verdict-levels`），不许写成 survives/inverts；③ 温度/top_k 那半边的方向结论照旧（`score-moves-m131`、`topk-inert-at-temp0`），不因①被推翻。
+- evidence: `level-order-cpp-inverts`、`peritem-reshuffle`、`peritem-net-hides-flips`、`topk-not-inert-at-temp0.3`、`score-moves-m131`、`vendor-loss-is-absolute`、`vendor-verdict-levels`；报告第六节的标签碰撞（`m31` 的 `top_k` 格与 `m27` 的 `t0.3` 格挤成同一个 `raw·temp=0.3` 标签）已由 a12 登记给 i02，a06 只提供上面这三条的数值证据。
 - repro: `python3 "docs/subprojects/a06-采样与解码参数/sampling_census.py"` 的 `[E1]`/`[E2]` 段。
 - 限制：本节没有改报告，也没有改 `mktables.py`；第六节把 m31 与 m27 的格并成一行的问题属 i02。a06 的贡献是给出「并了之后读者会读错哪一个方向」的具体数（Q3-vs-Q4 在 cpp 上反转）。

@@ -147,6 +147,7 @@
 | 合计（M1+M2 或 M1+M3） | 二选一即可回答「H-A 主因还是 H-B 主因」；M1+M2+M3 才能分别归因 | 14–26 分钟 |
 
 - 探针（M1）**不是分数**，不与 161 题格同权读；它只用来定方向（`AGENTS.md` 的探针规则）。
+- **M2（已批准，已排队）**：`TAG=m2 TOP_P=0.95 MIN_P=0.05 PRES=0.0`，即保持 `presence_penalty=0`、`temp 1.0`，只把两个截断量回到固定协议的值，同样 40 题。塌陷消失 ⇒ H-B（无约束尾部）成立；仍塌 ⇒ 指向温度 1.0 本身。脚本已参数化（同一份 `run_m1_probe.sh`，五个量与环境变量可覆盖），排队进程 `flock` 在 a07 的 `m167/m168` 之后，**触发条件 = 拿到锁**。
 - **M1 的排队状态**：脚本 `run_m1_probe.sh` 已经以 `bash .wrapup/gpu_locked.sh bash run_m1_probe.sh` 提交（pid 3701095），当前在 `/tmp/llama_gpu.lock` 上等 a07 的 `m166-spec-ident` 任务；**触发条件 = 拿到锁**（`flock` 自动继续，不需要人再操作）。产物目录 `.wrapup/mres/m165-mechanism/`，日志 `m1_probe.log`，结果行 `m1_summary.jsonl`。
 - 判别逻辑与两侧结论写在 `RESULT.md::vendor-collapse-mechanism`，跑之前不得改。
 
