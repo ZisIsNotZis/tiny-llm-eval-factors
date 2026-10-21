@@ -5,6 +5,20 @@
 **本轴不产出 BFCL 总分**：任何跨协议、跨类别的单一数字都不成立（见 res1、res10）。下文所有数字都带协议串与类别，命令里可见。
 下文的 `sqlite3 -readonly` 全部只读，不改库。
 
+## 结论层（读者只需要这三句；细节与证据在下面的 res 条目里）
+
+**一、单轮（native-tools 与 prompt 两个协议分别说，不池化）。** 换成官方 AST checker 后 11 个单轮类别里 8 个整体上移、2 个翻转 0（`irrelevance` / `live_irrelevance`）、1 个只差 1 题且方向向下（`live_relevance`，−0.0625），中位幅度 `multiple` +0.325、`simple_python` +0.278、`live_multiple` +0.148、`parallel_multiple` +0.145、`parallel` +0.105、`live_simple` +0.105，各列极差 +0.004 到 +0.351；22,644 题里 2,788 题由判错改判对、35 题反向。**所以：模型之间的排序大体保留（11 个模型 5 个 non-live 类别合并只有 4/55 对逆序），但任何绝对分数与任何 0.05 以内的邻近间距都不可沿用**——旧数字是自研匹配器的缺陷产物，`RESULT.md::res13` 已按撤回处理。（`RESULT.md::res11`、`res13`）
+
+**二、多轮（`bfcl-official-multiturn-temp0`）。** 库内 24 行多轮只支持**组内**比较，因为 handler 决定 prompt 模板与响应解析，而每个族、甚至每个 Qwen 尺寸都跑在不同 handler 下：只有 4 组组内可比（`Qwen3-1.7B-FC`：2B-q2/q3 + Bonsai；`Qwen3-4B-Instruct-2507-FC`：4B-q2/q3；`Qwen3-8B-FC`：9B-q2/q3；`Qwen3-30B-A3B-Instruct-2507-FC`：35B-A3B-q2/q3），granite-4.1-3b 用 `granite-4.0-350m` 的模板单独一组、**没有任何对照**；gemma 族多轮 0 行，补它**只能补覆盖、补不了可比**。跨族多轮结论（「谁的函数调用更强」）目前**没有证据**；要拿到证据必须做 2 模型 × 2 handler 的受控对，**已定价、未测：4 臂 × 200 题 ≈ 50 GPU 分钟**（`RESULT.md::res12`、`PLAN.md` 的 WP4）。
+
+**三、这次换判分器具体改变了哪些判断（读者层面，不只是数字）。**
+- **5 个 non-live 类别合并的第一名换人**：旧 Bonsai-q2g64 0.7053 vs gemma-4-E4B-Q3 0.7028（差 0.0025）；新 gemma-4-E4B-Q3 0.8908 vs Bonsai 0.8808（差 0.0100，反向）。所以「三值 Bonsai 是这批里最好的工具调用模型」这句话**不再成立**，改成「gemma-4-E4B-Q3 略高，与 Bonsai 差距 0.01，在判分器更换的噪声范围内不可分」。
+- **`parallel_multiple` 的第一名同样翻转**：Bonsai → gemma-4-E4B-Q3（旧 Δ +0.035 给 Bonsai，新 Δ −0.010 给 gemma）。
+- **`simple_python` 上「大模型更好」被推翻**：旧 Qwen3.5-4B-Q3 0.66 > gemma-4-E2B-Q3 0.5975、Qwen4B-Q3 0.66 > gemma-4-E4B-Q3 0.62；新 gemma-E2B-Q3 0.9125 > Qwen4B-Q3 0.89、gemma-E4B-Q3 0.915 > 0.89。**2B 级的 gemma 在这个类别上反超 4B 级的 Qwen**，差 0.022–0.11。
+- **不变的两条**（可以继续引用）：granite-4.1-3b 的 Q3 远远好于 Q2（旧 0.5798 vs 0.2024，新 0.7710 vs 0.2065）；`irrelevance` 上 granite-Q2 的异常高分 0.9875 判分器无关（0 翻转），所以它不是判分产物。
+- **§14 的聚合口径结论不受影响**：同一格 m8-gr3b-q2 的 micro/macro 差旧 0.2028（0.3905 vs 0.1877）、新 0.2059（0.3954 vs 0.1894）——换判分器几乎不动这个差，所以「BFCL 没有唯一总分」这条继续成立。
+- **给报告文本的两条输入**（`make_report.py` 不归我改，只报事实）：(a) §14 现在写的「micro 不可从库复算」**已过时**——`n_items` 回填后 micro 可从库算，实测 gemma-4-E4B-Q3 的 5 类 micro=0.8944（`SELECT _score,n_items ... WHERE protocol LIKE '%official-ast-checker'` 加权）；(b) §14 表里现在的数值已经是官方 checker 的值，行标签带 `...-official-ast-checker`，prompt 协议那 4 个模型仍是 `...-homegrown-matcher`，两者不可混算。
+
 ## 数据形状
 
 ### res1 BFCL 的 123 行是四个测量，不是一列
