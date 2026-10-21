@@ -988,6 +988,40 @@ def mpl_protocol_label(proto):
 ambiguous = []
 
 
+def mpl_py_corpus_note():
+    """§13 的表注：py 列有两个测试语料代次，这一条必须印在报告里，不能只留在子项目文档里。
+
+    a14 用钉住的语料重判了同一批落盘完成物（不是重跑模型），改分的格以新协议串
+    `…;corpus=<sha>;gen_corpus=<旧代次>` 入库，旧行被 `superseded_by` 指出去。定不出行身份的格
+    没有取代，所以表里同时存在两代数值：可以同表，不能直接比。两个 sha 都从库里的协议串读出，
+    不在这里抄写。
+    """
+    rows = CON.execute(
+        "SELECT superseded_by FROM experiments WHERE superseded_by IS NOT NULL "
+        "AND language='py' AND superseded_by LIKE '%;corpus=%'").fetchall()
+    if not rows:
+        return ""
+    corpus = gen = ""
+    for (proto,) in rows:
+        m = re.search(r"corpus=([0-9a-f]+)", proto)
+        g = re.search(r"gen_corpus=([^;]+)", proto)
+        if m and g:
+            corpus, gen = m.group(1), g.group(1)
+            break
+    n_sub = CON.execute("SELECT count(*) FROM experiments WHERE superseded_by IS NOT NULL "
+                        "AND language='py'").fetchone()[0]
+    n_old = CON.execute(
+        "SELECT count(*) FROM experiments WHERE bench_family='humaneval-multipl-e' "
+        "AND language='py' AND _score IS NOT NULL AND superseded_by IS NULL "
+        "AND protocol NOT LIKE '%;corpus=%'").fetchone()[0]
+    return (f"<li><b>py 列有两个测试语料代次，这一条不能省。</b>其中 <b>{n_sub}</b> 格的完成物不变、"
+            f"判定改在钉住的语料上重做（语料 sha <code>{corpus[:12]}</code>，完成物生成于 "
+            f"<code>{gen}</code>，所以它不是一次重跑，而是同一批完成物换了真值）；"
+            f"表里另有 <b>{n_old}</b> 个 py 格（含 top-k／chat 等其它协议的面板）仍是旧语料下的值——"
+            f"定不出行身份的格没有取代，"
+            f"新旧两代可以同表出现，但<b>不能直接当同一代比较</b>。</li>")
+
+
 def table_mpl_langs():
     """MultiPL-E per language: one row per (model, display label), columns = languages.
 
@@ -998,7 +1032,8 @@ def table_mpl_langs():
     grouped = {}
     rows = CON.execute(
         "SELECT model,protocol,language,_score,n_items,run_tag FROM experiments "
-        "WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL")
+        "WHERE bench_family='humaneval-multipl-e' AND _score IS NOT NULL "
+        "AND superseded_by IS NULL")
     for model, proto, lang, score, n, _tag in rows:
         label = mpl_protocol_label(proto)
         grouped.setdefault((model, label), {}).setdefault(lang, []).append((proto, score, n))
@@ -2108,6 +2143,7 @@ def main():
          "这不是“量化位宽”的轴，而是把代码能力的语言维度与协议维度摆出来，用来说明为什么标准列必须固定语言集。",
          [T_MPL], fig_mpl_langs(T_MPL),
          "<ul>"
+         + mpl_py_corpus_note() +
          "<li>同一模型在不同语言上的通过率差异很大（C++ 与 Python 通常最高，Rust/Ruby/Java 低）。"
          "所以把不同语言平均成一个数之前，必须保证每个模型跑的是同一个语言集，否则不可比。</li>"
          "<li>这就是“12B 崩到 0”的来源：gemma-4-12b 只跑了 java/js/rb/rs，平均后接近 0，而它根本没跑 cpp/py。</li>"

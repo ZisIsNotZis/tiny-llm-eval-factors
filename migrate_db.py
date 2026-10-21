@@ -18,6 +18,7 @@ Changes
 Run:  python3 migrate_db.py
 """
 import collections
+import csv
 import json
 import os
 import re
@@ -54,6 +55,11 @@ NEW_COLS = [
     # (MMLU's is per subject, hence the separate mmlu entry).
     ("n_items", "INTEGER"),
     ("limit_spec", "TEXT"),
+    # 行状态，不是行数据：非 NULL 时它**指向本表内另一行的 protocol 串**，说明这一格被
+    # 哪个测量取代了（a14 的 py 重评：同一批落盘完成物 × 钉住的测试语料）。旧行的
+    # `_score` 与 `protocol` 一个字不改，历史可查；报告只取 `superseded_by IS NULL` 的行。
+    # a13 先例只能靠协议串区分新旧行，表达不出「谁取代了谁」；两个消费者各自持一份就会漂。
+    ("superseded_by", "TEXT"),
 ]
 
 
@@ -1881,6 +1887,8 @@ def main():
     # 放在 REFRESH 之后：REFRESH 的 ingest 会用历史协议串重新插入行，这一步每次都把
     # 单轮 BFCL 收敛到官方判分身份，所以重复跑是幂等的。
     tally["a13-bfcl-rescore"] = ingest_bfcl_official_rescore(con)
+    # 放在最后：它只改别的 ingest 已经落好的 py 行（写 `superseded_by`）并加新行。
+    tally["a14-py-regrade"] = ingest_py_regrade(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
     print_ingest_skips()
@@ -1980,6 +1988,108 @@ def ingest_bfcl_official_rescore(con):
     print(f"  {tag}: rescored {changed} row(s), relabelled {renamed} prompt row(s) "
           f"as {BFCL_PROMPT_HOMEGROWN_PROTOCOL}")
     return changed + renamed
+
+
+# ---------------------------------------------------------------------------
+# py 格的语料代次取代（a14 的 py 重评；meta 已授权，见 a14 PLAN「取代执行包」）
+#
+# 问题：2026-10-14 之前入库的 py 格，它们的完成物是在**另一份测试语料**上判分的。同一批落盘
+# 完成物用今天钉住的语料重判，50/98 格换分（151/15516 题翻转，全在 py），cpp/java/js 0 翻转。
+# 结论：旧的 py 分数不是「另一个模型」也不是「判分侧不稳」，而是**没记录自己读的是哪一代语料**。
+#
+# 落地：只入**能唯一确定行身份**的改分格，协议串按该格实际协议加两段
+#   `<old_proto>;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14`
+# 两段缺一不可：`corpus=` 说判定真值来自哪一代语料，`gen_corpus=` 说完成物生成在旧语料上
+# （所以它不是一次重跑，是同一批完成物换了真值）。旧行一个字不改，只在 `superseded_by`
+# 里写下取代它的那行的协议串——这是「行状态」，不是删除。
+#
+# 红线（a14 与 meta 都点名过）：**绝不按 `_score` 认行**。73 格的同一个分数落在多行上，
+# 按分数改会连带改错别的格。认行只用清单的 `db_rowids` → `db_models` → `db_run_tags`
+# → （`protocol_old`，否则 `db_source_files`）；任何一步剩下多于一行就进 skip ledger。
+PY_REGRADE_MANIFEST = os.path.join(
+    "docs", "subprojects", "a14-部分给分", "evidence", "py_regrade_manifest.tsv")
+PY_REGRADE_SUFFIX = "corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14"
+
+
+def _regrade_candidates(con, rec):
+    """清单的一行 → 这条改分格在库里对应的那些候选行（按身份列逐层筛，不含分数猜测）。"""
+    models = json.loads(rec["db_models"])
+    run_tags = set(rec["db_run_tags"].split(","))
+    saved_factory = con.row_factory
+    con.row_factory = sqlite3.Row        # 按列名读：这一段的判据全是列名，不按下标猜
+    out = []
+    for rid in [int(x) for x in rec["db_rowids"].split(",") if x]:
+        row = con.execute("SELECT rowid, * FROM experiments WHERE rowid=?", (rid,)).fetchone()
+        if row is None:
+            continue
+        same = abs(row["_score"] - float(rec["score_old"])) < 1e-6
+        if not same:
+            continue
+        if row["model"] not in models or row["run_tag"] not in run_tags:
+            continue
+        out.append(row)
+    con.row_factory = saved_factory
+    return out
+
+
+def ingest_py_regrade(con):
+    """把 a14 清单里**定得下身份**的改分格按新协议串入一行，并给旧行写下取代指针。"""
+    tag = "a14-py-regrade"
+    if not os.path.exists(PY_REGRADE_MANIFEST):
+        note_skip(tag, "取代清单缺失", PY_REGRADE_MANIFEST)
+        print(f"  {tag}: MISSING {PY_REGRADE_MANIFEST} -- 不动任何行")
+        return 0
+    manifest = list(csv.DictReader(open(PY_REGRADE_MANIFEST, encoding="utf-8"),
+                                   delimiter="\t"))
+    inserted = linked = 0
+    unchanged = 0
+    claimed = {}                 # 旧行 rowid → 已经认领它的格；两格抢同一行说明对账有歧义
+    for rec in manifest:
+        cell = rec["tag"]
+        if int(rec["delta"]) == 0:
+            unchanged += 1          # 没改分：旧行就是新值，不需要新行，也不标 superseded
+            continue
+        if rec["db_match"] == "none":
+            note_skip(tag, "该格从未入库，不新造行", cell)
+            continue
+        n = int(rec["n"])
+        cand = _regrade_candidates(con, rec)
+        chosen = None
+        if len(cand) == 1:
+            chosen = cand[0]
+        else:
+            p_old = rec["protocol_old"]
+            by_proto = [r for r in cand if p_old and r["protocol"] == p_old]
+            if len(by_proto) == 1:
+                chosen = by_proto[0]
+            else:
+                srcs = set(rec["db_source_files"].split(","))
+                by_src = [r for r in cand if r["source_file"] in srcs]
+                if len(by_src) == 1:
+                    chosen = by_src[0]
+        if chosen is None:
+            note_skip(tag, "同分候选跨多个协议，无法确定行身份", cell)
+            continue
+        if chosen["rowid"] in claimed:
+            note_skip(tag, f"两个格解析到同一行（另一格是 {claimed[chosen['rowid']]}）", cell)
+            continue
+        claimed[chosen["rowid"]] = cell
+        new_proto = f"{chosen['protocol']};{PY_REGRADE_SUFFIX}"
+        row = {c: chosen[c] for c in ROW_COLS}
+        row.update({"_score": int(rec["pass_new"]) / n, "protocol": new_proto,
+                    "n_items": n, "language": "py",
+                    "bench_family": "humaneval-multipl-e"})
+        if not measurement_present(con, row):
+            insert(con, row)
+            inserted += 1
+        linked += con.execute(
+            "UPDATE experiments SET superseded_by=? WHERE rowid=? AND "
+            "(superseded_by IS NULL OR superseded_by <> ?)",
+            (new_proto, chosen["rowid"], new_proto)).rowcount
+    con.commit()
+    print(f"  {tag}: +{inserted} 行（新协议串），旧行写指针 {linked} 行，"
+          f"{unchanged} 格未改分不入库")
+    return inserted
 
 
 if __name__ == "__main__":

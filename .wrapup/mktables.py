@@ -138,9 +138,13 @@ def query_cells_by(where, extra="''", params=()):
     the database, so their cell takes the item count of its own per-item artefact.
     Every other row keeps its own (_score, n_items).
     """
+    # 被取代的行不进任何表/图/统计：它们仍然是历史记录（`superseded_by` 指向取代它们的那一行），
+    # 但一个格在报告里只能出现一次。`MKT_NO_SUPERSEDED_FILTER=1` 只给负控用——把它去掉，
+    # 同一个格就会以两行（旧语料值 + 钉住语料值）同时出现在 §13 里。
+    nq = "" if os.environ.get("MKT_NO_SUPERSEDED_FILTER") else " AND superseded_by IS NULL"
     q = ("SELECT model, %s, _bench, bench_family, _score, n_items, language "
          "FROM experiments WHERE run_tag IS NOT NULL AND run_tag <> '' "
-         "AND _score IS NOT NULL AND (%s)" % (extra, where))
+         "AND _score IS NOT NULL%s AND (%s)" % (extra, nq, where))
     cells = collections.defaultdict(dict)
     for model, tag, bench, fam, score, n, lang in con.execute(q, params):
         if score is None:
@@ -293,9 +297,13 @@ def load_standard():
     H) plus the retired MultiPL-E panel under its canonical raw-greedy
     protocol only, so no two protocols are ever mixed in one cell.
     """
+    # py 的 MultiPL-E 格有语料代次：2026-10-14 之前的完成物是在旧测试语料上判分的，a14 用钉住的
+    # 语料重判后，改分的格以新协议串（`…;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14`）入库，
+    # 旧行由 `superseded_by` 指出去（query_cells_by 已过滤）。所以这里既要认旧协议串（没被取代的格），
+    # 也要认带 `corpus=` 的协议串（取代后的格）。
     where = ("(source_file LIKE 'mres/%' AND reasoning <> 'on') "
              "OR (bench_family='humaneval-multipl-e' "
-             "AND protocol='multipl-e-raw-greedy-768')")
+             "AND (protocol='multipl-e-raw-greedy-768' OR protocol LIKE '%;corpus=%'))")
     return {key[0]: cells for key, cells in query_cells_by(where).items()}
 
 

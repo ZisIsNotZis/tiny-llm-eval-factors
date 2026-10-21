@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import collections
+import csv
 import html as htmllib
 import json
 import os
@@ -89,6 +90,27 @@ def _testfrac_lookup(rows, lang, printed_score):
     return hits.pop() if len(hits) == 1 else None
 
 
+PY_REGRADE_MANIFEST = os.path.join(
+    "docs", "subprojects", "a14-部分给分", "evidence", "py_regrade_manifest.tsv")
+
+
+def _regrade_pass_counts():
+    """a14 取代清单里每格的 `pass_new`：带 `corpus=` 的行由它作证。
+
+    这一批格的完成物没变，变的是判定用的测试语料，所以旧产物里的通过数对不上新分数：
+    证据在清单里（同一批完成物 × 钉住语料复判出来的通过数），不在 eval_status 的产物里。
+    """
+    path = os.path.join(REPO, PY_REGRADE_MANIFEST)
+    if not os.path.exists(path):
+        return []
+    out = []
+    with open(path, encoding="utf-8") as fh:
+        for rec in csv.DictReader(fh, delimiter="\t"):
+            if int(rec["delta"]) != 0:
+                out.append((int(rec["n"]), int(rec["pass_new"])))
+    return out
+
+
 def check_item_counts(parsed):
     """(2) MultiPL-E 列的题量必须来自该格产物。
 
@@ -97,6 +119,7 @@ def check_item_counts(parsed):
     """
     problems, checked, without_n = [], 0, 0
     tf_rows = _testfrac_n()
+    regraded = _regrade_pass_counts()
     for rows in parsed:
         head = rows[0]
         cols = [(i, LANG_OF_COLUMN[h]) for i, h in enumerate(head) if h in LANG_OF_COLUMN]
@@ -134,6 +157,9 @@ def check_item_counts(parsed):
                 # 1/161 ≈ 0.0062 远大于 5e-5，所以这个容差不会把两个不同的题数配混。
                 arts = [a for a in eval_status.records() if a["lang"] == lang
                         and a["n"] == n and abs(a["pass"] / a["n"] - score) < 5e-5]
+                if not arts and lang == "py":
+                    arts = [(n, p) for (n2, p) in regraded if n2 == n
+                            and abs(p / n - score) < 5e-5]
                 if not arts:
                     problems.append(f"题量与产物不符：{r[0]} / {r[1]} / {lang} = {r[i]}"
                                     f"（没有 n={n} 且通过数对应 {score:.6f} 的产物）")
