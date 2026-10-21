@@ -208,6 +208,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--arm", action="append", default=[],
                     help="只跑这条臂（tag）；可重复。默认全部（不要在共享锁下这样用）")
+    ap.add_argument("arms", nargs="*", default=[],
+                    help="同上，位置写法（run_arm.sh 用这个）：a08-ifeval-on-25")
     ap.add_argument("--probe", action="store_true", help="先跑端点探针")
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--check-model", action="store_true",
@@ -226,13 +228,14 @@ def main() -> int:
         raise SystemExit(f"模型不存在：{MODEL}")
     if a.probe:
         endpoint_probe()
-        if not a.arm:      # `--probe` 单独用 = 只跑探针；要跑臂必须显式 --arm
+        if not (a.arm or a.arms):   # `--probe` 单独用 = 只跑探针；要跑臂必须显式点名
             return 0
-    if a.arm:
-        unknown = [t for t in a.arm if t not in BY_TAG]
+    wanted = list(a.arm) + list(a.arms)
+    if wanted:
+        unknown = [t for t in wanted if t not in BY_TAG]
         if unknown:
             raise SystemExit(f"未知臂：{unknown}；可用：{sorted(BY_TAG)}")
-        arms = [BY_TAG[t] for t in a.arm]
+        arms = [BY_TAG[t] for t in wanted]
     else:
         arms = ARMS
     rc = 0

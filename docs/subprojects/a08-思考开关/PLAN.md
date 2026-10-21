@@ -3,11 +3,16 @@
 ## 现在（每次改动都要让这一节为真）
 
 - **里程碑 M1「研究结束」未达成**；只剩一个里程碑，结项条件是下面 AC 全绿。
-- **在做**：WP2「预算对齐的受控臂」，改成**一次调用一条臂**、锁等待 600 s 上限（见「踩过的坑 5」）。
-  当前进度：`--probe` 在排队（`a07` 的 `run_ident_control.py` 持锁）。
-- **剩余**：WP2 的 5 条臂（`a08-gsm8k-off-4096`、`a08-mmlu-off-16`、`a08-mmlu-on-16`、
-  `a08-ifeval-off-25`、`a08-ifeval-on-25`；`a08-gsm8k-on-4096` 是复现臂，可砍）、WP3 入库、WP4 结论、WP5 独立复核。
-- **下一个派给谁**：a08 worker 逐条跑臂并按臂入库/写 RESULT；臂齐后派 fresh reviewer 做 WP5。
+- **在做**：WP2 最后一条臂 `a08-ifeval-on-25` 在锁队列里（`A08_LOCK_WAIT=1800`）；已得数 4 条臂见下。
+- **已得数**（都进了库、都写进 `RESULT.md` 的 res7–res11）：`--probe` 端点探针、`a08-gsm8k-off-4096`（0.67，
+  与 `m66gs-gsm8k` 的 0.34 构成预算对齐对）、`a08-mmlu-off-16`、`a08-mmlu-on-16`（两者 0.622807 逐位相同）、
+  `a08-ifeval-off-25`（0.6）。`a08-gsm8k-on-4096`（复现臂，≈11 min）仍可砍。
+- **剩余**：WP2 的 `a08-ifeval-on-25`；WP3 的第二次入库（把 ifeval-on 那一格写进库并重算 fixture）；
+  WP4 的结论收口（`RESULT.md` 已写 5 条新事实，抽出类要等那条臂）；WP5 独立复核。
+- **下一个派给谁**：a08 worker 收 ifeval-on → 第二次入库 → 收口；之后派 fresh reviewer 做 WP5。
+- **需要 meta 知道**：WP3 第一次入库用的是共享 `migrate_db.py`，refresh 把 14 行 BFCL 多轮格的 `n_items`
+  抹成 NULL、并给 32 行 `variant-*` 的协议串加上了 `;sampling=default`（分数不变）。改前状态在
+  `experiments.sqlite.bak30`，a13/i02 需要决定是否回填（见 `RESULT.md::res11`）。
 
 ## 这一轴要回答什么
 
