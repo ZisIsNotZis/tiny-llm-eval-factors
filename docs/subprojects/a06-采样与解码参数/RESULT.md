@@ -263,6 +263,13 @@
 - 逐题层面的补充：「代码通过率被压低」这一句在逐题上比在分数上剧烈得多——Q3 cpp temp 0.6 是 21 上 / 6 下之后的净 −15，而 Q3 py temp 0.6 净 +1 却翻了 29 道题（`peritem-net-hides-flips`）。
 - repro: 普查 `[D]`、`[E1]`、`[E2]` 段。
 
+## docs-gate-green :: 文档集检查现在**全绿**（不再是「基线 6 条」）：`python3 docs/check_docs.py` 退出 0 并打印 `PASS`，a06 在这份检查里没有 shapeless 文件、没有重复 id、没有悬空 `from`。此前那批 `res1–res6 / res13 / population / multiplicity / unmeasured` 的失败是**检查器把「全局唯一」用错了**——事实的身份是 `path::id`，两个子项目各自有 `res1` 是合法的；i02 已把规则改成「同文件内唯一」，不是让各子项目去抢全局 id。
+
+- kind: measured
+- evidence: `python3 docs/check_docs.py` 输出末行 `PASS`、退出 0；a06 的 `plan` 与 `result` 两层事实都能被解析（不是 shapeless）。
+- repro: `python3 docs/check_docs.py; echo "exit=$?"`（期望 `PASS` 与 `exit=0`）。
+- 限制：这条只证明文档集的**形状**合规（id 唯一、`from` 可解析、`_text` 齐备、schema 校验跑过），不证明任何一条事实的内容为真；内容由本文件各条自己的 `evidence`/`repro` 负责。
+
 ## 七、报告里 temp>0 的格该怎么读
 
 ## report-temp-cells :: 报告第六节该写的第一句：**厂商推荐档不是温和采样，而是把代码列打掉 17–36 道题；它看起来像「10 倍塌陷」只是因为那几格的基线只有 39–44 道题；因此「固定协议比厂商档更宽容，且是数量级差别」只在相对意义上成立，绝对量级与其他格同档。** `report.html` 第六节（采样 / 解码参数）里的 temp>0 格（`mpl-raw-t0.3-768`、`mpl-raw-t0.6-768`、`mpl-raw-t0.3-768;topk-set=…`、`variant-sampling-temp0.3/0.7-*`）不是固定协议分数的「更宽松版本」，也不能与贪心格同权读：它们是**不同的格**，逐题集合与贪心格不同：MultiPL-E 161 题上净差 11–15 道题、逐题翻转 15–21 道，Jaccard 0.40–0.56，而分数只差 0.04–0.09；所以正确的读法是「该格的协议就是它的身份，跨协议只读方向、不读差值的显著性」，并且方向在 python 上稳、在 cpp 上不稳——一个读者从第六节读到「温度压低代码分」是安全的，读到「Q3 比 Q4 好」是不安全的（贪心下 Q3>Q4，temp>0 下 Q3<Q4）；也不能把「两格分数相同」读成「两格测的是同一个东西」（Q3 py 净 0 而 8 上/8 下）。
