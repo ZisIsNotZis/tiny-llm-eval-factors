@@ -121,11 +121,14 @@ if python3 report_inputs/build_bfcl_gap.py --check >/dev/null 2>&1; then
 else
     record WARN "bfcl_gap.json 与 BFCL 汇总不一致：python3 report_inputs/build_bfcl_gap.py"
 fi
-if python3 report_inputs/build_kv_evidence.py --check >/dev/null 2>&1; then
-    record PASS "kv_evidence.json 与 a05 的证据脚本输出一致"
-else
-    record WARN "kv_evidence.json 与 a05 的脚本输出不一致：python3 report_inputs/build_kv_evidence.py"
-fi
+# a05 的证据脚本要 `.wrapup/mres` 落盘产物；干净 clone 里没有，所以这里必须把「索引过期」与「看不到输入」分开：
+# 前者是 WARN（可重建），后者是 SKIP（索引无法当场核对，随仓库分发的那份即权威，不算通过）。
+out=$(python3 report_inputs/build_kv_evidence.py --check 2>&1); rc=$?
+case "$rc" in
+    0) record PASS "kv_evidence.json 与 a05 的证据脚本输出一致" ;;
+    2) record SKIP "$(printf '%s' "$out" | grep -m1 '^UNVERIFIED:' | sed 's/^UNVERIFIED: //')" ;;
+    *) record WARN "kv_evidence.json 与 a05 的脚本输出不一致：python3 report_inputs/build_kv_evidence.py" ;;
+esac
 if python3 report_inputs/build_size_claims.py --check >/dev/null 2>&1; then
     record PASS "size_claims.json 与 a02 的通道/曲线产物一致"
 else
@@ -188,6 +191,13 @@ else
     record FAIL "第五节 KV 说法的负控未通过：python3 checks/kv_evidence_negative_control.py"
 fi
 rm -f /tmp/reproduce_kv.$$
+
+if python3 checks/kv_evidence_unavailable_control.py >/tmp/reproduce_kvu.$$ 2>&1; then
+    record PASS "第五节 KV 索引「不可得 ≠ 过期」的负控（缺 .wrapup/mres → exit 2 并点名路径）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_kvu.$$ | cut -c1-160)"
+fi
+rm -f /tmp/reproduce_kvu.$$
 
 if python3 checks/size_claims_negative_control.py >/tmp/reproduce_sc.$$ 2>&1; then
     record PASS "第二节规模说法的负控（区间改重叠则从「反驳」变「分不出」）"

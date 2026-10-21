@@ -8,6 +8,11 @@
 
     python3 report_inputs/build_kv_evidence.py           # 重写 kv_evidence.json
     python3 report_inputs/build_kv_evidence.py --check   # 重跑脚本并比对
+
+三种结局必须分开，否则「看不到输入」会冒充「索引过期」：
+  0 = 索引与脚本输出一致；1 = 索引确实落后（可重写）；2 = a05 的脚本跑不起来（缺 `.wrapup/mres` 落盘产物等），
+  此时索引无法当场核对，**不是**过期，也不写成 0。干净 clone 里就是这一种：`.wrapup/mres` 不随仓库分发。
+  `A05_KV_EVIDENCE_SCRIPT` 只给负控用（把脚本指到一份必然缺输入的副本上）。
 """
 from __future__ import annotations
 
@@ -16,7 +21,12 @@ import json, os, re, subprocess, sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
 OUT = os.path.join(HERE, "kv_evidence.json")
-SCRIPT = os.path.join(REPO, "docs", "subprojects", "a05-KV 缓存精度", "analysis", "kv_evidence.py")
+SCRIPT = os.environ.get("A05_KV_EVIDENCE_SCRIPT") or os.path.join(
+    REPO, "docs", "subprojects", "a05-KV 缓存精度", "analysis", "kv_evidence.py")
+
+
+class A05Unavailable(Exception):
+    """a05 的脚本或它的落盘输入不在场：索引核对不可得（退出码 2），不是索引过期。"""
 
 PAIR_RE = re.compile(r"^\s{4}(base|plus)_status (\S+)->(\S+): lose (\d+) gain (\d+)$")
 SCORE_RE = re.compile(r"^\s{2}(\S+)\s+mmlu=([\d.]+) gsm8k=([\d.]+) ifeval=([\d.]+) humaneval\(base\)=([\d.]+) n=(\d+)$")
@@ -100,10 +110,20 @@ def read_fact(path, fact_id):
     return out
 
 
+MISSING_PATH_RE = re.compile(r"No such file or directory: '([^']+)'")
+
+
 def run():
     r = subprocess.run([sys.executable, SCRIPT], capture_output=True, text=True, cwd=REPO)
-    if r.returncode not in (0, 1):
-        raise SystemExit(f"a05 的 kv_evidence.py 退出 {r.returncode}: {r.stderr.strip()[:300]}")
+    # 崩溃（traceback）与「检查项 FAIL 所以退出 1」是两件事：前者说明脚本看不到自己的输入。
+    crashed = r.returncode not in (0, 1) or "Traceback (most recent call last)" in r.stderr
+    if crashed:
+        m = MISSING_PATH_RE.search(r.stderr)
+        if m:
+            raise A05Unavailable(f"a05 的 kv_evidence.py 缺输入 {m.group(1)}")
+        tail = (r.stderr.strip().split("\n") or [""])[-1]
+        raise A05Unavailable(f"a05 的 kv_evidence.py 退出 {r.returncode} 且未打印检查结论："
+                             f"{os.path.relpath(SCRIPT, REPO)} 的最后一行是「{tail[:200]}」")
     return r.stdout
 
 
@@ -158,7 +178,16 @@ def dump(doc):
 
 
 def main(argv):
-    doc = parse(run())
+    try:
+        doc = parse(run())
+    except A05Unavailable as e:
+        print(f"UNVERIFIED: {e}；{os.path.relpath(OUT, REPO)} 无法当场核对（随仓库分发的那份即权威）",
+              file=sys.stderr)
+        return 2
+    except FileNotFoundError as e:
+        print(f"UNVERIFIED: a05 的事实文件不在场（{e.filename}）；{os.path.relpath(OUT, REPO)} 无法当场核对",
+              file=sys.stderr)
+        return 2
     text = dump(doc)
     if "--check" in argv:
         try:
