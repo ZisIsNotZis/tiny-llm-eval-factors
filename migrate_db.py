@@ -81,7 +81,11 @@ def migrate_schema(con):
     # backfill
     con.execute("UPDATE experiments SET bench_family=_bench "
                 "WHERE bench_family IS NULL AND _bench IN ('humaneval','mbpp')")
-    con.execute("UPDATE experiments SET language='python' WHERE language IS NULL")
+    # 只回填**并入 run_tag 之前**的老行：那时候 language 列还不存在，「这台机器上跑的都是
+    # python 代码」是成立的。并入之后的行（gsm8k/mmlu/ifeval…）`language` 为空是**事实**
+    # ——它们不是代码基准；给它们写 `python` 等于替另一个 ingester 改它自己的行。
+    con.execute("UPDATE experiments SET language='python' "
+                "WHERE language IS NULL AND run_tag IS NULL")
     con.commit()
 
 
@@ -140,6 +144,11 @@ DEFAULT_MPL_PROTOCOL = "multipl-e-raw-greedy-768"
 # 本次入库跳过了哪些行：run_tag → {(原因, 名字): 行数}。静默跳过比错数更危险——数据在、结论不在，
 # 却没人知道。每个 ingest_* 在跳过一行时记一笔，main() 在末尾把整张账打出来。
 INGEST_SKIPS = {}
+
+
+# 哪些 ingester 因为看不到自己的输入而**放弃了删除**（保留现状）。main() 据此以 2 退出：
+# 「读不到输入」是「不可得」，不是「没有变化」——两者混成一个退出码，假绿就回来了。
+UNAVAILABLE = []
 
 
 def note_skip(run_tag, reason, name=""):
@@ -1462,6 +1471,8 @@ def ingest_campaign(con):
     its numerator/denominator where the harness provides one.
     """
     if not os.path.isdir(CAMPAIGN_ROOT):
+        note_skip("campaign", "输入不可得（无 .wrapup/mres），保留现状不删", CAMPAIGN_ROOT)
+        UNAVAILABLE.append("campaign")
         print("  (no campaign results)"); return 0
     # drop previous **campaign** rows, then re-read (REFRESH semantics).
     # 删的范围只能是本 ingester 自己产出的那两种文件名（`mres/<tag>/lmeval_panel.json#<metric>`
@@ -1469,8 +1480,25 @@ def ingest_campaign(con):
     # 把排在 ONCE 里的其它 ingester 刚插的行一并删掉——m165 的 5 格就是这么没了，而 mres/ 下
     # 一共 923 行（含 spec/variant 面板与 a08 的面板格）都共享这个前缀。宽前缀是所有写 mres/ 的
     # ingester 的公共资源，不是任何一个 ingester 的私有范围。
-    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%/lmeval_panel.json#%' "
-                "OR source_file LIKE 'mres/%/evalplus.json'")
+    # 「读不到输入就不删」：只删**这一轮确实会重建**的那些行的来源。干净 clone 里
+    # `.wrapup/mres` 没有随仓库完整分发，按前缀删会把读不回来的行一起删掉（实测 924 行）。
+    rebuildable = []
+    for tag_dir in sorted(os.listdir(CAMPAIGN_ROOT)):
+        d = os.path.join(CAMPAIGN_ROOT, tag_dir)
+        if not os.path.isdir(d) or tag_dir.startswith("p0-"):
+            continue
+        if os.path.exists(os.path.join(d, "lmeval_panel.json")):
+            rebuildable.append(f"mres/{tag_dir}/lmeval_panel.json#%")
+        if os.path.exists(os.path.join(d, "evalplus.json")):
+            rebuildable.append(f"mres/{tag_dir}/evalplus.json")
+    if rebuildable:
+        con.execute("DELETE FROM experiments WHERE " + " OR ".join(
+            "source_file LIKE ?" for _ in rebuildable), rebuildable)
+    else:
+        note_skip("campaign", "输入不可得（没有任何可重建的面板），保留现状不删", CAMPAIGN_ROOT)
+        UNAVAILABLE.append("campaign")
+        print("  campaign: 没有可重建的面板文件，保留现状不删")
+        return 0
     n = 0
     for tag_dir in sorted(os.listdir(CAMPAIGN_ROOT)):
         d = os.path.join(CAMPAIGN_ROOT, tag_dir)
@@ -1643,8 +1671,18 @@ def ingest_spec(con):
     """
     import glob
     n = 0
-    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%-spec-%'")
-    for path in sorted(glob.glob(".wrapup/mres/*-spec-*/spec_panel.json")):
+    paths = sorted(glob.glob(".wrapup/mres/*-spec-*/spec_panel.json"))
+    if not paths:
+        note_skip("spec", "输入不可得（无 spec_panel.json），保留现状不删",
+                  ".wrapup/mres/*-spec-*/spec_panel.json")
+        UNAVAILABLE.append("spec")
+        print("  spec: 没有 spec_panel.json，保留现状不删")
+        return 0
+    # 只删这一轮会重建的那几个 tag 的产物，不用会被别的 ingester 共用的宽前缀。
+    con.execute("DELETE FROM experiments WHERE " + " OR ".join(
+        "source_file = ?" for _ in paths),
+        [f"mres/{os.path.basename(os.path.dirname(p))}/spec_panel.json" for p in paths])
+    for path in paths:
         try:
             p = json.load(open(path))
         except Exception:
@@ -1705,8 +1743,17 @@ def ingest_variant(con):
     """
     import glob
     n = 0
-    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%/variant_panel.json'")
-    for path in sorted(glob.glob(".wrapup/mres/*/variant_panel.json")):
+    paths = sorted(glob.glob(".wrapup/mres/*/variant_panel.json"))
+    if not paths:
+        note_skip("variant", "输入不可得（无 variant_panel.json），保留现状不删",
+                  ".wrapup/mres/*/variant_panel.json")
+        UNAVAILABLE.append("variant")
+        print("  variant: 没有 variant_panel.json，保留现状不删")
+        return 0
+    con.execute("DELETE FROM experiments WHERE " + " OR ".join(
+        "source_file = ?" for _ in paths),
+        [f"mres/{os.path.basename(os.path.dirname(p))}/variant_panel.json" for p in paths])
+    for path in paths:
         try:
             p = json.load(open(path))
         except Exception:
@@ -1751,9 +1798,14 @@ def ingest_variant(con):
                     "seed": samp.get("seed"),
                     # 采样参数写进协议串：只写标签名会让「厂商推荐」「greedy」在报告行里合并
                     # （top_k 与 fa 都踩过这个坑）。`sampling=` 段来自面板的 variant_panel.json。
+                    # 采样段只在面板**记了**的时候才写。以前缺省写成 `sampling=default`，
+                    # 那是把「没记录采样」写成「采样=默认」——同一个坑的另一面（`@absent`）：
+                    # 未记录的输入不能补一个默认值充当事实。要不要区分两条臂，由 label 与服务
+                    # 在采样参数列里承担；编造一个段反而不许。
                     "protocol": (f"variant-{axis}-{label}-"
                                  f"{'evalplus' if bench == 'humaneval' else 'lmeval'}"
-                                 f";{row.get('sampling_spec') or 'sampling=default'}"),
+                                 + (f";{spec}" if (spec := (row.get('sampling_spec') or '').strip())
+                                    else "")),
                     "language": ("python" if bench == "humaneval" else None),
                     "bench_family": ("humaneval" if bench == "humaneval" else bench),
                     "max_tokens": (None if bench == "humaneval" else 1024),
@@ -1763,6 +1815,44 @@ def ingest_variant(con):
                 insert(con, r)
                 n += 1
     return n
+
+
+# refresh 是「删了重插」，而重插只写各 ingester 自己读到的那几个字段。下面这些列是**修正**
+# （别的 ingester 从官方 ledger、逐题产物回填出来的），不属于任何一次重插的产物：
+#   * `n_items` 被 a13 从 BFCL 官方台账的 `total_count` 回填过 14 行，重插把它们抹回 NULL。
+# 规则：删除前按测量身份读出来，重插后**为空才补写**，并在 ledger 里记「补写」。
+PRESERVED_COLS = ("n_items",)
+
+
+def snapshot_preserved(con):
+    """refresh 之前记住被别人修正过的列：测量身份 → {列: 值}。"""
+    sel = ",".join(MEASUREMENT_IDENTITY) + "," + ",".join(PRESERVED_COLS)
+    saved = {}
+    for row in con.execute(f"SELECT {sel} FROM experiments"):
+        key, vals = tuple(row[:len(MEASUREMENT_IDENTITY)]), row[len(MEASUREMENT_IDENTITY):]
+        if any(v is not None for v in vals):
+            saved[key] = dict(zip(PRESERVED_COLS, vals))
+    return saved
+
+
+def restore_preserved(con, saved):
+    """重插之后把被抹掉的修正值补回去（只在现值为空时写），并记 ledger。"""
+    sel = "rowid," + ",".join(MEASUREMENT_IDENTITY) + "," + ",".join(PRESERVED_COLS)
+    fixed = 0
+    for row in con.execute(f"SELECT {sel} FROM experiments").fetchall():
+        rowid = row[0]
+        key = tuple(row[1:1 + len(MEASUREMENT_IDENTITY)])
+        vals = dict(zip(PRESERVED_COLS, row[1 + len(MEASUREMENT_IDENTITY):]))
+        old = saved.get(key)
+        if not old:
+            continue
+        for col in PRESERVED_COLS:
+            if vals[col] is None and old.get(col) is not None:
+                con.execute(f"UPDATE experiments SET {col}=? WHERE rowid=?", (old[col], rowid))
+                note_skip("refresh-preserve", f"补写 {col}（重插把它抹掉了，旧值保留）",
+                          f"{key[0]}:{key[14]}")
+                fixed += 1
+    return fixed
 
 
 def numbered_backup(path=DB):
@@ -1845,6 +1935,9 @@ def main():
     print("== repairing duplicate bare cells ==")
     repaired = repair_duplicate_bare_copies(con)
     print(f"  removed {repaired} bare duplicate(s) that an enriched copy already covered")
+    print("== snapshot preserved columns ==")
+    preserved = snapshot_preserved(con)
+    print(f"  {len(preserved)} row(s) carry a column another ingester corrected")
     print("== ingesting ==")
     existing = {r[0] for r in con.execute(
         "SELECT DISTINCT run_tag FROM experiments WHERE run_tag IS NOT NULL")}
@@ -1900,6 +1993,9 @@ def main():
     tally["a13-bfcl-rescore"] = ingest_bfcl_official_rescore(con)
     # 放在最后：它只改别的 ingest 已经落好的 py 行（写 `superseded_by`）并加新行。
     tally["a14-py-regrade"] = ingest_py_regrade(con)
+    restored = restore_preserved(con, preserved)
+    if restored:
+        print(f"  refresh-preserve: 补写回 {restored} 个被重插抹掉的修正值")
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
     print_ingest_skips()
@@ -1913,6 +2009,11 @@ def main():
                          "GROUP BY 1 ORDER BY 2 DESC"):
         print("   ", r)
     con.close()
+    if UNAVAILABLE:
+        print("UNAVAILABLE: 这些 ingester 读不到自己的输入，已保留现状未删："
+              + ", ".join(sorted(set(UNAVAILABLE))))
+        return 2
+    return 0
 
 
 BONSAI_MODELS = {
@@ -2130,4 +2231,4 @@ def ingest_py_regrade(con):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

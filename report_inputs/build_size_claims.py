@@ -16,6 +16,9 @@
 
     python3 report_inputs/build_size_claims.py           # 重写 size_claims.json
     python3 report_inputs/build_size_claims.py --check   # 与现有 json 比对
+
+三种结局必须分开（与 `build_kv_evidence.py` 同一条语义）：0 = 一致；1 = 索引确实落后；
+2 = a02 的产物不在场，索引**无法当场核对**——那不是「过期」，也不写成 0。
 """
 from __future__ import annotations
 
@@ -156,6 +159,11 @@ def dump(doc):
 
 
 def main(argv):
+    missing = [p for p in (PROV, CURVES) if not os.path.exists(p)]
+    if missing:
+        print(f"UNVERIFIED: a02 的产物不在场（{', '.join(os.path.relpath(p, REPO) for p in missing)}）；"
+              f"{os.path.relpath(OUT, REPO)} 无法当场核对（随仓库分发的那份即权威）", file=sys.stderr)
+        return 2
     doc = build()
     text = dump(doc)
     if "--check" in argv:

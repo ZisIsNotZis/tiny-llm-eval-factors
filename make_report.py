@@ -7,7 +7,7 @@
 运行：python3 make_report.py  ->  report.html
 """
 from __future__ import annotations
-import base64, collections, glob, html, json, math, os, re, sqlite3, sys
+import base64, collections, csv, glob, html, json, math, os, re, sqlite3, sys
 
 import matplotlib
 matplotlib.use("Agg")
@@ -988,38 +988,52 @@ def mpl_protocol_label(proto):
 ambiguous = []
 
 
-def mpl_py_corpus_note():
-    """§13 的表注：py 列有两个测试语料代次，这一条必须印在报告里，不能只留在子项目文档里。
+PY_REGRADE_MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   "docs", "subprojects", "a14-部分给分",
+                                   "evidence", "py_regrade_manifest.tsv")
 
-    a14 用钉住的语料重判了同一批落盘完成物（不是重跑模型），改分的格以新协议串
-    `…;corpus=<sha>;gen_corpus=<旧代次>` 入库，旧行被 `superseded_by` 指出去。定不出行身份的格
-    没有取代，所以表里同时存在两代数值：可以同表，不能直接比。两个 sha 都从库里的协议串读出，
-    不在这里抄写。
+
+def mpl_py_corpus_note():
+    """§13 的表注：py 列有两个测试语料代次，必须印在报告里，不能只留在 skip ledger 里。
+
+    a14 用钉住的语料重判了同一批落盘完成物（不是重跑模型），改分的 50 格里有 11 格在活库里
+    能唯一定位并已按新协议串取代；其余 39 格因为「同一分数落在多行、候选跨多个协议」定位不了，
+    仍是旧语料下的值。所以这一列**大部分仍是旧语料**，两代同表但不可直接比。
+    50 这个总数来自 a14 的取代清单（committed），已取代的格数来自库里 `superseded_by`，
+    两个都不在本函数里写死。
     """
-    rows = CON.execute(
-        "SELECT superseded_by FROM experiments WHERE superseded_by IS NOT NULL "
-        "AND language='py' AND superseded_by LIKE '%;corpus=%'").fetchall()
-    if not rows:
+    n_sub = CON.execute("SELECT count(*) FROM experiments WHERE superseded_by IS NOT NULL "
+                        "AND language='py'").fetchone()[0]
+    if not n_sub:
         return ""
     corpus = gen = ""
-    for (proto,) in rows:
+    for (proto,) in CON.execute(
+            "SELECT superseded_by FROM experiments WHERE superseded_by IS NOT NULL "
+            "AND language='py' AND superseded_by LIKE '%;corpus=%'"):
         m = re.search(r"corpus=([0-9a-f]+)", proto)
         g = re.search(r"gen_corpus=([^;]+)", proto)
         if m and g:
             corpus, gen = m.group(1), g.group(1)
             break
-    n_sub = CON.execute("SELECT count(*) FROM experiments WHERE superseded_by IS NOT NULL "
-                        "AND language='py'").fetchone()[0]
+    changed_total = 0
+    if os.path.exists(PY_REGRADE_MANIFEST):
+        with open(PY_REGRADE_MANIFEST, encoding="utf-8") as fh:
+            changed_total = sum(1 for r in csv.DictReader(fh, delimiter="\t")
+                                if int(r["delta"]) != 0)
+    if not changed_total:
+        return ""
+    stuck = changed_total - n_sub
     n_old = CON.execute(
         "SELECT count(*) FROM experiments WHERE bench_family='humaneval-multipl-e' "
         "AND language='py' AND _score IS NOT NULL AND superseded_by IS NULL "
         "AND protocol NOT LIKE '%;corpus=%'").fetchone()[0]
-    return (f"<li><b>py 列有两个测试语料代次，这一条不能省。</b>其中 <b>{n_sub}</b> 格的完成物不变、"
-            f"判定改在钉住的语料上重做（语料 sha <code>{corpus[:12]}</code>，完成物生成于 "
-            f"<code>{gen}</code>，所以它不是一次重跑，而是同一批完成物换了真值）；"
-            f"表里另有 <b>{n_old}</b> 个 py 格（含 top-k／chat 等其它协议的面板）仍是旧语料下的值——"
-            f"定不出行身份的格没有取代，"
-            f"新旧两代可以同表出现，但<b>不能直接当同一代比较</b>。</li>")
+    return (f"<li><b>py 列大部分仍是旧测试语料下的值，两代不可直接比。</b>"
+            f"a14 用钉住的语料（sha <code>{corpus[:12]}</code>）复判了同一批落盘完成物，"
+            f"改分的 {changed_total} 格里只有 <b>{n_sub} 格</b>在活库里能唯一定位、已按新协议串"
+            f"（<code>…;corpus=…;gen_corpus={gen}</code>）取代；另外 <b>{stuck} 格</b>因为"
+            f"「同一分数落在多行、候选跨多个协议」定位不了，<b>仍是旧语料的值</b>；"
+            f"表里还有 {n_old} 个 py 格属其它协议的面板。新旧两代可以同表出现，"
+            f"但<b>不能直接当同一代比较</b>。</li>")
 
 
 def table_mpl_langs():

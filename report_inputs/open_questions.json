@@ -147,6 +147,30 @@
    "text": "**`-mtp` 后缀是否意味着结构性差异**：待 `WP3` 用张量集合证明（初步读数：五个文件张量数、张量名、元素数逐项相同，且库内 `spec_type = none`、`spec_draft_n_max = 0`，所以解码时没有草稿模型参与）。若证明不成立，`WP2` 的所有差都要降级。"
   },
   {
+   "subproject": "a11-扩散式解码",
+   "path": "docs/subprojects/a11-扩散式解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "**位宽匹配的对照臂 m145 仍未测**：扩散臂 5.3247 bpw 最近的同尺寸自回归是 `gemma-4-26B-A4B-it-UD-Q4_K_XL`（5.3932，差 0.068），而它在 nm3 里是 `BLOCKED-on-VRAM`。即使运行时有了，比较还差这一臂（本层没买，价格按 20 GB 级权重 + 一次面板计）。"
+  },
+  {
+   "subproject": "a11-扩散式解码",
+   "path": "docs/subprojects/a11-扩散式解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "**替代对（`WP8`，已裁决不批）**：用 llama.cpp 已支持的扩散模型（`dream` / `llada` / `llada-moe` / `rnd1`）对同尺寸自回归做受控对照。它把 X 从「解码器」换成「模型身份」，报告要换一节 X，因此**不批**；登记为未测，准入前先量下载量与吞吐。"
+  },
+  {
+   "subproject": "a11-扩散式解码",
+   "path": "docs/subprojects/a11-扩散式解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "**更换运行时后能不能进库**：扩散解码器没有 `llama-server` 路径（本机与上游 `339f324` 的 `tools/` 里都没有扩散采样），只有 `examples/diffusion` 的 CLI；即使架构被实现，评测面也要自己的驱动与自己的协议列，绝不会并进自回归列（未测，价钱未知）。**解码协议本身不必猜**：`transformers 5.17.0` 的 `generation_diffusion_gemma.py` 有默认 `max_denoising_steps = 48` 与 `EntropyBoundSampler.accept_canvas`（`RESULT.md::res12`），要提取就从那里开始。"
+  },
+  {
+   "subproject": "a11-扩散式解码",
+   "path": "docs/subprojects/a11-扩散式解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "**第三条路是「代码在、权重不在」**：`transformers 5.17.0` 的 `diffusion_gemma` 就在本机 venv 里（模型类、生成循环、48 步默认、`accept_canvas`，见 `RESULT.md::res12`），缺的是 bf16 权重（`n_params×2 = 47.03 GiB`，本机只有 Q4_K_M 一份 GGUF）与其许可证（许可证未查，不是已知不可用）。"
+  },
+  {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
@@ -215,6 +239,12 @@
    "count": 2
   },
   {
+   "subproject": "a11-扩散式解码",
+   "path": "docs/subprojects/a11-扩散式解码/PLAN.md",
+   "heading": "未解问题",
+   "count": 4
+  },
+  {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
@@ -224,7 +254,6 @@
  "skipped": [
   "docs/subprojects/a06-采样与解码参数/PLAN.md",
   "docs/subprojects/a08-思考开关/PLAN.md",
-  "docs/subprojects/a11-扩散式解码/PLAN.md",
   "docs/subprojects/a12-多语言代码 MultiPL-E/PLAN.md",
   "docs/subprojects/a13-工具调用 BFCL/PLAN.md",
   "docs/subprojects/a14-部分给分/PLAN.md",

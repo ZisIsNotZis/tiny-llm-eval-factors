@@ -129,11 +129,12 @@ case "$rc" in
     2) record SKIP "$(printf '%s' "$out" | grep -m1 '^UNVERIFIED:' | sed 's/^UNVERIFIED: //')" ;;
     *) record WARN "kv_evidence.json 与 a05 的脚本输出不一致：python3 report_inputs/build_kv_evidence.py" ;;
 esac
-if python3 report_inputs/build_size_claims.py --check >/dev/null 2>&1; then
-    record PASS "size_claims.json 与 a02 的通道/曲线产物一致"
-else
-    record WARN "size_claims.json 与 a02 的产物不一致：python3 report_inputs/build_size_claims.py"
-fi
+out=$(python3 report_inputs/build_size_claims.py --check 2>&1); rc=$?
+case "$rc" in
+    0) record PASS "size_claims.json 与 a02 的通道/曲线产物一致" ;;
+    2) record SKIP "$(printf '%s' "$out" | grep -m1 '^UNVERIFIED:' | sed 's/^UNVERIFIED: //')" ;;
+    *) record WARN "size_claims.json 与 a02 的产物不一致：python3 report_inputs/build_size_claims.py" ;;
+esac
 if python3 report_inputs/build_scheme_effects.py --check >/dev/null 2>&1; then
     record PASS "scheme_effects.json 与 a03 归因脚本的输出一致"
 else
