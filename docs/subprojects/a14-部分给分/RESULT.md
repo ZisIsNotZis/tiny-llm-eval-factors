@@ -164,7 +164,41 @@
 - 实跑：反转 **7 → 50** 对；Spearman `cpp 0.962→0.099`、`py 0.964→0.144`、`js 0.888→0.059`、`java 1.000→−0.257`。所以 res11/res12 的那些数确实依赖比例的真实取值，不是结构自带的。
 - 状态：current。复现：`python3 "docs/subprojects/a14-部分给分/rank_compare.py" --negative-control; echo EXIT=$?`（实跑 `EXIT=0`）。
 
+### res15 判分侧重跑逐字节相同；一个 161 题的 py 格重算只要 ~12 s CPU、0 GPU
+
+- 同一个完成物文件（`.wrapup/mres/m1-qwen4b-q2-py.jsonl`）跑两次 `testfrac.py --lang py --workers 5`：两份输出 `sha256` 同为 **498b6060…76ed01**，汇总行逐字相同（`n 161, pass 58, mean_frac 0.569358, micro_frac 0.533956, mean_tests_per_item 7.317`），耗时 11.6 s / 11.9 s。
+- 所以「判分侧重跑噪声」= **0**（在同一输入快照下）；但这只能当**确定性**用，不能当「已入库的数可重算」（见 res16）。
+- 代价：每格一次重算 ~12 s CPU / 5 并发，**0 GPU、不重新生成完成物**。
+- 状态：current。注意这条用了两个 gitignored 输入（完成物 `.wrapup/mres/*.jsonl`、`/tmp/MultiPL-E/prompts`），所以**干净 clone 不可复算**。
+- 复现：
+  ```
+  cd .wrapup && python3 testfrac.py --lang py --samples mres/m1-qwen4b-q2-py.jsonl --out /tmp/r1.jsonl --workers 5 \
+    && python3 testfrac.py --lang py --samples mres/m1-qwen4b-q2-py.jsonl --out /tmp/r2.jsonl --workers 5 \
+    && sha256sum /tmp/r1.jsonl /tmp/r2.jsonl
+  ```
+  实跑输出：两行同为 `498b6060d3efce406eb59825fb4cb23c5d32a1c766010f4c1ec0f3d84276ed01`。
+
+### res16 但测试语料没被钉住：今天重算同一格得到 58/161，已入库的是 57/161 —— 已入库的逐题比例是证据物，不是可重跑复现
+
+- 今天的 `/tmp/MultiPL-E/prompts/humaneval-py.jsonl` 与仓库的 `.wrapup/prompts/humaneval-py.jsonl` **逐字节相同**（两者 sha256 都是 `ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb`）。
+- 但用今天的语料重算，与已入库的 `testfrac_m1-qwen4b-q2-py.jsonl` 不一致：**40/161** 道题的分母 `n_tests` 不同（均值 **7.317** vs **7.019**），格级 **pass 58 vs 57**、`mean_frac` **0.569358 vs 0.543334**、`micro_frac` **0.533956 vs 0.508850**。
+- 方向很明确：**已入库的文件与 harness 的二元判定 0/161 不一致（res7 的同一检查），而今天的语料有 1 道题相反**——`HumanEval_79_decimal_to_binary` 今天 5/5 全过被判 True，harness 判 False。所以漂的是今天的副本，不是已入库的文件。
+- 结论（服务 AC ③）：已入库的逐题比例是**证据物**，内部自洽且与 harness 二元判定逐题一致；但它**不是**「拿仓库里任何东西就能重算出同一组数」的**复现**——产出它的那个语料副本已不在盘上。这与 `i01::res25` 对 `plan15` 的归因同一个类：测试语料不是被钉住的输入。
+- 对 a14 结论的影响：无。res11–res13 的对照全部用**同一批已入库文件**做成对比较，且 res7 用 12218 道题证明这批文件的二元判定与 harness 一致；若换成今天重算的一套，结论会整体偏移（不向）。
+- 状态：current。
+- 证据：`.wrapup/testfrac_m1-qwen4b-q2-py_summary.jsonl`（pass 57 / mean_frac 0.543334 / mean_tests_per_item 7.019）vs 上面 res15 的实跑汇总行。
+- 复现：
+  ```
+  sha256sum /tmp/MultiPL-E/prompts/humaneval-py.jsonl .wrapup/prompts/humaneval-py.jsonl
+  python3 -c "
+  import json
+  ship={json.loads(l)['name']:json.loads(l) for l in open('.wrapup/testfrac_m1-qwen4b-q2-py.jsonl')}
+  fresh={json.loads(l)['name']:json.loads(l) for l in open('/tmp/r1.jsonl')}
+  print('n_tests 不同:',sum(1 for n in ship if ship[n]['n_tests']!=fresh[n]['n_tests']))"
+  ```
+  实跑输出：两行同为 `ac14c3b0…26edb`；`n_tests 不同: 40`。
+
 ## 待办事实（本文件还没有的，就是还没测）
 
-- `WP3`：同完成物上二元排序 vs 比例排序的反转清单；逐题配对差的中位数与符号计数。
-- `WP4`：判分侧重跑确定性（同一格两次 `testfrac.py` 逐字节相同）；采样侧比例噪声（若无可复用重复测量，写未测 + 代价）。- `WP5`：二元并列 / 差 1–2 题的格对里，比例是否把它们分开。
+- `WP4` 的采样侧：比例在 temp>0 下的**跑间**噪声——**未测**。盘上没有任何一个格的重复生成带逐测试比例（重复测量只有二元，`i01-slot-np1-p{1,2}`、`npauto`×2）；代价是每格至少 2 次生成（`m1` 级模型 ~8 GPU 分钟/次，与 `i01` 的实测同量级）。
+- 修「测试语料没被钉住」（res16）不属于 a14 的 AC：需要把产出每一批逐题比例的语料哈希记在文件旁边并在检查里校。仓库已有 `.wrapup/prompts/SHA256SUMS`，但没有任何东西记录「哪一批文件用了哪个哈希」。这条交给 meta/i02。
