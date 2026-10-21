@@ -200,6 +200,33 @@
 - 复现：`grep -h '"handler"' .wrapup/m{9,11,14,17,18,20,22,36}_summary.jsonl | python3 -c "import sys,json; [print(json.loads(l)['model'], json.loads(l)['handler']) for l in sys.stdin]"`。
 - 状态：current。
 
+## 多轮判分器的负控：它真的会失败（i01 留下的那个缺口关掉了）
+
+### res14 官方 `multi_turn_checker` 四条控制：正确回放判 PASS，三条坏预测全判 FAIL
+
+- 对象是 bundled 的 `bfcl_eval.eval_checker.multi_turn_eval.multi_turn_checker.multi_turn_checker`，调用方式与 `.wrapup/bfcl_multi_run.py` 完全相同（同一函数、同一参数序），没有重写判据。用的真实题目是 `multi_turn_base_0`（4 轮、10 条标准调用）。
+- 四条控制与实测结果：
+
+| 控制 | 构造 | 要求 | 实测 | `error_type` |
+|---|---|---|---|---|
+| P 正控 | 把标准答案原样回放成模型答案 | PASS | **PASS** | — |
+| A 答案错但格式对 | 某条调用的字符串参数改掉：`cd(folder='document')` → `cd(folder='document_x')` | FAIL | **FAIL** | `multi_turn:execution_response_mismatch` |
+| B 意图对但格式坏 | 同一条调用去掉右括号：`cd(folder='document'` | FAIL | **FAIL** | `multi_turn:execution_response_mismatch` |
+| C 什么都不做 | 每一轮都不发调用 | FAIL | **FAIL** | `multi_turn:empty_turn_model_response` |
+
+- **正控是这套控制的关键**：没有 P 就只能证明「它会失败」，不能证明「它判得对」。P 成立说明它不是恒假。
+- **一个要写进结论的判断**：A 与 B 的 `error_type` 是**同一个** `multi_turn:execution_response_mismatch`，也就是说判分器在错误类型上**不区分「答案错」与「格式坏」**，两者都落到「执行响应不一致」。所以拿历史多轮失败原因做归因（是模型不会调，还是格式没吐对）**不能靠 `error_type`**，只能逐题看 `inference_log` 里 handler 的 decode 记录。
+- 边界：只测了 `multi_turn_base` 一条真实题目；`long_context` / `miss_func` / `miss_param` 的判分路径相同（同一个 checker，差别只在数据集内容与 handler 的补全逻辑），但**未逐类构造控制**，写在这里当已知边界。
+- 证据：`audits/multiturn_checker_negative_control.py`。
+- 复现：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/multiturn_checker_negative_control.py"`（实跑 `EXIT=0`，四行控制表即上表）。
+- 状态：current。
+
+## 判定入口与快照边界
+
+- **判据是脚本，不是本文件里的数**：`python3 "docs/subprojects/a13-工具调用 BFCL/audits/run_all.py"` 一条命令跑完三项——单轮换判分器的对照（必须 exit 0）、多轮判分器的四条负控（必须 exit 0）、以及**库与证据一致**（每个可比格的 `_score` 必须逐位等于 `audits/official_vs_homegrown.json` 的 `official_acc` 且 `protocol` 是官方身份；prompt 20 行必须是自研身份；不许出现未知协议串；`n_items` 为 NULL 的行必须全是多轮）。实跑 `EXIT=0`，末行 `PASS: 判分器对照、多轮负控、库与证据一致`。
+- **行数与哈希是快照**：`experiments.sqlite` 仍被 `a06`/`i02` 写，所以任何具体行数（123 行 bfcl、79/20/24、15 行缺题量）都只在指定 revision 上成立。`run_all.py` 因此**不把行数当判据**，只打印快照（含 `artifact sha256[:16]`），判据是上面那些**关系**：别的子项目加行不会把它弄红，本轴自己的值一旦漂移就会红。本文件里引用的库数字均取自 `b8cc7c1` 之后的库状态，重算以 `run_all.py` 的输出为准。
+- 这条脚本本身**能红**（实测过两次）：第一次因 `official_vs_homegrown.py` 的绑定把库里的官方值当不匹配而红（`exit 3`），第二次因断言只按 `(model, _bench)` 取行、取到了 prompt 行而红（`exit 1`）——两次都是它自己发现的真不一致，修完才绿。
+
 ## 未测（不得当成通过）
 
 1. ~~官方 AST checker 与自研匹配器在单轮上的一致率~~ **已测（res11）**：60 格、34 上行 / 2788 下行。残留：prompt 协议 20 行仍不可重判（无预测文件）。

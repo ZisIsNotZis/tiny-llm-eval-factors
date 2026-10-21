@@ -226,7 +226,10 @@ def bind(files):
                 if not r.get("comparable", True):
                     continue
                 got = cats.get(cat)
-                if got is None or abs(got[0] - r["home_acc"]) > 1e-9:
+                # 库里的这一格要么还是自研值（入库前），要么已经是官方值（入库后）；
+                # 两者都不匹配才说明文件与库格对不上。
+                if got is None or not (abs(got[0] - r["home_acc"]) <= 1e-9
+                                       or abs(got[0] - r["official_acc"]) <= 1e-9):
                     ok = False
                     break
             if ok:

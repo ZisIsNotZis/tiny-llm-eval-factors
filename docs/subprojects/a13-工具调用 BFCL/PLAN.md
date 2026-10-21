@@ -13,7 +13,8 @@
 ## 当前状态
 
 - 已完成：`WP1`（文档归位）、`WP2`（单轮判分器替换，res11）、`WP3`（覆盖/聚合/排序，res1/res3/res9/res11/res12）、`WP7`（n_items 回填，res2/res4）、`WP8`（官方分入库，res13）。
-- 在办：无。`WP4` 的有界结论已达成，2×2 受控对不买（见上表）。剩余只有 `WP5`（多轮判分器负控，CPU）与 `WP6`（meta 派 fresh-context reviewer）。
+- 在办：无。`WP4` 的有界结论已达成，2×2 受控对不买（见上表）；`WP5` 已完成（res14）。剩余只有 `WP6`（meta 派 fresh-context reviewer）。
+- **判定入口**：`python3 "docs/subprojects/a13-工具调用 BFCL/audits/run_all.py"`（实跑 `EXIT=0`），它就是里程碑 done 判据；行数/哈希只作快照打印，判据是「库与证据一致」的关系。
 - **结论层已就位**：`RESULT.md` 开头三句（单轮 / 多轮 / 换判分器后改变的具体判断），每条指回 res11–res13，供报告第十四节直接引用；其中两条是给报告文本的输入（§14 的「micro 不可从库复算」已过时；表内数值已是官方 checker 值、行标签带判分器身份）。
 - **AC 状态**：类别覆盖表（res1/res9）+ 多轮跨家族有界结论（res12）都成立；本轴四问分别落在 res11（换判分器动哪些列）、res12（协议与 handler 如何改变可比性）、res3（逐类别列支持什么、无唯一总分）、res13（入库后的当前值）。
 - **派工形态**：本会话只有 read/grep/find/ls/bash/write/edit 工具，**没有派孙工具**，所以 `WP2`–`WP5` 由编排者自己执行（与 i01 同样的处境）。`WP6` 的独立复核因此必须由 meta 派 fresh-context reviewer，不得自评通过。
@@ -29,7 +30,7 @@
 | WP2 单轮：官方 AST checker vs 自研匹配器 | a13 编排者 | 用同一批落盘预测重判 15 个存活 cell，逐 (模型, 类别) 给出「自研准确率 / 官方准确率 / 向上翻 / 向下翻」，并给出每条已知会动的已报数字；负控两侧都观测到（正确调用判对、错名/缺参/多参/布尔数字混用各判错）；缺输入 exit≠0 | WP1 | ≤90 CPU 分钟 | **完成**（res11：60 可比格全上行，中位 +0.04~+0.33，34 上行 / 2788 下行，2534 条是 missing_optional；4/55 对逆序） |
 | WP3 覆盖表 + 聚合口径 + 排序稳定性 | a13 编排者 | 族×协议×类别矩阵 + 每格 n 的来源；micro/macro 复算值与面板 summary 对齐（或说明为何对不齐）；跨类别排序逆序数；native vs prompt 协议下排序是否变 | WP1 | ≤90 CPU 分钟 | **完成**（res1/res3/res9 覆盖与聚合、res11 排序 4/55 逆序、res12 按 handler 的可比性分组）；残留：native vs prompt 的排序对照只有库里 20 行、无预测可重判 |
 | WP4 多轮跨家族（`plan4`） | a13 编排者 | **有界结论已达**：跨族差与模板差不可分离、库内只有 4 个 handler 组内可比、granite 无对照、gemma 补了也只补覆盖（res12）。可选的 2×2 受控对**已定价、未测**：4 臂 × 200 题 ≈ 50 GPU 分钟，买的是「跨族可比」，现不买（GPU 排队给 a01 的 12B MMLU 与 a06 剩余五格） | WP3、GPU | 50 GPU 分钟（未授权） | **有界结论达成** |
-| WP5 多轮判分器的可执行负控 | a13 编排者 | 用官方 `multi_turn_checker` 对构造的坏实例判错、对正确实例判对，两侧都观测到；`Failed to decode the model response` 通道的方向与幅度有实测 | WP2 | ≤60 CPU 分钟 | 未开始 |
+| WP5 多轮判分器的可执行负控 | a13 编排者 | 用官方 `multi_turn_checker` 对构造的坏实例判错、对正确实例判对，两侧都观测到 | WP2 | ≤60 CPU 分钟 | **完成**（res14：正控 PASS，改错/坏格式/空答三条全 FAIL；A 与 B 的 `error_type` 相同，所以失败原因不可按 error_type 归因） |
 | WP6 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现 | 对应包完成 | ≤30 CPU 分钟/份 | 待派 |
 | WP8 单轮官方分入库（取代自研分） | a13 编排者 | 79 格 `_score` 换官方值、协议串区分两套判分器、编号备份 + `integrity_check` + `db_check` PASS、重跑幂等、REFRESH 收敛在库副本上实测；列级新旧对照与「4/55 逆序」的复算命令进 `RESULT.md` | WP2 | ≤30 CPU 分钟 | **完成**（res13：旧值 retracted） |
 | WP7 `n_items` 回填 | a13 编排者 → `migrations/backfill_n_items.py` | `bfcl%` 的 NULL 从 29 降到 15，剩下的每一行有写定的原因；编号备份 + integrity_check ok + 第二次 dry-run 幂等 0 行 | WP3 | ≤30 CPU 分钟 | **完成**（res2/res4：14 行回填，剩 15 行多轮因台账只留最后一次运行而不可溯源） |

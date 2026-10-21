@@ -95,63 +95,63 @@
  "binding": {
   "m4-2bq2.jsonl": {
    "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-2bq3.jsonl": {
    "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-e2b-q2.jsonl": {
    "model": "gemma-4-E2B-it-UD-Q2_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-e2b-q3.jsonl": {
    "model": "gemma-4-E2B-it-UD-Q3_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-e4b-q2.jsonl": {
    "model": "gemma-4-E4B-it-UD-Q2_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-e4b-q3.jsonl": {
    "model": "gemma-4-E4B-it-UD-Q3_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-gr3b-q2.jsonl": {
    "model": "granite-4.1-3b-Q2_K.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-gr3b-q3.jsonl": {
    "model": "granite-4.1-3b-Q3_K_M.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-q2.jsonl": {
    "model": "Qwen3.5-4B-UD-Q2_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m4-q3.jsonl": {
    "model": "Qwen3.5-4B-UD-Q3_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m8-gr3b-q2.jsonl": {
    "model": "granite-4.1-3b-Q2_K.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m8-gr3b-q3.jsonl": {
    "model": "granite-4.1-3b-Q3_K_M.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m8-qwen2b-q2.jsonl": {
    "model": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m8-qwen2b-q3.jsonl": {
    "model": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   },
   "m22-bonsai.jsonl": {
    "model": "Ternary-Bonsai-27B-Q2_g64.gguf",
-   "protocol": "bfcl-native-tools-nothink-greedy"
+   "protocol": "bfcl-native-tools-nothink-greedy-official-ast-checker"
   }
  },
  "unbound_or_ambiguous": [],
