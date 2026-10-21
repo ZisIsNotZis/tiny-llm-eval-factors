@@ -3,14 +3,14 @@ code	humaneval	auto	400	53
 code	humaneval	off	845	194
 code	humaneval-cpp	off	135	54
 code	humaneval-plus	off	75	66
-code	humaneval-py	off	131	53
+code	humaneval-py	off	120	53
 code	mbpp	auto	219	44
 code	mbpp	off	612	188
 code	mbpp-plus	off	74	65
 extraction	ifeval	off	109	70
 extraction	ifeval	on	1	1
 knowledge-loglik	arc_challenge	off	72	59
-knowledge-loglik	mmlu	off	109	70
+knowledge-loglik	mmlu	off	111	70
 knowledge-loglik	mmlu	on	1	1
 knowledge-loglik	truthfulqa_mc2	off	79	66
 reasoning	gsm8k	off	105	66

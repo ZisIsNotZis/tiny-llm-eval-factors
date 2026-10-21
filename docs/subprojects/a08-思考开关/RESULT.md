@@ -53,9 +53,11 @@
 
 这是这一轴最硬的一条：**在本轮补测之前，报告的聊天分数里只有推理类（gsm8k）有开/关两种测量**，
 抽取类（ifeval）、知识-对数似然类（mmlu/arc/truthfulqa）、代码类（humaneval/mbpp）在库里只有关思考的格。
-数字（以提交态的库为准）：gsm8k `off` **105** / `on` 13；gsm8k-strict `off` 76 / `on` 13；
-ifeval `off` **109** / `on` **1**（本轮补的那格）；mmlu `off` **109** / `on` **1**（本轮补的那格）；
-arc_challenge `off` 72、truthfulqa_mc2 `off` 79（`on` 都是 0）；humaneval `off` 845 + `auto` 400，mbpp `off` 612 + `auto` 219。
+数字（以 `fixtures/reasoning_census.tsv` 为准，且**排除 `superseded_by` 非空的行**——别的子项目每入库一次它会动，
+所以引用时读 fixture 而不是抄这一行）：gsm8k `off` **105** / `on` 13；gsm8k-strict `off` 76 / `on` 13；
+ifeval `off` 109 / `on` **1**（本轮补的那格）；mmlu `off` **111** / `on` **1**（本轮补的那格）；
+arc_challenge `off` 72、truthfulqa_mc2 `off` 79（`on` 都是 0）；humaneval `off` 845 + `auto` 400、
+humaneval-py `off` 120、mbpp `off` 612 + `auto` 219。
 - evidence: `fixtures/reasoning_census.tsv`（每类每个 reasoning 值的格数与模型数）
 - 具体见 `fixtures/reasoning_census.tsv`（每类每个 reasoning 值的格数与模型数）——上面那串数字就是它。
 - repro: `python3 "docs/subprojects/a08-思考开关/analysis/thinking_pairs.py" --check`

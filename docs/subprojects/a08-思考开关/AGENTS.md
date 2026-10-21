@@ -43,6 +43,9 @@
 - 负控：`--selftest` 必须证明「改坏一行 → 检查变红」。一条不会失败的检查等于没有检查。
 - 脚本只读打开库（`file:experiments.sqlite?mode=ro`），禁止写库。
 - 任何结论在干净 clone 里要能重算或至少能读到（fixture + 来源 sha256 随仓库走）。
+- **普查类计数必须写 `superseded_by IS NULL`**：i02 的语料代次取代会给同一格加一条新行（旧行保留、
+  `superseded_by` 指过去），按行数就会把「同一格存两代」数成两个测量（实测踩过：`humaneval-py off` 131 vs 132、
+  `run_all.py` 因此变红）。`census()` 与 `cells()` 两个查询都要加这个条件，加了之后 py 的真实格数是 120。
 - **本装置只守本子项目的基准集**（`thinking_pairs.py::BENCHES`：gsm8k / gsm8k-strict / ifeval / mmlu /
   arc_challenge / truthfulqa_mc2 / humaneval* / mbpp*），**不覆盖 BFCL、MultiPL-E 语言列、testfrac 等**。
   也就是说 `--check` 与 `run_all.py` 对别的基准的漂移是**盲的**（实测：29 行 BFCL 的 `n_items` 被抹成 NULL 时它照绿）。

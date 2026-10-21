@@ -185,6 +185,7 @@ def cells() -> list[dict]:
         from experiments
         where reasoning in ('on','off')
           and _bench in {BENCHES}
+          and superseded_by is null
         """)
     ons = [r for r in rows if r["reasoning"] == "on" and r["_score"] is not None]
     keys = {(r["model"], r["_bench"], r["n_items"]) for r in ons}
@@ -219,12 +220,17 @@ def cells() -> list[dict]:
 
 
 def census() -> list[dict]:
-    """每一类基准在库里各有多少开/关格 —— “哪里不可测”本身是这一轴的一个结果。"""
+    """每一类基准在库里各有多少开/关格 —— “哪里不可测”本身是这一轴的一个结果。
+
+    `superseded_by is null` 不能省：i02 的语料代次取代会给同一格加一条新行（旧行保留、`superseded_by`
+    指过去），按行数就会把「同一格存两代」数成两个测量。逐格表（`cells()`）用同一个条件。
+    """
     rows = q(f"""
         select _bench, reasoning, count(*) cells, count(distinct model) models
         from experiments
         where reasoning in ('on','off','auto')
           and _bench in {BENCHES}
+          and superseded_by is null
         group by _bench, reasoning
         """)
     out = [{"class": CLASS.get(r["_bench"], "?"), "bench": r["_bench"],
