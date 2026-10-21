@@ -1,0 +1,18 @@
+gate contract: GREEN = (exit 0 + measured lines) or (exit 2 + UNMEASURED); everything else is RED
+environment: real tree=/home/z/vibe/local_lm_research, simulated clone=/tmp/tmp.vy1lPvAPtt
+
+[absent inputs] a simulated clean clone: artefacts and venvs gone
+  absnt bfcl_audit.py              GREEN    rc=127 interpreter absent (venv rebuilt by bootstrap)
+  absnt noise_floor_compare.py     GREEN    rc=2   reported not-obtainable (exit 2 + UNMEASURED)
+  absnt multipl_e_audit.py         GREEN    rc=2   reported not-obtainable (exit 2 + UNMEASURED)
+  absnt lmeval_audit.py            GREEN    rc=127 interpreter absent (venv rebuilt by bootstrap)
+  absnt evalplus_audit.py          GREEN    rc=127 interpreter absent (venv rebuilt by bootstrap)
+
+[present inputs] the real tree
+  pres  bfcl_audit.py              GREEN    rc=0   measured 19 line(s)
+  pres  noise_floor_compare.py     GREEN    rc=0   measured 5 line(s)
+  pres  multipl_e_audit.py         GREEN    rc=0   measured 9 line(s)
+  pres  lmeval_audit.py            GREEN    rc=0   measured 18 line(s)
+  pres  evalplus_audit.py          GREEN    rc=0   measured 55 line(s)
+
+SUMMARY: 10 green, 0 red

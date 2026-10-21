@@ -1,0 +1,4 @@
+[i01-slot] === dispatching arm=np4 under the GPU flock 23:11:03 ===
+[i01-slot] arm=np4 start 23:48:03 np=4 passes=[p1 p2]
+[i01-slot] arm=np4 server DIED
+[i01-slot] arm=np4 failed rc=3 (a failed arm is unmeasured, not a pass)

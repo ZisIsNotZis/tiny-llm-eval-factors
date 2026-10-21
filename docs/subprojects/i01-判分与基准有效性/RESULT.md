@@ -145,7 +145,9 @@
 - 证据：`.wrapup/i01_gate_selftest.out`、`.wrapup/i01_gate_host.out`、`.wrapup/i01_gate_clone.out`、`.wrapup/i01_gate_fakeclone.out`、`.wrapup/i01_run_all_fakeclone.out`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/unmeasured_gate_check.py" --self-test`；同脚本不带参数跑本机；`I01_REPO_ROOT=$(mktemp -d)` 跑空树模拟。
 
-## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
+## 判分缺陷与修复
+
+### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
 - 当前规则：标准列只在 cpp 与 py 都测过时产出该单元，否则记缺失（NaN），不画点。

@@ -1,0 +1,37 @@
+=== lmeval_panel start tag=m164-a04-uni45 model=/home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-21T01:30:50+08:00
+[01:30:51] === panel tag=m164-a04-uni45 model=/home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf
+[01:30:51] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[01:30:51] ports: llama=8900 shim=8901
+[01:30:51] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[01:30:51] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf --port 8900 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[01:30:56] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='3'
+[01:30:56] --- mmlu: running
+[01:33:24] mmlu: acc,none=0.4825 n=912 in 148.8s
+[01:33:24] --- arc_challenge: running
+[01:36:40] arc_challenge: acc_norm,none=0.4600 n=100 in 196.0s
+[01:36:40] --- truthfulqa_mc2: running
+[01:39:10] truthfulqa_mc2: acc,none=0.4516 n=100 in 149.3s
+[01:39:10] --- gsm8k: running
+[01:39:10] llama-server stopped
+Traceback (most recent call last):
+  File "/home/z/vibe/local_lm_research/.wrapup/lmeval_run.py", line 665, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/z/vibe/local_lm_research/.wrapup/lmeval_run.py", line 661, in main
+    return run_selftest(args) if args.selftest else run_panel(args)
+                                                    ^^^^^^^^^^^^^^^
+  File "/home/z/vibe/local_lm_research/.wrapup/lmeval_run.py", line 516, in run_panel
+    rc = run_cmd(cmd, env, task_log, timeout=args.task_timeout)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/z/vibe/local_lm_research/.wrapup/lmeval_run.py", line 368, in run_cmd
+    return subprocess.run(cmd, stdout=fh, stderr=subprocess.STDOUT,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 548, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '/home/z/vibe/local_lm_research/.wrapup/lmenv/bin/lm_eval'
+=== lmeval_panel FAILED tag=m164-a04-uni45 rc=1 2026-10-21T01:39:11+08:00

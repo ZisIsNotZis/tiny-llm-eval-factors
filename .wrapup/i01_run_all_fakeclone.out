@@ -1,0 +1,13 @@
+group  check                        verdict      first note
+LOGIC  scoring_logic_check.py       green        
+DATA   bfcl_audit.py                UNMEASURED   interpreter /tmp/tmp.qUh6vgTWJy/.wrapup/bfclenv/bin/python absent
+DATA   noise_floor_compare.py       UNMEASURED   UNMEASURED: np1-p1 / np1-p2 missing
+DATA   multipl_e_audit.py           UNMEASURED   UNMEASURED: /tmp/tmp.qUh6vgTWJy/.wrapup/mres/i01-slot-np1-p1-py-chat.jsonl missing
+DATA   lmeval_audit.py              UNMEASURED   interpreter /tmp/tmp.qUh6vgTWJy/.wrapup/lmenv/bin/python absent
+DATA   evalplus_audit.py            UNMEASURED   interpreter /tmp/tmp.qUh6vgTWJy/.wrapup/evalpy/bin/python absent
+GATE   unmeasured_gate_check.py     green        
+
+RESULT: EXIT 2 -- logic checks that ran are green, but 5 check(s) could not run:
+        bfcl_audit.py, noise_floor_compare.py, multipl_e_audit.py, lmeval_audit.py, evalplus_audit.py
+        A clean clone lands here by design: the measurement inputs are
+        gitignored, so the conclusions travel but their evidence does not.

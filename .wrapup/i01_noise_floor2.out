@@ -1,0 +1,8 @@
+[i01-floor] start 01:18:25 model=/home/z/hf/Qwen3.5-2B-UD-Q3_K_XL.gguf free=17974MiB gate=6144MiB ctx=8192
+[i01-floor] server up: n_slots = 4, n_ctx_slot = 8192
+[i01-floor] lm-eval gsm8k rep=1 start 01:18:27
+[i01-floor] lm-eval gsm8k rep=1 rc=0 end 01:20:51
+[i01-floor] lm-eval gsm8k rep=2 start 01:20:51
+[i01-floor] lm-eval gsm8k rep=2 rc=0 end 01:23:43
+[i01-floor] done 01:23:44
+[i01-floor] compare: python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"

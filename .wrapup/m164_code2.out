@@ -1,0 +1,14 @@
+=== codepanel start tag=m164-a04-uni45 model=/home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf limit=0 2026-10-21T07:38:41+08:00
+[codepanel] limit=0 is IGNORED for code: EvalPlus always runs the full suite (humaneval 164, mbpp 378).
+[codepanel] llama-server port=9200 (proven free by ss -ltn)
+[codepanel] smoke completion ok
+[07:38:44] codegen humaneval -> /home/z/vibe/local_lm_research/.wrapup/mres/m164-a04-uni45/codegen/humaneval/m164-a04-uni45_openai_temp_0.0.jsonl
+[07:46:25] evaluate humaneval (codegen rc=0)
+[07:46:48] DONE bench humaneval codegen_rc=0 eval_rc=0 484s
+[07:46:48] codegen mbpp -> /home/z/vibe/local_lm_research/.wrapup/mres/m164-a04-uni45/codegen/mbpp/m164-a04-uni45_openai_temp_0.0.jsonl
+[08:00:40] evaluate mbpp (codegen rc=0)
+[08:01:26] DONE bench mbpp codegen_rc=0 eval_rc=0 878s
+REAL_BENCHES ['humaneval', 'mbpp']
+  humaneval: base=0.6219512195121951 plus=0.6036585365853658 n=164 base_pass=102 plus_pass=99 bad_rate=0.0
+  mbpp: base=0.6957671957671958 plus=0.582010582010582 n=378 base_pass=263 plus_pass=220 bad_rate=0.0
+=== codepanel done tag=m164-a04-uni45 2026-10-21T08:01:26+08:00

@@ -1,0 +1,11 @@
+[10:08:28] === panel tag=a01-wp5-r2 model=/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf
+[10:08:28] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[10:08:28] ports: llama=8902 shim=8903
+[10:08:28] tasks=['mmlu'] limit=16
+[10:08:28] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf --port 8902 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[10:08:32] server up for ['mmlu']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='\n'
+[10:08:32] --- mmlu: running
+[10:14:02] mmlu: acc,none=0.6436 n=912 in 330.1s
+[10:14:03] llama-server stopped
+[10:14:03] panel done: /home/z/vibe/local_lm_research/.wrapup/mres/a01-wp5-r2/lmeval_panel.json
+[10:14:03] real numbers: ['mmlu']

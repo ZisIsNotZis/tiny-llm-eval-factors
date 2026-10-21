@@ -1,0 +1,3 @@
+  OK    fake_exit0.py          -> RED   (wanted RED) rc=0 exit 0 with no measured line (false green)
+  OK    fake_unmeasured.py     -> GREEN (wanted GREEN) rc=2 reported not-obtainable (exit 2 + UNMEASURED)
+SELF-TEST PASS

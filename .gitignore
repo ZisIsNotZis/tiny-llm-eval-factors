@@ -42,10 +42,26 @@ experiments.sqlite.bak*
 !.wrapup/mres/m165-mechanism/*_summary.jsonl
 !.wrapup/mres/m165-mechanism/props_*.json
 .wrapup/*.log
-# 运行日志与进程戳：与 *.log 同类，是暂存不是证据（谁产出的都算，规则在 README 的「Does not ship」）。
-# 逐题评测产物不在此列：`.wrapup/mres/**/*_eval.json` 由上面的 `!` 规则放行入库。
+# 运行日志与进程戳：暂存不是证据。
+# 例外（下面十四行）：被 `docs/` 里某个节点点名为 evidence 的 `.out`。判据是「被点名且小」，
+# 不是「体积小」——没被点名的 `.out` 不入库。`*.log` 这一类同样被点名（18 个、14 MB，其中
+# `m30_32.log` 一个就 9.9 MB），随仓库走的代价与声明方式还没定，登记在工作包 p-entry3。
 .wrapup/*.out
 .wrapup/*.pid
+!.wrapup/a01_t4.out
+!.wrapup/a01_wp5_r1.out
+!.wrapup/a01_wp5_r2.out
+!.wrapup/i01_gate_clone.out
+!.wrapup/i01_gate_fakeclone.out
+!.wrapup/i01_gate_host.out
+!.wrapup/i01_gate_selftest.out
+!.wrapup/i01_noise_floor2.out
+!.wrapup/i01_run_all_fakeclone.out
+!.wrapup/i01_slot_repro2.out
+!.wrapup/m164_code.out
+!.wrapup/m164_code2.out
+!.wrapup/m164_lmeval.out
+!.wrapup/m164_lmeval2.out
 .wrapup/jars/
 .wrapup/evalpy/
 .wrapup/msenv/

@@ -1,0 +1,20 @@
+=== lmeval_panel start tag=m164-a04-uni45 model=/home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf limit=100 llama=/home/z/.local/bin/llama-server 2026-10-21T01:40:03+08:00
+[01:40:03] === panel tag=m164-a04-uni45 model=/home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf
+[01:40:03] llama-server binary: /home/z/.local/bin/llama-server :: version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64
+[01:40:03] ports: llama=8901 shim=8902
+[01:40:03] tasks=['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval'] limit=100
+[01:40:03] llama-server: /home/z/.local/bin/llama-server -m /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf --port 8901 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+[01:40:06] server up for ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']: reasoning=off ctx=8192 max_gen_toks=1024 smoke='3'
+[01:40:06] --- mmlu: running
+[01:42:36] mmlu: acc,none=0.4825 n=912 in 149.5s
+[01:42:36] --- arc_challenge: running
+[01:45:14] arc_challenge: acc_norm,none=0.4600 n=100 in 158.4s
+[01:45:14] --- truthfulqa_mc2: running
+[01:48:16] truthfulqa_mc2: acc,none=0.4516 n=100 in 181.7s
+[01:48:16] --- gsm8k: running
+[01:53:22] gsm8k: exact_match,strict-match=0.7100 n=100 in 306.4s
+[01:53:22] --- ifeval: running
+[02:02:17] ifeval: prompt_level_strict_acc,none=0.4800 n=100 in 534.3s
+[02:02:17] llama-server stopped
+[02:02:18] panel done: /home/z/vibe/local_lm_research/.wrapup/mres/m164-a04-uni45/lmeval_panel.json
+[02:02:18] real numbers: ['mmlu', 'arc_challenge', 'truthfulqa_mc2', 'gsm8k', 'ifeval']

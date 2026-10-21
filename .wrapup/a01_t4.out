@@ -1,0 +1,23 @@
+pass1 rc=0 2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/151 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/153 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/157 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/162 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+humaneval •100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40/40 • 0:01:49
+ 
+pass2 rc=0 2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/151 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/153 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/157 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+Codegen: HumanEval/162 @ Qwen3.5-2B-UD-Q2_K_XL.gguf
+humaneval •100% ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40/40 • 0:01:54
+ 
+{
+ "elapsed_s": 228.7,
+ "n_common": 40,
+ "identical_p1_p2": 40,
+ "disputed_covered": 32,
+ "identical_to_history": 40,
+ "verdict": "可复现：同一文件、同一旗标、同一提示，两遍逐字节相同于全部 40 题（其中争议题 32 道）⇒ 那 22 题的差不是跑两次的随机噪声"
+}
+peak_vram_mib=1548 free_after=18954

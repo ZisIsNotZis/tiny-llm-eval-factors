@@ -57,7 +57,7 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 ## 里程碑状态（研究结束）
 
-十六个单元全部结项。交付面是 `report.html`：21 节 / 86 图，从库与入库派生索引重建，干净 clone 里**逐字节可复现**。整合验证（由 meta 独立跑，不复用子项目的清单）：`./reproduce.sh` exit 0，逐行结论由该命令当场产生——本文件不复制那份计数；本机在 `c19c168` 上实测 47 PASS / 0 FAIL / 1 WARN（2 分 07 秒），重跑即得，其中 WARN 那一条就是下面 `p-entry1` 登记的漂移。各单元自己的验收装置在干净树里全 rc=0，只有 `a13`（缺 `bfclenv`）与 `i01`（按其契约 exit 2 = 逻辑与门绿、真实数据不可得）如实报不可得。
+十六个单元全部结项。交付面是 `report.html`：21 节 / 86 图，从库与入库派生索引重建，干净 clone 里**逐字节可复现**。整合验证（由 meta 独立跑，不复用子项目的清单）：`./reproduce.sh` exit 0，逐行结论由该命令当场产生，本文件不写那份计数；`c19c168` 与 `bc1eeb0` 上都是 exit 0，唯一一条非 PASS 行是下面 `p-entry1` 登记的 `size_claims` 漂移。各单元自己的验收装置在干净树里全 rc=0，只有 `a13`（缺 `bfclenv`）与 `i01`（按其契约 exit 2 = 逻辑与门绿、真实数据不可得）如实报不可得。
 
 未测分三类，读法不同：`BLOCKED-on-VRAM`（已定价、未买）、`GATE-FAIL`（本环境缺运行时，如扩散解码的架构名表）、「本环境不可测」（没有逐题产物、没有对照臂、跨语料不可比）。统一入口在 `docs/subprojects/i02-测量基础设施/RESULT.md::res72`。
 
@@ -73,6 +73,7 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 | `r-entry4` | 根目录无未归类路径：运行日志按类忽略，逐题产物按 README 的判据入库 | `git status --porcelain` 无输出 | — |
 | `p-entry1` | `report_inputs/size_claims.json` 与 a02 的产物不一致（`python3 report_inputs/build_size_claims.py --check` exit 1），而 `./reproduce.sh` 只记 WARN 就继续：报告第二节停在这个旧值上仍判绿 | 该命令 exit 0，且报告重建后逐字节相同（或第二节的改动经复核后重新入库） | — |
 | `p-entry2` | 把 `./reproduce.sh` 里「输入与其来源不一致」的 WARN 判成 FAIL，让漂移必须被处理而不是被记录 | 一个故意改坏的输入使 `./reproduce.sh` 非零退出（负控） | p-entry1 |
+| `p-entry3` | 同一类错误在下一层：`docs/subprojects/*/RESULT.md` 的证据行点了 146 处 `.wrapup/…`，其中 48 处在盘上但未入库，另有一批 `.log` 被点名（18 个、共 14 MB，`m30_32.log` 一个就 9.9 MB），所以干净 clone 里「证据」指不到；`checks/router_refs.py` 目前只覆盖三份根路由 | 对证据行做同样的解析检查，并给这类文件一个已声明的处置（入库、改节点引用、或按 store-or-declare 写清单），不是留一条忽略规则 | — |
 
 里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
