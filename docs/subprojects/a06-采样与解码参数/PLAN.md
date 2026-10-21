@@ -142,8 +142,25 @@
 | R2 mmlu（正控） | 0.6075（= 贪心，未变） | — | 完成 |
 | R2 gsm8k | 0.40（贪心 0.60 / t0.3 0.64 / t0.7 0.62） | — | 完成 |
 | R2 ifeval | 0.60（贪心 0.62 / t0.3 0.70 / t0.7 0.66） | — | 完成 |
-| R1 q2-cpp | **1/161 = 0.0062**（贪心 18/161 = 0.1118） | `mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,top_p=1.0,top_k=20,min_p=0.0,presence_penalty=2.0` | 完成，8.5 GPU 分钟 |
-| R1 q2-py / q3 / q4 / EvalPlus | — | 同上（ctx=4096） | 在跑 |
+| R1 q2-cpp | **1/161 = 0.0062**（贪心 18/161 = 0.1118） | `mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,top_p=1.0,top_k=20,min_p=0.0,presence_penalty=2.0` | 完成，8.5 GPU 分钟；状态 `SyntaxError=142,Exception=18,OK=1` |
+| R1 q2-py | **3/161 = 0.0186**（贪心 22/161 = 0.1366） | 同上 | 完成，3.8 GPU 分钟；状态 `Exception=158,OK=3` |
+| R1 q3-cpp / q3-py / q4-cpp / q4-py / q3-EvalPlus | — | 同上（ctx=4096） | 排队（逐格跑，完成即追加本表） |
+
+- 状态直方图由 `cell_histograms.py` 从 `*_eval.json` 重算，写入 `.wrapup/mres/m165-vendor/histograms.jsonl`（幂等，可随跑随算）。
+- 两个已完成格的塌陷形态**不同**：cpp 是 `SyntaxError=142`（输出不是合法 C++），py 是 `Exception=158`（代码能解析但跑不起来）。所以「塌陷」的证据是状态分布，不是分数。
+
+## 预注册的判定规则（在看到 q3/q4 之前写死，不得事后改口）
+
+「厂商档下量化阶梯是否存活」按下面三档判，判据只用 `histograms.jsonl` 的 `at_floor` 与 `score`：
+
+| 情形 | 结论怎么写 | 禁止写法 |
+|---|---|---|
+| Q3 与 Q4 **都** `at_floor`（pass share < 0.05） | **「该采样值下 cpp/py 阶梯不可分辨」**：这一档的分数落在地板上，地板格之间的差不是能力差 | 不写 `survives`，也不写 `inverts`；不把地板格与贪心格并列做「差了多少」 |
+| 只有 Q2 `at_floor`，Q3/Q4 在地板之上 | 「阶梯在**一档不可测**的前提下存活/反序」，并给出 Q3-vs-Q4 的 survived/inverted | 不把 Q2 纳入档对比较（它是地板格） |
+| 三档都在地板之上 | 按 `rank_survival.py` 的口径照常给 survived/inverted | 不因为「方向符合预期」就省掉反序计数 |
+
+- 这条规则的依据：`vendor-arm-is-not-a-perturbation` 已经证明地板存在（cpp 1/161、py 3/161），所以「先看数再选口径」的风险是真的。
+- 该规则与 `rank_survival.py` 的关系：地板格**不进** `SELECTION`；`--check` 通过只说明 fixture 与库一致，不说明地板格可以参与排序。
 
 - 产物目录 `.wrapup/mres/m165-vendor/`；逐格清单 `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl`（R1）与 `variant_panel.json`（R2）；
   运行脚本 `run_vendor_arm.sh`（R1）与 `vendor_arm_r2.py`（R2）。

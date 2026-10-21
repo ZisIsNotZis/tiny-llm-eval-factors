@@ -177,6 +177,13 @@
 - repro: `python3 -c "import json,collections;d=json.load(open('.wrapup/mres/m165-vendor/mpl-q2-cpp-vendor_eval.json'));print(d['n'],d['pass'],dict(collections.Counter(x['status'] for x in d['details'])))"`。
 - 后果（读这一臂前必须知道）：① 若 Q3/Q4 也掉到语法地板，则「厂商档下 Q3-vs-Q4 是否仍反序」**不可估**——地板上的格子之间的差别不是能力差别，这时正确的结论是「在该采样值下 cpp 阶梯不可分辨」，而不是「次序变了」或「次序保住了」；② 这条也解释了为什么不能把厂商档当成「另一个温度点」：它的效应量比温度轴大一个数量级（−17 道题 vs 温度轴的 0 到 −15）；③ 按 a12 的规则，`SyntaxError` 主导的格保留真分数，但必须写成「该采样设置下的 harness floor 或真实通过数」，不得与其它格同权地读成能力差异。
 
+## vendor-collapse-has-two-forms :: 厂商档的地板有两种形态，靠状态直方图分开，靠分数分不开：cpp 是 `SyntaxError=142, Exception=18, OK=1`（输出不是合法 C++），py 是 `Exception=158, OK=3`（能解析但跑不起来）。同一模型贪心下 cpp 18/161、py 22/161，temp 0.3/0.6 下 cpp 仍是 18/161——所以塌陷与温度无关，是 `top_p=1.0 / min_p=0.0 / presence_penalty=2.0` 这组的效应，且它在两种语言上的失效机制不同。
+
+- kind: measured
+- evidence: `.wrapup/mres/m165-vendor/histograms.jsonl`（`cell_histograms.py` 从两个 `*_eval.json` 重算）：`mpl-q2-cpp-vendor` `unparseable_share 0.99`、`mpl-q2-py-vendor` `0.98`，`at_floor` 均为真。
+- repro: `python3 "docs/subprojects/a06-采样与解码参数/cell_histograms.py"`（退出 0 = 至少读到一个格；产物目录或 `*_eval.json` 全缺时退出 2）。
+- 后果：① 「厂商档让分数下降」这句话不够——cpp 上是**语法**塌陷、py 上是**运行期**塌陷，两者的可解释性不同；② 判定阶梯是否存活必须先看 `at_floor`，地板格之间比分数是没有意义的（规则预注册在 `PLAN.md`）。
+
 ## 五、厂商推荐采样（`plan3`）
 
 ## res-vendor-value :: 厂商（unsloth）给 Qwen3.5-2B 的推荐采样参数拿到了：非思考文本任务是 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0, repetition_penalty=1.0`；它落在本研究测过的每一个设置**之外**——温度只有 1.0 一档与已测的 0/0.3/0.6/0.7 都不同，`top_p` 1.00 对已钉住的 0.95，`min_p` 0.0 对 0.05，并且多一个已测协议里恒为 0 的 `presence_penalty=2.0`。
