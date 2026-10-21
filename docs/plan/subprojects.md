@@ -72,8 +72,8 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 | `r-entry3` | `STATUS.md` 与 HEAD 对齐：只引用能解析的路径，当前状态与下一步按本文件写 | `python3 checks/router_refs.py` exit 0 | r-entry1 |
 | `r-entry4` | 根目录无未归类路径：运行日志按类忽略，逐题产物按 README 的判据入库 | `git status --porcelain` 无输出 | — |
 | `p-entry1` | `report_inputs/size_claims.json` 与 a02 的产物不一致（`python3 report_inputs/build_size_claims.py --check` exit 1），而 `./reproduce.sh` 只记 WARN 就继续：报告第二节停在这个旧值上仍判绿 | 该命令 exit 0，且报告重建后逐字节相同（或第二节的改动经复核后重新入库） | — |
-| `p-entry2` | 把 `./reproduce.sh` 里「输入与其来源不一致」的 WARN 判成 FAIL（`grep -c 'record WARN' reproduce.sh` = 13，全是同一形状；其中 `size_claims` 那处现在是 PASS，p-entry1 已把它判绿），让漂移必须被处理而不是被记录；「索引无法当场核对」（rc=2）仍留 SKIP，那是 absent 不是漂移 | 一个故意改坏的输入使 `./reproduce.sh` 非零退出（负控）。负控怎么跑还没定：`reproduce.sh` 的路径由自身位置推出，不能在临时树上跑，可走的两条路是给它一个注入输入目录的开关，或就地改坏一份输入跑一遍再复原 | p-entry1 |
-| `p-entry3` | 同一类错误在下一层：`docs/subprojects/*/RESULT.md` 里点名的 `.wrapup/…` 文件有 35 个在盘上但未入库，其中 9 个是 `.log`、共 9.3 MB（最大的 `mres/m128-spec-9b/server.log` 7.2 MB）；取证命令见本节末「p-entry3 的取证」 | 对证据行做同样的解析检查，并给这类文件一个已声明的处置（入库 / 改节点引用 / 按 store-or-declare 写清单） | — |
+| `p-entry2` | **已结项**：13 条「输入与其来源不一致」的判断收进 `checks/report_inputs_drift.py`，`./reproduce.sh` 只把它翻成核对表里的行——漂移=FAIL（整条命令非零退出），看不到来源=SKIP（rc=2 或来源不在场；缺席不是漂移）。判定比对上：只有三个 builder 自报 rc=2，其余十个由脚本先查来源在不在，查不到才 SKIP | `python3 checks/report_inputs_drift_negative_control.py` exit 0：未改动绿 → 改坏 `open_questions.json` 一个字节后 `./reproduce.sh` exit 1 并点名它 → 移走 `gsq.json` 仍 exit 0 且该行为 SKIP → 原字节写回、sha256 不变。负控走 `REPRODUCE_INPUTS_ONLY=1 ./reproduce.sh`（只跑这一节，约 2 秒）：整条链路两分钟且路径由脚本自身位置推出、不能在临时树上跑，故给它一个「只跑这一节」的开关，而不是复制一份判断逻辑 | p-entry1 |
+| `p-entry3` | **已结项**：处置选「入库」而不是清单——被点名的 9 个 `.log` 以 gzip 存到原路径旁的 `.log.gz`（原始 9339155 字节 → 1023126 字节，`gzip -dc | sha256sum` 与原文件逐个相同，原 `.log` 删除），其余 26 个按已声明的类忽略（venv / `mres` 原始逐题产物 / `ppl_corpora`）。清单只给一个本机路径，从 clone 读不到就打不开，而这几份日志载着无法重算的事实（`n_ctx_slot = 4096`、两行 OOM、`creating MTP draft context`、`CORRUPT` 与 `FileNotFoundError` 计数） | `python3 checks/evidence_logs.py` exit 0：被点名的 162 条 `.wrapup/…` 路径逐条有处置（入库 89 / 目录或前缀 39 / 通配 32 / 按类忽略 2 / 无处置 0），且 9 个登记的 `.gz` 解开后字节数与登记值相同；`reproduce.sh` 已按 FAIL 调它 | — |
 
 `p-entry3` 的取证：下面这条打印「被 `docs/subprojects/*/RESULT.md` 点名、在盘上、但未入库」的文件清单，行数就是 35，其中 `.log` 9 个、共 9.3 MB。
 
@@ -81,7 +81,7 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
-已结项：`r-entry1`–`r-entry4`、`p-entry1`。`p-entry1` 的证据在 `ba817d7` 上：`python3 report_inputs/build_size_claims.py --check` exit 0（`size_claims.json` 跟着 a02 重生成到 3364 行 / 170 组 / 77 文件），`./reproduce.sh` exit 0 且末行判「报告可从库重建，且与仓库里的 `report.html` 逐字节相同」。未结项：`p-entry2`、`p-entry3`。
+已结项：`r-entry1`–`r-entry4`、`p-entry1`、`p-entry2`、`p-entry3`。`p-entry1` 的证据在 `ba817d7` 上：`python3 report_inputs/build_size_claims.py --check` exit 0（`size_claims.json` 跟着 a02 重生成到 3364 行 / 170 组 / 77 文件），`./reproduce.sh` exit 0 且末行判「报告可从库重建，且与仓库里的 `report.html` 逐字节相同」。`p-entry2` 与 `p-entry3` 的证据在 `9e89f91` 上：`./reproduce.sh` exit 0（54 条核对里 FAIL/WARN 为 0，含新增的漂移负控与证据处置两条）。未结项：无——里程碑只剩整合复核。
 
 ## 共享仓库的写权（避免互相踩）
 
