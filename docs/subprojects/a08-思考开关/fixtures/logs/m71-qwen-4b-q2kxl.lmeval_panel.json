@@ -1,0 +1,78 @@
+{
+  "tag": "m71-qwen-4b-q2kxl",
+  "model": "/home/z/hf/mscache/unsloth/Qwen3.5-4B-GGUF/Qwen3.5-4B-UD-Q2_K_XL.gguf",
+  "tasks": {
+    "mmlu": 0.6677631578947368,
+    "arc_challenge": 0.49,
+    "truthfulqa_mc2": 0.485900596472922,
+    "gsm8k": 0.67,
+    "ifeval": 0.68
+  },
+  "n": {
+    "mmlu": 912,
+    "arc_challenge": 100,
+    "truthfulqa_mc2": 100,
+    "gsm8k": 100,
+    "ifeval": 100
+  },
+  "errors": [],
+  "reasoning": "off",
+  "ctx_size": 8192,
+  "max_gen_toks": 1024,
+  "profile_note": "per-task server profiles; see the `profiles` map",
+  "profiles": {
+    "mmlu": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "arc_challenge": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "truthfulqa_mc2": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "gsm8k": {
+      "reasoning": "on",
+      "max_gen_toks": 4096,
+      "ctx": 16384
+    },
+    "ifeval": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    }
+  },
+  "timings_s": {
+    "mmlu": 283.4,
+    "arc_challenge": 196.4,
+    "truthfulqa_mc2": 404.1,
+    "gsm8k": 578.7,
+    "ifeval": 188.7
+  },
+  "llama_server": {
+    "binary": "/home/z/.local/bin/llama-server",
+    "version": "version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64",
+    "port": 8900,
+    "args": [
+      "-c",
+      "per-task (see profiles)",
+      "-np",
+      1,
+      "-ngl",
+      99,
+      "--jinja"
+    ]
+  },
+  "shim": {
+    "port": 8901,
+    "top_n": 100,
+    "top_n_retry": 8000,
+    "llama_requests": 14412
+  },
+  "limit_per_task": 100
+}

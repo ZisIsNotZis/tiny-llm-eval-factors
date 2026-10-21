@@ -1,0 +1,50 @@
+{
+  "tag": "m65-qwen-2b-q3kxl",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263",
+  "tasks": {
+    "mmlu": 0.6173245614035088,
+    "arc_challenge": 0.41,
+    "truthfulqa_mc2": 0.4349687181598747,
+    "gsm8k": 0.55,
+    "ifeval": 0.55
+  },
+  "n": {
+    "mmlu": 912,
+    "arc_challenge": 100,
+    "truthfulqa_mc2": 100,
+    "gsm8k": 100,
+    "ifeval": 100
+  },
+  "errors": [],
+  "reasoning": "off",
+  "ctx_size": 8192,
+  "max_gen_toks": 1024,
+  "timings_s": {
+    "mmlu": 139.3,
+    "arc_challenge": 161.1,
+    "truthfulqa_mc2": 224.9,
+    "gsm8k": 152.8,
+    "ifeval": 236.4
+  },
+  "llama_server": {
+    "binary": "/home/z/.local/bin/llama-server",
+    "version": "version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64",
+    "port": 8900,
+    "args": [
+      "-c",
+      8192,
+      "-np",
+      1,
+      "-ngl",
+      99,
+      "--jinja"
+    ]
+  },
+  "shim": {
+    "port": 8902,
+    "top_n": 100,
+    "top_n_retry": 8000,
+    "llama_requests": 14452
+  },
+  "limit_per_task": 100
+}

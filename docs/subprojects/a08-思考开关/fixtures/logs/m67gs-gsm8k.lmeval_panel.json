@@ -1,0 +1,46 @@
+{
+  "tag": "m67gs-gsm8k",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/67bff9774bc55e44af2eee3c448dc054478b45c0607858fc6df5b336b55f36f4",
+  "tasks": {
+    "gsm8k": 0.12
+  },
+  "n": {
+    "gsm8k": 100
+  },
+  "errors": [],
+  "reasoning": "off",
+  "ctx_size": 8192,
+  "max_gen_toks": 1024,
+  "profile_note": "per-task server profiles; see the `profiles` map",
+  "profiles": {
+    "gsm8k": {
+      "reasoning": "on",
+      "max_gen_toks": 4096,
+      "ctx": 16384
+    }
+  },
+  "timings_s": {
+    "gsm8k": 815.1
+  },
+  "llama_server": {
+    "binary": "/home/z/.local/bin/llama-server",
+    "version": "version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64",
+    "port": 8900,
+    "args": [
+      "-c",
+      "per-task (see profiles)",
+      "-np",
+      1,
+      "-ngl",
+      99,
+      "--jinja"
+    ]
+  },
+  "shim": {
+    "port": 8901,
+    "top_n": 100,
+    "top_n_retry": 8000,
+    "llama_requests": 0
+  },
+  "limit_per_task": 100
+}

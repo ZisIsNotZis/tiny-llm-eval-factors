@@ -1,0 +1,99 @@
+{
+  "tag": "m68-granite-3b-q2k",
+  "model": "/home/z/hf/mscache/ibm-granite/granite-4.1-3b-GGUF/granite-4.1-3b-Q2_K.gguf",
+  "tasks": {
+    "mmlu": null,
+    "arc_challenge": 0.51,
+    "truthfulqa_mc2": 0.431322051599215,
+    "gsm8k": 0.11,
+    "ifeval": 0.41
+  },
+  "n": {
+    "mmlu": null,
+    "arc_challenge": 100,
+    "truthfulqa_mc2": 100,
+    "gsm8k": 100,
+    "ifeval": 100
+  },
+  "errors": [
+    {
+      "task": "mmlu",
+      "returncode": 1,
+      "metric": null,
+      "output_json": null,
+      "stderr_tail": [
+        " 54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 1977/3648 [00:39<00:34, 48.90it/s]",
+        " 54%|\u2588\u2588\u2588\u2588\u2588\u258d    | 1983/3648 [00:39<00:32, 51.32it/s]",
+        " 55%|\u2588\u2588\u2588\u2588\u2588\u258d    | 1989/3648 [00:39<00:31, 53.19it/s]",
+        " 55%|\u2588\u2588\u2588\u2588\u2588\u258d    | 1997/3648 [00:39<00:27, 59.15it/s]",
+        " 55%|\u2588\u2588\u2588\u2588\u2588\u258d    | 2004/3648 [00:40<00:26, 60.93it/s]",
+        " 55%|\u2588\u2588\u2588\u2588\u2588\u258c    | 2011/3648 [00:40<00:27, 58.83it/s]",
+        " 55%|\u2588\u2588\u2588\u2588\u2588\u258c    | 2017/3648 [00:40<00:27, 58.43it/s]",
+        " 55%|\u2588\u2588\u2588\u2588\u2588\u258c    | 2023/3648 [00:40<00:27, 58.79it/s]RequestException: 500 Server Error: Internal Server Error for url: http://127.0.0.1:8902/v1/completions",
+        "RequestException: 500 Server Error: Internal Server Error for url: http://127.0.0.1:8902/v1/completions",
+        "RequestException: 500 Server Error: Internal Server Error for url: http://127.0.0.1:8902/v1/completions",
+        "",
+        " 55%|\u2588\u2588\u2588\u2588\u2588\u258c    | 2024/3648 [00:55<00:44, 36.51it/s]",
+        "Traceback (most recent call last):",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 57, in <module>",
+        "    cli_evaluate()",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/__main__.py\", line 10, in cli_evaluate",
+        "    parser.execute(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/harness.py\", line 60, in execute",
+        "    args.func(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/run.py\", line 395, in _execute",
+        "    results = simple_evaluate(",
+        "              ^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 363, in simple_evaluate",
+        "    results = evaluate(",
+        "              ^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 600, in evaluate",
+        "    resps = getattr(lm, reqtype)(cloned_reqs)",
+        "            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/models/gguf.py\", line 82, in loglikelihood",
+        "    response = self.gguf_completion(context=context, continuation=continuation)",
+        "               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 49, in gguf_completion",
+        "    raise RuntimeError(f\"Failed to get a valid response after {retries} retries.\")",
+        "RuntimeError: Failed to get a valid response after 3 retries."
+      ]
+    }
+  ],
+  "reasoning": "off",
+  "ctx_size": 8192,
+  "max_gen_toks": 1024,
+  "timings_s": {
+    "mmlu": 69.6,
+    "arc_challenge": 120.5,
+    "truthfulqa_mc2": 169.7,
+    "gsm8k": 94.5,
+    "ifeval": 161.1
+  },
+  "llama_server": {
+    "binary": "/home/z/.local/bin/llama-server",
+    "version": "version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64",
+    "port": 8900,
+    "args": [
+      "-c",
+      8192,
+      "-np",
+      1,
+      "-ngl",
+      99,
+      "--jinja"
+    ]
+  },
+  "shim": {
+    "port": 8902,
+    "top_n": 100,
+    "top_n_retry": 8000,
+    "llama_requests": 12969
+  },
+  "limit_per_task": 100
+}
