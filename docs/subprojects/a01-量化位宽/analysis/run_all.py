@@ -118,18 +118,60 @@ def main(argv):
                f"分数更低的那格 sanitize 后更干净：语法错 {b['syntax_err_san']} ≤ {a['syntax_err_san']}、"
                f"无 def {b['no_def_san']} ≤ {a['no_def_san']}（方向与「通道把 b 判坏」相反）")
 
-    # ---- knee-estimable：只有 Qwen3.5-2B 的 series 有 ≥4 个位宽点、能估拐点
+    # ---- knee-tiers：拐点分三档——2 点不可估、3 点退化（只能是中间点、区间宽 0）、≥4 点带自举区间
     import numpy as np
     rng = np.random.default_rng(20261020)
     p2b = curves.panel(cc, "qwen3.5-2B")["families"].get("Qwen3.5-2B", [])
-    expect(len(p2b) >= 4, "knee-estimable", f"Qwen3.5-2B 位宽点数 {len(p2b)}")
+    expect(len(p2b) >= 4, "knee-tiers", f"Qwen3.5-2B 位宽点数 {len(p2b)}")
     if len(p2b) >= 4:
-        k, ci = curves.knee([(p["bpw"], round(p["scores"]["humaneval-plus"]["score"] * p["scores"]["humaneval-plus"]["n_items"]),
-                             p["scores"]["humaneval-plus"]["n_items"]) for p in p2b], rng)
-        expect(k is not None and not isinstance(ci, str), "knee-estimable",
-               f"HumanEval+ 拐点 {k} 区间 {ci}")
+        k, ci, note = curves.knee([(p["bpw"], round(p["scores"]["humaneval-plus"]["score"] * p["scores"]["humaneval-plus"]["n_items"]),
+                                    p["scores"]["humaneval-plus"]["n_items"]) for p in p2b], rng)
+        expect(k is not None and ci is not None and note is None, "knee-tiers",
+               f"7 点系列给区间：HumanEval+ 拐点 {k:.3f} 置信区间 [{ci[0]:.3f}, {ci[1]:.3f}]")
+
+    def series(needle, family):
+        pts = curves.panel(cc, needle)["families"].get(family, [])
+        return [(p["bpw"], round(p["scores"]["humaneval-plus"]["score"] * p["scores"]["humaneval-plus"]["n_items"]),
+                 p["scores"]["humaneval-plus"]["n_items"]) for p in pts
+                if "humaneval-plus" in p["scores"]]
+
     glm = curves.panel(cc, "GLM-4.7-Flash")["families"].get("GLM-4.7-Flash", [])
-    expect(len(glm) == 3, "knee-estimable", f"GLM-4.7-Flash 只有 {len(glm)} 点（<4，故不可估）")
+    expect(len(glm) == 3, "knee-tiers", f"GLM-4.7-Flash 是 {len(glm)} 点系列")
+    if len(glm) == 3:
+        k, ci, note = curves.knee(series("GLM-4.7-Flash", "GLM-4.7-Flash"), rng)
+        expect(k is not None and ci == (k, k) and note and "退化" not in (note or "") ,
+               "knee-tiers",
+               f"3 点系列的拐点在定义下成立但退化：GLM-4.7-Flash HE+ = {k:.3f} 比特/权重，"
+               f"区间 [{ci[0]:.3f}, {ci[1]:.3f}]（宽度 0）")
+    q4b = curves.knee(series("qwen3.5-4B", "Qwen3.5-4B"), rng)
+    expect(q4b[0] is not None and abs(q4b[0] - 3.707396) < 1e-4, "knee-tiers",
+           f"Qwen3.5-4B（3 点）HE+ 拐点 {q4b[0]:.3f}（= 中间点 IQ3_XXS 的 3.707），区间宽度 {q4b[1][1]-q4b[1][0]:.3f}")
+
+    # 全库统计：3 点系列里有几个「系列×基准」在定义下成立、≥4 点里几个给得出区间
+    fams = {}
+    for m in sorted({r[0] for r in cc.execute("SELECT DISTINCT model FROM experiments")}):
+        bw = curves.bpw_of(m)
+        if bw is not None:
+            fams.setdefault(curves.series_key(m), set()).add(round(bw, 3))
+    n3 = n3k = n4 = n4k = 0
+    for key, bs in sorted(fams.items()):
+        fam = key[0] if key[1] == "UD 动态" else f"{key[0]} · {key[1]}"
+        pts = curves.panel(cc, key[0])["families"].get(fam, [])
+        for bench in curves.BENCH_ORDER:
+            ser = [(p["bpw"], round(p["scores"][bench]["score"] * p["scores"][bench]["n_items"]),
+                    p["scores"][bench]["n_items"]) for p in pts if bench in p["scores"]]
+            if len(ser) < 3 or bench in curves.NON_COUNT:
+                continue
+            k, ci, note = curves.knee(ser, rng)
+            if len(ser) == 3:
+                n3 += 1
+                n3k += 1 if k is not None else 0
+            else:
+                n4 += 1
+                n4k += 1 if k is not None else 0
+    expect((n3k, n3, n4k, n4) == (30, 44, 6, 6), "knee-tiers",
+           f"3 点：{n3k}/{n3} 个系列×基准在定义下成立（拐点=中间点、区间宽 0）；"
+           f"≥4 点：{n4k}/{n4} 个给出自举区间")
 
     # ---- adjacent-majority：每列相邻档多数上升
     models = sorted({r[0] for r in cc.execute("SELECT DISTINCT model FROM experiments")})
@@ -225,7 +267,12 @@ def main(argv):
         up = sum(1 for d in ds if d > 0)
         shift = statistics.mean(B_acc[k] for k in common) - statistics.mean(A_acc[k] for k in common)
         expect(len(common) == 61, "gemma12b-mmlu-uniform", f"共同科目 {len(common)}（应 61）")
-        expect(up == 51, "gemma12b-mmlu-uniform", f"上升科目 {up}/61")
+        down = sum(1 for d in ds if d < 0)
+        flat = len(ds) - up - down
+        expect((up, down, flat) == (51, 6, 4), "gemma12b-mmlu-uniform",
+               f"上升/下降/持平 = {up}/{down}/{flat}（持平不算下降，复核 D4）")
+        expect(abs(min(ds) + 0.25) < 1e-9 and abs(max(ds) - 0.6875) < 1e-9, "gemma12b-mmlu-uniform",
+               f"科目差域 [{min(ds):+.4f}, {max(ds):+.4f}]（方向一致但幅度不均，不能写「均匀」）")
         expect(abs(statistics.median(ds) - 0.25) < 1e-9, "gemma12b-mmlu-uniform",
                f"中位科目差 {statistics.median(ds):+.4f}（应 +0.2500）")
         expect(abs(shift - 0.2263) < 5e-4, "gemma12b-mmlu-uniform",
@@ -254,27 +301,45 @@ def main(argv):
         except (OSError, ValueError) as exc:
             expect(False, "gemma12b-mmlu-reproduced", f"读不到 wp5_result.json：{exc}")
 
-    # ---- q20-loads（WP4 的加载器性质测试，产物入库）：1.7B 三元 Q2_0 能被当前 llama.cpp 读
+    # ---- q20-loads / pq2-type142 / pq2-fork-loads（加载器性质，产物入库）
     tp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "type142_probe.json")
     try:
         t = json.load(open(tp, encoding="utf-8"))
-        res = {r["gguf"].split("/")[-1]: r for r in t.get("results", [])}
-        r17 = res.get("Ternary-Bonsai-1.7B-Q2_0_g64.gguf")
-        expect(bool(r17), "q20-loads", "1.7B 三元 Q2_0 的探针结果在 type142_probe.json 里"
-               if r17 else "type142_probe.json 里没有 1.7B Q2_0 那一条")
-        if r17:
-            expect("加载并生成" in r17["verdict"], "q20-loads", f"{r17['verdict']}（{r17['elapsed_s']}s、峰值 {r17['peak_vram_mib']} MiB）")
-        pq = next((v for k, v in res.items() if "PQ2_0" in k), None)
-        expect(bool(pq), "pq2-type142", "27B 的 PQ2_0 探针结果在 type142_probe.json 里"
-               if pq else "type142_probe.json 里没有 PQ2_0 那一条")
-        if pq:
-            txt = " ".join(pq.get("stderr_tail") or [])
-            expect("ggml type 142" in txt, "pq2-type142",
-                   "错误原文含「ggml type 142」（记录里存了 stderr 尾部原文）")
-            expect(bool(pq.get("binary")), "pq2-type142", f"二进制版本已记录：{pq.get('binary')}")
-            expect(pq.get("peak_vram_mib") == 0, "pq2-type142",
-                   f"失败在分配前（峰值 {pq.get('peak_vram_mib')} MiB，空闲显存前后 "
-                   f"{pq.get('free_mib_before')}→{pq.get('free_mib_after')}）")
+        recs = t.get("results", [])
+
+        def rec(fname, server_suffix):
+            for r in recs:
+                if r.get("gguf", "").endswith(fname) and (r.get("server") or "").endswith(server_suffix):
+                    return r
+            return None
+
+        MAIN = "/.local/bin/llama-server"
+        FORK = "llama-bonsai/build/bin/llama-server"
+        q17 = rec("Ternary-Bonsai-1.7B-Q2_0_g64.gguf", MAIN)
+        expect(bool(q17) and "加载并生成" in q17["verdict"], "q20-loads",
+               f"1.7B Q2_0 在 mainline 上加载并生成（{q17['elapsed_s']}s、峰值 {q17['peak_vram_mib']} MiB、"
+               f"n_slots={q17.get('n_slots')}）" if q17 else "type142_probe.json 里没有 1.7B Q2_0 × mainline 那条")
+
+        m27 = rec("Ternary-Bonsai-27B-PQ2_0.gguf", MAIN)
+        mcr = rec("Bonsai-2-27B-PQ2_0-CRACK.gguf", MAIN)
+        expect(bool(m27 and mcr), "pq2-type142", "两个 27B PQ2_0 文件 × mainline 的记录都在")
+        if m27 and mcr:
+            txt = " ".join(m27.get("stderr_tail") or [])
+            txt2 = " ".join(mcr.get("stderr_tail") or [])
+            expect("invalid ggml type 142" in txt and "invalid ggml type 142" in txt2, "pq2-type142",
+                   f"mainline（{m27.get('binary')}）对两个文件都报 invalid ggml type 142 ⇒ **类型级**，不是文件级")
+            expect(m27.get("peak_vram_mib") == 0 and mcr.get("peak_vram_mib") == 0, "pq2-type142",
+                   "两个都在显存分配前就失败（峰值 0 MiB）")
+
+        f27 = rec("Ternary-Bonsai-27B-PQ2_0.gguf", FORK)
+        fcr = rec("Bonsai-2-27B-PQ2_0-CRACK.gguf", FORK)
+        expect(bool(f27 and fcr), "pq2-fork-loads", "prism fork × 两个 PQ2_0 文件的记录都在")
+        if f27 and fcr:
+            expect("加载并生成" in f27["verdict"] and "加载并生成" in fcr["verdict"], "pq2-fork-loads",
+                   f"prism fork（{f27.get('binary')}）能加载并生成两个 PQ2_0 文件"
+                   f"（{f27['elapsed_s']}s / {fcr['elapsed_s']}s，n_slots={f27.get('n_slots')}）")
+            expect(f27.get("n_slots") == 1 and f27.get("n_ctx") == 512, "pq2-fork-loads",
+                   f"起服后断言过 n_slots/n_ctx：{f27.get('n_slots')}/{f27.get('n_ctx')}")
     except (OSError, ValueError) as exc:
         expect(False, "q20-loads", f"读不到 type142_probe.json：{exc}")
 

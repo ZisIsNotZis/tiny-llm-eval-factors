@@ -40,13 +40,16 @@ def main(argv):
     common = sorted(set(A) & set(B))
     diffs = sorted((B[k] - A[k], k, A[k], B[k]) for k in common)
     up = sum(1 for d, *_ in diffs if d > 0)
+    down = sum(1 for d, *_ in diffs if d < 0)
+    flat = len(diffs) - up - down
     print(f"A = {a_tag}   ({fa})")
     print(f"B = {b_tag}   ({fb})")
-    print(f"科目数 {len(common)}  上升 {up}  下降 {len(common)-up}")
+    print(f"科目数 {len(common)}  上升 {up}  下降 {down}  持平 {flat}")
     print(f"整体 acc：A = {statistics.mean(A.values()):.4f}  B = {statistics.mean(B.values()):.4f}  "
           f"差 {statistics.mean(B.values())-statistics.mean(A.values()):+.4f}")
-    print(f"科目差：中位 {statistics.median(d for d, *_ in diffs):+.4f}  "
-          f"均值 {statistics.mean(d for d, *_ in diffs):+.4f}")
+    vals = [d for d, *_ in diffs]
+    print(f"科目差：中位 {statistics.median(vals):+.4f}  均值 {statistics.mean(vals):+.4f}  "
+          f"差域 [{min(vals):+.4f}, {max(vals):+.4f}]")
     print(f"B 里 1.0 的科目 {sum(1 for v in B.values() if v == 1.0)}，0.0 的科目 {sum(1 for v in B.values() if v == 0.0)}；"
           f"A 里 1.0 的科目 {sum(1 for v in A.values() if v == 1.0)}，0.0 的科目 {sum(1 for v in A.values() if v == 0.0)}")
     print("差最小的 5 个科目（掉得最多）：")

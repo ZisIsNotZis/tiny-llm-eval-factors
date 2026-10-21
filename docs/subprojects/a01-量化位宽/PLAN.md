@@ -12,7 +12,7 @@
 ## 当前状态
 
 - 已完成：`WP1`、`WP2`、`WP4`；`WP3` 的 T1/T2/T3 与 `WP5` 的 CPU 部分（见 `RESULT.md` 的 `b1-heplus-only`、`t2-channel-excluded`、`q2kxl-iq3-4b`、`ternary-offcurve`、`lowbit-spread`、`m55-exq-inversion`、`gemma12b-mmlu-uniform`）。
-- 在办：`WP6` 收口（`run_all.py` 已经 38 条预期全绿、`--selftest` 能失败；剩下把 PLAN/RESULT 的口径对齐）。
+- 在办：`WP6` 收口（`run_all.py` 全绿、`--selftest` 能失败；本轮已按复核 D1–D6 改完口径，剩下只差 `WP7` 独立复核）。
 - 卡住（等 GPU）：只剩可选的生成式 MMLU 对照（`PLAN.md` 队列表最后一条），登记为**未测**——它不改任何现有结论，只决定报告里 22.6 pp 的措辞是「文件更好」还是「通道不同条件」。
 - 下一个派给谁：本层编排者做 `WP6`（含干净 clone 门）；`WP5` 的 GPU 复测排在 a06 的 `m165` 之后独占锁；两包完成后请 meta 派 fresh-context reviewer 做 `WP7`。
 - 本层没有派孙工具（运行时不提供 subagent 接口），所以实现与测量由编排者自己执行；独立复核必须由 meta 派 fresh-context reviewer，不得自评通过。
@@ -22,7 +22,7 @@
 | 工作包 | owner | AC（可证伪） | 依赖 | 预算 | 状态 |
 |---|---|---|---|---|---|
 | WP1 文档归位 | 本层编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml`/`result.yaml` 已迁入并删除；`git grep -n 'a01-量化位宽/\(plan\|result\)\.yaml' -- ':!report.html'` 只剩 i02 的一行陈旧引用（已登记为跨子项目依赖）；`python3 docs/check_docs.py` 退出 0 且 a01 的四个文件都被解析成事实；提交在 main 且按路径点名 | — | 1 会话 | **完成** |
-| WP2 曲线 + 拐点 + 区间 | 本层编排者 | `analysis/curves.py` 一条命令产出每家族每基准的（有效位宽, 分数, 区间）序列 + 拐点估计 + 拐点 95% 区间；点数不足以估拐点的家族逐条打印「不可估 + 原因」 | WP1 | ≤60 CPU 分钟 | **完成**（`--panel`/`--pair`/`--all`/`--adjacent`；21 条 series 里只有 Qwen3.5-2B 能估拐点，其余记不可估，见 `RESULT.md::knee-estimable`） |
+| WP2 曲线 + 拐点 + 区间 | 本层编排者 | `analysis/curves.py` 一条命令产出每家族每基准的（有效位宽, 分数, 区间）序列 + 拐点估计 + 拐点 95% 区间；点数不足以估拐点的家族逐条打印「不可估 + 原因」 | WP1 | ≤60 CPU 分钟 | **完成**（`--panel`/`--pair`/`--all`/`--adjacent`；拐点分三档（≥4 点给自举区间、3 点给「中间点、区间宽 0」、<3 点不估），见 `RESULT.md::knee-tiers`） |
 | WP3 B1 反例裁决（plan2） | 本层编排者 | 四项各自有裁决：(T1) ✅ 只有 HumanEval+ 的差区间不含 0（`b1-heplus-only`）；(T2) ✅ 落盘完成物审计：两格围栏率相同、无 timeout、分数低的那格 sanitize 后更干净（`t2-channel-excluded`）——判分通道不能解释；(T3) ✅ 4B 同字节对方向一致但只有 MMLU 显著（`q2kxl-iq3-4b`），外加同 base 权重的 m55 exq 反向（`m55-exq-inversion`）；(T4) ✅ 两遍 40/40 逐字节相同、且与历史完成物 40/40 相同（`RESULT.md::t4-reproducible`，实测 1548 MiB / 228.7 s，并行于 a06 的 m165）。结论：主因是「比特分配/方案」而不是判分通道，但**幅度**只在 HumanEval+ 成立 | WP2 | ≤90 CPU + ≤40 GPU 分钟 | **完成** |
 | WP4 三元与极低位宽离轨（plan2 的另一半） | 本层编排者 | 逐条给「在家族曲线上/下」或「不可判」：GLM-4.7-Flash 的 TQ1_0 在家族内低 29.9 pp（`ternary-offcurve`）；2.23–2.28 比特带里 HumanEval+ 跨 40.9 pp（`lowbit-spread`）→ 原生三元模型不可判、非原生 TQ1 离轨；`Q2_0`/`PQ2_0` 加载失败**未测**（要 GPU + 更新的 llama.cpp，见 GPU 队列） | WP2 | ≤45 CPU 分钟 | **完成**（加载失败一项登记未测） |
 | WP5 12B 原生档 MMLU 异常（plan7b） | 本层编排者 | CPU 部分 ✅：+22.59 pp 的跳在 61 个科目上均匀（51 升、中位 +0.250、无全对/全错），两次历史运行的命令行逐字相同、912 题集合相同（`gemma12b-mmlu-uniform`）。GPU 部分 ✅：两次独立起服复测都是 **0.643640350877193**，与历史逐位相同（`gemma12b-mmlu-reproduced`，峰值 8220 MiB、343.9/335.7 s）⇒ **plan7b 关闭**：值稳定、22.6 pp 不是噪声。剩下的「似然通道在两文件上是否同条件」是另一件事（生成式对照），登记为未测 | WP2 | ≤45 CPU + ≤30 GPU 分钟 | **完成**（plan7b 关闭） |
@@ -73,7 +73,7 @@
 下面这条是注册表登记、仍未答完的待办（`plan7b` 已由 `RESULT.md::gemma12b-mmlu-reproduced` 答完并移出本层）；它的工作包在上表，结论进 `RESULT.md`。
 
 
-### plan2 :: 假设 B1 的剩余部分：三元/极低位宽的点不在「更多比特→更高分」的曲线上这一说法，已在家族内判掉一例（GLM-4.7-Flash 的 TQ1_0 低 29.9 pp）、并把原生三元模型判成「不可判」（同族没有更高比特参照，`RESULT.md::lowbit-spread`）；`Q2_0` 在这个构建上能加载（`RESULT.md::q20-loads`）。`PQ2_0`（ggml type 142）已判：本机运行时 `0.4.1-dev (build 4399)` 直接报 `invalid ggml type 142. should be in [0, 43)`（`RESULT.md::pq2-type142`）⇒ 是运行时版本不支持，要更新的 llama.cpp，不是模型不可用。仍开着的只剩一件：「比特分配而不是总比特数」这一机制能否在同一 base 权重上受控分离（现有证据是 `m55-exq-inversion`，不是设计好的对照）。
+### plan2 :: 假设 B1 的剩余部分：三元/极低位宽的点不在「更多比特→更高分」的曲线上这一说法，已在家族内判掉一例（GLM-4.7-Flash 的 TQ1_0 低 29.9 pp）、并把原生三元模型判成「不可判」（同族没有更高比特参照，`RESULT.md::lowbit-spread`）；`Q2_0` 在这个构建上能加载（`RESULT.md::q20-loads`）。`PQ2_0`（ggml type 142）已判：mainline `0.4.1-dev (build 4399)` 对两个 PQ2_0 文件都报 `invalid ggml type 142. should be in [0, 43)`，而 prism 的 fork `0.2.0-dev (commit 88c4bc6)` 两个都能加载并生成（`RESULT.md::pq2-type142`）⇒ 是 mainline 的类型表不支持，模型可用。仍开着的只剩一件：「比特分配而不是总比特数」这一机制能否在同一 base 权重上受控分离（现有证据是 `m55-exq-inversion`，不是设计好的对照）。
 - author: agent
 - scope: specific
 - status: provisional

@@ -183,12 +183,21 @@ def panel(cc, needle, bench_filter=None):
 
 
 def knee(points, rng, reps=2000):
-    """拐点 = 此后所有段斜率都低于峰值一半的那个位宽点。返回 (点估计, (lo, hi) 或原因字符串)。"""
+    """拐点 = 此后所有段斜率都低于峰值一半的那个位宽点。
+
+    返回 (点估计, (lo, hi) 或 None, note 或 None)：
+      * 点少于 3 个：定义上无法区分「拐点」与「端点」，不估（note 说明）；
+      * 恰好 3 个点：定义下可以成立，但拐点只能是中间点、区间宽度为 0（自举在这里没有信息），
+        所以给 note 标明这是退化估计；
+      * ≥4 个点：给参数自举的 95% 区间。
+    早先这里是「≥4 才估」的硬闸：那是一条工具策略，不是定义要求（复核 D1 指出，3 点系列的
+    中间点拐点在定义下成立却被抑制）。
+    """
     xs = np.array([p[0] for p in points], float)
     ks = np.array([p[1] for p in points], float)
     ns = np.array([p[2] for p in points], float)
-    if len(xs) < 4:
-        return None, f"只有 {len(xs)} 个位宽点（<4），不估拐点"
+    if len(xs) < 3:
+        return None, None, f"只有 {len(xs)} 个位宽点（<3），定义上无法区分拐点与端点"
 
     def est(xs, ps):
         slopes = np.diff(ps) / np.diff(xs)
@@ -204,9 +213,14 @@ def knee(points, rng, reps=2000):
     ps = ks / ns
     point = est(xs, ps)
     if point is None:
-        return None, "全程没有上升段（峰值段斜率 ≤ 0），不估拐点"
+        return None, None, "全程没有上升段（峰值段斜率 ≤ 0），不估拐点"
     if math.isnan(point):
-        return None, "没有「从它起全部走平」的点（观测范围内从未走平），不估拐点"
+        return None, None, "没有「从它起全部走平」的点（观测范围内从未走平），不估拐点"
+    if len(xs) == 3:
+        if point != float(xs[1]):
+            return None, None, (f"3 点系列的拐点落在端点上（{point:.3f}），"
+                                "那等于「一开始就走平」，不构成拐点")
+        return point, (point, point), "3 点：拐点只能是中间点，区间宽度 0（自举在这里没有信息）"
     draws = rng.binomial(ns.astype(int), np.clip(ps, 0, 1), size=(reps, len(xs))) / ns
     boots = []
     for row in draws:
@@ -214,9 +228,9 @@ def knee(points, rng, reps=2000):
         if v is not None and not math.isnan(v):
             boots.append(v)
     if len(boots) < reps * 0.5:
-        return point, f"自举有效样本 {len(boots)}/{reps} 太少，区间不可信"
+        return point, None, f"自举有效样本 {len(boots)}/{reps} 太少，区间不可信"
     lo, hi = np.percentile(boots, [2.5, 97.5])
-    return point, (float(lo), float(hi))
+    return point, (float(lo), float(hi)), None
 
 
 def fmt(x, w=7, p=4):
@@ -251,13 +265,14 @@ def show_panel(res, bench_filter=None, as_json=False):
             if b in NON_COUNT:
                 print(f"  拐点 {SHORT[b]:>7}: 不可估 — 该列 acc 是概率质量均值，不是逐题计数（i01::res26）")
                 continue
-            k, why = knee(ser, rng)
+            k, ci, note = knee(ser, rng)
             if k is None:
-                print(f"  拐点 {SHORT[b]:>7}: 不可估 — {why}")
-            elif isinstance(why, str):
-                print(f"  拐点 {SHORT[b]:>7}: {k:.3f} 比特/权重（{why}）")
+                print(f"  拐点 {SHORT[b]:>7}: 不可估 — {note}")
+            elif ci is None:
+                print(f"  拐点 {SHORT[b]:>7}: {k:.3f} 比特/权重（{note}）")
             else:
-                print(f"  拐点 {SHORT[b]:>7}: {k:.3f} 比特/权重  95% 区间 [{why[0]:.3f}, {why[1]:.3f}]")
+                tag = "  ← 退化，" + note if note else ""
+                print(f"  拐点 {SHORT[b]:>7}: {k:.3f} 比特/权重  95% 区间 [{ci[0]:.3f}, {ci[1]:.3f}]{tag}")
     for w in res["warn"]:
         print(f"[warn] {w}", file=sys.stderr)
 
@@ -314,7 +329,7 @@ def show_all(cc, min_points=2, as_json=False):
             fams.setdefault(series_key(m), set()).add(round(b, 3))
     rng = np.random.default_rng(20261020)
     out = {}
-    print(f"{'家族':<26}{'点数':>5}{'位宽范围':>20}  拐点（按基准，估不出就写原因）")
+    print(f"{'家族':<26}{'点数':>5}{'位宽范围':>20}  拐点（按基准；*=3 点退化，拐点只能是中间点、区间宽 0）")
     for key, bs in sorted(fams.items()):
         bs = sorted(bs)
         if len(bs) < min_points:
@@ -331,21 +346,33 @@ def show_all(cc, min_points=2, as_json=False):
             if bench in NON_COUNT:
                 knees[bench] = {"knee": None, "reason": "acc 是概率质量均值，不是逐题计数"}
                 continue
-            k, why = knee(ser, rng)
+            k, ci, note = knee(ser, rng)
             if k is None:
-                knees[bench] = {"knee": None, "reason": why}
-            elif isinstance(why, str):
-                knees[bench] = {"knee": k, "reason": why}
+                knees[bench] = {"knee": None, "reason": note}
+            elif ci is None:
+                knees[bench] = {"knee": k, "reason": note}
             else:
-                knees[bench] = {"knee": k, "ci": [why[0], why[1]]}
+                knees[bench] = {"knee": k, "ci": [ci[0], ci[1]], "degenerate": bool(note),
+                                **({"note": note} if note else {})}
         out[fam] = {"n_points": len(bs), "bpw": bs, "knees": knees}
         cells = []
         for b in BENCH_ORDER:
             if b not in knees:
                 continue
             v = knees[b]
-            cells.append(f"{SHORT[b]}={v['knee']:.2f}[{v['ci'][0]:.2f},{v['ci'][1]:.2f}]"
-                         if v["knee"] is not None and "ci" in v else f"{SHORT[b]}=—")
+            if v["knee"] is not None and "ci" in v:
+                short = "点少" if len(bs) < 4 else "未走平"
+                cells.append(f"{SHORT[b]}={v['knee']:.2f}[{v['ci'][0]:.2f},{v['ci'][1]:.2f}]"
+                             + ("*" if v.get("degenerate") else ""))
+            elif v["knee"] is not None:
+                cells.append(f"{SHORT[b]}={v['knee']:.2f}(无区间)")
+            else:
+                why = (v.get("reason") or "?")
+                short = ("<3 点" if why.startswith("只有") else
+                         "全程不升" if "没有上升段" in why else
+                         "未走平" if "从未走平" in why else
+                         "非伯努利" if "概率质量" in why else why[:8])
+                cells.append(f"{SHORT[b]}=—({short})")
         print(f"{fam:<26}{len(bs):>5}{f'{bs[0]:.2f}–{bs[-1]:.2f}':>20}  " + " ".join(cells))
     if as_json:
         print(json.dumps(out, ensure_ascii=False, indent=1, default=float))

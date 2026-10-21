@@ -16,6 +16,7 @@ llama.cpp。这两件事是**加载器的性质**，不是模型质量，所以�
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import socket
@@ -49,11 +50,17 @@ def peak_vram(pid):
 
 
 def main(argv):
-    gguf = argv[0] if argv else DEFAULT
-    need = NEED_MIB
-    if os.path.isfile(gguf):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("gguf", nargs="?", default=DEFAULT)
+    ap.add_argument("--server", default=SERVER, help="换一个 llama-server（例如 prism 的 fork）")
+    ap.add_argument("--ngl", type=int, default=99, help="0 = 纯 CPU，只看类型表/加载，不占显存")
+    ap.add_argument("--timeout", type=int, default=BUDGET_S)
+    a = ap.parse_args(argv)
+    gguf, server, ngl, budget = a.gguf, a.server, a.ngl, a.timeout
+    need = 0 if ngl == 0 else NEED_MIB
+    if os.path.isfile(gguf) and ngl != 0:
         need = max(NEED_MIB, int(os.path.getsize(gguf) / 2**20) + 512)   # 权重大小 + 余量
-    rec = {"gguf": gguf, "exists": os.path.isfile(gguf),
+    rec = {"gguf": gguf, "server": server, "ngl": ngl, "exists": os.path.isfile(gguf),
            "size_bytes": os.path.getsize(gguf) if os.path.isfile(gguf) else None,
            "free_mib_before": free_mib(), "need_mib": need}
     if not rec["exists"]:
@@ -63,9 +70,9 @@ def main(argv):
         rec.update(verdict=f"BLOCKED：空闲显存 {rec['free_mib_before']} < 需求 {rec['need_mib']}+1024，不是测量")
         return _save(rec, 4)
     s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
-    flags = [SERVER, "-m", gguf, "--port", str(port), "--host", "127.0.0.1",
-             "-c", "512", "-np", "1", "-ngl", "99"]
-    ver = subprocess.run([SERVER, "--version"], capture_output=True, text=True)
+    flags = [server, "-m", gguf, "--port", str(port), "--host", "127.0.0.1",
+             "-c", "512", "-np", "1", "-ngl", str(ngl)]
+    ver = subprocess.run([server, "--version"], capture_output=True, text=True)
     lines = [l for l in (ver.stdout + ver.stderr).split("\n") if l.strip()]
     rec["binary"] = lines[0] if lines else "（llama-server --version 无输出）"
     rec["server_flags"] = " ".join(flags[1:])
@@ -74,7 +81,7 @@ def main(argv):
     with open(logp, "w") as fh:
         proc = subprocess.Popen(flags, stdout=fh, stderr=fh)
         ok = False
-        while time.time() - t0 < BUDGET_S:
+        while time.time() - t0 < budget:
             if proc.poll() is not None:
                 break
             try:
@@ -111,7 +118,7 @@ def main(argv):
             tail = subprocess.run(["tail", "-25", logp], capture_output=True, text=True).stdout.split("\n")
             rec["stderr_tail"] = [l for l in tail if l.strip()][-12:]
             rec["verdict"] = ("加载失败：见 stderr_tail（原文）" if proc.poll() is not None
-                              else f"{BUDGET_S}s 内没起来：见 stderr_tail")
+                              else f"{budget}s 内没起来：见 stderr_tail")
         proc.terminate()
         try:
             proc.wait(timeout=20)
@@ -130,7 +137,9 @@ def _save(rec, code):
         except ValueError:
             pass
     data.setdefault("results", [])
-    data["results"] = [r for r in data["results"] if r.get("gguf") != rec["gguf"]] + [rec]
+    key = (rec["gguf"], rec.get("server"))
+    data["results"] = [r for r in data["results"]
+                       if (r.get("gguf"), r.get("server", SERVER)) != key] + [rec]
     data["_note"] = ("加载器性质测试：Q2_0 / PQ2_0(ggml type 142) 能不能被当前 llama.cpp 读。"
                      "小文件按并发例外（≤4 GB / ≤3 分钟）跑，27B 的 PQ2_0 要等大段落锁。")
     json.dump(data, open(OUT, "w"), ensure_ascii=False, indent=1)

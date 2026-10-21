@@ -6,9 +6,9 @@
 
 ## 证据绑定（读这一层之前先看这里）
 
-本层的全部数字在 `experiments.sqlite` 的多个快照上都复核通过（`run_all.py` 38/38 条预期成立），最近两次抽取的 sha256 前缀是 `8ddc213c…` 与 `52192032…`；库被 `a04`/`a06` 等子项目并发改写、现在又叠加 `i02` 的 py 取代与 `n_items` 回填，所以**哈希只作快照，判定一律以 `run_all.py` 为准**；
+本层的全部数字在 `experiments.sqlite` 的多个快照上都复核通过（`run_all.py` 全绿），最近两次抽取的 sha256 前缀是 `8ddc213c…` 与 `52192032…`；库被 `a04`/`a06` 等子项目并发改写、现在又叠加 `i02` 的 py 取代与 `n_items` 回填，所以**哈希只作快照，判定一律以 `run_all.py` 为准**；
 本层凡是引用库里分数的行（`qw2b-panel`、`b1-heplus-only`、`q2kxl-iq3-4b`、`gemma12b-mmlu-jump`、`adjacent-majority`、`ternary-offcurve`、`lowbit-spread`、`m55-exq-inversion`）都是**当次抽取的快照值**：行数与分数可能随别人的回填而变，变了 `run_all.py` 会先红，红了就重取。
-`experiments.sqlite` 由多个子项目并发写入，所以**任何一条事实是否仍然成立，用 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"` 判定**：38 条预期全成立时上面的事实全部复核通过；某条不成立时先看 `n_items` 有没有变（`n_items` 变了区间就会变），再判是不是真的变了。
+`experiments.sqlite` 由多个子项目并发写入，所以**任何一条事实是否仍然成立，用 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"` 判定**（条数以它自己打印的 `SUMMARY` 为准，不在此处写死数字）：全成立时上面的事实全部复核通过；某条不成立时先看 `n_items` 有没有变（`n_items` 变了区间就会变），再判是不是真的变了。
 
 复算装置：`analysis/curves.py`（曲线 + 拐点 + 区间）与 `analysis/run_all.py`（全部检查，退出码即结论）。本层只读 `experiments.sqlite`，不写库、不改 `report.html`。
 
@@ -96,7 +96,7 @@
 - 说明：这是 plan2 的 E1 裁决。报告第一节原来把「HumanEval+ 0.372→0.238、GSM8K 0.52→0.44、MultiPL-E 0.189→0.092」并列成同一个掉点，但只有 HumanEval+ 这一列在二项区间下分得开；另两列是「测不出」而不是「测出为负」。TruthfulQA 那一列不套区间：`acc` 是概率质量均值（`i01::res26`），不是逐题通过数。
 - 会推翻它：同一对文件在同样协议下重跑出现与上表不同的题数（T4 的复现负控），或把 n 提到能分开这 8/10 题的量级（GSM8K/IFEval 各 100 题，要分开 8 个百分点大约需要每列 500+ 题）。
 
-### q2kxl-iq3-4b :: 同门的 Qwen3.5-4B 在几乎同字节的一对文件上（UD-IQ3_XXS 3.707 vs UD-Q2_K_XL 3.692，Δbpw = +0.016）方向与 2B 一致——IQ3_XXS 每一列都不低于 Q2_K_XL——但只有 MMLU 分得开（+0.0592，[+0.0170, +0.1011]，54 题）；HumanEval+ +0.0061 [−0.0936, +0.1057]、MBPP+ +0.0106 [−0.0596, +0.0807]、ARC-c +0.0500 [−0.0871, +0.1845]、IFEval +0.0900 [−0.0338, +0.2102] 都跨 0，TruthfulQA −0.0034（非伯努利）。
+### q2kxl-iq3-4b :: 同门的 Qwen3.5-4B 在几乎同字节的一对文件上（UD-IQ3_XXS 3.707 vs UD-Q2_K_XL 3.692，Δbpw = +0.016）方向与 2B 一致——**除 TruthfulQA（−0.0034，非伯努利列、不套区间）外每一列 IQ3_XXS 都不低于 Q2_K_XL**——但只有 MMLU 分得开（+0.0592，[+0.0170, +0.1011]，54 题）；HumanEval+ +0.0061 [−0.0936, +0.1057]、MBPP+ +0.0106 [−0.0596, +0.0807]、ARC-c +0.0500 [−0.0871, +0.1845]、IFEval +0.0900 [−0.0338, +0.2102] 都跨 0。
 - author: measurement
 - from: result.b1-heplus-only
 - scope: specific
@@ -117,16 +117,19 @@
 - repro: 本机有 `.wrapup/mres` 时 `python3 "docs/subprojects/a01-量化位宽/analysis/channel_audit.py"`；干净 clone 里用入库快照 `analysis/fixtures/mres_snapshot.json`（来源逐文件 sha256 在 `_provenance.sources`），判定入口 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"`，漂移校验 `python3 "docs/subprojects/a01-量化位宽/analysis/make_fixtures.py" --check`
 - 会推翻它：出现一格大比例的 timeout、或 sanitize 把某一格的完成物系统性判坏（例如残留围栏数远大于分差题数），或 raw（未 sanitize）路径下的分数排序与入库值不同。
 
-### knee-estimable :: 21 条「家族 × 供应商方案大类」series 里只有 Qwen3.5-2B（7 个位宽点）能估出拐点：HumanEval+ 4.928 [3.655, 4.928]、MBPP+ 3.655 [3.655, 4.928]、MMLU 3.961 [3.655, 4.109]、ARC-c 3.655 [3.655, 5.696]、GSM8K 3.961 [3.655, 4.928]、IFEval 3.961 [3.655, 4.928]（比特/权重）；TruthfulQA 不可估（非伯努利列）；其余 20 条 series 只有 2–3 个位宽点，拐点不可估。
+### knee-tiers :: 拐点分三档，只有一档是真正的估计：
+- **≥4 个位宽点**（只有 Qwen3.5-2B 的 7 点系列）：6 个基准全部给出拐点 + 参数自举 95% 区间——HumanEval+ 4.928 [3.655, 4.928]、MBPP+ 3.655 [3.655, 4.928]、MMLU 3.961 [3.655, 4.109]、ARC-c 3.655 [3.655, 5.696]、GSM8K 3.961 [3.655, 4.928]、IFEval 3.961 [3.655, 4.928]（比特/权重）。
+- **恰好 3 个点**：拐点在定义下可以成立，但**只能是中间点、区间宽度为 0**（自举没有信息）。全库 44 个「3 点系列 × 基准」里有 **30 个**成立，例如 GLM-4.7-Flash HumanEval+ 3.176（= 中间点 UD-Q2_K_XL）、Qwen3.5-4B HumanEval+ 3.707（= 中间点 UD-IQ3_XXS）。早先这里写成「其余 20 条 series 拐点不可估」，那是把**工具的 ≥4 点策略**说成了**定义要求**（复核 D1），工具现在按三档分别报。
+- **少于 3 个点**：定义上无法区分拐点与端点，不估。
 - author: measurement
 - from: result.qw2b-panel
 - scope: general
 - status: current
 - kind: measured
-- evidence: `analysis/curves.py` 的 `--all` 输出；series 按 `mktables.scheme_class` 切开，同一条曲线绝不混 UD 动态与原生 K
+- evidence: `analysis/curves.py` 的 `--all` 输出（`*` = 3 点退化；`—` 后面直接写不可估的原因）；series 按 `mktables.scheme_class` 切开，同一条曲线绝不混 UD 动态与原生 K
 - repro: `python3 "docs/subprojects/a01-量化位宽/analysis/curves.py" --all`
-- 说明：轴 AC 的第一条因此只能部分满足——「每家族一条曲线 + 拐点 + 区间」对 Qwen3.5-2B 成立，对其余 series 的正确结论是「不可估，缺 ≥4 个位宽点」。拐点分辨率等于阶梯间距，所以区间宽度普遍只有一两档。
-- 会推翻它：给某家族补到 ≥4 个位宽点后拐点落在这个区间之外。
+- 说明：轴 AC 的第一条因此分档满足——带区间的拐点只有 Qwen3.5-2B 一条系列有；3 点系列给「退化拐点（中间点）」，2 点系列不估。拐点分辨率等于阶梯间距，所以区间宽度普遍只有一两档。
+- 会推翻它：给某家族补到 ≥4 个位宽点后拐点落在 3 点退化值之外；或 30/44 这个计数在别的定义（最大曲率 / 分段线性断点）下大幅变化。
 
 ### adjacent-majority :: 相邻位宽档对的分数变化在多数情况下为正，但每一列都有反例：HumanEval+ 22 升 / 9 降 / 2 平、MBPP+ 24/7/1、MMLU 29/4/0、ARC-c 17/8/5、GSM8K 24/5/1、IFEval 26/5/2（共 33 对相邻档）；每 +1 比特/权重的分数变化中位数为 HumanEval+ 0.0987、GSM8K 0.0775、IFEval 0.0749、MBPP+ 0.0543、MMLU 0.0499、ARC-c 0.0273（TruthfulQA 0.0072，非伯努利仅供参考）。
 - author: measurement
@@ -147,7 +150,7 @@
 - kind: measured
 - evidence: `analysis/t4_result.json`（`identical_p1_p2=40`、`identical_to_history=40`、`n_slots=1`、`n_ctx=8192`、`elapsed_s=228.7`、`parallel_with` 记了并行的两个作业）；`peak_vram_mib=1548` 与 `elapsed_s=228.7` 都在同一个 JSON 里（该次运行的脚本只打印未写入，事后按 stdout 补录并注明来源）；落盘完成物在 `.wrapup/mres/a01-t4/t4-p{1,2}.raw.jsonl`（本地产物，不入库，重跑即重生成）
 - repro: `setsid nohup python3 "docs/subprojects/a01-量化位宽/analysis/gpu_t4.py" > .wrapup/a01_t4.out 2>&1 &`（自己等显存、自己断言 `n_slots/n_ctx`、跑完写 `analysis/t4_result.json`）
-- 覆盖边界：只重跑了这 40 题，不是全 164 题；因此本条证明的是「这条生成路线在这个文件上逐字节确定」，而不是「39/164 这个数在任意重复下不变」——后者由 `i01::res25` 的同路线证据支持（chat 贪心 `-np 1` 两次逐字节相同）。
+- 覆盖边界：**只重跑了低分格（`UD-Q2_K_XL`）这 40 题，高分臂（`UD-IQ3_XXS`）没有重跑**，也不是全 164 题。所以本条证明的是「低分格在这条生成路线上逐字节确定」，加上它 40/40 等于历史落盘值；「高分臂的值同样稳定」由 `i01::res25` 的同路线证据（chat 贪心 `-np 1` 两次逐字节相同）支持，不是本条测出来的。
 - 资源实测与例外：峰值显存 **1548 MiB**（≤4 GB 条件成立），两遍共 **228.7 s = 3.8 GPU 分钟**——**超了 registry 并发例外的 3 分钟上限 0.8 分钟**；并行于 a06 的 `m165-vendor`（1752 MiB）与 i02 的 vendor 探针（3118 MiB），空闲显存全程 ≥17.4 GB，未影响对方。教训：这类臂按 **2.7 s/题**（`-np 1` 每题重新 prefill）而不是面板历史的 1.33 s/题估成本。
 - 会推翻它：同路线再跑出现任一题翻转；或发现历史 `m64` 完成物与本臂不是同一提示集（那样 40/40 相同反而是提示集写死的证据）。
 
@@ -188,7 +191,7 @@
 
 ## 四、12B 原生档 MMLU（plan7b，WP5 的 CPU 部分）
 
-### gemma12b-mmlu-uniform :: gemma-4-12B 的 MMLU 从 UD-Q3_K_XL（4.046）到原生 UD-Q4_K_XL（4.949）跳 +22.59 pp（0.4178 → 0.6436，912 题），而同期 HumanEval+ 动 0.0000、MBPP+ +0.0106、IFEval +0.0300；这个跳在 61 个科目上是均匀的——51 个科目上升、中位科目差 +0.250、没有全对或全错的科目。
+### gemma12b-mmlu-uniform :: gemma-4-12B 的 MMLU 从 UD-Q3_K_XL（4.046）到原生 UD-Q4_K_XL（4.949）跳 +22.59 pp（0.4178 → 0.6436，912 题），而同期 HumanEval+ 动 0.0000、MBPP+ +0.0106、IFEval +0.0300；这个跳在 61 个科目上**方向一致但幅度不均**：51 个科目上升、6 个下降、4 个持平，中位科目差 +0.2500、均值 +0.2263、差域 [−0.2500, +0.6875]，没有全对（1.0）或全错（0.0）的科目。
 - author: measurement
 - from: result.gemma12b-mmlu-jump
 - scope: specific
@@ -199,13 +202,13 @@
 - 说明：均匀平移说明不是少数科目坏了，而是整体判分条件变了；且库里这个文件只有**一次**测量，没有重复可比。剩下的两个候选是「原生 Q4 档这个文件真的更好」与「MMLU 这一列的判分条件在两个文件上不同（模板/分词/似然归一）」——后者需要一次同 shim 的复测或一次生成式 MMLU 对照才能判，见 `PLAN.md` 的 GPU 队列。
 - 会推翻它：同 shim 复测得到与 0.6436 差 0.05 以上的值。
 
-### clean-clone-gate :: 干净 clone 里本层的验收装置是绿的：`git clone` 到 `/tmp/a01clone`（HEAD `b6b85a1`）后 `run_all.py` **exit 0、43 条预期全成立**，`docs/check_docs.py` PASS；`.wrapup/mres` 的逐题产物不入库，所以依赖它们的数字改从入库快照 `analysis/fixtures/mres_snapshot.json`（14 组通道数字 + 2 组 MMLU 科目表，`_provenance.sources` 里 44 个来源文件的 sha256）复算。
+### clean-clone-gate :: 干净 clone 里本层的验收装置是绿的：`git clone` 当前 HEAD 后 `run_all.py` **exit 0、全部预期成立**（条数见它打印的 `SUMMARY`；干净 clone 会少一条，那一条是与 `.wrapup/mres` 现算的交叉校验，按设计跳过），`docs/check_docs.py` PASS；`.wrapup/mres` 的逐题产物不入库，所以依赖它们的数字改从入库快照 `analysis/fixtures/mres_snapshot.json`（14 组通道数字 + 2 组 MMLU 科目表 + 2 次 WP5 复测，`_provenance.sources` 里 46 个来源文件的 sha256）复算。
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
-- evidence: clone 输出 `SUMMARY: 43 条预期，0 条不成立`（工作树里是 44 条——多出的 `fixture-fresh` 是与 `.wrapup/mres` 现算的交叉校验，clone 里正确跳过并打印一行 note）；`make_fixtures.py --check` 在 clone 里 **exit 2 BLOCKED**（没有产物就无法校验漂移，这是有意不判通过）
-- repro: `git clone -q file://$PWD /tmp/a01clone && cd /tmp/a01clone && python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"; echo $?`
+- evidence: clone 输出 `SUMMARY: … 0 条不成立`（工作树比 clone 多一条：`fixture-fresh` 是与 `.wrapup/mres` 现算的交叉校验，clone 里正确跳过并打印一行 note；两边的条数以各自 `SUMMARY` 为准）；`make_fixtures.py --check` 在 clone 里 **exit 2 BLOCKED**（没有产物就无法校验漂移，这是有意不判通过）
+- repro: `rm -rf /tmp/x && git clone -q file://$PWD /tmp/x && cd /tmp/x && python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"; echo $?`
 - 负控（证明装置不是空转）：① 删掉快照里 `channel_audit["m64-qwen-2b-q2kxl/humaneval"]` 一条 → `run_all.py --fixture <副本>` 两条变红、**exit 1**；② 把 `m63…/syntax_err_san` 从 3 改成 0 → 值断言变红、exit 1；③ `make_fixtures.py --check --fixture <改坏的副本>` 报 DRIFT、exit 1；④ 同一命令对入库快照 OK、exit 0。
 - 会推翻它：clone 里 `run_all.py` 非 0；或上述任一条负控不再变红。
 
@@ -230,7 +233,7 @@
 - repro: `python3 "docs/subprojects/a01-量化位宽/analysis/type142_probe.py"`（默认 1.7B；传 27B 路径就是下一条）
 - 会推翻它：同一个 1.7B 文件在干净构建的 llama.cpp 上报 type 错误。
 
-### pq2-type142 :: `PQ2_0`（ggml type 142）在本机运行时（`version: 0.4.1-dev (build 4399, commit 4bc272fd72)`）**加载不了**，原因是它要求的能力超出了这个构建支持的张量类型范围——原文 `tensor 'output.weight' has invalid ggml type 142. should be in [0, 43)`（`Ternary-Bonsai-27B-PQ2_0.gguf`，6.67 GiB，2.1 s 即失败、峰值 0 MiB、空闲显存前后不变 19150→19164）；这是**当前运行时版本不支持**，不是「模型不可用」。
+### pq2-type142 :: `PQ2_0`（ggml type 142）的结论是「mainline 不支持、模型可用」：本机 mainline `llama-server 0.4.1-dev (build 4399, commit 4bc272fd72)` 对 `Ternary-Bonsai-27B-PQ2_0.gguf`（6.67 GiB）与 `Bonsai-2-27B-PQ2_0-CRACK.gguf` **两个文件都报** `tensor 'output.weight' has invalid ggml type 142. should be in [0, 43)`（2.1 s、峰值 0 MiB、没进显存分配 ⇒ 类型级、不是文件级），而 prism 的 fork `llama-server 0.2.0-dev (build 1, commit 88c4bc6)` **两个文件都加载并生成**（14.1 s、`n_slots=1 / n_ctx=512`、峰值 572 / 570 MiB）——所以 `PQ2_0` 模型本身可用，缺的是 mainline 的类型表（`/home/z/llama-bonsai/ggml/include/ggml.h` 里 `GGML_TYPE_PQ2_0 = 142`，type_traits 尺寸到 144）。
 - author: measurement
 - from: result.q20-loads
 - scope: specific
@@ -287,9 +290,9 @@
 
 ## 六、分析（`kind: analysis`，不覆盖任何数字）
 
-### an1 :: 量化位宽该选多大，取决于该家族自己的曲线拐点；但按当前数据只有 Qwen3.5-2B 能估出拐点（3.66–4.93 比特/权重，按基准不同），其余 20 条 series 只有 2–3 个位宽点、拐点不可估，所以「多数家族的主要抬升出现在 4–5 比特/权重」这句话目前没有逐家族的拐点估计支撑，它只来自把各家族的位宽点放在一起看的整体印象。
+### an1 :: 量化位宽该选多大，取决于该家族自己的曲线拐点；但按当前数据只有 Qwen3.5-2B 有带区间的拐点（3.66–4.93 比特/权重，按基准不同），3 点系列只能给「中间点」这种退化拐点（30/44 个系列×基准成立），2 点系列不估，所以「多数家族的主要抬升出现在 4–5 比特/权重」这句话目前**没有逐家族的、带区间的拐点估计支撑**——它只来自把各家族的位宽点放在一起看的整体印象。
 - author: agent
-- from: result.knee-estimable, result.qw2b-panel
+- from: result.knee-tiers, result.qw2b-panel
 - scope: general
 - status: provisional
 - kind: analysis
