@@ -71,6 +71,18 @@
 "n_params": 8467856832
 }
 },
+"/home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf": {
+"mtime": 1792517391,
+"size": 4795968864,
+"struct": {
+"active_params": 1685667264,
+"arch": "lfm2moe",
+"expert_count": 32,
+"expert_params": 7751073792,
+"expert_used": 4,
+"n_params": 8467856832
+}
+},
 "/home/z/hf/LFM2.5-8B-A1B-m55-Q3_K_M.gguf": {
 "mtime": 1791394943,
 "size": 4108397920,
