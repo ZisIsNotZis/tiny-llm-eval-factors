@@ -1,0 +1,734 @@
+{
+ "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf": {
+  "bpw_data": 4.501779437992084,
+  "bpw_file": 4.512410553217259,
+  "classes": {
+   "attn": {
+    "bits": 4.5,
+    "bytes": 1353646080,
+    "params": 2406481920
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 566231040,
+    "params": 1006632960
+   },
+   "ffn-dense": {
+    "bits": 4.5,
+    "bytes": 4777574400,
+    "params": 8493465600
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 3063808,
+    "params": 765952
+   },
+   "other": {
+    "bits": 67.36842105263158,
+    "bytes": 2560,
+    "params": 304
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 15360,
+    "params": 3840
+   }
+  },
+  "n_bytes": 6716356800,
+  "n_params": 11907350576,
+  "path": "/home/z/hf/models--unsloth--gemma-4-12B-it-qat-GGUF/snapshots/980b060c40a8539ac159e0501a3e0f66a6365af3/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf"
+ },
+ "gemma-4-12b-it-UD-Q2_K_XL.gguf": {
+  "bpw_data": 3.1211615839133753,
+  "bpw_file": 3.1317931291250494,
+  "classes": {
+   "attn": {
+    "bits": 3.0470281862745097,
+    "bytes": 916577280,
+    "params": 2406481920
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 566231040,
+    "params": 1006632960
+   },
+   "ffn-dense": {
+    "bits": 2.9761284722222223,
+    "bytes": 3159705600,
+    "params": 8493465600
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 3063808,
+    "params": 765952
+   },
+   "other": {
+    "bits": 67.36842105263158,
+    "bytes": 2560,
+    "params": 304
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 15360,
+    "params": 3840
+   }
+  },
+  "n_bytes": 4661419840,
+  "n_params": 11907350576,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf"
+ },
+ "gemma-4-12b-it-UD-Q3_K_XL.gguf": {
+  "bpw_data": 4.035732550014743,
+  "bpw_file": 4.0463640952264175,
+  "classes": {
+   "attn": {
+    "bits": 4.1333231209150325,
+    "bytes": 1243345920,
+    "params": 2406481920
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 566231040,
+    "params": 1006632960
+   },
+   "ffn-dense": {
+    "bits": 3.9505208333333335,
+    "bytes": 4194201600,
+    "params": 8493465600
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 3063808,
+    "params": 765952
+   },
+   "other": {
+    "bits": 67.36842105263158,
+    "bytes": 2560,
+    "params": 304
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 15360,
+    "params": 3840
+   }
+  },
+  "n_bytes": 6022684480,
+  "n_params": 11907350576,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf"
+ },
+ "gemma-4-12b-it-UD-Q4_K_XL.gguf": {
+  "bpw_data": 4.93852876579654,
+  "bpw_file": 4.949160311008215,
+  "classes": {
+   "attn": {
+    "bits": 4.813521241830065,
+    "bytes": 1447956480,
+    "params": 2406481920
+   },
+   "embed": {
+    "bits": 5.5,
+    "bytes": 692060160,
+    "params": 1006632960
+   },
+   "ffn-dense": {
+    "bits": 4.904947916666667,
+    "bytes": 5207500800,
+    "params": 8493465600
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 3063808,
+    "params": 765952
+   },
+   "other": {
+    "bits": 67.36842105263158,
+    "bytes": 2560,
+    "params": 304
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 15360,
+    "params": 3840
+   }
+  },
+  "n_bytes": 7366423360,
+  "n_params": 11907350576,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf"
+ },
+ "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf": {
+  "bpw_data": 3.3388183045303816,
+  "bpw_file": 3.343835411625852,
+  "classes": {
+   "attn": {
+    "bits": 5.838961038961039,
+    "bytes": 810287104,
+    "params": 1110179840
+   },
+   "embed": {
+    "bits": 5.5,
+    "bytes": 507510784,
+    "params": 738197504
+   },
+   "ffn-dense": {
+    "bits": 6.523611111111111,
+    "bytes": 436482816,
+    "params": 535265280
+   },
+   "ffn-expert": {
+    "bits": 3.0583381996111574,
+    "bytes": 8730786816,
+    "params": 22837989120
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2437120,
+    "params": 609280
+   },
+   "other": {
+    "bits": 55.49650349650349,
+    "bytes": 1984,
+    "params": 286
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 11264,
+    "params": 2816
+   },
+   "router": {
+    "bits": 32.0,
+    "bytes": 43591680,
+    "params": 10897920
+   }
+  },
+  "n_bytes": 10546934240,
+  "n_params": 25233142046,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf"
+ },
+ "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf": {
+  "bpw_data": 4.087150272605412,
+  "bpw_file": 4.092167379700883,
+  "classes": {
+   "attn": {
+    "bits": 8.5,
+    "bytes": 1179566080,
+    "params": 1110179840
+   },
+   "embed": {
+    "bits": 8.5,
+    "bytes": 784334848,
+    "params": 738197504
+   },
+   "ffn-dense": {
+    "bits": 8.5,
+    "bytes": 568719360,
+    "params": 535265280
+   },
+   "ffn-expert": {
+    "bits": 3.612504773099743,
+    "bytes": 10312793088,
+    "params": 22837989120
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2437120,
+    "params": 609280
+   },
+   "other": {
+    "bits": 55.49650349650349,
+    "bytes": 1984,
+    "params": 286
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 11264,
+    "params": 2816
+   },
+   "router": {
+    "bits": 32.0,
+    "bytes": 43591680,
+    "params": 10897920
+   }
+  },
+  "n_bytes": 12907280096,
+  "n_params": 25233142046,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf"
+ },
+ "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf": {
+  "bpw_data": 4.5125487988940405,
+  "bpw_file": 4.517565692936376,
+  "classes": {
+   "attn": {
+    "bits": 4.5,
+    "bytes": 624476160,
+    "params": 1110179840
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 415236096,
+    "params": 738197504
+   },
+   "ffn-dense": {
+    "bits": 4.5,
+    "bytes": 301086720,
+    "params": 535265280
+   },
+   "ffn-expert": {
+    "bits": 4.5000046238746965,
+    "bytes": 12846382080,
+    "params": 22837989120
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2437120,
+    "params": 609280
+   },
+   "other": {
+    "bits": 55.49650349650349,
+    "bytes": 1984,
+    "params": 286
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 11264,
+    "params": 2816
+   },
+   "router": {
+    "bits": 32.0,
+    "bytes": 43591680,
+    "params": 10897920
+   }
+  },
+  "n_bytes": 14249047104,
+  "n_params": 25233142046,
+  "path": "/home/z/hf/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf"
+ },
+ "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf": {
+  "bpw_data": 4.501193496352491,
+  "bpw_file": 4.505319847655534,
+  "classes": {
+   "attn": {
+    "bits": 4.5,
+    "bytes": 4768727040,
+    "params": 8477736960
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 792723456,
+    "params": 1409286144
+   },
+   "ffn-dense": {
+    "bits": 4.5,
+    "bytes": 11705057280,
+    "params": 20808990720
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 5304320,
+    "params": 1326080
+   },
+   "other": {
+    "bits": 74.53164556962025,
+    "bytes": 2944,
+    "params": 316
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 21504,
+    "params": 5376
+   }
+  },
+  "n_bytes": 17287670048,
+  "n_params": 30697345596,
+  "path": "/home/z/hf/models--unsloth--gemma-4-31B-it-qat-GGUF/snapshots/43cc1aeb31adf47ec06a854507ce552cd9862e6f/gemma-4-31B-it-qat-UD-Q4_K_XL.gguf"
+ },
+ "gemma-4-E2B-it-UD-Q2_K_XL.gguf": {
+  "bpw_data": 4.110288376590949,
+  "bpw_file": 4.137520128196009,
+  "classes": {
+   "attn": {
+    "bits": 3.2023809523809526,
+    "bytes": 118996992,
+    "params": 297271296
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 226492416,
+    "params": 402653184
+   },
+   "ffn-dense": {
+    "bits": 2.9916666666666667,
+    "bytes": 582303744,
+    "params": 1557135360
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 1162240,
+    "params": 290560
+   },
+   "other": {
+    "bits": 4.88292404817837,
+    "bytes": 1458833504,
+    "params": 2390098211
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 6144,
+    "params": 1536
+   }
+  },
+  "n_bytes": 2403614816,
+  "n_params": 4647450147,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf"
+ },
+ "gemma-4-E2B-it-UD-Q3_K_XL.gguf": {
+  "bpw_data": 5.005691072773976,
+  "bpw_file": 5.0329228243790345,
+  "classes": {
+   "attn": {
+    "bits": 4.182539682539683,
+    "bytes": 155418624,
+    "params": 297271296
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 226492416,
+    "params": 402653184
+   },
+   "ffn-dense": {
+    "bits": 3.9685606060606062,
+    "bytes": 772448256,
+    "params": 1557135360
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 1162240,
+    "params": 290560
+   },
+   "other": {
+    "bits": 5.865649456360352,
+    "bytes": 1752434784,
+    "params": 2390098211
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 6144,
+    "params": 1536
+   }
+  },
+  "n_bytes": 2923782240,
+  "n_params": 4647450147,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf"
+ },
+ "gemma-4-E2B-it-UD-Q4_K_XL.gguf": {
+  "bpw_data": 5.454478236063153,
+  "bpw_file": 5.481709987668212,
+  "classes": {
+   "attn": {
+    "bits": 4.79265873015873,
+    "bytes": 178089984,
+    "params": 297271296
+   },
+   "embed": {
+    "bits": 5.5,
+    "bytes": 276824064,
+    "params": 402653184
+   },
+   "ffn-dense": {
+    "bits": 4.932954545454545,
+    "bytes": 960159744,
+    "params": 1557135360
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 1162240,
+    "params": 290560
+   },
+   "other": {
+    "bits": 5.865649456360352,
+    "bytes": 1752434784,
+    "params": 2390098211
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 6144,
+    "params": 1536
+   }
+  },
+  "n_bytes": 3184496736,
+  "n_params": 4647450147,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q4_K_XL.gguf"
+ },
+ "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf": {
+  "bpw_data": 3.7512602625022406,
+  "bpw_file": 3.778595905687395,
+  "classes": {
+   "attn": {
+    "bits": 4.5,
+    "bytes": 156598272,
+    "params": 278396928
+   },
+   "embed": {
+    "bits": 2.0625,
+    "bytes": 103809024,
+    "params": 402653184
+   },
+   "ffn-dense": {
+    "bits": 2.727272727272727,
+    "bytes": 530841600,
+    "params": 1557135360
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 1137664,
+    "params": 284416
+   },
+   "other": {
+    "bits": 4.612290683815754,
+    "bytes": 1377978464,
+    "params": 2390098211
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 6144,
+    "params": 1536
+   }
+  },
+  "n_bytes": 2186186784,
+  "n_params": 4628569635,
+  "path": "/home/z/hf/gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf"
+ },
+ "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf": {
+  "bpw_data": 4.501702366631889,
+  "bpw_file": 4.529038009817044,
+  "classes": {
+   "attn": {
+    "bits": 4.5,
+    "bytes": 156598272,
+    "params": 278396928
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 226492416,
+    "params": 402653184
+   },
+   "ffn-dense": {
+    "bits": 4.5,
+    "bytes": 875888640,
+    "params": 1557135360
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 1137664,
+    "params": 284416
+   },
+   "other": {
+    "bits": 4.500006628388711,
+    "bytes": 1344432224,
+    "params": 2390098211
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 6144,
+    "params": 1536
+   }
+  },
+  "n_bytes": 2620370976,
+  "n_params": 4628569635,
+  "path": "/home/z/hf/gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf"
+ },
+ "gemma-4-E4B-it-UD-Q2_K_XL.gguf": {
+  "bpw_data": 3.9814401827626678,
+  "bpw_file": 3.998281476865718,
+  "classes": {
+   "attn": {
+    "bits": 3.333673469387755,
+    "bytes": 267632640,
+    "params": 642252800
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 377487360,
+    "params": 671088640
+   },
+   "ffn-dense": {
+    "bits": 2.9875992063492065,
+    "bytes": 1233510400,
+    "params": 3303014400
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2251776,
+    "params": 562944
+   },
+   "other": {
+    "bits": 5.130935794061707,
+    "bytes": 1860700480,
+    "params": 2901147946
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 10240,
+    "params": 2560
+   }
+  },
+  "n_bytes": 3757419648,
+  "n_params": 7518069290,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf"
+ },
+ "gemma-4-E4B-it-UD-Q3_K_XL.gguf": {
+  "bpw_data": 4.8657321720428035,
+  "bpw_file": 4.882573466145854,
+  "classes": {
+   "attn": {
+    "bits": 4.311734693877551,
+    "bytes": 346152960,
+    "params": 642252800
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 377487360,
+    "params": 671088640
+   },
+   "ffn-dense": {
+    "bits": 3.956845238095238,
+    "bytes": 1633689600,
+    "params": 3303014400
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2251776,
+    "params": 562944
+   },
+   "other": {
+    "bits": 6.1024726961649405,
+    "bytes": 2213022016,
+    "params": 2901147946
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 10240,
+    "params": 2560
+   }
+  },
+  "n_bytes": 4588440704,
+  "n_params": 7518069290,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf"
+ },
+ "gemma-4-E4B-it-UD-Q4_K_XL.gguf": {
+  "bpw_data": 5.438077245494501,
+  "bpw_file": 5.454918539597552,
+  "classes": {
+   "attn": {
+    "bits": 4.961479591836735,
+    "bytes": 398315520,
+    "params": 642252800
+   },
+   "embed": {
+    "bits": 5.5,
+    "bytes": 461373440,
+    "params": 671088640
+   },
+   "ffn-dense": {
+    "bits": 4.930059523809524,
+    "bytes": 2035507200,
+    "params": 3303014400
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2251776,
+    "params": 562944
+   },
+   "other": {
+    "bits": 6.1024726961649405,
+    "bytes": 2213022016,
+    "params": 2901147946
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 10240,
+    "params": 2560
+   }
+  },
+  "n_bytes": 5126306944,
+  "n_params": 7518069290,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q4_K_XL.gguf"
+ },
+ "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf": {
+  "bpw_data": 3.43422578378623,
+  "bpw_file": 3.4511872362944835,
+  "classes": {
+   "attn": {
+    "bits": 4.5,
+    "bytes": 330301440,
+    "params": 587202560
+   },
+   "embed": {
+    "bits": 2.0625,
+    "bytes": 173015040,
+    "params": 671088640
+   },
+   "ffn-dense": {
+    "bits": 4.5,
+    "bytes": 1857945600,
+    "params": 3303014400
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2230272,
+    "params": 557568
+   },
+   "other": {
+    "bits": 2.3168943373837854,
+    "bytes": 840206656,
+    "params": 2901147946
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 10240,
+    "params": 2560
+   }
+  },
+  "n_bytes": 3219532192,
+  "n_params": 7463013674,
+  "path": "/home/z/hf/gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf"
+ },
+ "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf": {
+  "bpw_data": 4.502066339909536,
+  "bpw_file": 4.51902779241779,
+  "classes": {
+   "attn": {
+    "bits": 4.5,
+    "bytes": 330301440,
+    "params": 587202560
+   },
+   "embed": {
+    "bits": 4.5,
+    "bytes": 377487360,
+    "params": 671088640
+   },
+   "ffn-dense": {
+    "bits": 4.5,
+    "bytes": 1857945600,
+    "params": 3303014400
+   },
+   "norm": {
+    "bits": 32.0,
+    "bytes": 2230272,
+    "params": 557568
+   },
+   "other": {
+    "bits": 4.500006067598181,
+    "bytes": 1631897920,
+    "params": 2901147946
+   },
+   "output": {
+    "bits": 32.0,
+    "bytes": 10240,
+    "params": 2560
+   }
+  },
+  "n_bytes": 4215695776,
+  "n_params": 7463013674,
+  "path": "/home/z/hf/gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf"
+ }
+}

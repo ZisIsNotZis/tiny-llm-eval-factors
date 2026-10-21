@@ -75,6 +75,30 @@
    "text": "**KV 效应到底靠 K 还是靠 V 分不开。** 现有两个可用证据都不指向同一边：m30 的 16k 格把 K、V 分开看，f16/f16 与 f16/q8_0 同哈希、q8_0/f16 与 q8_0/q8_0 同哈希（像 K 在起作用，但那一轮是填充伪像、不可用）；针检索的可用一轮只跑了 `f16/f16` 与 `q4_0/q4_0`。要分开就得在可用设计下补 `q8_0/f16` 与 `f16/q8_0` 两格（每格 ~1 分钟）。"
   },
   {
+   "subproject": "a09-量化感知训练 QAT",
+   "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
+   "heading": "未解问题",
+   "text": "**库内没有比特钉住的 QAT/原生对，QAT 训练效应因此从未被单独识别。** 所有 7 对里最接近的一对也差 0.359 比特/权重（E2B Q2），4-bit 档差 0.44–0.95。任何「QAT 挽回/不挽回损失」的读数都只能经原生阶梯插值得到，插值的不确定度没有闭式区间（本层只给段内残差与外推标记）。要判定，需要一份与 QAT 文件实测比特相同、其余配方也相同的原生文件。"
+  },
+  {
+   "subproject": "a09-量化感知训练 QAT",
+   "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
+   "heading": "未解问题",
+   "text": "**12B MMLU 的 −0.197 落在该列自己的比特敏感度之内，判不了是 QAT 还是比特。** 同族原生阶梯在这段是 0.4178（4.046 比特）→ 0.6436（4.949 比特），每 +0.9 比特移动 +0.226，而 QAT 与原生差 0.437 比特；段内插值预测 0.534、实测 0.446，残差 −0.088，而 a03 判「同字节下方案/厂商效应在 0.10–0.49 内不可分辨」，这个残差比那个带还窄。要判定，需要在同一比特上换 QAT 而不换格式，或者在同格式（Q4_0）上换 QAT。"
+  },
+  {
+   "subproject": "a09-量化感知训练 QAT",
+   "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
+   "heading": "未解问题",
+   "text": "**31B 在 24 GB 卡上不可测**：QAT 文件加载即 OOM（KV 槽分配 1200 MiB 失败）。补测需要更大显存或更小 ctx，代价不在本轴预算内。"
+  },
+  {
+   "subproject": "a09-量化感知训练 QAT",
+   "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
+   "heading": "未解问题",
+   "text": "**26B-A4B Q4_K_XL 的原生对手没跑**（`m145` 从未产生），所以那一对只有 QAT 一侧；报告第十节现在会把它画成半空柱。"
+  },
+  {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
@@ -125,6 +149,12 @@
    "count": 4
   },
   {
+   "subproject": "a09-量化感知训练 QAT",
+   "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
+   "heading": "未解问题",
+   "count": 4
+  },
+  {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
@@ -135,6 +165,7 @@
   "docs/subprojects/a06-采样与解码参数/PLAN.md",
   "docs/subprojects/a12-多语言代码 MultiPL-E/PLAN.md",
   "docs/subprojects/a13-工具调用 BFCL/PLAN.md",
+  "docs/subprojects/a14-部分给分/PLAN.md",
   "docs/subprojects/i01-判分与基准有效性/PLAN.md"
  ]
 }
