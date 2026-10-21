@@ -201,31 +201,28 @@
 - 结论：py 侧同样写「该采样值下 py 阶梯不可分辨」，理由写成「两档都在 `Exception` 地板机制内，且 5 道题的间距在重复噪声之内」。
 - **诚实登记的规则缺口**：预注册的三档覆盖的是「只有 Q2 塌」与「三档都在地板之上」两个角，没有预料到「Q2/Q3 塌、Q4 刚好越过 0.05 线」这种中间态。我没有事后改规则，而是把这一格登记为规则缺口，并用规则里已经写死的「直方图优先」条款 + i01 的噪声地板来解释；下一个做同类实验的人应当把这三档改成按「机制 + 噪声间距」判，而不是按一条分数线判。
 
-## vendor-temp-axis-161 :: 温度轴现在补齐成**四个同口径的 161 题点**，且**单调下降**，c 且跳崖发生在 0.6→1.0：`q3-cpp` 的通过数是 temp 0 → **39/161 = 0.2422**、temp 0.3 → **28/161 = 0.1739**、temp 0.6 → **24/161 = 0.1491**、temp 1.0 → **10/161 = 0.0621**。相邻落差是 −11、−4、**−14** 道题，所以 0.6→1.0 这一步（−14，−0.087）比 0.3→0.6（−4）大三倍多，是整条轴上唯一的跳崖。
+## vendor-temp-axis-161 :: 温度轴补齐成**四个同口径的 161 题点**，逐点下降：`q3-cpp` 的通过数是 temp 0 → **39/161 = 0.2422**、temp 0.3 → **28/161 = 0.1739**、temp 0.6 → **24/161 = 0.1491**、temp 1.0 → **10/161 = 0.0621**。可分性按配对检验读：`0→0.3` 39→28（McNemar p=0.019、boot95 [−19,−3]）与 `0.6→1.0` 24→10（p=0.009、[−24,−4]）两步**各自与零可分**，而 `0.3→0.6` 28→24（**p=0.524**、[−13,+5]）**与零不可分**；**两步之差** −10 道题的置换检验 **p=0.2605**、boot95 [−26,+5]，所以**不能说最后一步比中间一步更大**。可支持的说法是：**最后一步是唯一与零可分的那一步，中间一步不是**。
 
 - kind: measured
 - evidence: temp 1.0 那格是 `.wrapup/mres/m165-mechanism/m2full_summary.jsonl`（`n=161, pass=10`，直方图 `{'Exception': 92, 'OK': 10, 'SyntaxError': 58, 'Timeout': 1}`，`/props` 回读 `temp 1.0, top_p 0.95, top_k 20, min_p 0.05, presence_penalty 0.0`、mismatch 为空）；其余三点是 `m31-q3-tk1-cpp_eval.json`（39）、`m31-q3-tk20-cpp_eval.json`（28）、`m27-q3-t0.6-cpp_eval.json`（24），全部 ctx 4096、seed 1234、MultiPL-E raw、161 题。
 - repro: `python3 -c "import json;[print(f,json.load(open(f))['pass']) for f in ('.wrapup/mres/m31-q3-tk1-cpp_eval.json','.wrapup/mres/m31-q3-tk20-cpp_eval.json','.wrapup/mres/m27-q3-t0.6-cpp_eval.json','.wrapup/mres/m165-mechanism/m2full-q3-cpp-probe161_eval.json')]"`。
 - 可比性口径（写死，报告只许用这四个点）：四点都是 `qwen3.5-2b-ud-q3_k_xl × cpp × 161 题 × ctx 4096 × seed 1234`。temp 0 这一点来自 `m31` 的 `top_k=1`（argmax，与 `m3` 的贪心格逐字相同，见 `topk-inert-at-temp0`）；temp 0.3 在 `top_k` 20 与 40 下同值，所以 `top_k` 20 vs 40 不构成不可比。
-- 限制：这是**一个模型、一个语言**的曲线；不能把「单调下降」外推成「温度普遍单调压分」，它在 `py` 侧只有 temp 0 / 0.3 / 0.6 三点（43 / 43 / 44），并未单调。40 题的探针（M1 2/40、M2 3/40）**不与这四点并列**，只作为「先花 3–4 分钟定方向」的方法步骤记录，题数不同即不可比。
+- 限制：这是**一个模型、一个语言**的曲线，不能外推成「温度普遍压分」。原稿这里写「py 侧 43/43/44 并不单调」，那句**按字面为假**，因为它用的是旧语料的库值；**带语料代次的写法**是：旧语料下 `m3 py` 43 / `m27 t0.3 py` 43 / `m27 t0.6 py` 44（不单调）；钉住语料后 `m3 py` 的 `;corpus=ac14c3b0abfa` 行是 **42/161**，于是该轴成为 **42 < 43 < 44 单调上升**（复核给出 42/43/**45**，与库里的 44 差 1 道题，见 repro；差异来自 a14 的 re-grade 只写了贪心那一行、没有覆盖 `m27` 的格）。保护性结论保留：**cpp 的下降不能外推到 py，py 是上升的**。
+- 40 题的探针（M1 2/40、M2 3/40）**不与这四点并列**，只作为「先花 3–4 分钟定方向」的方法步骤记录，题数不同即不可比。
+- repro（py 那三点）：`sqlite3 experiments.sqlite "SELECT run_tag,temp,ROUND(_score*161,1),substr(protocol,1,40) FROM experiments WHERE model='Qwen3.5-2B-UD-Q3_K_XL.gguf' AND language='py' AND bench_family='humaneval-multipl-e' AND protocol NOT LIKE '%topk-set%' ORDER BY temp"`。
 
-## vendor-collapse-mechanism :: 塌陷的机制查清了，**两条原假设都不成立，剩下的因子是 `temperature=1.0` 本身**：M1 否掉了 H-A（presence penalty），M2 否掉了 H-B（无约束尾部）——M2 甚至就是把其余量全部放回固定协议的值、只留温度 1.0 的那一格，而它仍然塌。
-
-| 探针 | temp | top_p | min_p | presence_penalty | 结果 | 直方图 | 不可解析 |
-|---|---|---|---|---|---|---|---|
-| M1 | 1.0 | 1.00 | 0.00 | 0.0 | 2/40 = 0.050 | `SyntaxError=27, Exception=10, OK=2, Timeout=1` | 0.925 |
-| M2 | 1.0 | 0.95 | 0.05 | 0.0 | 3/40 = 0.075 | `SyntaxError=12, Exception=25, OK=3` | 0.925 |
-| （对照）贪心全格 | 0 | 0.95 | 0.05 | 0.0 | 39/161 = 0.242 | — | — |
-| （对照）temp 0.6 全格 | 0.6 | 0.95 | 0.05 | 0.0 | 24/161 = 0.149 | — | — |
+## vendor-collapse-mechanism :: 三个采样量各自对应三个不同的可观察维度，塌陷本身由温度驱动：
+**① 分数**由 `temperature=1.0` 驱动——两次单变量探针都保持 temp 1.0、把其余量逐个放回固定协议的值，塌陷始终在（M1 2/40、M2 3/40，见 `vendor-temp-axis-161` 的四点曲线）；
+**② 输出长度**由 `presence_penalty=2.0` 驱动——它在时平均 115.4 词，把它置 0 后（同为 temp 1.0）降到 79.3 词，而贪心是 71.9 词；
+**③ 失效方式**（`SyntaxError` 与 `Exception` 的比例）由两个截断量驱动——把 `top_p`/`min_p` 放回 0.95/0.05 后 `SyntaxError` 27→12、`Exception` 10→25。
 
 - kind: measured
-- **M2 的读法**：把 `top_p` 与 `min_p` 都改回固定协议的值、`presence_penalty` 保持 0，唯一偏离固定协议的量就只剩 `temperature=1.0`（`top_k` 20 对 40 在温度 0 下是惰性的，`topk-inert-at-temp0`；温度 1.0 下未单独测但 M1 已是 top_k=20）。这一格仍然 3/40，与 M1 的 2/40 差 1 道题——所以**截断量不是主因**，而**温度 1.0 单独就足以造成塌陷**。
-- **截断量改变的是失效方式，不是失效比例**：`SyntaxError` 27→12（砍掉一半），同时 `Exception` 10→25（翻一倍多），不可解析总数在两种设置下都是 37/40 = 0.925。所以「`top_p=1.0 + min_p=0.0` 让语法崩」这个说法只在**形态**上成立（它决定了坏在哪一步），不成立在**总量**上。
-- evidence: `.wrapup/mres/m165-mechanism/{m1,m2}_summary.jsonl`、`props_m1.json`、`props_m2.json`（两份 `/props` 的 mismatch 都为空，证明各自只改了声明的那几个量）、`{m1,m2}_probe.log`；捕获 `evidence/m1-pp0-probe-*.jsonl`。
-- repro: `TAG=m2 TEMP=1.0 TOP_P=0.95 MIN_P=0.05 PRES=0.0 bash .wrapup/gpu_locked.sh bash "docs/subprojects/a06-采样与解码参数/run_m1_probe.sh"`（同一份脚本，五个量用环境变量覆盖，自带 `/props` 断言）。
-- **这条延伸了已有的温度轴**：先前只测到 temp 0.6（24/161 = 0.149），现在知道 0.6→1.0 之间还有一次约 2 倍的下跌（0.149 → 0.075 量级），并且失效方式从「以 `SyntaxError` 为主」转成「以 `Exception` 为主」。
-- **被否掉的 H-A 推理链保留在册**：厂商档相对贪心锚点的 `cpp_kw_share` 0.322→0.218、`punct_density` 0.151→0.132、`types/tokens` 0.344→0.380、平均长度 71.9→115.4 词，形状像「重复被罚」；贪心锚点的典型补全也确实是 `std::string temp; … temp2; … temp6;` 那种退化重复。**这些相关关系是真的，但归因错了**：M1 里 `presence_penalty=0` 时同样的分布形状仍然出现，M2 里也仍然出现。留档的理由是它记录了一次「相关但不因果」的具体教训。
-- 限制：M1/M2 都是 40 题探针，只定方向、不是分数，不与 161 题格同权读；两次折算都假设「同样比例会失败」。`top_k=20` 在温度 1.0 下的惰性未单独验证（M1 与 M2 都用 20）。
+- **两次探针的差别是「净抵消」，不是「总数相同」**（先前写成 37/40 两边相同，是错的）：M1 不可解析 **38/40**（`SyntaxError=27, Exception=10, Timeout=1`）、M2 **37/40**（`SyntaxError=12, Exception=25`），净差只有 1 道题，但**40 题里有 20 题的状态变了**——转移矩阵是 `SyntaxError→Exception` 15 题、`Exception→OK` 1、`OK→Exception` 1、`Exception→SyntaxError` 1、`Timeout→Exception` 1、`SyntaxError→OK` 1。所以正确说法是「**净数几乎不动，但 20/40 题互换了状态**」。
+- **分布证据的处置**：`cpp_kw_share` 与 `types/tokens` 这两个数**撤下**——复核在三种分词口径下都复现不出原值（方向对、值不对），而且原先没有脚本、没有 repro，违反本册「每条事实带 repro」的规则。现在只有**长度**作为可引用的量（空白分词，`completion_shape.py` 可精确重算），另两个只在脚本输出里作为**方向**出现，并明确标注「不得当数值引用」。
+- **先前「M2 里也出现同样分布形状」这句也说过头了**：M2 全格的平均长度 79.3 词，只比贪心 71.9 长 10%，远不到厂商档的 115.4；`types/tokens` 在 M2 全格是 **0.320，比贪心的 0.344 更低**。所以「同样的形状」不成立于长度与类型多样性，只成立于「关键字密度偏低」这一项（0.271 vs 0.322），而 M1 探针的该项反而是 0.347（高于贪心）。结论：**形状统计不足以支撑归因**，归因由单变量探针给出。
+- evidence: `completion_shape.py` 的七行输出（含 n、mean_words 与两个标注为方向性的量）；`m1/m2` 的 `_eval.json` 状态逐题比对得出 20/40 与转移矩阵。
+- repro: `python3 "docs/subprojects/a06-采样与解码参数/completion_shape.py"`；状态互换：`python3 -c "import json;d=lambda p:{x['name']:x['status'] for x in json.load(open(p))['details']};a=d('.wrapup/mres/m165-mechanism/m1-q3-cpp-pp0-probe40_eval.json');b=d('.wrapup/mres/m165-mechanism/m2-q3-cpp-probe40_eval.json');print(sum(a[k]!=b[k] for k in a))"`。
+- 限制：M1/M2 是 40 题探针（方向），M2 全格是 161 题；长度是可引用量，另两个不是。`top_k=20` 在温度 1.0 下的惰性未单独验证。
 
 ## 五、厂商推荐采样（`plan3`）
 
@@ -243,6 +240,22 @@
 - evidence: 本节 `res-vendor-value`、`score-moves-m131`、`peritem-separable`；`m131` 的 `temp0.3` 与 `temp0.7` 两行 `humaneval` 逐字相同（0.5121951219512195）。
 - repro: `python3 -c "import json;p=json.load(open('.wrapup/mres/m131-sampling/variant_panel.json'));print([(k,v['humaneval']) for k,v in p['rows'].items()])"`。
 - 限制：这是一个从已测点外推的**推断**，不是厂商推荐臂的测量；它只说「若温度落在 0.3–1.0 这段且其余维度不变」，而厂商值恰好改了那三个其余维度。因此 `plan3` 保持 provisional，直到 `PLAN.md` 的 `WP3` 真跑一档。
+
+## tk1-equals-greedy :: `top_k=1`（名义温度 0.3，但 top-1 截断即 argmax）与贪心格逐字相同这条锚点，**cpp 在两种语料代次下都成立，py 只在旧语料下由库值证明**：cpp 是 `m3` 贪心 39/161 = `m31` tk1 39/161；py 旧语料是 `m3` 43/161 = `m31` tk1 43/161；钉住语料（`;corpus=ac14c3b0abfa`）后 `m3` 的 py 贪心是 **42/161**，而 `m31` 的 tk1 行在库里仍是旧语料的 43——复核按 a14 的重评给出 42（与贪心相等），但**库里没有那一行**，所以这条在 py 的钉住语料一侧只有复核的数、没有库行。
+
+- kind: measured
+- evidence: `sqlite3 experiments.sqlite "SELECT run_tag,temp,top_k,ROUND(_score*161,1),substr(protocol,1,44) FROM experiments WHERE model='Qwen3.5-2B-UD-Q3_K_XL.gguf' AND bench_family='humaneval-multipl-e' AND language IN ('cpp','py') AND (protocol LIKE '%greedy%' OR CAST(top_k AS INTEGER)=1) ORDER BY language,temp"`。
+- repro: 上面这条查询。
+- 限制：py 的钉住语料一侧缺库行（a14 的 re-grade 只写了贪心那一行），所以「tk1 ≡ 贪心」在 py 上跨语料的证明强度弱于 cpp；报告若引用该等价性，应注明语料代次。
+
+## vendor-not-ingested :: 这批厂商臂/机制格**目前不在库里**，`rank_survival.py` 与 `sampling_census.py` 都看不见它们；原因是 `migrate_db.py` 里两个可定位的缺陷，不是「还没跑 ingest」。跑一次 `python3 migrate_db.py` 的结果是：`inserted … m165=5 … rows 3347 -> 3347`（行数没变），`run_tag='m165-vendor-r1'` 查询返回 **0 行**。
+
+- kind: measured
+- 缺陷一（吞掉已插入的行）：`ingest_m165` 把 `source_file` 写成 `mres/m165-vendor/vendor_r1_summary.jsonl`，而 REFRESH 里排在它**之后**的 `ingest_campaign` 第一条语句是 `DELETE FROM experiments WHERE source_file LIKE 'mres/%'`（`migrate_db.py:1462`），于是刚插入的行在同一轮里被删掉。可复算的观察：`inserted … m165=5` 与 `run_tag='m165-vendor-r1'` = 0 同时成立。
+- 缺陷二（两格被跳过）：`M165_MODELS` 没有 `q4`，所以 q4-cpp / q4-py 以 `reason=unknown_model name=q4` 被跳过（skip ledger 里有记录，不是静默丢失）。
+- 缺陷三（无 ingest 路径）：机制产物在 `.wrapup/mres/m165-mechanism/`，`migrate_db.py` 里没有任何函数读它，所以 `temp 1.0` 那个 161 题点与两个 40 题探针都只能从产物引用；探针即使入库也**必须显式标为探针**（`is_score:false`、`probe_items:40`），不许与 161 题正式格共用同一身份。
+- repro: `python3 migrate_db.py | grep -E "m165|rows"` 然后 `sqlite3 experiments.sqlite "SELECT COUNT(*) FROM experiments WHERE run_tag='m165-vendor-r1'"`（期望 0，即缺陷仍在）；机制格：`sqlite3 experiments.sqlite "SELECT COUNT(*) FROM experiments WHERE run_tag LIKE '%mechanism%'"`（0）。
+- 后果与边界：这三条都在 `migrate_db.py`（i02 的），a06 不改。在它们修好之前，本册明确写：**这批格未入库，排序判据与普查都不含它们**；报告若要引用 `temp 1.0` 那一点，必须写成「产物在 `.wrapup/mres/m165-mechanism/`，未入库」。
 
 ## 六、限制
 

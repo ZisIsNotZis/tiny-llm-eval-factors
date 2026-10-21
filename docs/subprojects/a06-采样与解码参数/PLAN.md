@@ -199,6 +199,11 @@
 
 - 产物目录 `.wrapup/mres/m165-vendor/`；逐格清单 `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl`（R1）与 `variant_panel.json`（R2）；
   运行脚本 `run_vendor_arm.sh`（R1）与 `vendor_arm_r2.py`（R2）。
-- **在 `migrate_db.py` 补上 `vendor-recommended` 的 ingest 之前，这 10 个格不进 `experiments` 表，因此也不在 `rank_survival.py` 的判据里。**
+- **入库尝试已做，结果是 0 行**（2026-10-21 09:5x，`python3 migrate_db.py`）：`inserted … m165=5 … rows 3347 -> 3347`，而 `run_tag='m165-vendor-r1'` 查回 **0 行**。三个缺陷都记在 `RESULT.md::vendor-not-ingested`：
+  ① `ingest_m165` 写的 `source_file` 落在 `mres/` 下，而排在它之后的 `ingest_campaign` 会 `DELETE … WHERE source_file LIKE 'mres/%'`（`migrate_db.py:1462`），同一轮内把它删掉；
+  ② `M165_MODELS` 没有 `q4`，q4-cpp / q4-py 以 `unknown_model` 被跳过（skip ledger 有记录）；
+  ③ `m165-mechanism/` 没有任何 ingest 函数读它，所以 `temp 1.0` 的 161 题点与两个 40 题探针只能从产物引用。
+  三条都在 `migrate_db.py`（i02 的），a06 不改。
+- **在它们修好之前，这批 10 个格不进 `experiments` 表，因此也不在 `rank_survival.py` 的判据里。**
   这不是通过，是尚未纳入：`rank_survival.py --check` 现在退出 0 而它根本看不到这批格。补 ingest 之后必须把 `SELECTION` 加一行再 `--write` + `--check`。
 - 已做的生效判别与依据见 `RESULT.md::vendor-param-effect`（`/props` 回显五个量 + `top_k=1`/`top_p=0.1` 重现贪心的塌缩判据，两条端点各 2 个 prompt，32 项检查 31 项 PASS）。
