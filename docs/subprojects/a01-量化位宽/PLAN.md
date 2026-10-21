@@ -26,7 +26,7 @@
 | WP3 B1 反例裁决（plan2） | 本层编排者 | 四项各自有裁决：(T1) ✅ 只有 HumanEval+ 的差区间不含 0（`b1-heplus-only`）；(T2) ✅ 落盘完成物审计：两格围栏率相同、无 timeout、分数低的那格 sanitize 后更干净（`t2-channel-excluded`）——判分通道不能解释；(T3) ✅ 4B 同字节对方向一致但只有 MMLU 显著（`q2kxl-iq3-4b`），外加同 base 权重的 m55 exq 反向（`m55-exq-inversion`）；(T4) ✅ 两遍 40/40 逐字节相同、且与历史完成物 40/40 相同（`RESULT.md::t4-reproducible`，实测 1548 MiB / 228.7 s，并行于 a06 的 m165）。结论：主因是「比特分配/方案」而不是判分通道，但**幅度**只在 HumanEval+ 成立 | WP2 | ≤90 CPU + ≤40 GPU 分钟 | **完成** |
 | WP4 三元与极低位宽离轨（plan2 的另一半） | 本层编排者 | 逐条给「在家族曲线上/下」或「不可判」：GLM-4.7-Flash 的 TQ1_0 在家族内低 29.9 pp（`ternary-offcurve`）；2.23–2.28 比特带里 HumanEval+ 跨 40.9 pp（`lowbit-spread`）→ 原生三元模型不可判、非原生 TQ1 离轨；`Q2_0`/`PQ2_0` 加载失败**未测**（要 GPU + 更新的 llama.cpp，见 GPU 队列） | WP2 | ≤45 CPU 分钟 | **完成**（加载失败一项登记未测） |
 | WP5 12B 原生档 MMLU 异常（plan7b） | 本层编排者 | CPU 部分 ✅：+22.59 pp 的跳在 61 个科目上均匀（51 升、中位 +0.250、无全对/全错），两次运行的命令行逐字相同、912 题集合相同、该文件只有一次测量（`gemma12b-mmlu-uniform`）。GPU 部分 ⏳：同 shim 复测或生成式 MMLU 对照**未跑** | WP2 | ≤45 CPU + ≤30 GPU 分钟 | 进行中（GPU 排队） |
-| WP6 收口与报告一致 | 本层编排者 | `RESULT.md` 每条新事实带证据与复算命令；本层没写库就明写「未写库」；若写了库则先编号备份 + `PRAGMA integrity_check` + 清洁检查 + 重生成 `report.html` 并给「报告数 = 库数」核对命令 | WP2–WP5 | ≤30 CPU 分钟 | 未开始 |
+| WP6 收口与干净 clone 门 | 本层编排者 | `RESULT.md` 每条新事实带证据与复算命令；本层没写库就明写「未写库」；`.wrapup/mres` 派生的数字改成入库快照 `analysis/fixtures/mres_snapshot.json`（带来源与逐文件 sha256），`run_all.py` 从快照复算、本机有产物时交叉校验，`make_fixtures.py --check` 做漂移校验；**干净 clone 里 `run_all.py` 必须 exit 0**，且删掉快照里一条要让断言变红 | WP2–WP5 | ≤30 CPU 分钟 | 进行中（fixture 与两条负控已就位，clone 验证与收口提交在做） |
 | WP7 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；reviewer 的结论取代本人自评 | 对应包完成 | ≤30 CPU 分钟/份 | 待派 |
 
 调度原则：`WP2` 是其它三包的公共装置（曲线与区间算法只写一次），所以它先做；`WP3` 的 T2 与 `WP4`/`WP5` 都是 CPU 只读，重活并发 ≤2；GPU 全局串行，T4 与 12B 复测各自单独持锁，每段 ≤30 分钟并在里面自己等显存。

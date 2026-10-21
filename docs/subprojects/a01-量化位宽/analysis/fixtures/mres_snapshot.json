@@ -1,0 +1,472 @@
+{
+ "_provenance": {
+  "generated_by": "python3 \"docs/subprojects/a01-量化位宽/analysis/make_fixtures.py\" --write",
+  "rule": "改动任何 .wrapup/mres 产物后必须 --check；不一致时先看是不是重新判分/重跑造成的，再决定是否 --write",
+  "sources": {
+   ".wrapup/mres/m105-gemma-12b-q3kxl/lmeval_mmlu_2026-10-09T13-02-00.670407.json": "9c2bf8e9c89fd1e02b328069a609b150d91ba2c9f20178ac63cb4901b2eb37c7",
+   ".wrapup/mres/m141-native-gemma12b-q4/lmeval_mmlu_2026-10-13T19-02-52.960431.json": "8513ca0a9a2c7fe43df3fae3c009febccc4761dd42c682d7e71752aa69f1c894",
+   ".wrapup/mres/m61-qwen-2b-iq2xxs/codegen/humaneval/m61-qwen-2b-iq2xxs_openai_temp_0.0.jsonl": "50bdd92659e3322b27e63443b34a3b1bcc224ea39589e036c4aba855f1ae1558",
+   ".wrapup/mres/m61-qwen-2b-iq2xxs/codegen/humaneval/m61-qwen-2b-iq2xxs_openai_temp_0.0.raw.jsonl": "08d598062a0f3713e272848765dc7ff47adadca9d7dcb3dbad2ce81a2ab37599",
+   ".wrapup/mres/m61-qwen-2b-iq2xxs/codegen/humaneval/m61-qwen-2b-iq2xxs_openai_temp_0.0_eval_results.json": "527d010008085bf633e3de00b05568516f4fb37714f878a6e3624586562909ae",
+   ".wrapup/mres/m61-qwen-2b-iq2xxs/codegen/mbpp/m61-qwen-2b-iq2xxs_openai_temp_0.0.jsonl": "74334e128c61d25f7f278abfd3e617ceb92db5bfabd452aa7fecd420d098aad3",
+   ".wrapup/mres/m61-qwen-2b-iq2xxs/codegen/mbpp/m61-qwen-2b-iq2xxs_openai_temp_0.0.raw.jsonl": "acdc4892cca6af0b8b1611b614723feb978a69fb9771d6cb61dc5349486e7d95",
+   ".wrapup/mres/m61-qwen-2b-iq2xxs/codegen/mbpp/m61-qwen-2b-iq2xxs_openai_temp_0.0_eval_results.json": "aa0b8c3802167b091e456ecd133edc5dbb59c3bdfcb40fab5044a5cdc39b4a75",
+   ".wrapup/mres/m62-qwen-2b-iq2m/codegen/humaneval/m62-qwen-2b-iq2m_openai_temp_0.0.jsonl": "c744eb152103eaf9283c0bbe6b4c73a318057eadc17c35e8ef4e5a1ea6867ca6",
+   ".wrapup/mres/m62-qwen-2b-iq2m/codegen/humaneval/m62-qwen-2b-iq2m_openai_temp_0.0.raw.jsonl": "ee22ed7ced519405a8b73a8903ae01574492b6b656fd269c0afbfbf7ef7e2d81",
+   ".wrapup/mres/m62-qwen-2b-iq2m/codegen/humaneval/m62-qwen-2b-iq2m_openai_temp_0.0_eval_results.json": "9498502805f7cb60c2fbcab5ddaf9ef3ec19f6dd13b759a811eda3ff15d0e47d",
+   ".wrapup/mres/m62-qwen-2b-iq2m/codegen/mbpp/m62-qwen-2b-iq2m_openai_temp_0.0.jsonl": "958f074514ee71d1aae67936608eee6d928a6cce89e4e0e857021bc95f943604",
+   ".wrapup/mres/m62-qwen-2b-iq2m/codegen/mbpp/m62-qwen-2b-iq2m_openai_temp_0.0.raw.jsonl": "e3c6b986374eaf47a5b6ff9e0b92209cc8e185b5a526f6cee918c411b8202cc7",
+   ".wrapup/mres/m62-qwen-2b-iq2m/codegen/mbpp/m62-qwen-2b-iq2m_openai_temp_0.0_eval_results.json": "2c1c4dc9588feaf0f7cdff346e2cd123369307040e2d1c111c5235a10ae909d2",
+   ".wrapup/mres/m63-qwen-2b-iq3xxs/codegen/humaneval/m63-qwen-2b-iq3xxs_openai_temp_0.0.jsonl": "5fd02875c8a7da3c60a9d43f89b5ded7eb350234f0057037c8073f7cae76730a",
+   ".wrapup/mres/m63-qwen-2b-iq3xxs/codegen/humaneval/m63-qwen-2b-iq3xxs_openai_temp_0.0.raw.jsonl": "3f905ef5ce4c7e239cb19abbb5f8df3c5451009277f7e0080a3f39797a94ebd1",
+   ".wrapup/mres/m63-qwen-2b-iq3xxs/codegen/humaneval/m63-qwen-2b-iq3xxs_openai_temp_0.0_eval_results.json": "a4e88ae1715a74f621bb7a40f8c1edeb0a40d7876bb2990b4461e6c5bdd899da",
+   ".wrapup/mres/m63-qwen-2b-iq3xxs/codegen/mbpp/m63-qwen-2b-iq3xxs_openai_temp_0.0.jsonl": "c11498940c7226e55caf6dfa6f2f7d3a693016d412487aace56714bca04905ff",
+   ".wrapup/mres/m63-qwen-2b-iq3xxs/codegen/mbpp/m63-qwen-2b-iq3xxs_openai_temp_0.0.raw.jsonl": "26b3a12f59d3c84b86e77c603d1506a70b620f533cdb3ebfd3ebc7b09811cd82",
+   ".wrapup/mres/m63-qwen-2b-iq3xxs/codegen/mbpp/m63-qwen-2b-iq3xxs_openai_temp_0.0_eval_results.json": "278f3fe422c4dfcdcb65e8953f47e44a32af8af2994b0a9fff09fa28513bf291",
+   ".wrapup/mres/m64-qwen-2b-q2kxl/codegen/humaneval/m64-qwen-2b-q2kxl_openai_temp_0.0.jsonl": "f8fbf5b11de654f880aebf7df97c119a3bd630a011108cff04ac945b4a255608",
+   ".wrapup/mres/m64-qwen-2b-q2kxl/codegen/humaneval/m64-qwen-2b-q2kxl_openai_temp_0.0.raw.jsonl": "0e0d09e3034227dd26fae7f11ab9df41db7b251c89721a967b9c0963897450a0",
+   ".wrapup/mres/m64-qwen-2b-q2kxl/codegen/humaneval/m64-qwen-2b-q2kxl_openai_temp_0.0_eval_results.json": "7aad20267dd96d387abb88ca7dbd79ba6573f35b78457ffc87e87d685620c5d6",
+   ".wrapup/mres/m64-qwen-2b-q2kxl/codegen/mbpp/m64-qwen-2b-q2kxl_openai_temp_0.0.jsonl": "5a718a4a0d5d6a2eb51b97dee2f0ccda37bb820c4067c7274efff598ef97ba30",
+   ".wrapup/mres/m64-qwen-2b-q2kxl/codegen/mbpp/m64-qwen-2b-q2kxl_openai_temp_0.0.raw.jsonl": "e41283bed1f7bfac6de83f03a908b2b3092529caf0ebf04a7a577bfb7d60bec2",
+   ".wrapup/mres/m64-qwen-2b-q2kxl/codegen/mbpp/m64-qwen-2b-q2kxl_openai_temp_0.0_eval_results.json": "c1ea2e580374608c857d7f55f217a91b991721c8c913d0ae9bee144f4c0acde6",
+   ".wrapup/mres/m65-qwen-2b-q3kxl/codegen/humaneval/m65-qwen-2b-q3kxl_openai_temp_0.0.jsonl": "e4d2b8c8098fbf5fd8f5464ab749f3705ba79fc965195a978bb21072ef5262e6",
+   ".wrapup/mres/m65-qwen-2b-q3kxl/codegen/humaneval/m65-qwen-2b-q3kxl_openai_temp_0.0.raw.jsonl": "c57f9644c586100050a6c9acb94fbb0e0d1bd91fdd4f63abf5dafeb872cc9ae4",
+   ".wrapup/mres/m65-qwen-2b-q3kxl/codegen/humaneval/m65-qwen-2b-q3kxl_openai_temp_0.0_eval_results.json": "d23e46331c535272f028e8a1b20b3239e0de9c9ddde6eef5462448890925e969",
+   ".wrapup/mres/m65-qwen-2b-q3kxl/codegen/mbpp/m65-qwen-2b-q3kxl_openai_temp_0.0.jsonl": "f84765e291bf0b0763d574be104db16533fb95f8876efb91c969a9a716263a33",
+   ".wrapup/mres/m65-qwen-2b-q3kxl/codegen/mbpp/m65-qwen-2b-q3kxl_openai_temp_0.0.raw.jsonl": "8b3f7ff19204a7c7e44400aba0dce430d673f7541fa182e81e2d37535e2c369c",
+   ".wrapup/mres/m65-qwen-2b-q3kxl/codegen/mbpp/m65-qwen-2b-q3kxl_openai_temp_0.0_eval_results.json": "d10091ff5dbc913be2e9161ca3b0f7740c74ec30ee7323f96e1dc1da90aee498",
+   ".wrapup/mres/m66-qwen-2b-q4kxl/codegen/humaneval/m66-qwen-2b-q4kxl_openai_temp_0.0.jsonl": "dd53668b2e15385a9b3435ebec935beddebcaed907eff23408582451166f72a7",
+   ".wrapup/mres/m66-qwen-2b-q4kxl/codegen/humaneval/m66-qwen-2b-q4kxl_openai_temp_0.0.raw.jsonl": "43420bbf0b3b350f99d5bef351e334f029d2ca0c823bfb35a2a44b5767810d73",
+   ".wrapup/mres/m66-qwen-2b-q4kxl/codegen/humaneval/m66-qwen-2b-q4kxl_openai_temp_0.0_eval_results.json": "d938c161c216feee5e60b3753470fcab6fe3da2c1b9d8e42b9b38b08fb0fad4b",
+   ".wrapup/mres/m66-qwen-2b-q4kxl/codegen/mbpp/m66-qwen-2b-q4kxl_openai_temp_0.0.jsonl": "d0428ca8a53d7ceb2341b735851a0a63028da51772616db732f6e186e297ccfb",
+   ".wrapup/mres/m66-qwen-2b-q4kxl/codegen/mbpp/m66-qwen-2b-q4kxl_openai_temp_0.0.raw.jsonl": "525cdbef81ac44331d739e1df2dd39216ccf9235ddea58ce28b36ef93e461ae9",
+   ".wrapup/mres/m66-qwen-2b-q4kxl/codegen/mbpp/m66-qwen-2b-q4kxl_openai_temp_0.0_eval_results.json": "7903fd2e7d58e182298acdefa13de0c765306771317185078f715d18e90fd430",
+   ".wrapup/mres/m67-qwen-2b-q5kxl/codegen/humaneval/m67-qwen-2b-q5kxl_openai_temp_0.0.jsonl": "b9d7ba7f98a965c8093fbeba3ede581aa409a2c8304623496d9914737103f054",
+   ".wrapup/mres/m67-qwen-2b-q5kxl/codegen/humaneval/m67-qwen-2b-q5kxl_openai_temp_0.0.raw.jsonl": "e39d549aeeca495ace20a858c74cd8eb8f17f669238835ce55674e1539db9988",
+   ".wrapup/mres/m67-qwen-2b-q5kxl/codegen/humaneval/m67-qwen-2b-q5kxl_openai_temp_0.0_eval_results.json": "0c7ba4d0f16987f591b79a03e5bda47fc2d866351df51a68384ea6aa80f62496",
+   ".wrapup/mres/m67-qwen-2b-q5kxl/codegen/mbpp/m67-qwen-2b-q5kxl_openai_temp_0.0.jsonl": "490bc7340d434fe49803c45ac6dd5a2ebee618f7ee0176b16b3a4a97369ecc89",
+   ".wrapup/mres/m67-qwen-2b-q5kxl/codegen/mbpp/m67-qwen-2b-q5kxl_openai_temp_0.0.raw.jsonl": "36f4670698259d055447bd36f5af4992b5898787823356abc2ce6c866b2c44f1",
+   ".wrapup/mres/m67-qwen-2b-q5kxl/codegen/mbpp/m67-qwen-2b-q5kxl_openai_temp_0.0_eval_results.json": "ea6f156f8bab7c38e7992926c3e417ec729689c7f00267da1aae00cf7bf84116"
+  },
+  "why": ".wrapup/mres/* 被 .gitignore 忽略，干净 clone 里没有逐题完成物；这份快照是这些数字的入库副本，判定入口是 run_all.py，漂移校验是 make_fixtures.py --check",
+  "written_against": "experiments.sqlite 与 .wrapup/mres 的本机状态；来源逐文件 sha256 见 sources"
+ },
+ "channel_audit": {
+  "m61-qwen-2b-iq2xxs/humaneval": {
+   "base_pass": 6,
+   "base_status": {
+    "fail": 158,
+    "pass": 6
+   },
+   "dataset": "humaneval",
+   "empty_san": 0,
+   "fence_raw": 149,
+   "fence_san": 1,
+   "n": 164,
+   "no_def_san": 53,
+   "panel": "m61-qwen-2b-iq2xxs",
+   "plus_pass": 6,
+   "plus_status": {
+    "fail": 158,
+    "pass": 6
+   },
+   "syntax_err_san": 10
+  },
+  "m61-qwen-2b-iq2xxs/mbpp": {
+   "base_pass": 21,
+   "base_status": {
+    "fail": 357,
+    "pass": 21
+   },
+   "dataset": "mbpp",
+   "empty_san": 0,
+   "fence_raw": 372,
+   "fence_san": 6,
+   "n": 378,
+   "no_def_san": 63,
+   "panel": "m61-qwen-2b-iq2xxs",
+   "plus_pass": 20,
+   "plus_status": {
+    "fail": 358,
+    "pass": 20
+   },
+   "syntax_err_san": 15
+  },
+  "m62-qwen-2b-iq2m/humaneval": {
+   "base_pass": 44,
+   "base_status": {
+    "fail": 120,
+    "pass": 44
+   },
+   "dataset": "humaneval",
+   "empty_san": 0,
+   "fence_raw": 163,
+   "fence_san": 0,
+   "n": 164,
+   "no_def_san": 3,
+   "panel": "m62-qwen-2b-iq2m",
+   "plus_pass": 39,
+   "plus_status": {
+    "fail": 125,
+    "pass": 39
+   },
+   "syntax_err_san": 0
+  },
+  "m62-qwen-2b-iq2m/mbpp": {
+   "base_pass": 102,
+   "base_status": {
+    "fail": 276,
+    "pass": 102
+   },
+   "dataset": "mbpp",
+   "empty_san": 0,
+   "fence_raw": 370,
+   "fence_san": 5,
+   "n": 378,
+   "no_def_san": 32,
+   "panel": "m62-qwen-2b-iq2m",
+   "plus_pass": 94,
+   "plus_status": {
+    "fail": 284,
+    "pass": 94
+   },
+   "syntax_err_san": 9
+  },
+  "m63-qwen-2b-iq3xxs/humaneval": {
+   "base_pass": 64,
+   "base_status": {
+    "fail": 100,
+    "pass": 64
+   },
+   "dataset": "humaneval",
+   "empty_san": 0,
+   "fence_raw": 164,
+   "fence_san": 3,
+   "n": 164,
+   "no_def_san": 6,
+   "panel": "m63-qwen-2b-iq3xxs",
+   "plus_pass": 64,
+   "plus_status": {
+    "fail": 100,
+    "pass": 64
+   },
+   "syntax_err_san": 3
+  },
+  "m63-qwen-2b-iq3xxs/mbpp": {
+   "base_pass": 126,
+   "base_status": {
+    "fail": 252,
+    "pass": 126
+   },
+   "dataset": "mbpp",
+   "empty_san": 0,
+   "fence_raw": 378,
+   "fence_san": 13,
+   "n": 378,
+   "no_def_san": 22,
+   "panel": "m63-qwen-2b-iq3xxs",
+   "plus_pass": 113,
+   "plus_status": {
+    "fail": 265,
+    "pass": 113
+   },
+   "syntax_err_san": 13
+  },
+  "m64-qwen-2b-q2kxl/humaneval": {
+   "base_pass": 42,
+   "base_status": {
+    "fail": 122,
+    "pass": 42
+   },
+   "dataset": "humaneval",
+   "empty_san": 0,
+   "fence_raw": 164,
+   "fence_san": 1,
+   "n": 164,
+   "no_def_san": 2,
+   "panel": "m64-qwen-2b-q2kxl",
+   "plus_pass": 39,
+   "plus_status": {
+    "fail": 125,
+    "pass": 39
+   },
+   "syntax_err_san": 1
+  },
+  "m64-qwen-2b-q2kxl/mbpp": {
+   "base_pass": 136,
+   "base_status": {
+    "fail": 242,
+    "pass": 136
+   },
+   "dataset": "mbpp",
+   "empty_san": 0,
+   "fence_raw": 378,
+   "fence_san": 11,
+   "n": 378,
+   "no_def_san": 35,
+   "panel": "m64-qwen-2b-q2kxl",
+   "plus_pass": 106,
+   "plus_status": {
+    "fail": 272,
+    "pass": 106
+   },
+   "syntax_err_san": 11
+  },
+  "m65-qwen-2b-q3kxl/humaneval": {
+   "base_pass": 94,
+   "base_status": {
+    "fail": 70,
+    "pass": 94
+   },
+   "dataset": "humaneval",
+   "empty_san": 0,
+   "fence_raw": 164,
+   "fence_san": 0,
+   "n": 164,
+   "no_def_san": 1,
+   "panel": "m65-qwen-2b-q3kxl",
+   "plus_pass": 86,
+   "plus_status": {
+    "fail": 78,
+    "pass": 86
+   },
+   "syntax_err_san": 0
+  },
+  "m65-qwen-2b-q3kxl/mbpp": {
+   "base_pass": 220,
+   "base_status": {
+    "fail": 158,
+    "pass": 220
+   },
+   "dataset": "mbpp",
+   "empty_san": 0,
+   "fence_raw": 378,
+   "fence_san": 2,
+   "n": 378,
+   "no_def_san": 13,
+   "panel": "m65-qwen-2b-q3kxl",
+   "plus_pass": 169,
+   "plus_status": {
+    "fail": 209,
+    "pass": 169
+   },
+   "syntax_err_san": 2
+  },
+  "m66-qwen-2b-q4kxl/humaneval": {
+   "base_pass": 93,
+   "base_status": {
+    "fail": 71,
+    "pass": 93
+   },
+   "dataset": "humaneval",
+   "empty_san": 0,
+   "fence_raw": 164,
+   "fence_san": 1,
+   "n": 164,
+   "no_def_san": 3,
+   "panel": "m66-qwen-2b-q4kxl",
+   "plus_pass": 84,
+   "plus_status": {
+    "fail": 80,
+    "pass": 84
+   },
+   "syntax_err_san": 1
+  },
+  "m66-qwen-2b-q4kxl/mbpp": {
+   "base_pass": 201,
+   "base_status": {
+    "fail": 177,
+    "pass": 201
+   },
+   "dataset": "mbpp",
+   "empty_san": 0,
+   "fence_raw": 378,
+   "fence_san": 1,
+   "n": 378,
+   "no_def_san": 8,
+   "panel": "m66-qwen-2b-q4kxl",
+   "plus_pass": 162,
+   "plus_status": {
+    "fail": 216,
+    "pass": 162
+   },
+   "syntax_err_san": 1
+  },
+  "m67-qwen-2b-q5kxl/humaneval": {
+   "base_pass": 89,
+   "base_status": {
+    "fail": 75,
+    "pass": 89
+   },
+   "dataset": "humaneval",
+   "empty_san": 0,
+   "fence_raw": 164,
+   "fence_san": 0,
+   "n": 164,
+   "no_def_san": 0,
+   "panel": "m67-qwen-2b-q5kxl",
+   "plus_pass": 85,
+   "plus_status": {
+    "fail": 79,
+    "pass": 85
+   },
+   "syntax_err_san": 0
+  },
+  "m67-qwen-2b-q5kxl/mbpp": {
+   "base_pass": 199,
+   "base_status": {
+    "fail": 179,
+    "pass": 199
+   },
+   "dataset": "mbpp",
+   "empty_san": 0,
+   "fence_raw": 378,
+   "fence_san": 0,
+   "n": 378,
+   "no_def_san": 7,
+   "panel": "m67-qwen-2b-q5kxl",
+   "plus_pass": 161,
+   "plus_status": {
+    "fail": 217,
+    "pass": 161
+   },
+   "syntax_err_san": 0
+  }
+ },
+ "mmlu_subjects": {
+  "m105-gemma-12b-q3kxl": {
+   "acc": {
+    "mmlu_abstract_algebra": 0.1875,
+    "mmlu_anatomy": 0.4375,
+    "mmlu_astronomy": 0.625,
+    "mmlu_business_ethics": 0.4375,
+    "mmlu_clinical_knowledge": 0.5625,
+    "mmlu_college_biology": 0.4375,
+    "mmlu_college_chemistry": 0.1875,
+    "mmlu_college_computer_science": 0.1875,
+    "mmlu_college_mathematics": 0.5625,
+    "mmlu_college_medicine": 0.4375,
+    "mmlu_college_physics": 0.5,
+    "mmlu_computer_security": 0.4375,
+    "mmlu_conceptual_physics": 0.6875,
+    "mmlu_econometrics": 0.3125,
+    "mmlu_electrical_engineering": 0.5625,
+    "mmlu_elementary_mathematics": 0.125,
+    "mmlu_formal_logic": 0.125,
+    "mmlu_global_facts": 0.5625,
+    "mmlu_high_school_biology": 0.4375,
+    "mmlu_high_school_chemistry": 0.5,
+    "mmlu_high_school_computer_science": 0.4375,
+    "mmlu_high_school_european_history": 0.375,
+    "mmlu_high_school_geography": 0.5625,
+    "mmlu_high_school_government_and_politics": 0.1875,
+    "mmlu_high_school_macroeconomics": 0.75,
+    "mmlu_high_school_mathematics": 0.4375,
+    "mmlu_high_school_microeconomics": 0.375,
+    "mmlu_high_school_physics": 0.3125,
+    "mmlu_high_school_psychology": 0.5625,
+    "mmlu_high_school_statistics": 0.3125,
+    "mmlu_high_school_us_history": 0.3125,
+    "mmlu_high_school_world_history": 0.625,
+    "mmlu_human_aging": 0.25,
+    "mmlu_human_sexuality": 0.4375,
+    "mmlu_humanities": 0.375,
+    "mmlu_international_law": 0.375,
+    "mmlu_jurisprudence": 0.4375,
+    "mmlu_logical_fallacies": 0.375,
+    "mmlu_machine_learning": 0.375,
+    "mmlu_management": 0.25,
+    "mmlu_marketing": 0.5,
+    "mmlu_medical_genetics": 0.75,
+    "mmlu_miscellaneous": 0.4375,
+    "mmlu_moral_disputes": 0.375,
+    "mmlu_moral_scenarios": 0.4375,
+    "mmlu_nutrition": 0.25,
+    "mmlu_other": 0.423077,
+    "mmlu_philosophy": 0.5625,
+    "mmlu_prehistory": 0.3125,
+    "mmlu_professional_accounting": 0.375,
+    "mmlu_professional_law": 0.1875,
+    "mmlu_professional_medicine": 0.4375,
+    "mmlu_professional_psychology": 0.375,
+    "mmlu_public_relations": 0.5,
+    "mmlu_security_studies": 0.5,
+    "mmlu_social_sciences": 0.473958,
+    "mmlu_sociology": 0.5,
+    "mmlu_stem": 0.407895,
+    "mmlu_us_foreign_policy": 0.625,
+    "mmlu_virology": 0.25,
+    "mmlu_world_religions": 0.375
+   },
+   "file": ".wrapup/mres/m105-gemma-12b-q3kxl/lmeval_mmlu_2026-10-09T13-02-00.670407.json",
+   "n_subjects": 61
+  },
+  "m141-native-gemma12b-q4": {
+   "acc": {
+    "mmlu_abstract_algebra": 0.3125,
+    "mmlu_anatomy": 0.3125,
+    "mmlu_astronomy": 0.625,
+    "mmlu_business_ethics": 0.875,
+    "mmlu_clinical_knowledge": 0.75,
+    "mmlu_college_biology": 0.75,
+    "mmlu_college_chemistry": 0.4375,
+    "mmlu_college_computer_science": 0.5625,
+    "mmlu_college_mathematics": 0.5625,
+    "mmlu_college_medicine": 0.625,
+    "mmlu_college_physics": 0.4375,
+    "mmlu_computer_security": 0.75,
+    "mmlu_conceptual_physics": 0.8125,
+    "mmlu_econometrics": 0.5625,
+    "mmlu_electrical_engineering": 0.4375,
+    "mmlu_elementary_mathematics": 0.6875,
+    "mmlu_formal_logic": 0.4375,
+    "mmlu_global_facts": 0.4375,
+    "mmlu_high_school_biology": 0.875,
+    "mmlu_high_school_chemistry": 0.5625,
+    "mmlu_high_school_computer_science": 0.8125,
+    "mmlu_high_school_european_history": 0.6875,
+    "mmlu_high_school_geography": 0.75,
+    "mmlu_high_school_government_and_politics": 0.875,
+    "mmlu_high_school_macroeconomics": 0.6875,
+    "mmlu_high_school_mathematics": 0.1875,
+    "mmlu_high_school_microeconomics": 0.75,
+    "mmlu_high_school_physics": 0.75,
+    "mmlu_high_school_psychology": 0.8125,
+    "mmlu_high_school_statistics": 0.5625,
+    "mmlu_high_school_us_history": 0.8125,
+    "mmlu_high_school_world_history": 0.875,
+    "mmlu_human_aging": 0.625,
+    "mmlu_human_sexuality": 0.6875,
+    "mmlu_humanities": 0.663462,
+    "mmlu_international_law": 0.75,
+    "mmlu_jurisprudence": 0.625,
+    "mmlu_logical_fallacies": 0.6875,
+    "mmlu_machine_learning": 0.625,
+    "mmlu_management": 0.75,
+    "mmlu_marketing": 0.6875,
+    "mmlu_medical_genetics": 0.8125,
+    "mmlu_miscellaneous": 0.8125,
+    "mmlu_moral_disputes": 0.5,
+    "mmlu_moral_scenarios": 0.4375,
+    "mmlu_nutrition": 0.8125,
+    "mmlu_other": 0.663462,
+    "mmlu_philosophy": 0.8125,
+    "mmlu_prehistory": 0.6875,
+    "mmlu_professional_accounting": 0.375,
+    "mmlu_professional_law": 0.625,
+    "mmlu_professional_medicine": 0.5625,
+    "mmlu_professional_psychology": 0.625,
+    "mmlu_public_relations": 0.5625,
+    "mmlu_security_studies": 0.75,
+    "mmlu_social_sciences": 0.697917,
+    "mmlu_sociology": 0.625,
+    "mmlu_stem": 0.582237,
+    "mmlu_us_foreign_policy": 0.6875,
+    "mmlu_virology": 0.5,
+    "mmlu_world_religions": 0.6875
+   },
+   "file": ".wrapup/mres/m141-native-gemma12b-q4/lmeval_mmlu_2026-10-13T19-02-52.960431.json",
+   "n_subjects": 61
+  }
+ }
+}

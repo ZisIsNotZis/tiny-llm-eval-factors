@@ -113,7 +113,7 @@
 - status: current
 - kind: measured
 - evidence: `.wrapup/mres/{m63-qwen-2b-iq3xxs,m64-qwen-2b-q2kxl}/codegen/humaneval/*.raw.jsonl`、`*.jsonl`、`*_eval_results.json`
-- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/channel_audit.py"`
+- repro: 本机有 `.wrapup/mres` 时 `python3 "docs/subprojects/a01-量化位宽/analysis/channel_audit.py"`；干净 clone 里用入库快照 `analysis/fixtures/mres_snapshot.json`（来源逐文件 sha256 在 `_provenance.sources`），判定入口 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"`，漂移校验 `python3 "docs/subprojects/a01-量化位宽/analysis/make_fixtures.py" --check`
 - 会推翻它：出现一格大比例的 timeout、或 sanitize 把某一格的完成物系统性判坏（例如残留围栏数远大于分差题数），或 raw（未 sanitize）路径下的分数排序与入库值不同。
 
 ### knee-estimable :: 21 条「家族 × 供应商方案大类」series 里只有 Qwen3.5-2B（7 个位宽点）能估出拐点：HumanEval+ 4.928 [3.655, 4.928]、MBPP+ 3.655 [3.655, 4.928]、MMLU 3.961 [3.655, 4.109]、ARC-c 3.655 [3.655, 5.696]、GSM8K 3.961 [3.655, 4.928]、IFEval 3.961 [3.655, 4.928]（比特/权重）；TruthfulQA 不可估（非伯努利列）；其余 20 条 series 只有 2–3 个位宽点，拐点不可估。
@@ -194,7 +194,7 @@
 - status: current
 - kind: measured
 - evidence: `.wrapup/mres/m105-gemma-12b-q3kxl/lmeval_mmlu_*.json` 与 `.wrapup/mres/m141-native-gemma12b-q4/lmeval_mmlu_*.json` 的逐科目 `acc`；两次运行的 `cmd.txt` 逐字相同（同一个 shim、`--tasks mmlu --limit 100`、`max_length=8192`）
-- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/mmlu_subjects.py"`
+- repro: 本机有产物时 `python3 "docs/subprojects/a01-量化位宽/analysis/mmlu_subjects.py"`；逐科目表在入库快照 `fixtures/mres_snapshot.json` 的 `mmlu_subjects` 下，`run_all.py` 从快照断言（61 科目 / 51 升 / 中位 +0.2500 / 整体 +0.2263）
 - 说明：均匀平移说明不是少数科目坏了，而是整体判分条件变了；且库里这个文件只有**一次**测量，没有重复可比。剩下的两个候选是「原生 Q4 档这个文件真的更好」与「MMLU 这一列的判分条件在两个文件上不同（模板/分词/似然归一）」——后者需要一次同 shim 的复测或一次生成式 MMLU 对照才能判，见 `PLAN.md` 的 GPU 队列。
 - 会推翻它：同 shim 复测得到与 0.6436 差 0.05 以上的值。
 

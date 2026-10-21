@@ -8,16 +8,26 @@
 退出 0 = 每条预期都成立；1 = 至少一条不成立（打印是哪条）；2 = 数据不足（缺文件/缺行）。
 
 每条预期对应 `RESULT.md` 里的一个事实 id，命名与那条事实一致。数据只读 `experiments.sqlite`
-与 `.wrapup/mres/*`，不写库、不改报告。
+（入库）、`.wrapup/bpw_map.json`（入库）与 `analysis/fixtures/mres_snapshot.json`（入库快照，
+因为 `.wrapup/mres/*` 被 .gitignore 忽略——干净 clone 里只有这份快照）；本机存在 `.wrapup/mres`
+时再与现算值交叉校验。不写库、不改报告。
+
+    --fixture PATH   换一份快照（负控用：删掉一条 → 断言必须变红）
+    --selftest       另外把一条断言反过来，证明脚本会失败
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import curves                                             # noqa: E402
 import channel_audit                                      # noqa: E402
+import make_fixtures                                      # noqa: E402
+
+FIXTURE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "mres_snapshot.json")
+FIXTURE_PATH = FIXTURE
 
 DIVERGED = []
 COUNT = 0
@@ -53,6 +63,10 @@ def pair_rows(cc, needle, qa, qb):
 
 
 def main(argv):
+    global FIXTURE_PATH
+    FIXTURE_PATH = FIXTURE
+    if "--fixture" in argv:
+        FIXTURE_PATH = argv[argv.index("--fixture") + 1]
     cc = curves.con()
     selftest = "--selftest" in argv
 
@@ -75,12 +89,24 @@ def main(argv):
         lo2, hi2 = q4["humaneval-plus"][4], q4["humaneval-plus"][5]
         expect(lo2 < 0 < hi2, "q2kxl-iq3-4b", f"HumanEval+ 差区间 [{lo2:+.4f}, {hi2:+.4f}] 跨 0")
 
-    # ---- t2-channel-excluded：判分通道不能解释那 22 题
-    rows = {}
-    for panel in ("m63-qwen-2b-iq3xxs", "m64-qwen-2b-q2kxl"):
-        rows[panel] = channel_audit.audit(panel, "humaneval")
-    a, b = rows["m63-qwen-2b-iq3xxs"], rows["m64-qwen-2b-q2kxl"]
-    expect(a and b, "t2-channel-excluded", "两格落盘完成物都在")
+    # ---- t2-channel-excluded：判分通道不能解释那 22 题（数字来自入库快照，本机有产物时对现算交叉校验）
+    snap = {}
+    try:
+        snap = json.load(open(FIXTURE_PATH, encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        expect(False, "fixture", f"读不到入库快照 {FIXTURE_PATH}：{exc}")
+    live = make_fixtures.build()                    # 无 .wrapup/mres 时返回 None（干净 clone 的正常情形）
+    if live is None:
+        print("  note  fixture             :: 本机无 .wrapup/mres：跳过与现算的交叉校验，判定只用入库快照")
+    else:
+        drift = make_fixtures.diff(snap, live)
+        expect(not drift, "fixture-fresh",
+               "快照与现算一致" if not drift else f"漂移 {len(drift)} 处：{drift[:3]}")
+    ca = snap.get("channel_audit", {})
+    a = ca.get("m63-qwen-2b-iq3xxs/humaneval")
+    b = ca.get("m64-qwen-2b-q2kxl/humaneval")
+    expect(bool(a and b), "t2-channel-excluded",
+           "两格通道数字都在快照里" if a and b else f"快照缺条目（a={bool(a)} b={bool(b)}）")
     if a and b:
         expect(a["fence_raw"] / a["n"] > 0.9 and b["fence_raw"] / b["n"] > 0.9, "t2-channel-excluded",
                f"原始完成物围栏率 {a['fence_raw']}/{a['n']} 与 {b['fence_raw']}/{b['n']}（两格同样处理）")
@@ -185,6 +211,24 @@ def main(argv):
             if a2 and b2:
                 expect(abs(a2[0] - b2[0]) < 0.05, "gemma12b-mmlu-uniform",
                        f"{curves.SHORT[bench]} 只动 {a2[0]-b2[0]:+.4f}（<0.05，与 MMLU 的跳不同量级）")
+
+    # ---- gemma12b-mmlu-uniform（逐科目表来自快照）：均匀平移而不是少数科目崩坏
+    import statistics
+    A_acc = (snap.get("mmlu_subjects", {}).get("m105-gemma-12b-q3kxl") or {}).get("acc")
+    B_acc = (snap.get("mmlu_subjects", {}).get("m141-native-gemma12b-q4") or {}).get("acc")
+    expect(bool(A_acc and B_acc), "gemma12b-mmlu-uniform",
+           "两档的逐科目表都在快照里" if A_acc and B_acc else "快照缺 MMLU 科目表")
+    if A_acc and B_acc:
+        common = sorted(set(A_acc) & set(B_acc))
+        ds = [B_acc[k] - A_acc[k] for k in common]
+        up = sum(1 for d in ds if d > 0)
+        shift = statistics.mean(B_acc[k] for k in common) - statistics.mean(A_acc[k] for k in common)
+        expect(len(common) == 61, "gemma12b-mmlu-uniform", f"共同科目 {len(common)}（应 61）")
+        expect(up == 51, "gemma12b-mmlu-uniform", f"上升科目 {up}/61")
+        expect(abs(statistics.median(ds) - 0.25) < 1e-9, "gemma12b-mmlu-uniform",
+               f"中位科目差 {statistics.median(ds):+.4f}（应 +0.2500）")
+        expect(abs(shift - 0.2263) < 5e-4, "gemma12b-mmlu-uniform",
+               f"整体平移 {shift:+.4f}（应 +0.2263）")
 
     # 负控：把 HumanEval+ 的区间判断反过来，脚本必须失败
     if selftest:
