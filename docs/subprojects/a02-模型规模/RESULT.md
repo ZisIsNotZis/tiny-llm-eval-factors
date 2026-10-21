@@ -57,8 +57,8 @@
 - status: current
 - kind: measured
 - from: result.size-not-one-thing
-- origin: `analysis/size_provenance.py`（读 `experiments.sqlite` 的 304 个 `(model, __size, _file_size)` 组 + `/home/z/hf/` 的 GGUF 头）
-- evidence: 通道与行数 `size-null` 1192 / `undecidable` 1112 / `token-rounded` 659 / `clamped-to-file-bytes` 190 / `two-times-file-bytes` 86 / `size-too-large-for-file` 67 / `label-below-total` 58，合计 3364（= 库当前行数），`other` 为 0（真参数量已知却解释不通的行一条也没有）。真参数量来源：169 个 `(model, size)` 组 / 76 个模型文件 / 1970 行由 GGUF 张量元素求和测得（`truth_source=gguf-tensors` 或 `fixture`，两者同源），无一组来自猜测。
+- origin: `analysis/size_provenance.py`（读 `experiments.sqlite` 的 305 个 `(model, __size, _file_size)` 组 + `/home/z/hf/` 的 GGUF 头）
+- evidence: 通道与行数 `size-null` 1192 / `undecidable` 1112 / `token-rounded` 659 / `clamped-to-file-bytes` 190 / `two-times-file-bytes` 86 / `size-too-large-for-file` 67 / `label-below-total` 58，合计 3364（= 库当前行数），`other` 为 0（真参数量已知却解释不通的行一条也没有）。真参数量来源：170 个 `(model, size)` 组 / 77 个模型文件 / 2101 行由 GGUF 张量元素求和测得（`truth_source=gguf-tensors` 或 `fixture`，两者同源），无一组来自猜测。
 - repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_provenance.py" | head -12`（实跑输出：上表七行通道计数）
 - repro: `python3 "docs/subprojects/a02-模型规模/analysis/size_provenance.py" --check`（实跑输出：`36 expected true, 0 false`，退出 0）
 
