@@ -67,7 +67,7 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/size_claims.json report_inputs/kv_evidence.json \
          report_inputs/bfcl_gap.json report_inputs/moe_feasibility.json \
          report_inputs/bfcl_judge.json report_inputs/gsq.json \
-         report_inputs/sampling_collapse.json \
+         report_inputs/sampling_collapse.json report_inputs/spec_decode.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -91,6 +91,20 @@ if python3 report_inputs/build_sampling_collapse.py --check >/dev/null 2>&1; the
 else
     record WARN "sampling_collapse.json 与 a06 的事实不一致：python3 report_inputs/build_sampling_collapse.py"
 fi
+out=$(python3 report_inputs/build_spec_decode.py --check 2>&1); rc=$?
+case "$rc" in
+    0) record PASS "spec_decode.json 与 a07 的证据一致" ;;
+    2) record SKIP "$(printf '%s' "$out" | grep -m1 '^UNVERIFIED:' | sed 's/^UNVERIFIED: //')" ;;
+    *) record WARN "spec_decode.json 与 a07 的证据不一致：python3 report_inputs/build_spec_decode.py" ;;
+esac
+
+if python3 checks/spec_decode_negative_control.py >/tmp/reproduce_sd.$$ 2>&1; then
+    record PASS "第七/八节的负控（差异改 0 → 正文改口；地板改有差异 → 构建失败）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_sd.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_sd.$$
+
 if python3 checks/sampling_collapse_negative_control.py >/dev/null 2>&1; then
     record PASS "第六节厂房档口径的负控（丢题数改 0 → 无差）"
 else

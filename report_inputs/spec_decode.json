@@ -1,0 +1,256 @@
+{
+ "source_dir": "docs/subprojects/a07-投机解码/fixtures",
+ "sources": {
+  "ident_pairs": "docs/subprojects/a07-投机解码/fixtures/ident_pairs.tsv",
+  "ident_arms": "docs/subprojects/a07-投机解码/fixtures/ident_arms.tsv",
+  "ident_control": "docs/subprojects/a07-投机解码/fixtures/ident_control.tsv",
+  "ident_peritem": "docs/subprojects/a07-投机解码/fixtures/ident_peritem.tsv",
+  "speed_depth": "docs/subprojects/a07-投机解码/fixtures/speed_depth.tsv",
+  "device": "docs/subprojects/a07-投机解码/fixtures/device.tsv",
+  "quality_depth": "docs/subprojects/a07-投机解码/fixtures/quality_depth.tsv"
+ },
+ "byte_floor": {
+  "n_pairs": 7,
+  "n_items": 164,
+  "all_identical": true,
+  "differing_total": 0,
+  "sessions": [
+   "m125-spec-0.8b",
+   "m169-ident-08b-mtp",
+   "m170-ident-08b-floor"
+  ]
+ },
+ "spec_effect": {
+  "n_items": 164,
+  "identical": 91,
+  "differing": 73,
+  "pass_none": 52,
+  "pass_spec": 49,
+  "items_none": 164,
+  "items_spec": 164,
+  "pair": {
+   "a": [
+    "m169-ident-08b-mtp",
+    "draft-mtp2"
+   ],
+   "b": [
+    "m169-ident-08b-mtp",
+    "none"
+   ]
+  }
+ },
+ "spec_reproducible": {
+  "pair": [
+   "m125-spec-0.8b",
+   "n2",
+   "m169-ident-08b-mtp",
+   "draft-mtp2"
+  ],
+  "identical": 164,
+  "n_items": 164
+ },
+ "speed_08b": {
+  "gguf": "Qwen3.5-0.8B-UD-Q4_K_XL.gguf",
+  "depth0_tok_s": 423.45,
+  "depth2_tok_s": 534.88,
+  "depth2_pct": 26.3,
+  "depth4_tok_s": 576.19,
+  "depth4_pct": 36.1
+ },
+ "speed_nonmonotone": [
+  {
+   "tag": "m126-spec-2b",
+   "gguf": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
+   "best_depth": 2,
+   "max_depth": 4,
+   "best_tok_s": 360.08,
+   "last_tok_s": 345.24
+  }
+ ],
+ "memory": {
+  "head_bytes_08b": 14212256,
+  "head_pct_08b": 2.54,
+  "runtime": {
+   "m169-vram-08b-mtp": {
+    "none_mib": 1126,
+    "spec_mib": 1222,
+    "delta_mib": 96
+   },
+   "m169-vram-9b": {
+    "none_mib": 5992,
+    "spec_mib": 6368,
+    "delta_mib": 376
+   }
+  }
+ },
+ "quality": {
+  "moved": [
+   {
+    "tag": "m125-spec-0.8b",
+    "bench": "gsm8k",
+    "depth": 4,
+    "score": 0.42,
+    "base": 0.46,
+    "delta": -0.04
+   },
+   {
+    "tag": "m125-spec-0.8b",
+    "bench": "humaneval",
+    "depth": 2,
+    "score": 0.29878,
+    "base": 0.317073,
+    "delta": -0.018293
+   },
+   {
+    "tag": "m125-spec-0.8b",
+    "bench": "ifeval",
+    "depth": 2,
+    "score": 0.52,
+    "base": 0.58,
+    "delta": -0.06
+   },
+   {
+    "tag": "m126-spec-2b",
+    "bench": "gsm8k",
+    "depth": 2,
+    "score": 0.54,
+    "base": 0.6,
+    "delta": -0.06
+   },
+   {
+    "tag": "m126-spec-2b",
+    "bench": "humaneval",
+    "depth": 4,
+    "score": 0.554878,
+    "base": 0.506098,
+    "delta": 0.04878
+   },
+   {
+    "tag": "m126-spec-2b",
+    "bench": "ifeval",
+    "depth": 2,
+    "score": 0.72,
+    "base": 0.66,
+    "delta": 0.06
+   },
+   {
+    "tag": "m127-spec-4b",
+    "bench": "gsm8k",
+    "depth": 4,
+    "score": 0.9,
+    "base": 0.92,
+    "delta": -0.02
+   },
+   {
+    "tag": "m127-spec-4b",
+    "bench": "humaneval",
+    "depth": 2,
+    "score": 0.804878,
+    "base": 0.829268,
+    "delta": -0.02439
+   },
+   {
+    "tag": "m127-spec-4b",
+    "bench": "ifeval",
+    "depth": 4,
+    "score": 0.82,
+    "base": 0.78,
+    "delta": 0.04
+   },
+   {
+    "tag": "m128-spec-9b",
+    "bench": "gsm8k",
+    "depth": 4,
+    "score": 0.98,
+    "base": 0.96,
+    "delta": 0.02
+   },
+   {
+    "tag": "m128-spec-9b",
+    "bench": "humaneval",
+    "depth": 2,
+    "score": 0.890244,
+    "base": 0.871951,
+    "delta": 0.018293
+   },
+   {
+    "tag": "m128-spec-9b",
+    "bench": "ifeval",
+    "depth": 2,
+    "score": 0.86,
+    "base": 0.88,
+    "delta": -0.02
+   },
+   {
+    "tag": "m129-spec-35b",
+    "bench": "humaneval",
+    "depth": 4,
+    "score": 0.908537,
+    "base": 0.914634,
+    "delta": -0.006098
+   },
+   {
+    "tag": "m129-spec-35b",
+    "bench": "ifeval",
+    "depth": 4,
+    "score": 0.84,
+    "base": 0.86,
+    "delta": -0.02
+   }
+  ],
+  "unchanged": [
+   {
+    "tag": "m125-spec-0.8b",
+    "bench": "mmlu",
+    "depth": 0,
+    "score": 0.524123,
+    "base": 0.524123,
+    "delta": 0.0
+   },
+   {
+    "tag": "m126-spec-2b",
+    "bench": "mmlu",
+    "depth": 0,
+    "score": 0.625,
+    "base": 0.625,
+    "delta": 0.0
+   },
+   {
+    "tag": "m127-spec-4b",
+    "bench": "mmlu",
+    "depth": 0,
+    "score": 0.745614,
+    "base": 0.745614,
+    "delta": 0.0
+   },
+   {
+    "tag": "m128-spec-9b",
+    "bench": "mmlu",
+    "depth": 0,
+    "score": 0.79386,
+    "base": 0.79386,
+    "delta": 0.0
+   },
+   {
+    "tag": "m129-spec-35b",
+    "bench": "gsm8k",
+    "depth": 0,
+    "score": 0.98,
+    "base": 0.98,
+    "delta": 0.0
+   },
+   {
+    "tag": "m129-spec-35b",
+    "bench": "mmlu",
+    "depth": 0,
+    "score": 0.844298,
+    "base": 0.844298,
+    "delta": 0.0
+   }
+  ]
+ },
+ "wall_clock_minutes": {
+  "none": 3.8,
+  "draft-mtp:2": 3.64
+ }
+}

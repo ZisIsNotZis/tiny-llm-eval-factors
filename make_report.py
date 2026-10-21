@@ -1039,6 +1039,97 @@ def mpl_py_corpus_note():
             f"但<b>不能直接当同一代比较</b>。</li>")
 
 
+SPEC_DECODE_INDEX = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                    "report_inputs", "spec_decode.json")
+
+
+def _spec():
+    """a07 的投机解码派生索引；缺了就不许出这一段（不是省掉几句，而是构建失败）。"""
+    with open(SPEC_DECODE_INDEX, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def spec_speed_html():
+    """第七节（速度）：数字全部来自派生索引，索引来自 a07 随仓库分发的 fixtures。"""
+    d = _spec()
+    s = d["speed_08b"]
+    nm = d["speed_nonmonotone"]
+    m = d["memory"]
+    rt = m["runtime"]
+    rt08 = rt.get("m169-vram-08b-mtp", {})
+    rt9 = rt.get("m169-vram-9b", {})
+    out = [
+        f"<li><b>换到了多少速度（深度 2 vs 不开）</b>：{s['gguf']} 上 {s['depth0_tok_s']:.2f} → "
+        f"{s['depth2_tok_s']:.2f} tok/s（<b>+{s['depth2_pct']:.1f}%</b>），深度 4 到 "
+        f"{s['depth4_tok_s']:.2f}（+{s['depth4_pct']:.1f}%）。计时取 llama-server 自己报的 "
+        f"<code>predicted_per_second</code>，同 ctx、<code>-np 1</code>、3 次重复请求的均值；"
+        f"逐次值没有落盘，所以<b>没有区间</b>。</li>",
+    ]
+    if nm:
+        x = nm[0]
+        out.append(
+            f"<li><b>「深度越大越快」不是普适句</b>：{x['gguf']} 上最深一档反而低于深度 2"
+            f"（{x['best_tok_s']} → {x['last_tok_s']} tok/s）。所以这张图要按模型读，不要外推。</li>")
+    wall = d.get("wall_clock_minutes") or {}
+    wall_txt = ""
+    if "none" in wall and "draft-mtp:2" in wall:
+        wall_txt = f"（同一对臂的墙钟是 {wall['none']:g} 分钟 vs {wall['draft-mtp:2']:g} 分钟）"
+    out.append(
+        "<li><b>墙钟不能当速度对照。</b>" + wall_txt + "：两臂生成的 token 总数不同"
+        "（分数不同 → 提前停止的位置不同），而且取数时卡上一直有别人的进程。速度列只认 llama-server 的计时。</li>")
+    if rt08 and rt9:
+        out.append(
+            f"<li><b>两种显存口径，不许相加。</b>MTP 头的<b>权重</b>开销是同一 gguf 名在两个仓库里的文件字节差："
+            f"{m['head_bytes_08b']:,} B（+{m['head_pct_08b']:.2f}%）；<b>运行期</b>草稿路径多占的是 server 常驻内存："
+            f"0.8B {rt08['none_mib']} → {rt08['spec_mib']} MiB（<b>+{rt08['delta_mib']} MiB</b>）、"
+            f"9B {rt9['none_mib']} → {rt9['spec_mib']} MiB（<b>+{rt9['delta_mib']} MiB</b>），ctx 8192、KV 默认。"
+            f"前者是磁盘上的权重，后者是显存里的运行期占用，两个口径不能相加成一个数。</li>")
+    out.append(
+        "<li><b>看图要点：</b>G1 的线端标了相对深度 0 的提速百分比，同一模型内比较，不跨模型比较绝对 tok/s。</li>")
+    return "<ul>" + "".join(out) + "</ul>"
+
+
+def spec_quality_html():
+    """第八节（质量）：前两条是字节层的对照，第三条是分数，第四条是「这一列能不能照抄」的结论。"""
+    d = _spec()
+    f = d["byte_floor"]
+    e = d["spec_effect"]
+    r = d["spec_reproducible"]
+    if not f["all_identical"]:
+        raise SystemExit("字节地板不为 0：a07 的 fixtures 说同配置跨会话有差异，报告不能再说地板是 0")
+    out = [
+        f"<li><b>先量字节地板：0。</b>{f['n_pairs']} 对「同文件、同贪心旗标、同一批 {f['n_items']} 题、"
+        f"不同会话」的完成物两两<b>逐字节相同</b>（{f['n_items']}/{f['n_items']}，差异 "
+        f"{f['differing_total']}）。所以后面看到的任何差异都不是抖动。</li>",
+        f"<li><b>开 <code>draft-mtp:2</code> 之后输出变了。</b>同一会话里只改草稿深度：{e['n_items']} 题中 "
+        f"<b>{e['identical']} 条逐字节相同、{e['differing']} 条不同</b>；分数 "
+        f"{e['pass_none']}/{e['items_none']} → {e['pass_spec']}/{e['items_spec']}。</li>",
+    ]
+    if r and r.get("identical") == r.get("n_items"):
+        out.append(
+            f"<li><b>两侧都能跨会话复现</b>：投机臂 {r['pair'][0]}·{r['pair'][1]} 与今天的 "
+            f"{r['pair'][2]}·{r['pair'][3]} 也是 {r['identical']}/{r['n_items']} 逐字节相同。"
+            f"所以「{e['differing']} 条不同」是这条路径的稳定行为，可以归因给草稿路径，不是一次偶然。</li>")
+    if e["differing"]:
+        out.append(
+            f"<li><b>结论——质量列不能照抄基线，必须每次重测。</b>逐题判定有 {e['differing']} 题不同，"
+            f"分数{'少' if e['pass_spec'] < e['pass_none'] else '多'} "
+            f"{abs(e['pass_spec'] - e['pass_none'])} 道题：开投机买的是速度，"
+            f"分数要按每一条臂自己的产物重算，不能把 <code>none</code> 列的数搬过来。</li>")
+    else:
+        out.append(
+            "<li><b>输出与不投机逐字节相同</b>（本次数据的结论）：这一列可以直接复用基线；"
+            "但这个判断只能来自逐字节对照，不能靠「应该不会变」。</li>")
+    out.append(
+        "<li><b>MMLU 在每个深度逐位相同，但那是结构事实、不是质量证据</b>：它走对数似然打分，"
+        "根本不生成 token，草稿路径碰不到它。</li>")
+    out.append(
+        "<li><b>负控：</b><code>spec_evidence.py --selftest</code> 把 <code>quality_depth.tsv</code> 的任一格 "
+        "加 0.05 后 <code>--check</code> 必须变红（退出 1，并点名那一格）——"
+        "捕获见 <code>docs/subprojects/a07-投机解码/evidence/selftest-3a5c0e4.txt</code>。</li>")
+    return "<ul>" + "".join(out) + "</ul>"
+
+
 def table_mpl_langs():
     """MultiPL-E per language: one row per (model, display label), columns = languages.
 
@@ -2133,20 +2224,11 @@ def main():
         ("七、投机解码（速度）",
          "X = 投机解码草稿深度；Y = 每秒生成 token 数（取自 llama-server 自身计时）；系列 = 模型。",
          [T["G1"]], fig_G1(T["G1"]),
-         "<ul>"
-         "<li>草稿深度越大，生成速度越快。</li>"
-         "<li>模型越大，加速收益越大（0.8B 约 +36%，9B 约 +93%）——小模型本身已受内存带宽限制，草稿路径可利用的余量更小。</li>"
-         "<li><b>看图要点：</b>G1 图线端直接标了相对深度 0 的提速百分比，模型越大数字越大、曲线越陡。</li>"
-         "</ul>"),
+         spec_speed_html()),
         ("八、投机解码（质量）",
          "X = 草稿深度；Y = 各基准分数；系列 = 模型。",
          [T["G2"]], fig_G2(T["G2"]),
-         "<ul>"
-         "<li>分数随草稿深度几乎不变，没有一致方向的损伤或增益。</li>"
-         "<li>MMLU 在每个模型、每个深度上<b>逐位相同</b>：它走对数似然打分，不经过草稿模型。这是测量正确的正对照。</li>"
-         "<li>因此投机解码可以放心开：它买速度，不伤质量（在测试的深度范围内）。</li>"
-         "<li><b>看图要点：</b>G2 图右侧的“差值”面板把纵轴放大到 ±0.05，所有点仍贴在 0 线上——MMLU 甚至逐点完全相同。</li>"
-         "</ul>"),
+         spec_quality_html()),
         ("九、思考开关",
          "X = 是否开启思考（reasoning）；Y = GSM8K 分数；系列 = 模型文件。",
          [T["H"]], fig_H(T["H"]),
