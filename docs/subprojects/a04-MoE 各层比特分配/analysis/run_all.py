@@ -134,6 +134,24 @@ def main(argv=None):
     check("pin-fixture", "入库夹具 pin_feasibility.json 与重算一致，22 对（4 可等 / 18 不可等）",
           pin_fixture_matches)
 
+    def third_arm_pinned():
+        """钉住档的第三策略判定：均匀臂 vs exq4 在 HumanEval+ 上可分辨且方向为均匀更高。"""
+        cells, _ = ap.a03.load()
+        a, b = "LFM2.5-8B-A1B-a04-uni45.gguf", "LFM2.5-8B-A1B-m55-exq4.gguf"
+        if a not in cells or b not in cells:
+            return False
+        dbpw = ap.ALLOC[a]["bpw_file"] - ap.ALLOC[b]["bpw_file"]
+        rec = ap.a03.pair_record(b, a, cells, {}, 0.05)
+        if "humaneval-plus" not in rec["cells"]:
+            return False
+        delta, ci = ap.a03.interval(rec, "humaneval-plus")
+        print("    third-arm: Δbpw=%+.4f L1_pw=%.3f HE+ Δ=%+.4f [%+.4f,%+.4f]"
+              % (dbpw, ap.l1_pw(a, b), delta, ci[0], ci[1]))
+        return abs(dbpw) <= 0.05 and ap.l1_pw(a, b) >= 0.15 and delta >= 0.30 and ci[0] > 0
+
+    check("third-arm-pinned", "钉住档（|Δbpw| ≤ 0.05）均匀臂在 HumanEval+ 上高于 exq4 ≥0.30 且区间不含 0",
+          third_arm_pinned)
+
     bad = [c for c in EXPECTED if not c[2]]
     for cid, desc, ok in EXPECTED:
         print("[%s] %-20s %s" % ("PASS" if ok else "FAIL", cid, desc))

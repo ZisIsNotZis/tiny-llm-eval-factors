@@ -8,7 +8,8 @@
 1. **策略 = 张量类别上的比特向量，不是标签名**。按机械规则从实测轮廓判：把 `ffn-expert` 的 bits 记为 `b_exp`，其余有实义桶（`attn`、`embed`、`ffn-dense`、`ffn-shexp`、`other`，不含 `norm`/`router` 这类按 f32 固定的）的参数加权平均记为 `b_non`；`|b_exp − b_non| ≤ 0.5` 记**均匀**，`b_non − b_exp > 0.5` 记**非专家优先**，`b_exp − b_non > 0.5` 记**专家优先**。档位名（`Q3_K_M`、`UD-`、`IQ`、`m55-*`）与上传者名都不是策略，`a03::label-audit` 已证明标签不可靠。
 2. **两个距离量不许混**：`Δbpw`（总有效位宽差）与 `L1_pw`（参数加权分配距离，比特/参数，定义在 `analysis/profiles.py`）。只有 `L1_pw ≫ |Δbpw|` 才是「分配对照」；`L1_pw ≈ |Δbpw|` 的对照基本只是总比特变了，读它时必须同时给 a03 的比特尺子并把预算部分扣掉。
 3. **钉住判据先写死再比**：三档 `|Δbpw| ≤ 0.05 / 0.15 / 0.45`，每条结论必须写明它落在哪一档；跨档不一致就写「只在某档成立」，不许事后挑档。
-4. **分配轮廓只有一个来源**：`docs/subprojects/a03-量化方案与厂商/analysis/fixtures/alloc_map.json`（只读，不改它、不存第二份）。本层自建的配方必须另存 `analysis/fixtures/*.json` 并带 `build/check` 漂移检查，仓库外的东西（`.wrapup/mres/*`、`/home/z/hf/*.gguf`）不能成为断言的唯一来源。
+4. **分配轮廓只有一个来源**：`docs/subprojects/a03-量化方案与厂商/analysis/fixtures/alloc_map.json`（只读，不改它、不存第二份）。本层自建的配方必须另存 `analysis/fixtures/*.json` 并带 `build/check` 漂移检查，仓库外的东西（`.wrapup/mres/*`、`/home/z/hf/*.gguf`）不能成为断言的唯一来源。本层现有两份入库夹具：`alloc_a04.json`（自建臂的轮廓，源是 gguf，`--check` 在有源时比对）与 `pin_feasibility.json`（逐对可等总比特性，两个输入都在仓库里，`--check` 在任何 clone 都成立）；两份都由 `analysis/build_*.py` 生成，**不手改**。
+5. **「能不能等总比特」先查清单再判**：任何以「同一总比特下的分配差」为名的结论，必须先对 `analysis/fixtures/pin_feasibility.json` 确认该对是「可等总比特」；判为「不可等」的对只能当预算比较读。上界用 `(1−s_exp)/s_exp × 层间摆动`，它把全部非专家参数都算成可反向摆动，是**宽松**上界——超界即结论成立，不靠松紧。
 5. **分数只从 `experiments.sqlite` 的只读连接读**（`file:...?mode=ro`）；要写库必须先编号备份、跑 `checks/db_check.py`、用 `migrate_db.py` 入库——本层不做这三件事，写库需求交给拥有数据的层。
 6. **区间用两比例差的 Newcombe method 10**，`n` 取该格自己的 `n_items`；TruthfulQA 的 `acc` 是概率质量均值（`i01::res26`），本层**不把 TruthfulQA 放进策略判定**；`i01::res31` 记 MBPP+ 有 1/378 个任务能被空体拿满。
 7. **temp > 0 的比较不作分配判定**：`i01::res32` 实测 temp 0.3 下同一格逐题 Jaccard 0.53–0.67、分数只摆 6/164，分数摆动系统性低估不稳定。本层的格全是 greedy / temp 0。
