@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """负控：证明 `checks/router_refs.py` 真的会红，而不是一个只会打印 PASS 的形状。
 
-十六条期望，各跑一棵临时树（`tempfile.mkdtemp`，结束即删；仓库一个字节都不动），一行一条、
+二十一条期望，各跑一棵临时树（`tempfile.mkdtemp`，结束即删；仓库一个字节都不动），一行一条、
 末尾 ok 才算过，全部成立才 exit 0：
 
   --- 解析本身 ---
@@ -36,6 +36,19 @@
  15. 路由里一条引用都没有（degenerate） → exit 1 且说明扫描为空（空扫描不是通过）；
  16. 删掉一个路由文件                   → exit 2 且打出 `BLOCKED:`（缺失是外部阻断，不是通过也
      不是失败）。
+
+  --- `::` 前有空格：形状必须被解析或点名，不许分母与抽取一起丢掉它 ---
+ 17. 裸文本 `docs/…/RESULT.md ::res9`（`::` 前有空格、id 在）→ exit 0 且分母是 4（它真的进去了）。
+     与 18 配对：18 的红不是「这个形状天生读不成」造成的；
+ 18. 同一形状换成不存在的 id（`…/RESULT.md ::ghost-z`）→ exit 1 且点名 missing-id。这是「`::` 前
+     有空格」的回归：在 58f40d2 上它是 exit 0，因为分母与抽取一起把这条丢掉了；
+
+  --- 路由器里的遮蔽不许跑到文件尾 ---
+ 19. 路由器里行内代码 `<!--` 后面跟一条死引用 → exit 1 且点名 missing-id（行内代码不是注释，
+     不许把后面吞掉；在 58f40d2 上这条是绿 + 「1 more inside…」）；
+ 20. 同一行内代码 `<!--` 后面跟一条活引用 → exit 0（与 19 配对，证明 19 的红不是行内代码本身）；
+ 21. 路由器里真的未闭合的 `<!--`（不在行内代码里）→ exit 1 且点名 unterminated-mask（遮蔽跑到
+     文件尾时，后面每条引用只会同时掉出分母与抽取）。
 
 合成树里 STATUS.md / FINDINGS.md / README.md 三种输入都用到，因为主脚本要求它至少扫到一条
 STATUS 引用、一条 FINDINGS 引用、一个路径 token——否则它自己就会判「看不见输入」。
@@ -127,6 +140,17 @@ BARE_SPACE_ROW = "| 空格引用 | docs/subprojects/7-demo/RESULT.md:: res9 | �
 # 路由器里的非正文引用：id 是死的，若被当路由就红；它不是路由，所以只能绿 + 印出被跳过的条数。
 DEAD_CITE_FENCED = "\n```markdown\n| 示例 | `docs/subprojects/7-demo/RESULT.md::res777` | 示例 |\n```\n"
 DEAD_CITE_COMMENTED = "\n<!-- 示例：`docs/subprojects/7-demo/RESULT.md::res666` 不是路由 -->\n"
+
+# `::` 前有空格：与 `::` 后空一格相对的那一半。后空一格已在上面第 12 条验过。
+BARE_SPACE_BEFORE = "| 空格式引用 | docs/subprojects/7-demo/RESULT.md ::res9 | 成立 |\n"
+BARE_SPACE_BEFORE_GHOST = "| 空格式引用 | docs/subprojects/7-demo/RESULT.md ::ghost-z | 成立 |\n"
+# 行内代码里的 `<!--` 不是注释开标记；未闭合的真 `<!--` 则是遮蔽跑到文件尾。
+INLINE_COMMENT_DEAD = ("| 注释 | `<!--` 写在行内代码里 |\n"
+                       "| 死引用 | `docs/subprojects/7-demo/RESULT.md::res777` | 示例 |\n")
+INLINE_COMMENT_LIVE = ("| 注释 | `<!--` 写在行内代码里 |\n"
+                       "| 活引用 | `docs/subprojects/7-demo/RESULT.md::res9` | 成立 |\n")
+UNCLOSED_COMMENT_DEAD = ("<!-- 没有闭合的注释\n"
+                         "| 死引用 | `docs/subprojects/7-demo/RESULT.md::res777` | 示例 |\n")
 
 
 def build(root, drop=()):
@@ -308,6 +332,46 @@ def main(argv):
         rc, out = run(tmp)
         expect("missing router file -> 2 + BLOCKED:",
                rc == 2 and "BLOCKED:" in out, f"exit {rc}\n{out}")
+
+        # 17) `::` 前有空格、id 在：必须被读成引用、进分母并解析成功（与 18 配对）
+        build(tmp)
+        (tmp / "FINDINGS.md").write_text(FINDINGS + BARE_SPACE_BEFORE, encoding="utf-8")
+        rc, out = run(tmp)
+        expect("bare `docs/... ::id` (space before ::), id exists -> 0",
+               rc == 0 and "4/4 citations resolved" in out and "MISMATCH" not in out
+               and "missing" not in out, f"exit {rc}\n{out}")
+
+        # 18) 同一形状、id 不存在 → missing-id。58f40d2 上这里是 exit 0（回归的正面攻击）
+        build(tmp)
+        (tmp / "FINDINGS.md").write_text(FINDINGS + BARE_SPACE_BEFORE_GHOST, encoding="utf-8")
+        rc, out = run(tmp)
+        expect("bare `docs/... ::ghost` (space before ::) -> 1 + missing-id",
+               rc == 1 and "missing-id" in out and "ghost-z" in out
+               and "missing-file" not in out, f"exit {rc}\n{out}")
+
+        # 19) 路由器里行内代码的 `<!--` 不是注释：后面的死引用必须被看见并抹红
+        build(tmp)
+        (tmp / "FINDINGS.md").write_text(FINDINGS + INLINE_COMMENT_DEAD, encoding="utf-8")
+        rc, out = run(tmp)
+        expect("inline-code `<!--` in a router, dead citation after -> 1",
+               rc == 1 and "missing-id" in out and "res777" in out
+               and "(not routes)" not in out, f"exit {rc}\n{out}")
+
+        # 20) 同一行内代码 `<!--` 后面跟活引用 → 绿（与 19 配对）
+        build(tmp)
+        (tmp / "FINDINGS.md").write_text(FINDINGS + INLINE_COMMENT_LIVE, encoding="utf-8")
+        rc, out = run(tmp)
+        expect("inline-code `<!--` in a router, live citation after -> 0",
+               rc == 0 and "missing" not in out, f"exit {rc}\n{out}")
+
+        # 21) 真的未闭合的 `<!--`（不在行内代码里）→ 遮蔽跑到文件尾，必须红而不是静默吞掉
+        build(tmp)
+        (tmp / "FINDINGS.md").write_text(FINDINGS + UNCLOSED_COMMENT_DEAD, encoding="utf-8")
+        rc, out = run(tmp)
+        expect("unclosed `<!--` in a router -> 1 + unterminated-mask",
+               rc == 1 and "unterminated-mask" in out
+               and f"FINDINGS.md:{FINDINGS.count(chr(10)) + 1}" in out,
+               f"exit {rc}\n{out}")
     finally:
         if args.keep:
             print(f"temp tree kept at {tmp}")
@@ -323,7 +387,8 @@ def main(argv):
         print(f"FAIL: {failures} expectation(s) did not hold — 负控不成立，检查无法被证明会红")
         return 1
     print("PASS: router_refs.py 在未改动的树上绿，在故意破坏的树上红：解析、反引号边界、围栏与注释里"
-          "的假 id、换行劈开的引用、`::` 后带空格的引用、围栏/注释里的死引用（绿但计数可见）、空扫描、"
+          "的假 id、换行劈开的引用、`::` 后带空格的引用、`::` 前带空格的引用、行内代码 `<!--` 后的死"
+          "引用、未闭合注释（遮蔽跑到文件尾）、围栏/注释里的死引用（绿但计数可见）、空扫描、"
           "缺路由文件；仓库未被改动")
     return 0
 

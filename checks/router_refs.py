@@ -22,11 +22,17 @@
     遮蔽之后的文本上做：写在围栏或注释里的 `## id` 不是 id，写在那里的 `docs/…::id` 不是路由。
     否则在 RESULT.md 末尾贴一段示例代码就能凭空造出一个「解析得到」的 id，或在路由器里贴一段
     注释掉的引用就能让它自己绿。
+  * 行内反引号 span 里的 `<!--`（例如 `` `<!--` ``）**不是**注释开标记：那是行内代码。把它当注释，
+    它后面同一行直到文件尾的每条引用都会同时掉出分母与抽取，绿的只是「什么都没看见」。
+  * 路由器（三个文件）里遮蔽不许跑到文件尾：未闭合的围栏或 `<!--` 会把后面每条引用一起吞掉，
+    同样只留下一个自洽的绿。`mask_non_route` 因此报出遮蔽起点行，`scan` 判一条 `unterminated-mask`
+    红行。文档一侧不需要这条：那里遮蔽过头只会让 id 少算，于是引用判 `missing-id`，本来就红。
 
-分母独立于抽取器，这是这条检查的第二半。`docs/…::` 形状按一条不看 id 的规则数：`::` 之前同一行内
-最近的 `docs/` 与它之间没有反引号（反引号是 token 边界），且 `::` 紧邻的前一个字符不是空白。于是
-id 换行写（`…/RESULT.md::` 换行接 id）或写成 `…:: resdead` 时，这条形状照样进分母；抽取器读不到
-它，就在那一行报一条 `unparsed-citation` 红行，自检行也跟着不等——不会出现 `seen == matched` 而
+分母独立于抽取器，这是这条检查的第二半。`docs/…::` 形状按一条不看 id 的规则数：同一行内 `::` 前面
+最近的 `docs/` 与它之间没有反引号（反引号是 token 边界），就进分母——`::` 前有没有空白不影响计数。
+抽取器接受 `::` 前的可选空白，所以 `docs/X.md ::ghost` 会被读成一条引用、按 id 判 `missing-id`；
+它读不成的形状（`…/RESULT.md::` 换行接 id、`…:: resdead`）则在该行印一条 `unparsed-citation`
+红行，自检行 `seen != matched` 随之 `MISMATCH`。两条路都只通向红，不会出现 `seen == matched` 而
 某条引用已经悄悄掉出分母的自洽绿。
 
 不解析的两类，各自有理由：token 里带 `<` 或 `>` 的是模板（`docs/<layer>/<layer>.yaml`），它写的是
@@ -39,8 +45,8 @@ id 换行写（`…/RESULT.md::` 换行接 id）或写成 `…:: resdead` 时，
 背面同样有代价，且同样可见：裸文本（没加反引号）里的带空格路径仍按空白截断，于是报成一条
 `missing-file` 红行——它不会静默消失，读的人看到的是「这条要么写错了边界，要么路径不存在」。
 同一条道理推到分母上：裸文本里把 `docs/…::` 拿来当例子写（不放进反引号）会报一条
-`unparsed-citation` 红行。这是有意的方向——宁可让一个示例红，也不让一条真引用绿；要举例就放进
-反引号 span 里或放进围栏/注释里（那两处不是路由，会被数出来）。
+`missing-id` 或 `unparsed-citation` 红行，两种都不会静默消失。这是有意的方向——宁可让一个示例红，
+也不让一条真引用绿；要举例就放进反引号 span 里或放进围栏/注释里（那两处不是路由，会被数出来）。
 引用 token 的 id 按上面那条 id 规则比较，所以把整行标题写进 `::` 后面的引用（id 里带空格）会报
 `missing-id`；这条判的是路由写没写出一个 id，不是散文。
 
@@ -55,8 +61,8 @@ id 换行写（`…/RESULT.md::` 换行接 id）或写成 `…:: resdead` 时，
     python3 checks/router_refs.py                  # 仓库根由脚本自身位置推出
     python3 checks/router_refs.py --root /tmp/x    # 负控用临时树，语义完全相同
 
-退出码：0 全部解析且扫描非空；1 有无法解析的引用/路径、读不成引用的 `docs/…::` 形状、扫描为空，
-或自检不等（引用掉出分母）；2 路由文件缺失。
+退出码：0 全部解析且扫描非空；1 有无法解析的引用/路径、读不成引用的 `docs/…::` 形状、路由器里
+未闭合的围栏/注释、扫描为空，或自检不等（引用掉出分母）；2 路由文件缺失。
 """
 from __future__ import annotations
 
@@ -72,7 +78,8 @@ ROUTERS = ("STATUS.md", "FINDINGS.md", "README.md")
 # 都截断。全角冒号 `：` 一并截断，半角 `:` 留着——`::` 要用它。反引号 span 里的 token 不走这条
 # 正则，它是整个 span 内容（空格算在内）。
 _BARE_TAIL = r"[^\s`'\"()\[\]{}|*，。、；：！？【】（）「」“”]+"
-CITATION_RE = re.compile(r"docs/" + _BARE_TAIL + r"?::[A-Za-z0-9_.\-]+")
+# `::` 前的空白可写可不写：`docs/X.md::id` 与 `docs/X.md ::id` 都是引用，都会被解析并按 id 判。
+CITATION_RE = re.compile(r"docs/" + _BARE_TAIL + r"?[ \t]*::[A-Za-z0-9_.\-]+")
 PATH_RE = re.compile(r"docs/" + _BARE_TAIL)
 # 分母只看 `::` 这个形状，不看它后面有没有 id：id 缺失正是要被抓到的形态。
 MARK_RE = re.compile(r"::")
@@ -86,9 +93,15 @@ FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 def mask_non_route(text):
     """把围栏代码块与 HTML 注释换成等长空白，换行留住（行号与列偏移不变）。
 
-    返回遮蔽后的文本。判 id 与判引用都用它：围栏里的是示例代码，注释里的是给人看的备注，两者
-    都不是路由正文。已知边角：围栏里出现未闭合的 `<!--`、或注释里出现围栏开标记时，遮蔽会延到
-    那个闭合标记或文件尾；遮蔽过头只会让 id / 引用少算（判红），不会让死引用变绿。
+    返回 (遮蔽后的文本, 遮蔽跑到文件尾时的起始行号或 None)。判 id 与判引用都用遮蔽后的文本：
+    围栏里的是示例代码，注释里的是给人看的备注，两者都不是路由正文。
+
+    `<!--` 只有在**不在行内反引号 span 里**时才是注释开标记：写在反引号里的 `` `<!--` `` 是行内
+    代码，把它当注释会把后面整段正文吞掉。
+
+    遮蔽跑到文件尾（未闭合的围栏或 `<!--`）在文档一侧是安全失败：id 少算，引用判 `missing-id`。
+    在路由器一侧它不是：被遮蔽的引用同时掉出分母与抽取，于是自洽地绿。所以这里把起始行号交出去，
+    由 `scan` 判 `unterminated-mask` 红行。
     """
     out = list(text)
     n = len(text)
@@ -99,11 +112,15 @@ def mask_non_route(text):
                 out[k] = " "
 
     fence = None                       # 打开围栏的 (字符, 长度)，例如 ("`", 3)
+    fence_line = None
     comment_open = False
+    comment_line = None
     i = 0
+    lineno = 0
     while i < n:
         eol = text.find("\n", i)
         eol = n if eol < 0 else eol
+        lineno += 1
         if fence is not None:
             blank(i, eol)
             m = FENCE_RE.match(text[i:eol])
@@ -113,6 +130,7 @@ def mask_non_route(text):
             i = eol + 1
             continue
         started_open = comment_open
+        spans = code_spans(text[i:eol])       # 行内代码里的 `<!--` 不是注释开标记
         j = i
         while j < eol:
             if comment_open:
@@ -127,22 +145,28 @@ def mask_non_route(text):
                 c = text.find("<!--", j, eol)
                 if c < 0:
                     break
+                if any(a <= c - i < b for a, b, _, _ in spans):
+                    j = c + 4            # 行内代码：跳过这个开标记，继续找下一个
+                    continue
                 comment_open = True
+                comment_line = lineno
                 blank(c, c + 4)
                 j = c + 4
         if not started_open and not comment_open:
             m = FENCE_RE.match(text[i:eol])
             if m and (m.group(1)[0] != "`" or "`" not in m.group(2)):
                 fence = (m.group(1)[0], len(m.group(1)))
+                fence_line = lineno
                 blank(i, eol)
         i = eol + 1
-    return "".join(out)
+    open_at = fence_line if fence is not None else (comment_line if comment_open else None)
+    return "".join(out), open_at
 
 
 def ids_in_md(text):
     """二级及更深 ATX 标题的第一个空白分隔 token；围栏与注释里的标题不算 id。"""
     ids = set()
-    for line in mask_non_route(text).split("\n"):
+    for line in mask_non_route(text)[0].split("\n"):
         m = HEADING_RE.match(line)
         if m:
             parts = m.group(2).split()
@@ -204,9 +228,9 @@ def _blank(text, a, b):
 
 
 def _split_citation(token):
-    """`path::id` → (path, id)；id 两端空白与句末标点去掉。"""
+    """`path[ ]::id` → (path, id)；path 与 id 两端的空白与 id 的句末标点去掉。"""
     path, _, node_id = token.partition("::")
-    return path, node_id.strip().rstrip(".,;")
+    return path.strip(), node_id.strip().rstrip(".,;")
 
 
 def tokens_in_line(line):
@@ -252,17 +276,19 @@ def citation_mark_positions(line):
     """这一行里 `docs/…::` 形状的列位置——自检的分母，独立于 token 抽取。
 
     规则不看 `::` 后面的 id（那就和抽取器一起瞎了）：`::` 与同一行内它前面最近的 `docs/` 之间没有
-    反引号，且 `::` 紧邻的前一个字符不是空白，就算一条形状。于是 `…/RESULT.md::` 换行接 id、
-    `…/RESULT.md:: resdead` 这类写法都留在分母里，而散文里孤立的一个 `` `::` `` 不算。
+    反引号（反引号是 token 边界），就算一条形状——`::` 前有没有空白不改变这个判断，所以
+    `…/RESULT.md ::ghost` 也留在分母里。`::` 后面是什么同样不改变它：`…/RESULT.md::` 换行接 id、
+    `…/RESULT.md:: resdead` 都在分母里。散文里孤立的 `` `::` `` 不算，因为它与前面 `docs/` 之间隔着
+    反引号；同一行里没有 `docs/` 的 `::` 也不算。STATUS.md:3 与 FINDINGS.md:3 那两处
+    「`::` 后面是节点 id」正是被这两条挡掉的（前者靠反引号，后者靠同一行没有 `docs/`），不是碰巧。
     """
     positions = []
     prev = 0
     for m in MARK_RE.finditer(line):
         pos = m.start()
-        if pos > prev and not line[pos - 1].isspace():
-            start = line.rfind("docs/", prev, pos)
-            if start >= 0 and "`" not in line[start:pos]:
-                positions.append(pos)
+        start = line.rfind("docs/", prev, pos)
+        if start >= 0 and "`" not in line[start:pos]:
+            positions.append(pos)
         prev = m.end()
     return positions
 
@@ -285,12 +311,15 @@ def scan(root):
     marks_route（遮蔽掉围栏与注释后仍在正文里的形状数）、matched（token 抽取拿到手的引用数）、
     unparsed（留在正文里却没读成引用的形状，逐行一条）。
     """
-    citations, paths, unparsed = [], [], []
+    citations, paths, unparsed, unterminated = [], [], [], []
     skipped = 0
     marks_raw = marks_route = matched = 0
     for name in ROUTERS:
         text = (root / name).read_text(encoding="utf-8")
-        visible = mask_non_route(text)
+        visible, open_at = mask_non_route(text)
+        if open_at is not None:
+            # 路由器里遮蔽跑到文件尾：后面每条引用都会同时掉出分母与抽取，只能判红。
+            unterminated.append((name, open_at))
         for lineno, (raw, line) in enumerate(zip(text.split("\n"),
                                                 visible.split("\n")), 1):
             marks = citation_mark_positions(line)
@@ -327,7 +356,7 @@ def scan(root):
     return {
         "citations": citations, "paths": paths, "skipped": skipped,
         "marks_raw": marks_raw, "marks_route": marks_route, "matched": matched,
-        "unparsed": unparsed,
+        "unparsed": unparsed, "unterminated": unterminated,
     }
 
 
@@ -387,6 +416,8 @@ def main(argv):
             problems.append((name, lineno, token, "missing-file"))
     problems.extend((name, lineno, token, "unparsed-citation")
                     for name, lineno, token in result["unparsed"])
+    problems.extend((name, lineno, "`<!--` / fence", "unterminated-mask")
+                    for name, lineno in result["unterminated"])
     problems.sort(key=lambda p: (p[0], p[1]))
 
     for name, lineno, token, reason in problems:

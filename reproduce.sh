@@ -198,7 +198,7 @@ out=$(python3 checks/router_refs.py 2>&1); rc=$?
 case "$rc" in
     0) record PASS "路由文件的引用都可解析（$(printf '%s' "$out" | grep -m1 'resolved' | sed 's/^ *//')）" ;;
     2) record BLOCKED "路由文件缺失：$(printf '%s' "$out" | grep -m1 '^BLOCKED:' | sed 's/^BLOCKED: //')" ;;
-    *) record FAIL "路由文件里有无法解析的引用（$(printf '%s' "$out" | grep -c -e 'missing-' -e 'unparsed-')条）：python3 checks/router_refs.py" ;;
+    *) record FAIL "路由文件里有无法解析的引用（$(printf '%s' "$out" | grep -c -e 'missing-' -e 'unparsed-' -e 'unterminated-')条）：python3 checks/router_refs.py" ;;
 esac
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
