@@ -11,7 +11,18 @@
   (2) **标签能否存活**：把比特预算钉住之后，剩下的「方案」标签还能不能与**比特分配**分开——也就是这条标签在这份数据里到底是一个独立变量，还是分配的另一个名字；
   (3) **没有匹配对时读者该读出什么**：本库不存在与第三方档同字节的原生档，那么这个缺口的代价是多少分、什么大小的结论因此不能下。
 - done 判据：`python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py"` 退出 0（逐条断言打印是否成立，`--selftest` 能把它翻红），干净 clone 里同样退出 0，且 `RESULT.md` 的每个数字后面都有一条别人能重跑的命令。
-- **两条写死的复现口径**（不带就会得到假绿）：①夹具的漂移检查一律写成 `A10_NO_GGUF=1 python3 ".../build_fixture.py" --check`——不带该变量时，干净 clone 若跑在**这台机器**上会 glob 到 `/home/z/hf` 并返回 0，那是「源还在」，不是「夹具被验证过」；②`run_all.py` 每次运行都打印一行「本次未核对 gguf 源」，它的绿只覆盖「夹具 + 库」两层，不覆盖「夹具 vs gguf 源」。
+- **复现命令（照抄，别自己改）**：
+  ```bash
+  # ① 干净 clone 里的验收：断言只用入库夹具，所以先关掉仓库外的 gguf 搜索面，再看退出码
+  git clone --depth 1 "file://$PWD" /tmp/a10clone && cd /tmp/a10clone
+  A10_NO_GGUF=1 python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py"        # 期望 0
+  A10_NO_GGUF=1 python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py" --selftest  # 期望 0（三扰全中）
+
+  # ② 夹具的漂移检查：缺源必须退 2，有源才谈「一致」
+  cd "$REPO" && A10_NO_GGUF=1 python3 "docs/subprojects/a10-第三方量化方案/analysis/build_fixture.py" --check   # 缺源 → 2
+  python3 "docs/subprojects/a10-第三方量化方案/analysis/build_fixture.py" --check                              # 有源 → 0（只在这台机器上成立）
+  ```
+- **为什么每条都要带 `A10_NO_GGUF=1`**：不带这个变量时，脚本会 glob 仓库外的 `/home/z/hf/{mscache,models--*}/*.gguf`，而**这台机器上那些文件就在**，于是 `build_fixture.py --check` 返回 **0**——那不是「夹具被验证过」，只是「源还在」，在别处跑会退 2 或崩溃。同一个变量也让「缺输入必须退非 0」这条规则可被主动打红（`AGENTS.md` 第 11 条）。`run_all.py` 本身不读 gguf（它的绿只覆盖「夹具 + 库」两层），所以它带这个变量是显式声明「没有仓库外输入」，并且每次运行都打印一行「本次未核对 gguf 源」。
 - 只有一个里程碑：它是用户同步点，之前不再切分。
 
 ## 当前状态（随时可读：还剩哪些 / 在办 / 下一个派给谁）
@@ -32,8 +43,8 @@
 | WP3 分配装置 | 本层编排者 | `analysis/alloc_a10.py` 从 gguf 头逐张量读比特（复用 `a03::alloc`，不复制分桶定义）：①每个文件的逐类比特轮廓与参数加权平均；②每个第三方档对最近原生档的加权 `|Δ|` 与逐类 Δ；③同一 tier 标签在多个上传者/多套 base 权重上是否给出**逐张量相同**的分配（打印不同的张量计数）；④张量集合是否相同（866 个名字、元素数逐项相等） | WP1 | ≤20 CPU 分钟 | **完成**（`tensor-set`/`recipe-determinate`/`alloc-gap`） |
 | WP4 标签能否存活 | 本层编排者 | 用 WP2+WP3 的机器读数判定「钉住比特之后剩下的标签还能不能与分配分开」，并给出**否证条件**；同时机械证明本库是否存在「同字节 + 同分配 + 不同方案」的配对（有/无都要有计数，无则写「不存在」并写它需要多少钱）；附带一条可复算事实：报告的分类器（`mktables.split_quant`/`family_of`/`scheme_class`）对这批文件名读出什么 | WP2, WP3 | ≤20 CPU 分钟 | **完成**（`no-held-arm`/`label-verdict`/`classifier-blind`） |
 | WP5 无匹配对的读法 | 本层编排者 | 给出「本库不存在同字节原生档」这一缺口的代价：把位宽缺口乘上位宽尺子（`a03::slopes` 的逐列斜率）得到「缺口值多少分」，与逐列二项半宽、与原生阶梯自身的非单调波动一起排成一张表；结论写成读者规则（能下的结论 / 不能下的结论 + 各自门槛），每条带数字 | WP2 | ≤20 CPU 分钟 | **完成**（`resolution`/`reader-rule`） |
-| WP6 收口 | 本层编排者 | `analysis/fixtures/a10_map.json` 入库并带 sha256 绑定（分数格 + 位宽 + 逐类分配 + 逐张量分配指纹）；`analysis/build_fixture.py --check` 做漂移检查、**缺源时退出 2 而不是 0**；`analysis/run_all.py` 全部断言成立（退出 0）；`--selftest` 三份已知错误的副本各自翻红在预期条目上（负控成立时退出 0）；干净 clone 里退出 0 | WP2–WP5 | ≤45 CPU 分钟 | **完成**（41 条成立；`--selftest` 三扰全中；干净 clone 退出 0；`run_all.py` 打印「本次未核对 gguf 源」，漂移检查固定写成 `A10_NO_GGUF=1 …--check`） |
-| WP7 独立复核 | fresh-context reviewer（**meta 派**） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；复核者必须先跑命令再判 | WP2–WP6 | ≤30 CPU 分钟/份 | 待派（第一轮已回：ACCEPT WITH NOTES，五项已由 WP8 修完） |
+| WP6 收口 | 本层编排者 | `analysis/fixtures/a10_map.json` 入库并带 sha256 绑定（分数格 + 位宽 + 逐类分配 + 逐张量分配指纹）；`analysis/build_fixture.py --check` 做漂移检查、**缺源时退出 2 而不是 0**；`analysis/run_all.py` 全部断言成立（退出 0）；`--selftest` 三份已知错误的副本各自翻红在预期条目上（负控成立时退出 0）；干净 clone 里退出 0 | WP2–WP5 | ≤45 CPU 分钟 | **完成 + 独立复核完成（ACCEPT WITH NOTES，五处已修）**：41 条成立；`--selftest` 三扰全中；干净 clone 退出 0；`run_all.py` 打印「本次未核对 gguf 源」，漂移检查固定写成 `A10_NO_GGUF=1 …--check`。修完的提交是 `f02d96a`（复核五处见 `WP8`） |
+| WP7 独立复核 | fresh-context reviewer（**meta 派**） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；复核者必须先跑命令再判 | WP2–WP6 | ≤30 CPU 分钟/份 | **已完成（ACCEPT WITH NOTES）**：复核用自己的 sqlite + Wilson/Newcombe 逐位复现 32 个区间、用自己的 gguf 解析器确认 4 对同配方 `type-diff=0/866`；五项缺陷由 `WP8` 修完并在 `f02d96a` 落地 |
 | WP8 复核意见修复 | 本层编排者 | 五处逐条落地：D1 多重比较分母改 18（按 run 14）并改报 p 值（pooled z 0.0379 / Fisher 0.0576，Bonferroni 18 门槛 0.0028）；D2 `alloc-gap` 标题不再写「同字节」；D3 `no-held-arm` 收窄到「本库已入库的第三方文件」并说明 bartowski 那一对不进本轴（不是第三方、且分配差 0.381）；D4 `panel-size` 的人口改成 66 个有规范协议格的文件并给断言；D5 TruthfulQA 差值改取入库分数本身（+0.0523 / −0.0194 / +0.0484 / −0.0009），不再走 `round(score×n)/n` | WP2–WP6 | ≤30 CPU 分钟 | **完成**（`run_all.py` 41 条；五处逐条有断言或 repro 命令） |
 
 调度原则：`WP2` 与 `WP3` 是 `WP4`/`WP5` 的公共装置，先做；两包都是 CPU 只读，重活并发 ≤2；GPU 全程不需要。

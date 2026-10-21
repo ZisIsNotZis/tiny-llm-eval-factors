@@ -50,6 +50,23 @@ def pos_diff(lo, hi, bench, cells):
     return panel.cell_diff(b, a, bench)
 
 
+def population_counts(db_path):
+    """四个常被混用的人口口径：有分数格 / 有规范协议格 / 两者都有位宽 / bpw_map 条目。"""
+    prots = tuple(sorted(set(panel.a03.BENCH.values())))   # 规范协议串（a03 是唯一 home）
+    q = ("SELECT COUNT(DISTINCT model) FROM experiments WHERE _score IS NOT NULL"
+         f" AND protocol IN ({','.join('?' * len(prots))})")
+    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    n_any = con.execute("SELECT COUNT(DISTINCT model) FROM experiments"
+                        " WHERE _score IS NOT NULL").fetchone()[0]
+    n_canon = con.execute(q, prots).fetchone()[0]
+    canon = {r[0] for r in con.execute("SELECT DISTINCT model FROM experiments"
+                                       " WHERE _score IS NOT NULL"
+                                       f" AND protocol IN ({','.join('?' * len(prots))})", prots)}
+    con.close()
+    with_bpw = {m for m in canon if (m if m.endswith(".gguf") else m + ".gguf") in panel.BPW}
+    return n_any, n_canon, len(with_bpw), len(panel.BPW)
+
+
 def check(name, ok, detail=""):
     print(f"  [{'ok' if ok else 'FAIL'}] {name}" + (f" — {detail}" if detail else ""))
     return ok
@@ -82,9 +99,13 @@ def run(doc, db_path):
     # ---- 1b. 人口口径：本层装置覆盖的面与第三方标记的计数 ----
     all_cells, _alldups = panel.a03.load()
     tp_in_pop = sorted(m for m in all_cells if panel.THIRD_PARTY_MARK in m)
-    A("population: 装置覆盖 66 个「有有效位宽且至少一个规范协议格」的文件，其中第三方标记 2 个",
-      len(all_cells) == 66 and tp_in_pop == sorted(tp),
-      f"{len(all_cells)} 个文件；第三方 {tp_in_pop}")
+    n_any, n_canon, n_bpw, n_map = population_counts(db_path)
+    A("population: 212 个有分数格 → 67 个有规范协议格 → 66 个有位宽（装置的分母）→ bpw_map 69 条，"
+      "其中第三方标记 2 个",
+      (n_any, n_canon, n_bpw, n_map) == (212, 67, 66, 69)
+      and len(all_cells) == n_bpw and tp_in_pop == sorted(tp),
+      f"212→67→66→69 实测 {n_any}→{n_canon}→{n_bpw}→{n_map}；装置 {len(all_cells)} 个文件；"
+      f"第三方 {tp_in_pop}")
 
     # ---- 2. 同 tier 标签换上传者/换 base 权重后，逐张量分配是否相同 ----
     for tp_file, tier in doc["tier"].items():

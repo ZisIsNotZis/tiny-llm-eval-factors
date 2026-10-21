@@ -36,7 +36,7 @@
 - kind: measured
 - evidence: `analysis/fixtures/a10_map.json` 的 `files`（每个文件带 `n_bytes` / `n_params` / `bpw_file`）；位宽与 `.wrapup/bpw_map.json` 逐项一致（`run_all.py` 的 `bpw-map` 五条）
 - repro: `python3 "docs/subprojects/a10-第三方量化方案/analysis/alloc_a10.py"`；人口计数：`python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py" | grep population`
-- 说明：本层装置覆盖的面是**66 个**「有有效位宽且至少有一个规范协议格」的文件（`a03::pairs.load()` 的键数，`run_all.py` 的 `population` 一条断言它），其中只有这两个带第三方案标记（`GSQ`/`RCO` 同时出现）。库内另有两个口径都**不是**本层的分母，混用会得到不同的数：`experiments.sqlite` 里 212 个有分数格的模型（含无位宽、无规范协议的探针），`.wrapup/bpw_map.json` 69 条（有位宽但可能一格都没有）。`GLM-4.7-Flash-UD-TQ1_0.gguf` 虽然档位名少见，但它是 unsloth **自己阶梯**的三元档（`UD-TQ1_0`），那一档归 `a01`，不进本轴。
+- 说明：本层装置覆盖的面是**66 个**「有有效位宽且至少有一个规范协议格」的文件（`a03::pairs.load()` 的键数，`run_all.py` 的 `population` 一条断言它），其中只有这两个带第三方案标记（`GSQ`/`RCO` 同时出现）。**这个 66 从哪来，逐层写清，别让读者拿别的口径来对**：`experiments.sqlite` 里 **212** 个模型有分数格 → 其中 **67** 个至少有一个规范协议格 → 其中 **66** 个在 `.wrapup/bpw_map.json` 里有效位宽（差的 1 个是 `LFM2.5-8B-A1B-a04-uni45.gguf`，它没有位宽，所以进不了「位宽 × 分数」这台装置）→ 这 66 个就是本层的分母。反向也逐条对上：`bpw_map` 自己 **69** 条 = 66 条进了装置 + 3 条没进（2 条在库里**根本没有行**：`gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf`、`gemma-4-31B-it-UD-Q4_K_XL.gguf`；1 条有行但**没有规范协议格**：`gemma-4-31B-it-qat-UD-Q4_K_XL.gguf`）。四个数 212 / 67 / 66 / 69 由 `run_all.py` 的 `population` 一条现算并打印（`212→67→66→69`），断言的就是这条链路。`GLM-4.7-Flash-UD-TQ1_0.gguf` 虽然档位名少见，但它是 unsloth **自己阶梯**的三元档（`UD-TQ1_0`），那一档归 `a01`，不进本轴。
 
 ### tensor-set :: 五个面板文件是同一套权重结构：**866 个张量、张量名集合逐项相同、元素数逐项相同、参数量都是 27,320,697,856**。所以「同一族、只换量化文件」在这份数据里是实测的，不是按文件名猜的。
 
