@@ -124,6 +124,17 @@
 - 证据：`.wrapup/mres/i01-shim-probe/probe-output.txt`（本次跑的输出）、`.wrapup/mres/i01-shim-probe/shim_probe.log`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/lmeval_shim_probe.py"`（实跑 `exit=0`；实测 free VRAM 19,029 MiB、峰值占用 6,805 MiB、`n_slots = 1`、耗时约 1 分钟；与 a06 的 m165 并行，属 registry 的 GPU 并发例外）。
 
+### res34 clone 里 `run_all.py` 的 exit 2 是「不可得」，不是失败
+
+- **语义**：`audits/run_all.py` 的退出码是 `0 = 全部测过且成立`、`2 = 有东西不可得（逐项打印缺哪个文件）`、`1 = 红`。干净 clone 落在 **2**：逻辑组照常跑绿，真实数据审计逐项报缺什么。看到一个 2 不等于失败——它与 README「它不能重建的东西」那段同义（模型权重、评测运行本身、CJK 字体等）。
+- **逻辑组在 clone 里为什么能绿**：`audits/scoring_logic_check.py` 只用仓库里已跟踪的文件（`.wrapup/mpl_run.py`、`.wrapup/bfcl_run.py`、gsm8k 的两条抽取正则）与系统编译器（g++ 一例），输入全部内联构造。实测：全树与「空树模拟 clone」两种情况下它都是 `green`。
+- **真实数据组在 clone 里为什么是 2（逐项实测的理由）**：`bfcl_audit` / `lmeval_audit` / `evalplus_audit` 要三个 venv（`.wrapup/{bfclenv,lmenv,evalpy}` 不入库，靠 bootstrap 重建）与数据集（bfcl 包内 / HF 缓存）；`multipl_e_audit` 要格子的 `.jsonl` 完成物（`.gitignore` 只放行 `*_eval.json`）；`noise_floor_compare` 的 EvalPlus 一半要 `.wrapup/wres/**/*_eval_results.json`（**0 个被跟踪**），所以即使四个 MultiPL-E 的 `_eval.json` 已随仓库分发（`i01-slot-*-py-chat_eval.json` 均 tracked），它仍会是 2。
+- **随仓库分发的 i01 证据**：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json` 与 `i01-recheck-g26b-q2-cpp_eval.json` 共 5 份已入库（其余逐题产物与完成物在 `.gitignore` 内，可重跑重建）。
+- **一处需要别人修的矛盾**：README 同时写着「`.wrapup/mres/*_eval.json` … 随仓库分发（337 files）」与「`.wrapup/mres/*_eval.json` 是逐题落盘产物、**不入库**」——同一事实两个家且一真一假（实测 341 个 `*_eval.json` 被跟踪）。README 不属本层，登记待 i02/meta 修。
+- 状态：current。
+- 证据：`audits/run_all.py`、`audits/scoring_logic_check.py`；`git ls-files .wrapup/mres | grep -c '_eval.json'`。
+- 复现：全树 `python3 "docs/subprojects/i01-判分与基准有效性/audits/run_all.py"` → `exit 0`；clone 模拟 `I01_REPO_ROOT=$(mktemp -d) python3 "…/audits/run_all.py"` → `exit 2` 并列出 `interpreter … absent` / `… missing`。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。
