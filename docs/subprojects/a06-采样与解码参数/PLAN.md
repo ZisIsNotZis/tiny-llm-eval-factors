@@ -135,6 +135,16 @@
 
 ## 已测未入库（`m165-vendor`）：入库前排序判据不含这些格
 
+- 进度（按格追加，完成一格记一行；GPU 分钟按 `[HH:MM:SS]` 行计差）：
+
+| 格 | 分数 | 协议串 | 状态 |
+|---|---|---|---|
+| R2 mmlu（正控） | 0.6075（= 贪心，未变） | — | 完成 |
+| R2 gsm8k | 0.40（贪心 0.60 / t0.3 0.64 / t0.7 0.62） | — | 完成 |
+| R2 ifeval | 0.60（贪心 0.62 / t0.3 0.70 / t0.7 0.66） | — | 完成 |
+| R1 q2-cpp | **1/161 = 0.0062**（贪心 18/161 = 0.1118） | `mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,top_p=1.0,top_k=20,min_p=0.0,presence_penalty=2.0` | 完成，8.5 GPU 分钟 |
+| R1 q2-py / q3 / q4 / EvalPlus | — | 同上（ctx=4096） | 在跑 |
+
 - 产物目录 `.wrapup/mres/m165-vendor/`；逐格清单 `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl`（R1）与 `variant_panel.json`（R2）；
   运行脚本 `run_vendor_arm.sh`（R1）与 `vendor_arm_r2.py`（R2）。
 - **在 `migrate_db.py` 补上 `vendor-recommended` 的 ingest 之前，这 10 个格不进 `experiments` 表，因此也不在 `rank_survival.py` 的判据里。**

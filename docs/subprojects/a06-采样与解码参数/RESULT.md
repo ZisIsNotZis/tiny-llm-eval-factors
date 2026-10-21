@@ -170,6 +170,13 @@
 - repro: 起服时把五个量当服务端 flag 传好，然后 `python3 "docs/subprojects/a06-采样与解码参数/vendor_param_effect_probe.py" --port 8141`（退出 0 = 全过，1 = 有检查没过，2 = 服务器不可达或 `/props` 没回显这五个量）。
 - 后果：① 「temp>0 所以两次输出应该不同」是错的形状（固定 seed 下 temp 1.0 两次也逐字相同）；② i02 观察到的「改 `presence_penalty`/`top_k` 输出没变」与「改 `presence_penalty` 输出变了」都不构成「参数被吞」的证据，它们是同一类单点巧合的两个方向；③ 判「生效」要么用塌缩判据，要么用 `/props`（服务端 flag 路线下它回显全部五个量）。
 
+## vendor-arm-is-not-a-perturbation :: 厂商档不是「温和的采样变化」：Qwen3.5-2B `UD-Q2_K_XL` 的 MultiPL-E cpp 从贪心的 18/161（0.1118）掉到 **1/161（0.0062）**，逐题状态直方图是 `{'SyntaxError': 142, 'Exception': 18, 'OK': 1}`，也就是说 161 个补全里 142 个连语法都不对。同一模型在 temp 0.3/0.6 下的 cpp 分别是 18/161 与 18/161（`topk-not-inert-at-temp0.3`、`m27`），所以这个塌陷不是温度造成的，而只能来自 `top_p=1.0 / min_p=0.0 / presence_penalty=2.0` 这一组（尤其 `presence_penalty=2.0` 会惩罚重复的 token，而 C++ 补全大量复用标识符与标点）。
+
+- kind: measured
+- evidence: `.wrapup/mres/m165-vendor/mpl-q2-cpp-vendor_eval.json`（`n=161, pass=1`，details 的状态直方图如上）；三个样例补全里出现 `INF_T_DN_C`、`floor_truce_number`、`if(number > .9987654321)` 这类不存在的构造。
+- repro: `python3 -c "import json,collections;d=json.load(open('.wrapup/mres/m165-vendor/mpl-q2-cpp-vendor_eval.json'));print(d['n'],d['pass'],dict(collections.Counter(x['status'] for x in d['details'])))"`。
+- 后果（读这一臂前必须知道）：① 若 Q3/Q4 也掉到语法地板，则「厂商档下 Q3-vs-Q4 是否仍反序」**不可估**——地板上的格子之间的差别不是能力差别，这时正确的结论是「在该采样值下 cpp 阶梯不可分辨」，而不是「次序变了」或「次序保住了」；② 这条也解释了为什么不能把厂商档当成「另一个温度点」：它的效应量比温度轴大一个数量级（−17 道题 vs 温度轴的 0 到 −15）；③ 按 a12 的规则，`SyntaxError` 主导的格保留真分数，但必须写成「该采样设置下的 harness floor 或真实通过数」，不得与其它格同权地读成能力差异。
+
 ## 五、厂商推荐采样（`plan3`）
 
 ## res-vendor-value :: 厂商（unsloth）给 Qwen3.5-2B 的推荐采样参数拿到了：非思考文本任务是 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0, repetition_penalty=1.0`；它落在本研究测过的每一个设置**之外**——温度只有 1.0 一档与已测的 0/0.3/0.6/0.7 都不同，`top_p` 1.00 对已钉住的 0.95，`min_p` 0.0 对 0.05，并且多一个已测协议里恒为 0 的 `presence_penalty=2.0`。
