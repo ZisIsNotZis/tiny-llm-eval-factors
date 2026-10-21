@@ -263,6 +263,20 @@ else
 fi
 rm -f /tmp/reproduce_oq.$$
 
+if python3 checks/all_exception_null_negative_control.py >/tmp/reproduce_aen.$$ 2>&1; then
+    record PASS "全 Exception 写 NULL 的负控（全 Exception→NULL、有通过→实测、没记分数→NULL、旧写法→0.0）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_aen.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_aen.$$
+
+if python3 checks/refresh_preserve_negative_control.py >/tmp/reproduce_rp.$$ 2>&1; then
+    record PASS "refresh 只动自己的行的负控（三行探针跑两次逐字未变、第二次净改动 0 行）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_rp.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_rp.$$
+
 if python3 checks/py_corpus_regrade_check.py >/tmp/reproduce_pcr.$$ 2>&1; then
     record PASS "py 语料取代行与 a14 清单逐条一致、旧行未被改写"
 else
