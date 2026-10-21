@@ -143,30 +143,30 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 
 ## 当前在做什么 / 下一步（接手先读这一节）
 
-- 已完成（最近提交 `0b68086`）：kv 那条假 WARN 已清（不可得 ≠ 过期，带负控）；`open_questions` 跟上 a11；
-  a14 的 py 语料取代入库（**11 行** `corpus=` + 11 个 `superseded_by` 指针，按活库身份认行，
-  `checks/py_corpus_regrade_check.py` 逐行核对 PASS、旧记录 0 行丢失）；`mres/%` 宽前缀删除收窄
-  （`checks/mres_prefix_delete_negative_control.py`：探针行跑两次仍在、924 行一条不丢）；
-  `superseded_by` 列 + 悬空指针断言 + 两条负控（指针、报告过滤）；报告 §13 有语料代次表注。
-- **未做，按优先级**：
-  1. **第二个 P1（比 mres 那条更隐蔽）**：refresh 会改写别人修正过的行——14 行 BFCL 多轮格的
-     `n_items` 被抹回 NULL（a13 从官方 ledger 回填的）、32 行 `variant-*` 协议串被追加
-     `;sampling=default`（把「没记录采样」写成「采样=默认」，属编造）。改前状态在
-     `experiments.sqlite.bak30`。要做的：每个 ingester 只改 `(run_tag, source_file)` 自身前缀内的行；
-     `n_items`/`protocol` 只能「读现值，为空才补写」并记 ledger；回填那 14 + 32 行；负控造三行分属
-     三个 ingester 的行，跑两次 refresh 断言逐字未变。
-  2. **同类的第二层**：干净 clone 里跑一轮 `migrate_db.py` 会丢 **924 行** `mres/%` 记录，
-     因为 `.wrapup/mres` 没有随仓库完整分发，而各 REFRESH ingester 先删后读。
-     控制 `checks/mres_prefix_delete_negative_control.py` 把这个情形报成「不可得」（exit 2，reproduce 记 SKIP 并印出丢了多少行）。
-     正确修法：读不到输入就**不删**，并在 ledger 里说明。
-  3. **py 取代的收尾**：38 条 skip ledger 逐格原因已给出，但 §13 只按总数给了语料代次表注，
-     未逐格标注；`a14` 的 27 个 py `testfrac` 值尚未随二元列换到同一代（`evidence/py_testfrac_regrade.json`），
-     这是「两列各说一代」的口子；§15 的绝对水平中位 +0.027 与 7 对近差翻转的文字也未改。
-  4. `a07`（spec-decode 是否逐字节同贪心）/`a08`（thinking 开关是另一协议）/`a11`（扩散：`未测` + 门槛 + 价格，不写 0）落地时接报告。
-- 阻塞/风险：报告只依赖库 + `report_inputs/*` 派生索引；索引落后于子项目产物时 `reproduce.sh` 报 WARN，
-  必须显式重建。工作树里的 `experiments.sqlite` 常有别的子项目未提交的写入，所以 `report.html`
-  一律在 HEAD 的干净 clone 里重建再拷回，避免把未提交的库改动烤进报告。
-  当下 `reproduce.sh` 在本机工作树里还有 2 条 WARN（size_claims / open_questions，都因别的子项目正在改它们的事实源）。
+- 已完成（最近提交 `6135a87`，干净 clone 42 PASS / 0 FAIL / 0 WARN / 1 SKIP，`report.html` sha256 `3706202574f5…`）：
+  1. **refresh 不再改写别人的行**：`;sampling=default` 的编造去掉（32 行回到 bak30 的协议串）；
+     `n_items` 这类「别人补过的列」改成「删除前快照、重插后为空才补写」并记 ledger（14 行 BFCL 已回填，
+     `migrations/restore_refresh_losses.py --from experiments.sqlite.bak30 --apply`，行数 3351→3351）；
+     `migrate_schema` 的 `language='python'` 全库回填收窄到「并入 run_tag 之前的老行」
+     （它曾把 599 行 gsm8k/mmlu/ifeval 的「不是代码基准」改写成 python，负控当场抓到）。
+     负控 `checks/refresh_preserve_negative_control.py`：三行探针（campaign / variant / 普通）跑两次
+     完整 refresh 逐字未变、全库摘要相同、净改动 0 行；本轮它真的红过一次（language 回填那条）。
+  2. **读不到输入就不删**：campaign / spec / variant 的删除范围改成「这一轮确实会重建的文件」
+     （按盘上面板枚举，不用共享前缀），一个都读不到时保留现状并让 `migrate_db.py` 以 2 退出。
+     干净 clone 里由「3350 → 2426（丢 924 行）」变「3350 → 3350，exit 2」。
+  3. **两条 WARN 收尾**：`size_claims` 改为「a02 产物不在场 → 2（不可得），不是过期」，索引已重算；
+     `open_questions` 跟上 a11 的「未解问题」一节（10 节 / 31 条 / 跳过 6）。
+  4. §13 表注写明「改分 50 格里只有 11 格已按钉住语料取代，39 格定位不了、仍是旧语料值，两代不可直接比」。
+- **未做（下一轮）**：
+  1. py 取代仍停在 11/50：39 格「同一分数落在多行、候选跨多个协议」需要 a12 的 `mpl_cell_audit.py`
+     按 `(model, run_tag, source_file)` 逐格认行（或 a14 补一份逐格 `source_file` 映射），认行成功才入库。
+  2. `a14` 的 27 个 py `testfrac` 值（`evidence/py_testfrac_regrade.json`）尚未换到与二元列同一代，
+     §15 的中位 +0.027 与 7 对近差翻转文字也未改。
+  3. 历史遗留：155 行非代码基准的 `language` 仍是早年全库回填写下的 `python`（现在只影响身份串可比性，
+     不影响报告口径）；若要修，须按 `bench_family` 逐类给依据，不能再一次全库回填。
+- 阻塞/风险：报告只依赖库 + `report_inputs/*` 派生索引；索引落后时 `reproduce.sh` 报 WARN 而不是自动重建。
+  工作树里的 `experiments.sqlite` 常有别的子项目未提交的写入，`report.html` 一律在 HEAD 的干净 clone 里
+  重建再拷回。
 
 ## 读法：还剩哪些、当前在哪、下一个派给谁
 
