@@ -50,14 +50,14 @@
 - 修正（复核指出）：旧写法把 KV **上界**当成需求，得出「需求 17.5 GiB > 空闲 16.4 GiB ⇒ 就算支持也得独占卡」。那个判决是上界造出来的：真 KV 只有 0.273 GiB（上界是它的 6.9 倍），按真值算那次其实**塞得进去**。「17.5 GiB」这个数不再作为可引用的需求出现，上界只保留为「头部自洽」的参照。
 - 仍未测的那一半：llama.cpp 的 compute buffer（与 `n_batch`/`n_ctx`/GPU 层数相关）没算，所以「加它之后是否仍可容纳」没有结论；要判就得在能加载该架构的运行时上实测占用。
 
-## res6 :: 可复现装置：干净 clone 里 `run_all.py` **46 条**全成立（头部 / 名表 / 对照 / 记录 / 价格五组），`--selftest` 的 11 条负控全部按预期翻红，本机 `--live` **50 条**全成立；缺 live 输入时退出 2（未验证），不是通过。
+## res6 :: 可复现装置：干净 clone 里 `run_all.py` **46 条**全成立（头部 / 名表 / 对照 / 记录 / 价格五组），`--selftest` 的 11 条负控全部按预期翻红；本机（有 venv 那台）`--live` **50 条**全成立、rc=0，而干净 clone 里没有 venv，`--live` 的 L4 是「未验证」并整体退出 **2**。
 
 - kind: measured
 - status: current
 - from: result.res2
 - evidence: `analysis/run_all.py` 的 46 条与 `analysis/run_all.py --live` 的 50 条输出；11 条负控各自翻红的具体检查名（把 `diffusion-gemma` 塞进名表 → `D1` 红；把负控改成没加载起来 → `E4` 红；改一张张量维度 → `A1` 红；把真值 KV 改回上界 → `F2` 红；把「当时可容纳」改成装不下 → `F4` 红；抹掉 `accept_canvas` 标记 → `C7` 红）
 - producer: `python3 docs/subprojects/a11-扩散式解码/analysis/run_all.py`；`… --selftest`；`… --live`
-- 计数口径：`--live` 比 46 多出的 4 条是 L1–L4（现场重放门槛、头部漂移、架构名表漂移、venv 里的 diffusion_gemma 代码漂移），它们要盘上的 gguf / llama.cpp 源码 / venv，干净 clone 里退出 2 而不是「绿」。
+- 计数口径：`--live` 比 46 多出的 4 条是 L1–L4（现场重放门槛、头部漂移、架构名表漂移、venv 里的 diffusion_gemma 代码漂移），它们要盘上的 gguf / llama.cpp 源码 / venv。干净 clone 里 `.wrapup/bfclenv` 与 `.wrapup/lmenv` 是 gitignore 的，所以 clone 里 `--live` 只有 49 条成立 + L4「未验证」，退出码 2——这是未验证，不是通过，也不是回归。
 
 ## res7 :: 记录的三个限制：(a) 门槛的现场重放只能在有 gguf 与 llama.cpp 二进制的机器上做，干净 clone 里它退出 2；(b) 真值 KV 是按层记账的**上界内**口径，`attention.shared_kv_layers = 0` 时才准（本文件就是 0），本机没有实测占用可对；(c) 第三条路（同模型换运行时）是**代码在、权重不在**：`transformers 5.17.0` 的 `diffusion_gemma` 就在本机 venv 里（`res12`），缺的是 bf16 权重（`n_params×2 = 47.03 GiB`）与许可证。
 
