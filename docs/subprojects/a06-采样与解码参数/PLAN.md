@@ -170,7 +170,10 @@
 | R1 q2-py | **3/161 = 0.0186**（贪心 22/161 = 0.1366） | 同上 | 完成，3.8 GPU 分钟；状态 `Exception=158,OK=3` |
 | R1 q3-cpp | **4/161 = 0.0248**（贪心 39/161 = 0.2422） | 同上 | 完成，10.3 GPU 分钟；状态见 `histograms.jsonl` |
 | R1 q3-py | **7/161 = 0.0435**（贪心 43/161 = 0.2671） | 同上 | 完成，3.3 GPU 分钟（输出短，故快）；状态见 `histograms.jsonl` |
-| R1 q4-cpp / q4-py / q3-EvalPlus | — | 同上（ctx=4096） | q4-cpp 在跑；逐格完成即追加本表 |
+| R1 q4-cpp | **6/161 = 0.0373**（贪心 37/161 = 0.2298） | 同上 | 完成，12.7 GPU 分钟；状态见 `histograms.jsonl` |
+| R1 q4-py / q3-EvalPlus | — | 同上（ctx=4096） | q4-py 在跑（08:55:26 起） |
+
+- **cpp 侧的预注册结局已触发**：Q3（4/161）与 Q4（6/161）都 `at_floor`，所以 cpp 的结论是「该采样值下 cpp 阶梯不可分辨」，不写 survives 也不写 inverts。py 侧等 q4-py。
 
 - 状态直方图由 `cell_histograms.py` 从 `*_eval.json` 重算，写入 `.wrapup/mres/m165-vendor/histograms.jsonl`（幂等，可随跑随算）。
 - 两个已完成格的塌陷形态**不同**：cpp 是 `SyntaxError=142`（输出不是合法 C++），py 是 `Exception=158`（代码能解析但跑不起来）。所以「塌陷」的证据是状态分布，不是分数。
