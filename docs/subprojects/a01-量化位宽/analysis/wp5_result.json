@@ -1,0 +1,36 @@
+{
+ "gguf": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf",
+ "runner": ".wrapup/lmeval_run.py",
+ "historical_value": 0.643640350877193,
+ "tolerance": 0.05,
+ "free_mib_before": 19170,
+ "runs": [
+  {
+   "run": 1,
+   "tag": "a01-wp5-r1",
+   "rc": 0,
+   "score": 0.643640350877193,
+   "n_items": 912,
+   "elapsed_s": 343.9,
+   "source": ".wrapup/mres/a01-wp5-r1/lmeval_panel.json",
+   "log": ".wrapup/a01_wp5_r1.out"
+  },
+  {
+   "run": 2,
+   "tag": "a01-wp5-r2",
+   "rc": 0,
+   "score": 0.643640350877193,
+   "n_items": 912,
+   "elapsed_s": 335.7,
+   "source": ".wrapup/mres/a01-wp5-r2/lmeval_panel.json",
+   "log": ".wrapup/a01_wp5_r2.out"
+  }
+ ],
+ "peak_total_mib": 14053,
+ "peak_proc_mib": 8220,
+ "verdict": "稳定：两次都是 0.6436 / 0.6436，与历史 0.6436 差 [0.0, 0.0]（容差 ±0.05）⇒ 这一格是文件的性质，22.6 pp 不是单次测量噪声；剩下未排除的是「MMLU 这条似然通道在这两个文件上是否同条件」，需生成式对照",
+ "deviations": [
+  0.0,
+  0.0
+ ]
+}

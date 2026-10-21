@@ -208,6 +208,26 @@
 - 负控（证明装置不是空转）：① 删掉快照里 `channel_audit["m64-qwen-2b-q2kxl/humaneval"]` 一条 → `run_all.py --fixture <副本>` 两条变红、**exit 1**；② 把 `m63…/syntax_err_san` 从 3 改成 0 → 值断言变红、exit 1；③ `make_fixtures.py --check --fixture <改坏的副本>` 报 DRIFT、exit 1；④ 同一命令对入库快照 OK、exit 0。
 - 会推翻它：clone 里 `run_all.py` 非 0；或上述任一条负控不再变红。
 
+### gemma12b-mmlu-reproduced :: 12B 原生档的 MMLU 复测两次都逐位等于历史值：`gemma-4-12b-it-UD-Q4_K_XL.gguf` 在同一 shim、同一协议（`--tasks mmlu --limit 16`，57 科目 × 16 = 912 题）、两次**独立起服**下都得到 **0.643640350877193**，与库里那次 0.643640350877193 差 0.0000；单次实测峰值显存 **8220 MiB**、耗时 343.9 s / 335.7 s。
+- author: measurement
+- from: result.gemma12b-mmlu-uniform
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `analysis/wp5_result.json`（两次的 `score/n_items/elapsed_s/peak_proc_mib=8220`、`peak_total_mib=14053`、`deviations=[0.0,0.0]`）；每次运行的 `panel.log` 与 `lmeval_panel.json` 在 `.wrapup/mres/a01-wp5-r{1,2}/`（本地产物，不入库）；入库快照 `analysis/fixtures/mres_snapshot.json::wp5_mmlu_retest` 带两份来源文件的 sha256
+- repro: `bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a01-量化位宽/analysis/wp5_run.py"`（自己记空闲显存、用 `.wrapup/lmeval_run.py` 各起一次服、每次跑完就落盘再跑第二次）
+- 结论边界：值稳定 ⇒ **那 22.6 pp 不是单次测量噪声**，这一格可以当「这个文件在这个指标上的实测值」引用。但「MMLU 这条似然通道在两个文件上是否同条件」仍未判定——那需要生成式对照（同一批题用 chat 协议取答案字母），已登记为未测、排在锁后（见 `PLAN.md` 的 GPU 队列）。
+- 会推翻它：同配置再跑出现与 0.6436 不同（±0.05 以外）的值；或发现这两次与历史那次不是同一 `--limit` / 同一 shim（那样"复现"可能是样本集写死的证据而不是稳定性的证据）。
+
+### q20-loads :: `Ternary-Bonsai-1.7B-Q2_0_g64.gguf`（490 MB）在当前 llama.cpp 上**能加载并生成**（2.1 s 起来、峰值 1004 MiB、8 token 补全成功）——`plan2` 里「`Q2_0` 加载失败」这一说法在这个文件上不成立；`PQ2_0`（ggml type 142）只以 27B 文件存在（≈7–9 GB），按并发例外（≤4 GB/≤3 分钟）排不进去，登记为**未测**而不是「不支持」。
+- author: measurement
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `analysis/type142_probe.json`（含 server 旗标、耗时、峰值、stdout 原文尾部）；探针日志 `.wrapup/a01_type_probe_Ternary-Bonsai-1.7B-Q2_0_g64.gguf.log`（本地产物）
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/type142_probe.py"`（默认跑 1.7B 那份；换 27B 的 `PQ2_0` 就把路径传给它，但要等锁）
+- 会推翻它：同一个 1.7B 文件在干净构建的 llama.cpp 上报 type 错误；或 27B 的 `PQ2_0` 实测能加载（那说明 type 142 已被支持，「需更新 llama.cpp」作废）。
+
 ## 五、migrated 与撤回
 
 ### res1 :: 权重量化位宽：同一模型家族内，从较低比特档到下一档，多数情况下分数上升，但每一列都有反例——33 对相邻档里 HumanEval+ 有 9 对、MBPP+ 7 对、MMLU 4 对、ARC-c 8 对、GSM8K 5 对、IFEval 5 对是下降，「普遍上升」的原措辞已按 `adjacent-majority` 收窄。

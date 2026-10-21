@@ -1,0 +1,19 @@
+{
+ "results": [
+  {
+   "gguf": "/home/z/hf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf",
+   "exists": true,
+   "size_bytes": 490163968,
+   "free_mib_before": 10963,
+   "need_mib": 2048,
+   "server_flags": "-m /home/z/hf/Ternary-Bonsai-1.7B-Q2_0_g64.gguf --port 51991 --host 127.0.0.1 -c 512 -np 1 -ngl 99",
+   "elapsed_s": 2.1,
+   "peak_vram_mib": 1004,
+   "generated": " 42, and the number after",
+   "verdict": "加载并生成：当前 llama.cpp 能读这个文件",
+   "free_mib_after": 10947,
+   "log": ".wrapup/a01_type_probe_Ternary-Bonsai-1.7B-Q2_0_g64.gguf.log"
+  }
+ ],
+ "_note": "加载器性质测试：Q2_0 / PQ2_0(ggml type 142) 能不能被当前 llama.cpp 读。小文件按并发例外（≤4 GB / ≤3 分钟）跑，27B 的 PQ2_0 要等大段落锁。"
+}

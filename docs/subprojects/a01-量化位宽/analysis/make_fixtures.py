@@ -34,6 +34,7 @@ PANELS = ["m61-qwen-2b-iq2xxs", "m62-qwen-2b-iq2m", "m63-qwen-2b-iq3xxs", "m64-q
           "m65-qwen-2b-q3kxl", "m66-qwen-2b-q4kxl", "m67-qwen-2b-q5kxl"]
 DATASETS = ["humaneval", "mbpp"]
 MMLU_TAGS = ["m105-gemma-12b-q3kxl", "m141-native-gemma12b-q4"]
+WP5_TAGS = ["a01-wp5-r1", "a01-wp5-r2"]          # 12B 原生档 MMLU 的两次复测（WP5）
 GEN = 'python3 "docs/subprojects/a01-量化位宽/analysis/make_fixtures.py" --write'
 
 
@@ -56,7 +57,26 @@ def source_paths():
     for tag in MMLU_TAGS:
         for p in sorted(glob.glob(os.path.join(REPO, ".wrapup", "mres", tag, "lmeval_mmlu_*.json")))[-1:]:
             out[os.path.relpath(p, REPO)] = sha256(p)
+    for tag in WP5_TAGS:
+        for p in glob.glob(os.path.join(REPO, ".wrapup", "mres", tag, "lmeval_panel.json")):
+            out[os.path.relpath(p, REPO)] = sha256(p)
     return out
+
+
+def wp5_retest():
+    """WP5 的两次复测：从 lmeval_run.py 的 panel 产物里取 mmlu 的分数与题数。"""
+    runs = []
+    for tag in WP5_TAGS:
+        p = os.path.join(REPO, ".wrapup", "mres", tag, "lmeval_panel.json")
+        if not os.path.isfile(p):
+            continue
+        d = json.load(open(p, encoding="utf-8"))
+        sc = (d.get("tasks") or {}).get("mmlu")
+        if sc is None:
+            continue
+        runs.append({"tag": tag, "score": sc, "n_items": (d.get("n") or {}).get("mmlu"),
+                     "source": os.path.relpath(p, REPO)})
+    return runs or None
 
 
 def build():
@@ -71,6 +91,7 @@ def build():
                 audit[f"{panel}/{ds}"] = r
     if not audit:
         return None
+    wp5 = wp5_retest()
     mmlu = {}
     for tag in MMLU_TAGS:
         acc, path = mmlu_subjects.subjects(tag)
@@ -89,6 +110,7 @@ def build():
         },
         "channel_audit": audit,
         "mmlu_subjects": mmlu,
+        "wp5_mmlu_retest": wp5,
     }
 
 
@@ -128,7 +150,8 @@ def main(argv):
         with open(a.fixture, "w", encoding="utf-8") as fh:
             json.dump(live, fh, ensure_ascii=False, indent=1, sort_keys=True)
             fh.write("\n")
-        n = len(live["channel_audit"]) + len(live["mmlu_subjects"])
+        n = (len(live["channel_audit"]) + len(live["mmlu_subjects"])
+         + len(live.get("wp5_mmlu_retest") or []))
         print(f"written: {os.path.relpath(a.fixture, REPO)}  ({n} 组数字，来源 {len(live['_provenance']['sources'])} 个文件)")
         return 0
     if a.check:
@@ -143,7 +166,9 @@ def main(argv):
                 print("  -", d)
             return 1
         print(f"OK: 快照与现算一致（{len(live['channel_audit'])} 组通道数字 + "
-              f"{len(live['mmlu_subjects'])} 组 MMLU 科目表，来源 {len(live['_provenance']['sources'])} 个文件）")
+              f"{len(live['mmlu_subjects'])} 组 MMLU 科目表 + "
+              f"{len(live.get('wp5_mmlu_retest') or [])} 次 WP5 复测，"
+              f"来源 {len(live['_provenance']['sources'])} 个文件）")
         return 0
     ap.error("需要 --write 或 --check")
 

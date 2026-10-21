@@ -3,6 +3,8 @@
   "generated_by": "python3 \"docs/subprojects/a01-量化位宽/analysis/make_fixtures.py\" --write",
   "rule": "改动任何 .wrapup/mres 产物后必须 --check；不一致时先看是不是重新判分/重跑造成的，再决定是否 --write",
   "sources": {
+   ".wrapup/mres/a01-wp5-r1/lmeval_panel.json": "e238259b4c4ac416e3916b87787ce462aa8d9e6470ce11c3eb540c706154ecf7",
+   ".wrapup/mres/a01-wp5-r2/lmeval_panel.json": "0a2eb2629e1b7d7a65fad53003b9e697e56f80137bfad058e4028f649c263b3d",
    ".wrapup/mres/m105-gemma-12b-q3kxl/lmeval_mmlu_2026-10-09T13-02-00.670407.json": "9c2bf8e9c89fd1e02b328069a609b150d91ba2c9f20178ac63cb4901b2eb37c7",
    ".wrapup/mres/m141-native-gemma12b-q4/lmeval_mmlu_2026-10-13T19-02-52.960431.json": "8513ca0a9a2c7fe43df3fae3c009febccc4761dd42c682d7e71752aa69f1c894",
    ".wrapup/mres/m61-qwen-2b-iq2xxs/codegen/humaneval/m61-qwen-2b-iq2xxs_openai_temp_0.0.jsonl": "50bdd92659e3322b27e63443b34a3b1bcc224ea39589e036c4aba855f1ae1558",
@@ -468,5 +470,19 @@
    "file": ".wrapup/mres/m141-native-gemma12b-q4/lmeval_mmlu_2026-10-13T19-02-52.960431.json",
    "n_subjects": 61
   }
- }
+ },
+ "wp5_mmlu_retest": [
+  {
+   "n_items": 912,
+   "score": 0.643640350877193,
+   "source": ".wrapup/mres/a01-wp5-r1/lmeval_panel.json",
+   "tag": "a01-wp5-r1"
+  },
+  {
+   "n_items": 912,
+   "score": 0.643640350877193,
+   "source": ".wrapup/mres/a01-wp5-r2/lmeval_panel.json",
+   "tag": "a01-wp5-r2"
+  }
+ ]
 }

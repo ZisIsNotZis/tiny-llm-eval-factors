@@ -231,6 +231,45 @@ def main(argv):
         expect(abs(shift - 0.2263) < 5e-4, "gemma12b-mmlu-uniform",
                f"整体平移 {shift:+.4f}（应 +0.2263）")
 
+
+    # ---- gemma12b-mmlu-reproduced（WP5 的两次复测，数字来自入库快照）：值稳定 ⇒ 22.6 pp 不是单次噪声
+    runs = snap.get("wp5_mmlu_retest") or []
+    expect(len(runs) == 2, "gemma12b-mmlu-reproduced", f"快照里 {len(runs)} 次复测（应 2 次）")
+    if len(runs) == 2:
+        hist = 0.643640350877193
+        expect(all(r["n_items"] == 912 for r in runs), "gemma12b-mmlu-reproduced",
+               f"两次题数 {[r['n_items'] for r in runs]}（应都是 912 = 57 科目 × 16）")
+        expect(all(abs(r["score"] - hist) < 1e-12 for r in runs), "gemma12b-mmlu-reproduced",
+               f"两次都是 {[r['score'] for r in runs]}，与历史 {hist} 逐位相同")
+        # 与本层入库的 wp5_result.json 交叉核对（两份产物不许互相漂移）
+        wr = os.path.join(os.path.dirname(os.path.abspath(__file__)), "wp5_result.json")
+        try:
+            wj = json.load(open(wr, encoding="utf-8"))
+            pairs = [(x["score"], r["score"]) for x, r in zip(wj.get("runs", []), runs)]
+            expect(len(pairs) == 2 and all(abs(a - b) < 1e-12 for a, b in pairs),
+                   "gemma12b-mmlu-reproduced",
+                   f"wp5_result.json 与快照一致（{[(round(a, 6), round(b, 6)) for a, b in pairs]}）")
+            expect((wj.get("peak_proc_mib") or 0) > 0, "gemma12b-mmlu-reproduced",
+                   f"wp5_result.json 记了实测峰值 {wj.get('peak_proc_mib')} MiB / 总占用 {wj.get('peak_total_mib')} MiB")
+        except (OSError, ValueError) as exc:
+            expect(False, "gemma12b-mmlu-reproduced", f"读不到 wp5_result.json：{exc}")
+
+    # ---- q20-loads（WP4 的加载器性质测试，产物入库）：1.7B 三元 Q2_0 能被当前 llama.cpp 读
+    tp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "type142_probe.json")
+    try:
+        t = json.load(open(tp, encoding="utf-8"))
+        res = {r["gguf"].split("/")[-1]: r for r in t.get("results", [])}
+        r17 = res.get("Ternary-Bonsai-1.7B-Q2_0_g64.gguf")
+        expect(bool(r17), "q20-loads", "1.7B 三元 Q2_0 的探针结果在 type142_probe.json 里"
+               if r17 else "type142_probe.json 里没有 1.7B Q2_0 那一条")
+        if r17:
+            expect("加载并生成" in r17["verdict"], "q20-loads", f"{r17['verdict']}（{r17['elapsed_s']}s、峰值 {r17['peak_vram_mib']} MiB）")
+        pq = [k for k in res if "PQ2_0" in k]
+        expect(not pq, "q20-loads",
+               "PQ2_0（type 142）只在 27B 文件上存在，按并发例外排不进 4 GB/3 分钟，登记为**未测**（不是「不支持」）")
+    except (OSError, ValueError) as exc:
+        expect(False, "q20-loads", f"读不到 type142_probe.json：{exc}")
+
     # 负控：把 HumanEval+ 的区间判断反过来，脚本必须失败
     if selftest:
         print("\n[selftest] 故意断言「HumanEval+ 的差区间跨 0」，预期失败：")
