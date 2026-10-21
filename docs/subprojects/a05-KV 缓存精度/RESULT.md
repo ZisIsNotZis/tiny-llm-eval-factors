@@ -110,7 +110,7 @@
 - 因此 16k/49k 的 8 个格**判「不可分辨」**，只登记，不作长上下文结论，也不参与任何池化。
 - 库内这 12 行的 `_score=0` 有 6 个（16k 的 `f16/f16`、`f16/q8_0` 与 49k 的全部四格），就是报告里那 8 个 0.0 格中的 6 个（`a12::8 个 0.0 格` 已把归属登记到本层）。
 - 状态：current。
-- 证据：`.wrapup/m30_summary.jsonl`、`.wrapup/mres/m30-ctx{2048,16384,49152}-kv*-cpp{.jsonl,_eval.json}`、`.wrapup/m30b.log`。
+- 证据：`.wrapup/m30_summary.jsonl`、`.wrapup/mres/m30-ctx{2048,16384,49152}-kv*-cpp{.jsonl,_eval.json}`、`.wrapup/m30b.log.gz`。
 - 复现：`python3 "docs/subprojects/a05-KV 缓存精度/analysis/kv_evidence.py"` 的 D 段（逐格 pass、哈希分组、填充段开头计数）。
 
 ### kv-long-ctx-needle :: 32k 上下文上 KV q4_0 没有检索损失：0 丢 1 得（针检索，20 条/格）

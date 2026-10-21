@@ -140,7 +140,7 @@
 - kind: measured
 - evidence: `migrate_db.py::ingest_spec` 的 docstring 记录了这条失败；`server.log` 里每个 `draft-mtp` 臂都有
   `common_speculative_init_result: creating MTP draft context against the target model '<同一文件>'`（不是第二个 `-m`）。
-- repro: `[D]` 段；或 `grep -m1 "creating MTP draft context" .wrapup/mres/m128-spec-9b/server.log`。
+- repro: `[D]` 段；或 `zgrep -m1 "creating MTP draft context" .wrapup/mres/m128-spec-9b/server.log.gz`。
 - 限制：这条把「草稿模型的内存成本」改写成「MTP 头的内存成本」。真正的独立草稿模型（`-md 0.8B.gguf`）未测，
   所以「用小模型当草稿要多少显存」在本仓没有答案。
 

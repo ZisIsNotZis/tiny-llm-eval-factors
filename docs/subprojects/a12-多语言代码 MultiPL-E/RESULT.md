@@ -81,7 +81,7 @@
 
 - 结论：`run_tag='m163-chat-cpp-gemma12b'` 的 2 个 cpp 格按协议串 `mpl-chat-nothink-greedy-768` 原样入库（无 `;ctx=`/`;tmpl=` 后缀；`ctx_size=2048`、`parallel_slots=4`、`max_tokens=768`、`n_items=161`）：gemma-4-12b Q2 cpp `3/161=0.0186`、Q3 cpp `117/161=0.7267`。状态直方图分别是 `{'SyntaxError': 158, 'OK': 3}` 与 `{'OK': 117, 'Exception': 17, 'SyntaxError': 27}`；两格都不是整格 `Exception`，所以是实测值而不是 NULL。
 - 结论：于是 12b 在同一个协议串下有四格并排：Q2 `cpp 0.0186 / py 0.4783`（77/161）、Q3 `cpp 0.7267 / py 0.5776`（93/161）。py 两格来自 m161（`run_tag='m161-chat-postprocess-fixed'`，协议串逐字相同），cpp 两格来自 m163，所以「12b 没有同协议 cpp+py 对」这条旧结论到此为止。
-- 证据：`.wrapup/mres/m163-g12b-q{2,3}-cpp-chat.jsonl` 与各自 `_eval.json`，汇总 `.wrapup/m163_summary.jsonl`（随入库一起提交）；面板日志 `.wrapup/m163.log` 记着 preflight 的 6 个提示集哈希全匹配、两格 `gen … rc=0`、`panel end 2026-10-20 23:48:03`、`GPU wall=38m30s`，无 `GAVE UP` / `CORRUPT`。py 两格的分子取自 `.wrapup/mres/m161-g12b-q{2,3}-py-chat_eval.json`（各 n=161，pass=77 / 93）。
+- 证据：`.wrapup/mres/m163-g12b-q{2,3}-cpp-chat.jsonl` 与各自 `_eval.json`，汇总 `.wrapup/m163_summary.jsonl`（随入库一起提交）；面板日志 `.wrapup/m163.log.gz` 记着 preflight 的 6 个提示集哈希全匹配、两格 `gen … rc=0`、`panel end 2026-10-20 23:48:03`、`GPU wall=38m30s`，无 `GAVE UP` / `CORRUPT`。py 两格的分子取自 `.wrapup/mres/m161-g12b-q{2,3}-py-chat_eval.json`（各 n=161，pass=77 / 93）。
 - 限制：m6b 的 `;ctx=4096;tmpl=unverified` 两格仍是另一套设置，不并入这个对（见「gemma-4-12b 的 m6b cpp 两格」）。
 - 复算：审计 `[3]` 段把两组并列印出；`sqlite3 experiments.sqlite "SELECT model,language,_score,n_items,protocol FROM experiments WHERE run_tag='m163-chat-cpp-gemma12b' ORDER BY model"`；直方图 `python3 -c "import json,collections;d=json.load(open('.wrapup/mres/m163-g12b-q2-cpp-chat_eval.json'));print(dict(collections.Counter(x['status'] for x in d['details'])))"`。
 
@@ -96,9 +96,9 @@
 ## gemma-4-12b 的 m6b cpp 两格走另一套协议串（ctx=4096、模板未核对）
 
 - 结论：gemma-4-12b chat cpp（m6b 面板）入库时按协议串原样记录，末尾带 `;ctx=4096;tmpl=unverified`：Q2 `4/161=0.0248`、Q3 `130/161=0.8075`。这两格不并入任何 cpp+py 对：m6b 是 `ctx=4096`、没有 `--jinja`、模板路径未核对的一套配置，与 m161/m163 的 `ctx=2048 --jinja` 不同。12b 的同协议 cpp+py 对由 m163 的 canonical chat 两格给出（见「chat cpp 两格」），m6b 这两格继续单独成行。
-- 证据：`.wrapup/m6b.log` 有 `n_ctx_slot = 4096`；`.wrapup/run_m6b.sh` 的 start_server 无 `--jinja`；`.wrapup/run_m161_chat_py.sh` 与 `.wrapup/run_m163_chat_cpp_12b.sh` 都是 `CTX=2048` 加 `--jinja`。m6b 的 summary 留的是旧判分值（Q2 cpp 2/161、Q3 py 5/161），库值取自 `_fixed` 重判，两者的差由旧后处理解释，不由本节点裁决。m161 与 m163 的日志都记下了所用提示集的哈希，与 `.wrapup/prompts/SHA256SUMS` 的 `humaneval-cpp.jsonl` 行一致。
+- 证据：`.wrapup/m6b.log.gz` 有 `n_ctx_slot = 4096`；`.wrapup/run_m6b.sh` 的 start_server 无 `--jinja`；`.wrapup/run_m161_chat_py.sh` 与 `.wrapup/run_m163_chat_cpp_12b.sh` 都是 `CTX=2048` 加 `--jinja`。m6b 的 summary 留的是旧判分值（Q2 cpp 2/161、Q3 py 5/161），库值取自 `_fixed` 重判，两者的差由旧后处理解释，不由本节点裁决。m161 与 m163 的日志都记下了所用提示集的哈希，与 `.wrapup/prompts/SHA256SUMS` 的 `humaneval-cpp.jsonl` 行一致。
 - 限制：这两格的 `n_items` 已由 i02 从产物回填为 161，报告印 `(161)`；它们与 canonical 两格的分栏理由只是协议串不同（`;ctx=4096;tmpl=unverified`），与题量无关。
-- 复算：`grep -n "n_ctx_slot" .wrapup/m6b.log | head -1`；`grep -n "jinja\|CTX=" .wrapup/run_m6b.sh .wrapup/run_m161_chat_py.sh .wrapup/run_m163_chat_cpp_12b.sh`；`sqlite3 experiments.sqlite "SELECT protocol,round(_score,4) FROM experiments WHERE run_tag='m6b-chat-gemma12b'"`。
+- 复算：`zgrep -n "n_ctx_slot" .wrapup/m6b.log.gz | head -1`；`grep -n "jinja\|CTX=" .wrapup/run_m6b.sh .wrapup/run_m161_chat_py.sh .wrapup/run_m163_chat_cpp_12b.sh`；`sqlite3 experiments.sqlite "SELECT protocol,round(_score,4) FROM experiments WHERE run_tag='m6b-chat-gemma12b'"`。
 
 ## 8 个 NULL 行（4 个格）：整格全 Exception 记为缺失，证据是逐题状态而不是 summary
 
@@ -140,7 +140,7 @@
 
 - 结论：报告的标准列取 MultiPL-E 时只读 `protocol='multipl-e-raw-greedy-768'`（`mktables.py::load_standard`），逐语言表的行键是 (模型, 协议标签)，所以采样温度、长上下文 KV、chat 三种设置不会进入同一格；取样轴的 (模型, 温度) / (模型, top_k) / (模型, 协议) 三组键在库中没有任何一个跨两个协议（0 个）。
 - 结论：`[9]` 段比对 summary 行与库中协议串的**完整**字符串（`;` 后面的 `ctx=`、`kv=`、`tmpl=`、`fa=`、`prefix=`、`topk-set=` 全部参与，头部只在去掉 `-third-family-code` 这类面板名后比较，面板名记在 `run_tag` 里）：246 个格里 0 格无法解释地丢了或换了设置，另有 1 格是登记的例外。
-- 例外：gemma-4-12b Q3 的 chat cpp 格，库里是 `mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified`，而 summary 里同分值（130/161=0.8075）的那一行只写 `mpl-chat-nothink-greedy-768`。库里的串是对的：`.wrapup/m6b.log` 记着 `n_ctx_slot = 4096`，`.wrapup/run_m6b.sh` 启动时没有 `--jinja`，所以 ctx 与「模板未核对」这两段正是那次运行的设置，summary 少写了它们而不是库多写了。因此该格的值与协议串都不改库，例外在脚本的 `PROTOCOL_NOTE_EXCEPTIONS` 里逐键登记、每次运行都打印出来。
+- 例外：gemma-4-12b Q3 的 chat cpp 格，库里是 `mpl-chat-nothink-greedy-768;ctx=4096;tmpl=unverified`，而 summary 里同分值（130/161=0.8075）的那一行只写 `mpl-chat-nothink-greedy-768`。库里的串是对的：`.wrapup/m6b.log.gz` 记着 `n_ctx_slot = 4096`，`.wrapup/run_m6b.sh` 启动时没有 `--jinja`，所以 ctx 与「模板未核对」这两段正是那次运行的设置，summary 少写了它们而不是库多写了。因此该格的值与协议串都不改库，例外在脚本的 `PROTOCOL_NOTE_EXCEPTIONS` 里逐键登记、每次运行都打印出来。
 - 证据：`mktables.py::load_standard` 的 where 子句；`table_mpl_langs` 的行键；三组键的跨协议计数为 0；`[9]` 段对含 `;` 的 42 格做全串比对，唯一不一致就是上面的例外。
 - 复算：`grep -n "bench_family='humaneval-multipl-e'" .wrapup/mktables.py`；审计脚本 `[2]`/`[9]` 段；负控的第三种污染往库里加一段 `;ctx=99999`，`[9]` 必须报 `RELABELLED` 并退出 1。
 

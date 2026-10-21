@@ -68,7 +68,7 @@
 - producer: `ls /home/z/hf/models--unsloth--diffusiongemma-26B-A4B-it-GGUF/blobs` → 1 个 blob（16,028.2 MiB）；`python3 …/analysis/transformers_code.py`
 - 修正（复核指出）：旧写法把 (c) 写成「上游仓库的存在与许可证未知」，把「代码在不在」和「权重在不在」混成一件。代码在，缺的是权重与许可；许可证仍未查（未测，不是已知不可用）。
 
-## res8 :: 登记册里 nm4 的结论（GATE-FAIL）仍然成立，但它的证据指向 `.wrapup/axes_diffusion_gate.log`，那份日志没有入库（`git ls-files .wrapup` 里没有它），所以从 clone 出来的读者打不开它；本子项目的 `res1`–`res6` 给出同一事实的入库版证据。
+## res8 :: 登记册里 nm4 的结论（GATE-FAIL）仍然成立，证据改指 `.wrapup/axes_diffusion_gate.log.gz`（p-entry3 以 gzip 入库，`python3 checks/evidence_logs.py` 核）；本子项目的 `res1`–`res6` 给出同一事实的另一份入库版证据。
 
 - kind: citation
 - status: current

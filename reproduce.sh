@@ -133,6 +133,13 @@ if python3 checks/bfcl_judge_negative_control.py >/dev/null 2>&1; then
 else
     record FAIL "第十四节判分器口径的负控未通过"
 fi
+# 下一层的同一类错误（p-entry3）：`docs/subprojects/*/RESULT.md` 点名的每个 `.wrapup/…` 路径
+# 必须有处置——入库 / 压缩入库 / 按已声明的类忽略；三者都不是就是死引用。
+if out=$(python3 checks/evidence_logs.py 2>&1); then
+    record PASS "被点名的 .wrapup 路径都有处置（$(printf '%s' "$out" | head -1)）"
+else
+    record FAIL "$(printf '%s' "$out" | grep -m1 'FAIL' | cut -c1-200)"
+fi
 if python3 checks/report_inputs_drift_negative_control.py >/tmp/reproduce_rid.$$ 2>&1; then
     record PASS "报告输入漂移判 FAIL 的负控（改坏一个输入 → 非零退出并点名；缺输入 → SKIP 不误判）"
 else

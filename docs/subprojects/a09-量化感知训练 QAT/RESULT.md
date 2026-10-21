@@ -38,7 +38,7 @@ QAT 文件与原生阶梯的实测位宽、分配轮廓、**张量清单签名**
 - **画法上的后果**：`fig_QAT()` 对缺侧取 `np.nan`（柱子不落）、`qat_tables()` 对缺侧输出空串。在 0–1 的纵轴上「什么都不画」与「画到 0」几乎同义，读者最容易被骗的地方就在这里；报告应写「未测」而不是留空，并在图注里点名缺的是哪一侧。
 - **`m145` 已定价、未测**：补它约 **74 GPU 分钟**（两条独立估计一致，见 `qat-unmeasured`：`m144` 的 `evalplus.json::timings_s.total = 2467 s` 与 mtime 夹逼 11:47:24→13:01:24），收益只是把 26B-A4B 的落点从「向上外推、不可用」变成段内插值，AC 不依赖它。**meta 已决定不买**，登记为「已定价、未测」，将来谁需要谁买。31B 不是价格问题而是显存问题（24 GB 卡装不下，见 `qat-unmeasured`），换硬件前不重开。
 - 状态：current。
-- 证据：`.wrapup/mres/m142-qat-gemma31b-q4/code.log`（两行 OOM）；`.wrapup/mres/m144-qat-gemma26b-a4b-q4/lmeval_panel.json`（8 个基准）；`.wrapup/mres/` 下没有 `m145-*` 目录；`make_report.py:99-107`（`QAT_PAIRS`）、`fig_QAT()`、`qat_tables()`。
+- 证据：`.wrapup/mres/m142-qat-gemma31b-q4/code.log.gz`（两行 OOM）；`.wrapup/mres/m144-qat-gemma26b-a4b-q4/lmeval_panel.json`（8 个基准）；`.wrapup/mres/` 下没有 `m145-*` 目录；`make_report.py:99-107`（`QAT_PAIRS`）、`fig_QAT()`、`qat_tables()`。
 - 复现：`python3 "docs/subprojects/a09-量化感知训练 QAT/analysis/qat_pairs.py"` 第 6 段（`m142/m143` = `0/0 行`、`m144/m145` = `8/0 行`、其余 `9/9`、`10/10`）。
 
 ## 标称配方不是比特预算
@@ -169,13 +169,13 @@ QAT 文件与原生阶梯的实测位宽、分配轮廓、**张量清单签名**
 
 ### qat-unmeasured :: 31B 在 24 GB 卡上不可测；比特钉住的对照不存在；26B-A4B 的原生侧可补但未跑
 
-- **31B**：`m142` 起服时 `ggml_backend_cuda_buffer_type_alloc_buffer: allocating 1200.00 MiB on device 0: cudaMalloc failed: out of memory` → `failed to initialize the context: failed to allocate buffer for kv cache`（`.wrapup/mres/m142-qat-gemma31b-q4/code.log`）。31B Q4 权重 **16.10 GiB**（= 4.505 比特/参数 × 30,697,345,596 参数 ÷ 8 = 17.29 **GB**，即 16.10 GiB；本文件统一按 GiB 报显存）+ 8192 ctx 的 KV 槽超过 24 GB 卡的可用显存，故**在本机不可测**，不是 0 分。
+- **31B**：`m142` 起服时 `ggml_backend_cuda_buffer_type_alloc_buffer: allocating 1200.00 MiB on device 0: cudaMalloc failed: out of memory` → `failed to initialize the context: failed to allocate buffer for kv cache`（`.wrapup/mres/m142-qat-gemma31b-q4/code.log.gz`）。31B Q4 权重 **16.10 GiB**（= 4.505 比特/参数 × 30,697,345,596 参数 ÷ 8 = 17.29 **GB**，即 16.10 GiB；本文件统一按 GiB 报显存）+ 8192 ctx 的 KV 槽超过 24 GB 卡的可用显存，故**在本机不可测**，不是 0 分。
 - **比特钉住的 QAT/原生对**：不存在，最接近的一对差 0.359 比特/权重（E2B Q2）。要造一份，需要按 QAT 的分配轮廓重新量化原生权重，不属本轴预算。
 - **26B-A4B 原生 Q4_K_XL（`m145`）**：原生文件在盘上（5.393 比特/参数）但从未测过。价格按**两条独立估计**：① `.wrapup/mres/m144-qat-gemma26b-a4b-q4/evalplus.json` 的 `timings_s`（该键确实存在：`{"humaneval": 852, "mbpp": 1615, "total": 2467.0}`）= 41.1 分钟的代码面板；② 同一目录的 mtime 夹逼：`panel.log` 首行 11:47:24 → `DONE` 12:20:12（lmeval 面板 ≈32.8 分钟）、`DONE` → `code.DONE` 13:01:24（代码面板 ≈41.2 分钟）。两条一致，**合计 ≈74 分钟**（此前写的 50–60 分钟是估低了，按这两条改）。补上后 26B-A4B 的落点才能从「向上外推、不可用」变成段内插值。
 - **12B 的 ARC-c**：两侧都被 shim 的 400 打断（见 `qat-4bit-pairs`），未测。
 - 状态：current。
 - 证据：见各条的路径。
-- 复现：`grep -n "cudaMalloc\|failed to allocate buffer" .wrapup/mres/m142-qat-gemma31b-q4/code.log`；`cat .wrapup/mres/m144-qat-gemma26b-a4b-q4/evalplus.json | head -30`。
+- 复现：`zgrep -n "cudaMalloc\|failed to allocate buffer" .wrapup/mres/m142-qat-gemma31b-q4/code.log.gz`；`cat .wrapup/mres/m144-qat-gemma26b-a4b-q4/evalplus.json | head -30`。
 
 ## 分析
 

@@ -108,10 +108,10 @@
 - **总结：在确定性解码 + 同一提示集 + 同一后处理版本下，chat 单次测量的噪声地板是 0 道题**——重复跑不会改变任何一道题的判定。
 - **适用边界（不得外推）**：上表全部是 greedy/temp=0 且样本被 `--limit` 截到 40/100/161/164。采样解码下地板**远不是 0**：同一个 cell（`2b q4` humaneval）在 temp=0.3 的 5 次重复里，逐题通过集合的两两 **Jaccard 只有 0.53–0.67**，每对 **上翻 8–15 题、下翻 6–12 题**，而分数只在 37→43（6/164）之间摆动——即**分数摆动会系统性地低估逐题不稳定**，采样协议下必须按逐题比，不能按分数比。
 - **与 `plan15` 的 ±16/161 严格区分**：地板 0 说的是「输入相同、重复跑」；±16/161 说的是「输入变了（提示集/后处理版本）」。两者不可相加、不可互相替代。本项目解读小差异的规则因此是：**提示集哈希 + 后处理版本相同 → 任何非零跨 run 差异都不是噪声；任一改变 → 先按 res29 判输入差，再谈显著性。**
-- gsm8k 这一行用的是**生产配置重跑**：server 带 `--reasoning off`，01:18:27–01:20:51 与 01:20:51–01:23:43 两次 `rc=0`，两次都是 **71/100**，逐题 100/100 相同，响应非空（首题 `filtered=['26']`）。证据：`.wrapup/i01_noise_floor2.out`、`.wrapup/i01_noise_floor.log` 的 `rep=1/2 rc=0` 行、`.wrapup/mres/i01-floor/gsm8k-r{1,2}/samples_gsm8k_2026-10-21T01-2*.jsonl`。
+- gsm8k 这一行用的是**生产配置重跑**：server 带 `--reasoning off`，01:18:27–01:20:51 与 01:20:51–01:23:43 两次 `rc=0`，两次都是 **71/100**，逐题 100/100 相同，响应非空（首题 `filtered=['26']`）。证据：`.wrapup/i01_noise_floor2.out`、`.wrapup/i01_noise_floor.log.gz` 的 `rep=1/2 rc=0` 行、`.wrapup/mres/i01-floor/gsm8k-r{1,2}/samples_gsm8k_2026-10-21T01-2*.jsonl`。
 - 第一次尝试（`gsm8k-noReasoning-flag-r{1,2}`，11/100）是在**漏传 `--reasoning off`** 的 server 上跑的：响应 content 为空、判分多为 `[invalid]`，那不是生产 cell。它留在盘上只作为「这个旗标不能漏」的证据，**不进地板分母、不作为结论数**。
 - 状态：current。
-- 证据：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json`；`.wrapup/wres/humaneval/w1-2bq4-r{1,2,3}_openai_temp_{0.0,0.3}_eval_results.json`；`.wrapup/mres/i01-floor/{gsm8k-r*,gsm8k-noReasoning-flag-r*,bfcl-r*}`；`.wrapup/i01_noise_floor.log`。
+- 证据：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json`；`.wrapup/wres/humaneval/w1-2bq4-r{1,2,3}_openai_temp_{0.0,0.3}_eval_results.json`；`.wrapup/mres/i01-floor/{gsm8k-r*,gsm8k-noReasoning-flag-r*,bfcl-r*}`；`.wrapup/i01_noise_floor.log.gz`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"`（实跑：四族 `identical==n`、`swing 0.0000`）；采样边界用 `w1-2bq4-r{1..5}_openai_temp_0.3_eval_results.json` 两两比。
 
 ### res33 echo shim 的精确性已实测：top-N 内逐位相同，top-N 外不造假（但文档关于「报错」的说法是错的）
@@ -121,7 +121,7 @@
 - **但 `lmeval_run.py` 的文档说错了**：docstring 写「不在 top-N 就升级 N 一次、再不行**硬报错，从不会返回 0.0**」；实测它**没有报错**，而是升级到更宽的 N 并返回了真实值。升级到能看见 token 为止是更好的行为，但**文档与实现不符**，这一条按缺陷登记（改文档即可，不改实现）。
 - **仍未测的边界**：那个 tail 值 `-17.451372` 的精确性没有被独立确认（token 在 top-2000 dump 之外），所以「升级后的取值是否与模型逐位相同」只在前 2000 名内验证过。
 - 状态：current。
-- 证据：`.wrapup/mres/i01-shim-probe/probe-output.txt`（本次跑的输出）、`.wrapup/mres/i01-shim-probe/shim_probe.log`。
+- 证据：`.wrapup/mres/i01-shim-probe/probe-output.txt`（本次跑的输出）、`.wrapup/mres/i01-shim-probe/shim_probe.log.gz`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/lmeval_shim_probe.py"`（实跑 `exit=0`；实测 free VRAM 19,029 MiB、峰值占用 6,805 MiB、`n_slots = 1`、耗时约 1 分钟；与 a06 的 m165 并行，属 registry 的 GPU 并发例外）。
 
 ### res34 clone 里 `run_all.py` 的 exit 2 是「不可得」，不是失败
@@ -187,8 +187,8 @@
 - 2026-10-14 20:46 启动的 16 个 cell 全部在生成前失败（`/tmp/MultiPL-E/prompts` 已被清理，`FileNotFoundError`），脚本把它记成 `CORRUPT ... empty=999`。
 - 其后一次不经脚本的运行留下 `g12b-q2 cpp raw` 的 0/161；其完成物 151/161 不含 `return`、27/161 只有注释、18/161 带 `<|channel>` 通道 token——是原始补全模式下模型不写函数体，不是提示集坏了。
 - 状态：current。
-- 证据：`.wrapup/m160.log` 行 42–55 `FileNotFoundError: /tmp/MultiPL-E/prompts/humaneval-cpp.jsonl`；`.wrapup/mres/m160-g12b-q2-cpp-raw.jsonl`。
-- 复现：`grep -c 'CORRUPT' .wrapup/m160.log` 与 `grep -c 'FileNotFoundError' .wrapup/m160.log`。
+- 证据：`.wrapup/m160.log.gz` 行 42–55 `FileNotFoundError: /tmp/MultiPL-E/prompts/humaneval-cpp.jsonl`；`.wrapup/mres/m160-g12b-q2-cpp-raw.jsonl`。
+- 复现：`zgrep -c 'CORRUPT' .wrapup/m160.log.gz` 与 `zgrep -c 'FileNotFoundError' .wrapup/m160.log.gz`。
 
 ### res20 MultiPL-E chat 判分曾把 Markdown 围栏当语法错误
 

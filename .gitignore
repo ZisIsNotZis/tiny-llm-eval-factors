@@ -41,11 +41,17 @@ experiments.sqlite.bak*
 !.wrapup/mres/m165-mechanism/*_eval.json
 !.wrapup/mres/m165-mechanism/*_summary.jsonl
 !.wrapup/mres/m165-mechanism/props_*.json
+# p-entry3：被 `docs/subprojects/*/RESULT.md` 点名的 9 个 `.log`，以 gzip 入库（逐条核验见 checks/evidence_logs.py）。
+# 子目录要先放行（`!.wrapup/mres/*/` 与 `.wrapup/mres/*/*` 已在上面），否则这两级的 `!` 不生效。
+!.wrapup/mres/i01-shim-probe/shim_probe.log.gz
+!.wrapup/mres/m128-spec-9b/server.log.gz
+!.wrapup/mres/m142-qat-gemma31b-q4/code.log.gz
 .wrapup/*.log
 # 运行日志与进程戳：暂存不是证据。
 # 例外（下面十四行）：`docs/` 下被点名为 evidence 的 `.out`。判据是「被点名」，不是「体积小」；
-# 没被点名的 `.out` 不入库。`.log` 同类没有在同一次里定：`docs/subprojects/*/RESULT.md` 点名了 9 个
-# 未入库的 `.log`，共 9.3 MB（最大的一个 7.2 MB），它们的处置登记在工作包 p-entry3。
+# 没被点名的 `.out` 不入库。
+# `.log` 的处置（p-entry3）：点名了才入库，且以 gzip 原路径旁的那一份入库——9 个文件原始 9339155 字节、
+# gzip 后 1023126 字节；`.gz` 不在 `*.log` 这条类里，所以只有下面九行放行。核验：`python3 checks/evidence_logs.py`。
 .wrapup/*.out
 .wrapup/*.pid
 !.wrapup/a01_t4.out
