@@ -269,12 +269,12 @@ else
 fi
 rm -f /tmp/reproduce_pcr.$$
 
-if python3 checks/mres_prefix_delete_negative_control.py >/tmp/reproduce_mpd.$$ 2>&1; then
-    record PASS "REFRESH 删除范围的负控（探针行跑完两次 migrate 仍在、mres/% 行一条不丢、两次行数相同）"
-else
-    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_mpd.$$ | cut -c1-200)"
-fi
-rm -f /tmp/reproduce_mpd.$$
+out=$(python3 checks/mres_prefix_delete_negative_control.py 2>&1); rc=$?
+case "$rc" in
+    0) record PASS "REFRESH 删除范围的负控（探针行跑完两次 migrate 仍在、mres/% 行一条不丢、两次行数相同）" ;;
+    2) record SKIP "$(printf '%s' "$out" | grep -m1 '不可得:' | sed 's/^不可得: //')" ;;
+    *) record FAIL "$(printf '%s' "$out" | grep -m1 'FAIL' | cut -c1-200)" ;;
+esac
 
 if python3 checks/superseded_pointer_negative_control.py >/tmp/reproduce_sup.$$ 2>&1; then
     record PASS "superseded 指针的负控（悬空指针 → db_check 变红并点名）"
