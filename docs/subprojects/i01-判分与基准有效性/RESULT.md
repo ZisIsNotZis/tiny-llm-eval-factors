@@ -110,6 +110,16 @@
 - 证据：`.wrapup/mres/i01-slot-{np1,npauto}-p{1,2}-py-chat_eval.json`；`.wrapup/wres/humaneval/w1-2bq4-r{1,2,3}_openai_temp_{0.0,0.3}_eval_results.json`；`.wrapup/mres/i01-floor/{gsm8k-r*,gsm8k-noReasoning-flag-r*,bfcl-r*}`；`.wrapup/i01_noise_floor.log`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/noise_floor_compare.py"`（实跑：四族 `identical==n`、`swing 0.0000`）；采样边界用 `w1-2bq4-r{1..5}_openai_temp_0.3_eval_results.json` 两两比。
 
+### res33 echo shim 的精确性已实测：top-N 内逐位相同，top-N 外不造假（但文档关于「报错」的说法是错的）
+
+- **在 top-N 内，shim 与 llama-server 的数字逐位相同**：argmax token `-0.807629 vs -0.807629`、第 2 名 token `-2.809992 vs -2.809992`，走 HTTP 面同样是 `-2.809992`。这三条是 mmlu / arc_challenge / truthfulqa_mc2 三列可信的前提。
+- **top-N 外不造假**：给一个模型几乎不可能预测的续写（`" æßþø中文ZZQQ"`），shim 返回 `-17.451372`，不是 `0.0`；该值的概率 `exp(-17.45)=2.6e-8`，低于 top-2000 dump 的覆盖下限（`1/2000=5e-4`），与「真的去取了该 token 的对数概率」一致。
+- **但 `lmeval_run.py` 的文档说错了**：docstring 写「不在 top-N 就升级 N 一次、再不行**硬报错，从不会返回 0.0**」；实测它**没有报错**，而是升级到更宽的 N 并返回了真实值。升级到能看见 token 为止是更好的行为，但**文档与实现不符**，这一条按缺陷登记（改文档即可，不改实现）。
+- **仍未测的边界**：那个 tail 值 `-17.451372` 的精确性没有被独立确认（token 在 top-2000 dump 之外），所以「升级后的取值是否与模型逐位相同」只在前 2000 名内验证过。
+- 状态：current。
+- 证据：`.wrapup/mres/i01-shim-probe/probe-output.txt`（本次跑的输出）、`.wrapup/mres/i01-shim-probe/shim_probe.log`。
+- 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/lmeval_shim_probe.py"`（实跑 `exit=0`；实测 free VRAM 19,029 MiB、峰值占用 6,805 MiB、`n_slots = 1`、耗时约 1 分钟；与 a06 的 m165 并行，属 registry 的 GPU 并发例外）。
+
 ## 判分缺陷与修复### res16 MultiPL-E 旧列不可比（language 覆盖）
 
 - 各模型只跑了不同的语言子集（Qwen3.5-2B-UD-IQ2_XXS 只有 cpp；gemma-4-12b 只有 java/js/rb/rs），把不同测集平均后，gemma-4-12b/26B 的近零分数是语言覆盖造成的假象。

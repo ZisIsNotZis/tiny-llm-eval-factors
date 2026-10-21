@@ -115,14 +115,14 @@ AC：四份落盘完成物与四份 `_eval.json` 存在；一份逐题对照表�
 | chat 单次噪声地板 | `res32` | **完成**：四族同配置重复全部 0 翻转（MultiPL-E 161 题 ×2 对、EvalPlus 164 题 ×3 次、lm-eval gsm8k 生产配置 100 题 ×2 次=71/100 各一次、BFCL 单轮 40 题 ×2 次，Jaccard 1.0、摆动 0）；边界与采样反例（temp=0.3 时逐题 Jaccard 0.53–0.67）同节点 |
 | 同一格跨 run 差异有裁决 | `res29` | **完成**：plan15 裁决为「批处理排除（四臂逐字节相同）+ 131 不可复现（证据被覆盖）+ 16 题双向翻转 + 66/161 token 不同」；并把「6/161 是噪声地板」的说法撤回 |
 
-**真正未做的项**：① `WP3` 的 `lmeval_run.py --selftest`（echo shim 是否从不返回 0.0，需起 server）；② BFCL 多轮 checker 的可执行负控；③ MultiPL-E 非 py 语言（cpp/js/java/rs/rb）的提前退出通道；④ 自研 BFCL 匹配器与官方 checker 的一致率（历史预测文件缺失）；⑤ `WP9` 独立复核（复核已判 ACCEPT WITH NOTES，五处修改本会话完成，待复核者确认关闭）。
+**真正未做的项**：① ~~`WP3` 的 shim 负控~~ 已完成：`audits/lmeval_shim_probe.py` 实跑 `exit=0`（`res33`），并发现 docstring 与实现不符（已按缺陷登记）；② BFCL 多轮 checker 的可执行负控；③ MultiPL-E 非 py 语言（cpp/js/java/rs/rb）的提前退出通道；④ 自研 BFCL 匹配器与官方 checker 的一致率（历史预测文件缺失）；⑤ `WP9` 独立复核（复核已判 ACCEPT WITH NOTES，五处修改本会话完成，待复核者确认关闭）。
 
 ## GPU 排队项（外部占用时按触发条件等，不轮询重试）
 
 | 项 | 所需显存 | 当前空闲（2026-10-21 00:32） | 触发条件 | 预算 |
 |---|---|---|---|---|
 | `WP7` 三族代表 cell 的重复 pass（lm-eval 与 BFCL 各一个；EvalPlus 引用已有 `w1-repeat` 三次复跑） | ≤8 GiB（用 ≤4B 小模型，权重 ≤3 GiB + KV），**不需要 27B 的 16 GiB 门禁** | 12,957 MiB | `memory.free ≥ 8192 MiB` 且拿到 flock | ≤40 GPU 分钟 |
-| `WP3` 遗留负控：`lmeval_run.py --selftest`（echo shim 是否从不返回 0.0） | 同上一行的量级 | 同上 | 同上 | ≤15 GPU 分钟 |
+| ~~`WP3` 遗留负控~~ 已完成：`audits/lmeval_shim_probe.py` | 实测峰值 6,805 MiB、约 1 分钟 | — | 已在 GPU 并发例外下跑完（并行于 a06 的 m165） | 实际 ~1 GPU 分钟 |
 
 外部占用的来源已确认是**另一个仓库的 `train_sft.py`（用户自己的任务）**，本层不动它、也不为它改别人的进程。上面两项都**不**排 `npauto-b`（已按 meta 裁决放弃：与 `npauto` 同一件事，另一次确定性已由 `np1` 两次覆盖）。
 
