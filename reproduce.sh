@@ -63,6 +63,7 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/reproducibility.json report_inputs/scheme_effects.json \
          report_inputs/size_claims.json report_inputs/kv_evidence.json \
          report_inputs/bfcl_gap.json report_inputs/moe_feasibility.json \
+         report_inputs/bfcl_judge.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -70,6 +71,21 @@ if [ "$missing_inputs" = 0 ]; then
     record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
+fi
+if python3 checks/readme_counts.py >/dev/null 2>&1; then
+    record PASS "README 的入库产物说法与 git ls-files 一致"
+else
+    record FAIL "README 与 git ls-files 不一致：python3 checks/readme_counts.py"
+fi
+if python3 report_inputs/build_bfcl_judge.py --check >/dev/null 2>&1; then
+    record PASS "bfcl_judge.json 与 a13 的判分器事实一致"
+else
+    record WARN "bfcl_judge.json 与 a13 的事实不一致：python3 report_inputs/build_bfcl_judge.py"
+fi
+if python3 checks/bfcl_judge_negative_control.py >/dev/null 2>&1; then
+    record PASS "第十四节判分器口径的负控（改判计数改 0 → 与判分器无关）"
+else
+    record FAIL "第十四节判分器口径的负控未通过"
 fi
 if python3 report_inputs/build_moe_feasibility.py --check >/dev/null 2>&1; then
     record PASS "moe_feasibility.json 与 a04 的可行性 fixture 一致"

@@ -273,3 +273,18 @@
 - status: current
 - evidence: `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl` 的每行自带 `protocol`（`mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,…`），`migrate_db.ingest_m165` 原样入库，并把 `temp/top_p/top_k/min_p/presence_penalty/seed/ctx_size` 写进各自的列（都在 23 列测量身份里，不与贪心格合并）；未知模型名与「用了默认协议」都进 `INGEST_SKIPS` 总账。短名映射 `q2/q3 → Qwen3.5-2B-UD-Q{2,3}_K_XL` 的依据是同一 cell 的贪心格与 m29 逐位相同（18/161、22/161）。
 - producer: `python3 checks/m165_ingest_negative_control.py`（真文件按行入库、只差 `presence_penalty` 的两行各成一格、未知模型进 ledger）；`python3 migrate_db.py` 末尾的 `== ingest skips ==`
+
+## res58 :: 报告第十四节按官方 AST checker 重写：两套判分器不可混算、micro 与 macro 都可算不可混用、两处结论翻转写明。
+
+- kind: measured
+- status: current
+- evidence: 第十四节新增段落由 `report_inputs/bfcl_judge.json` 渲染（`build_bfcl_judge.py` 从 `a13` 的 `RESULT.md` 抽数）：native 协议行是 `…-official-ast-checker`（79 格）、prompt 协议仍是 `…-homegrown-matcher`（20 格），两类不可混算；换判分器把 2,788 题由判错改判对、35 题反向，5 个非 live 类别合并的第一名从 `Bonsai-q2g64` 0.7053 换成 `gemma-4-E4B-Q3` 0.8908（vs Bonsai 0.8808，差 0.0100、方向相反），排序大体保留（4/55 对逆序）但绝对分数与 ≤0.05 邻近间距不可沿用；micro 与 macro 现在都可由库算（例 gemma-4-E4B-Q3 五类 micro 0.8944；两者仍相差约 0.2059），本表仍不给汇总列；多轮写成有界结论（4 组 handler 组内可比、granite 独立无对照、gemma 0 行、跨族无证据、2×2 未测≈50 GPU 分钟）。旧的「micro 不可从库复算」一句已删除。
+- producer: `python3 report_inputs/build_bfcl_judge.py --check`；`python3 checks/bfcl_judge_negative_control.py`（改判计数改成 0 → 正文改口成「与判分器无关」）
+
+## res59 :: README 里「哪些产物入库」的说法有检查兜着，不再随入库漂移。
+
+- kind: measured
+- status: current
+- evidence: README 原先一边说 `.wrapup/mres/*_eval.json` 不入库、一边在 Ships 清单里列它们，且写死「337 files」（实际跟踪 341）。现在删掉「不入库」的说法、把文件数改成「以 `git ls-files '.wrapup/mres/*_eval.json' | wc -l` 计数为准」，并新增 `checks/readme_counts.py`：README 若再说这些产物不入库、或写的文件数与 `git ls-files` 不一致 → FAIL。已接进 `reproduce.sh`。
+- producer: `python3 checks/readme_counts.py`
+

@@ -1,0 +1,44 @@
+{
+ "source": "docs/subprojects/a13-工具调用 BFCL/RESULT.md",
+ "reclassified": {
+  "to_pass": 2788,
+  "to_fail": 35,
+  "up_share": 0.9876
+ },
+ "ranking": {
+  "inversions": "4/55",
+  "new_first": [
+   "gemma-4-E4B-Q3",
+   0.8908,
+   "Bonsai",
+   0.8808,
+   0.01
+  ],
+  "old_first": [
+   "Bonsai-q2g64",
+   0.7053,
+   "gemma-4-E4B-Q3",
+   0.7028,
+   0.0025
+  ]
+ },
+ "micro": {
+  "computable": true,
+  "example": 0.8944
+ },
+ "meaning": {
+  "old_gap": 0.2028,
+  "new_gap": 0.2059
+ },
+ "protocols": {
+  "native": "bfcl-native-tools-nothink-greedy-official-ast-checker",
+  "prompt": "bfcl-prompt-nothink-greedy-homegrown-matcher"
+ },
+ "multi_turn": {
+  "comparable_within": "4 组 handler",
+  "granite": "独立、无对照",
+  "gemma": "0 行",
+  "cross_family": "无证据",
+  "untested": "2×2 handler 对照未测（≈50 GPU 分钟）"
+ }
+}

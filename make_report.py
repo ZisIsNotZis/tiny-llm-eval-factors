@@ -1297,14 +1297,10 @@ def bfcl_aggregation_note():
                      f"macro {gap['macro']:.4f}，来自 <code>{html.escape(gap['file'])}</code>）。")
     else:
         parts.append("本机没有可用的 BFCL 汇总，这一项差多少无法给出。")
-    n_null = CON.execute("SELECT COUNT(*) FROM experiments WHERE _score IS NOT NULL "
-                         "AND n_items IS NULL AND bench_family LIKE 'bfcl%'").fetchone()[0]
-    n_all = CON.execute("SELECT COUNT(*) FROM experiments WHERE _score IS NOT NULL "
-                        "AND bench_family LIKE 'bfcl%'").fetchone()[0]
-    parts.append("题量方面：单轮的题量已按 `per_category` 的类别计数回填，"
-                 f"多轮仍有 {n_null}/{n_all} 行没有题量（汇总里没有匹配「类别 + 分数」的记录）；"
-                 "micro 需要逐题计数，而产物只有类别级 `acc`/`n`，所以 micro 不可从库复算，"
-                 "本报告也不给 BFCL 的任何单一总分数值。</li>")
+    parts.append("题量与汇总：单轮各格已回填 `n_items`，多轮的题量由 ledger 的 `total_count` 推出，"
+                 "所以 micro（按题加权）与 macro（类别等权）**都可以从库算出来**，"
+                 "但两者不是同一个量、不可混用；本表因此仍不给汇总列。"
+                 "详细口径与两处结论翻转见上一条。</li>")
     return "".join(parts)
 
 
@@ -1363,10 +1359,13 @@ def moe_feasibility_html():
                        f"<code>Δbpw = {ta['dbpw']:+.3f}</code> 按本族斜率算出的 {budget:+.4f} 相当，"
                        f"所以先按预算差读，不归因给层分配。</li>")
         elif hep is not None and budget is not None:
+            share = ""
+            if ta.get("budget_share_min") is not None and ta.get("budget_share_max") is not None:
+                share = ("——全部预算项加起来也只有 "
+                         + f"{ta['budget_share_min']:+.4f}…{ta['budget_share_max']:+.4f}。")
             out.append(f"<li><b>这个差不是预算能解释的：</b>按本族实测斜率，"
                        f"<code>Δbpw</code> 只值 HumanEval+ {budget:.4f}，"
-                       f"而观测是 <b>{hep['delta']:+.4f}</b>——"
-                       f"全部预算项加起来也只有 {ta['budget_share_min']:+.4f}…{ta['budget_share_max']:+.4f}。"
+                       f"而观测是 <b>{hep['delta']:+.4f}</b>{share}"
                        f"方向是<b>均匀更好</b>：把注意力/稠密层压到约 2.95 去喂专家，在钉住总比特下明确更差。"
                        f"适用边界：{html.escape(ta['boundary'])}；{html.escape(ta['untested'])}。</li>")
         out.append("<li><b>与前面那条不矛盾，是补全：</b>「均匀 vs 非专家优先」这一维仍不可分辨"
@@ -1448,6 +1447,46 @@ def kv_evidence_html():
 
 
 SIZE_CLAIMS = "report_inputs/size_claims.json"
+BFCL_JUDGE = "report_inputs/bfcl_judge.json"
+
+
+def bfcl_judge_html():
+    """第十四节的判分器口径：两套协议不可混算、micro 与 macro 都可算不可混用、两处结论翻转。"""
+    if not os.path.exists(BFCL_JUDGE):
+        raise SystemExit(f"报告输入缺失：{BFCL_JUDGE}"
+                         f"（由 report_inputs/build_bfcl_judge.py 生成）。")
+    d = json.load(open(BFCL_JUDGE, encoding="utf-8"))
+    rc, rank = d["reclassified"], d["ranking"]
+    mt = d["multi_turn"]
+    out = []
+    out.append("<li><b>表内数值是哪套判分器给的，行标签会写明：</b>native 协议 "
+               f"<code>{html.escape(d['protocols']['native'])}</code> 是官方 AST checker 的分（79 格），"
+               f"prompt 协议 <code>{html.escape(d['protocols']['prompt'])}</code> 仍是自研匹配器（20 格）。"
+               "<b>两类不可混算、也不可跨协议比较</b>。</li>")
+    if rc["to_pass"]:
+        out.append(f"<li><b>换判分器会改结论（这就是必须写明口径的原因）：</b>"
+                   f"{rc['to_pass']:,} 题由判错改判对、{rc['to_fail']} 题反向；"
+                   f"5 个非 live 类别合并的第一名因此换人——旧 {rank['old_first'][0]} "
+                   f"{rank['old_first'][1]:.4f} vs {rank['old_first'][2]} {rank['old_first'][3]:.4f}"
+                   f"（差 {rank['old_first'][4]:.4f}），新 {rank['new_first'][0]} "
+                   f"{rank['new_first'][1]:.4f} vs {rank['new_first'][2]} {rank['new_first'][3]:.4f}"
+                   f"（差 {rank['new_first'][4]:.4f}，方向相反）。"
+                   f"所以「三值 Bonsai 是最好的工具调用模型」不成立，正确说法是"
+                   f"「{rank['new_first'][0]} 略高 {rank['new_first'][4]:.2f}，在换判分器的噪声范围内不可分」。"
+                   f"排序大体保留（{rank['inversions']} 对逆序），但<b>绝对分数与 0.05 以内的邻近间距不可沿用</b>。</li>")
+    else:
+        out.append("<li><b>两套判分器在这批数据上给出相同判定</b>（改判 0 题），因此分数与排序与判分器无关。</li>")
+    out.append(f"<li><b>micro 与 macro 现在都可从库复算，但不可混用：</b>"
+               f"单轮各格回填了 `n_items`，micro 可按题加权算出（例：gemma-4-E4B-Q3 五类 micro "
+               f"= {d['micro']['example']}），macro 是类别等权；两者在本仓汇总里仍相差约 "
+               f"{d['meaning']['new_gap']}（换判分器前 {d['meaning']['old_gap']}）。"
+               f"本表仍不给汇总列，逐类别比较才有意义。</li>")
+    out.append(f"<li><b>多轮只给有界结论：</b>{html.escape(mt['comparable_within'])} 组内可比、"
+               f"{html.escape(mt['granite'])}、gemma 族 {html.escape(mt['gemma'])}、"
+               f"跨族{html.escape(mt['cross_family'])}；{html.escape(mt['untested'])}。</li>")
+    return "".join(out)
+
+
 BFCL_GAP = "report_inputs/bfcl_gap.json"
 
 
@@ -2027,7 +2066,7 @@ def main():
          "所以工具调用分数必须连同协议一起读，不能只看一个数。</li>"
          "<li>多轮（base / miss_func / miss_param / long_context）目前只在少数锚点上跑过，覆盖很薄，属于<b>待扩测</b>。</li>"
          "<li><b>看图要点：</b>每张图同一模型的柱子高低 = 协议效应；柱子缺失 = 该协议下未测。</li>"
-         + bfcl_aggregation_note() +
+         + bfcl_judge_html() + bfcl_aggregation_note() +
          "</ul>"),
         ("十五、部分给分（每测试通过比例）",
          "X = 模型（三元/极低位宽 vs 原生 K）；Y = 每道题通过的测试比例（不是 pass@1）；行 = 模型文件。",

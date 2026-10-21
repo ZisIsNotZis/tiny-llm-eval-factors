@@ -28,7 +28,8 @@ python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测
 它不能重建的东西：模型权重（`.gguf` 不在仓库内，原始权重文件已不在本机；本仓库没有
 `artifacts.tsv`，也不打算为它们建一份——那些字节已丢失）、
 `/tmp/MultiPL-E` 提示缓存、CJK 字体（系统包，按上面的命令装）、以及评测运行本身（需要 GPU 与模型文件）。`.wrapup/mres/*_eval.json` 是逐题
-落盘产物、不入库，其所需的判读摘要随仓库分发在 `report_inputs/eval_status.json`，所以干净 clone 得到的
+落盘产物、**已入库**（判据见下节「Source of truth」里 Ships 那一栏），其判读摘要另有一份派生副本
+`report_inputs/eval_status.json`，所以干净 clone 得到的
 报告与本机相同。
 
 ## Source of truth
@@ -43,7 +44,7 @@ python3 -m pip install -r requirements.txt   # 首次约 1 分钟（本机实测
 - `checks/` holds the infrastructure checks: database integrity and cleanliness, report-versus-artefact
   agreement, and retired absolute paths.
 - `.wrapup/` holds run outputs, downloaded corpora and other regenerable experiment artifacts. What ships is decided by one criterion (`@regeneration_cost`): **an artefact ships when it carries an assertion and cannot be recomputed from what ships; it stays out when it is a rebuildable distribution.**
-  - **Ships (evidence):** `.wrapup/prompts/` (the prompt set plus `SHA256SUMS`), `.wrapup/mres/*_eval.json` (the per-item eval artefacts: 337 files, 3.45 MB — they are what makes "no all-Exception cell carries a score" and every printed item count checkable in a fresh clone), the panel scripts and `*_summary.jsonl` they produced, `bpw_map.json`, and everything under `report_inputs/`.
+  - **Ships (evidence):** `.wrapup/prompts/` (the prompt set plus `SHA256SUMS`), `.wrapup/mres/*_eval.json` (the per-item eval artefacts — count them with `git ls-files '.wrapup/mres/*_eval.json' | wc -l`; they are what makes "no all-Exception cell carries a score" and every printed item count checkable in a fresh clone), the panel scripts and `*_summary.jsonl` they produced, `bpw_map.json`, and everything under `report_inputs/`.
   - **Does not ship (rebuildable cache):** `.wrapup/mres/*.jsonl` per-item samples, venvs (`lmenv/`, `msenv/`, `evalpy/`, `bfclenv/`, `mplenv/`), `jars/`, run logs, `dl_ready/`, `ppl_corpora/`.
 
 Unknown, blocked, or unmeasured results must remain distinct from zero or a negative result. Consult the owning plan/result entries before interpreting any number, and preserve the recorded workload and protocol alongside comparisons.

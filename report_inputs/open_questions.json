@@ -134,6 +134,7 @@
  "skipped": [
   "docs/subprojects/a06-采样与解码参数/PLAN.md",
   "docs/subprojects/a12-多语言代码 MultiPL-E/PLAN.md",
+  "docs/subprojects/a13-工具调用 BFCL/PLAN.md",
   "docs/subprojects/i01-判分与基准有效性/PLAN.md"
  ]
 }

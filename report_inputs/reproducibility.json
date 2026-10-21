@@ -32,16 +32,6 @@
     "flips_down": 0,
     "score_swing": 0.0,
     "jaccard": 1.0
-   },
-   {
-    "name": "lm-eval gsm8k",
-    "cell": "`Qwen3.5-2B-UD-Q3_K_XL`，reasoning-off，`--limit 100`，两次",
-    "n": 100,
-    "identical": 100,
-    "flips_up": 0,
-    "flips_down": 0,
-    "score_swing": 0.0,
-    "jaccard": 1.0
    }
   ],
   "rule": "同一提示集哈希 + 同一后处理版本下、且解码是确定性的（greedy/temp=0）时，任何非零跨 run 差异都不是噪声"

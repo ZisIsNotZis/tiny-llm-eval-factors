@@ -75,6 +75,31 @@ def main():
         c = post(port, {**base, "presence_penalty": 0.0})["choices"][0]["message"]["content"]
         d = post(port, {**base, "top_k": 1})["choices"][0]["message"]["content"]
         e = post(port, {**base, "temperature": 0.0})["choices"][0]["message"]["content"]
+
+        # 塌缩判据（a06 的方法论）：**被忽略的参数做不出**下面这件事——把 top_k 压到 1、或把
+        # top_p 压到 0.1，必须逐字重现 temperature=0 的输出。单点 A/B（改一个参数看输出变不变）
+        # 两个方向都会骗人：改参数恰好落在没有可罚重复的短清单上就不变。
+        def completion(fields):
+            body = {"prompt": PROMPT, "n_predict": 64, "seed": 1234,
+                    "temperature": 0.0, **fields}
+            req = urllib.request.Request(f"http://127.0.0.1:{port}/completion",
+                                         data=json.dumps(body).encode(),
+                                         headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=180) as r:
+                return json.loads(r.read())["content"]
+
+        chat0 = post(port, {"model": "x", "messages": [{"role": "user", "content": PROMPT}],
+                            "max_tokens": 64, "seed": 1234, "temperature": 0.0}
+                     )["choices"][0]["message"]["content"]
+        chat_topk1 = post(port, {"model": "x", "messages": [{"role": "user", "content": PROMPT}],
+                                 "max_tokens": 64, "seed": 1234, "temperature": 0.0,
+                                 "top_k": 1})["choices"][0]["message"]["content"]
+        chat_topp01 = post(port, {"model": "x", "messages": [{"role": "user", "content": PROMPT}],
+                                  "max_tokens": 64, "seed": 1234, "temperature": 0.0,
+                                  "top_p": 0.1})["choices"][0]["message"]["content"]
+        comp0 = completion({})
+        comp_topk1 = completion({"top_k": 1})
+        comp_topp01 = completion({"top_p": 0.1})
         ev = {
             "model": MODEL,
             "server_defaults": {k: defaults.get(k) for k in
@@ -85,17 +110,40 @@ def main():
             "presence_penalty_change_changes_output": a != c,
             "top_k_change_changes_output": a != d,
             "temperature_change_changes_output": a != e,
+            "collapse": {
+                "chat_top_k1_equals_temp0": chat_topk1 == chat0,
+                "chat_top_p01_equals_temp0": chat_topp01 == chat0,
+                "completion_top_k1_equals_temp0": comp_topk1 == comp0,
+                "completion_top_p01_equals_temp0": comp_topp01 == comp0,
+            },
             "outputs": {"a": a, "b": b, "c": c, "d_top_k1": d, "e_temp0": e},
         }
-        # 判据：同 seed 重复必须相同；且**至少一个**单参数改动必须改输出（证明参数进了采样）
-        ok = ev["same_seed_twice_identical"] and (
-            ev["presence_penalty_change_changes_output"] or ev["top_k_change_changes_output"])
+        # 判据（结构性，不看单点）：① 同 seed 重复必须逐字相同；② temp 0 vs 1.0 必须不同；
+        # ③ 两个端点上 top_k=1 与 top_p=0.1 都必须逐字重现 temp=0（被忽略的参数做不到）。
+        collapse = ev["collapse"]
+        ev["structural_verdict"] = {
+            "seed_reproducible": ev["same_seed_twice_identical"],
+            "temperature_effective": ev["temperature_change_changes_output"],
+            "top_k_effective": collapse["chat_top_k1_equals_temp0"] and collapse["completion_top_k1_equals_temp0"],
+            "top_p_effective": collapse["chat_top_p01_equals_temp0"] and collapse["completion_top_p01_equals_temp0"],
+        }
+        ok = all(ev["structural_verdict"].values())
         ev["verdict"] = "PASS" if ok else "FAIL"
         json.dump(ev, open(OUT, "w"), ensure_ascii=False, indent=1)
+        print(json.dumps({k: ev[k] for k in (
+            "server_defaults", "same_seed_twice_identical",
+            "temperature_change_changes_output",
+            "presence_penalty_change_changes_output",
+            "top_k_change_changes_output", "verdict")}, ensure_ascii=False))
+        print("structural:", json.dumps(ev["structural_verdict"], ensure_ascii=False))
         print(json.dumps({k: ev[k] for k in ("server_defaults", "same_seed_twice_identical",
+                                             "temperature_change_changes_output",
                                              "presence_penalty_change_changes_output",
-                                             "top_k_change_changes_output",
-                                             "temperature_change_changes_output", "verdict")},
+                                             "top_k_change_changes_output", "verdict",
+                                             "structural_verdict")}, indent=1) if False else json.dumps({k: ev[k] for k in ("server_defaults", "same_seed_twice_identical",
+                                             "temperature_change_changes_output",
+                                             "presence_penalty_change_changes_output",
+                                             "top_k_change_changes_output", "verdict")},
                          ensure_ascii=False))
         print("evidence:", OUT)
         return 0 if ok else 1
