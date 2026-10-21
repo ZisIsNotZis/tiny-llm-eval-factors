@@ -1,65 +1,64 @@
 # FINDINGS
 
-路由文件：每条结论只写「它是什么 + 事实落在哪个节点 + 当前状态」。数值、证据、置信区间与复算命令都在被指的节点里，本文件不复制，也不写 `文件:行`（行号随修订漂移）。`::` 后面是节点 id，路径给出唯一 home。
+路由文件：每条结论只写「它是什么 + 事实落在哪个节点 + 当前状态」。数值、证据、置信区间与复算命令都在被指的节点里，本文件不复制，也不写 `文件:行`（行号随修订漂移）。`::` 后面是节点 id，路径给出唯一 home；节点 id 的作用域是文件（同一 id 在不同文件里是两条事实），解析器是 `checks/router_refs.py`。
 
-口径纪律：未知 / 阻塞 / 未测必须与 0 或负结果区分；下表「部分」多数就是这一类。
+口径纪律：未知 / 阻塞 / 未测必须与 0 或负结果区分；下表「部分」多数就是这一类。状态词取自各节点的 `status` / `状态` 行：`current` 写成立，`provisional` 写部分，`retracted` 写已撤回，节点没有状态行的写未核实并点名。
 
 ## 一、测量结论（`author: measurement`、`kind: measured`/`citation`）
 
 | 结论 | 事实所在 | 状态 |
 | --- | --- | --- |
-| 权重量化位宽：同一家族内，从低一档到高一档，各标准基准分数普遍上升 | `docs/result/result.yaml::res1` | 成立 |
-| 按基准汇总的位宽步长中位数（该基准对位宽有多敏感） | `docs/result/result.yaml::res2` | 成立 |
-| 按位宽归一的基准敏感度：每比特/权重的分数变化中位数及其跨度 | `docs/result/result.yaml::res3` | 成立 |
-| 家族内配对差（能力型基准 − 知识型基准）为正，多数家族同向 | `docs/result/result.yaml::res4` | 成立 |
-| 小模型多语言代码的有效位宽 → 分数曲线（`scope: specific`） | `docs/result/result.yaml::res5` | 成立 |
-| 模型规模：同配方下参数量越大分数越高，小模型之间的差距通常更大 | `docs/result/result.yaml::res6` | 成立 |
-| 同字节下探测不到方案 / 厂商的水平位移，标签是比特分配的代理：家族与比特预算固定后，IQ / 本仓配方 / 另一上传者三个系数在 9/9 基准上全跨 0，唯一九列都不含 0 的是位宽斜率；识别力弱（两类标签各只由 1 族识别），±0.4–0.5 量级以内不可分辨 | `docs/subprojects/a03-量化方案与厂商/RESULT.md::res7` | 成立（作为「探测不到」的结论；旧措辞「合并 +0.056 / 厂商 +0.009」已在该节点标为撤回） |
-| KV 缓存精度：短上下文无可测差异，长上下文未覆盖 | `docs/result/result.yaml::res9` | 部分（短上下文为空结果，长上下文未测） |
-| 采样/解码：温度抬高压低代码通过率；温度为零时 top_k 无影响；MMLU 对采样无反应 | `docs/result/result.yaml::res10` | 成立 |
-| 投机解码：草稿深度越大越快，分数几乎不变 | `docs/result/result.yaml::res11` | 成立 |
-| 规模盘点（引用，非测量；随实验推进变化） | `docs/result/result.yaml::res15` | 部分（`kind: citation`） |
+| 权重量化位宽：同一家族内从低一档到高一档，多数情况下分数上升，但每一列都有反例（原措辞「普遍上升」已按节点收窄） | `docs/subprojects/a01-量化位宽/RESULT.md::res1` | 成立 |
+| Qwen3.5-2B 的多语言代码必须按语言分开读，原跨语言池化列已撤回 | `docs/subprojects/a01-量化位宽/RESULT.md::res5` | 成立（`scope: specific`） |
+| 模型规模：同配方下参数量越大分数越高，小模型之间的差距通常更大；但本层仍没有独立于报告生成器的复算，且已知同配方反例 | `docs/subprojects/a02-模型规模/RESULT.md::res6` | 部分（`provisional`） |
+| 同字节下换量化方案或换厂商标签在本设计下都不可分辨，标签是比特分配的代理；旧措辞「换方案有可测差异」已在该节点标为撤回 | `docs/subprojects/a03-量化方案与厂商/RESULT.md::res7` | 成立 |
+| KV 缓存精度：短上下文改变个别题的判定，净值双向且方向不单调；长上下文由针检索覆盖到受测上限，未观察到差异 | `docs/subprojects/a05-KV 缓存精度/RESULT.md::kv-short-panel`、`docs/subprojects/a05-KV 缓存精度/RESULT.md::kv-long-ctx-needle` | 成立（旧措辞「短上下文无可测差异」已撤，理由在 `docs/subprojects/a05-KV 缓存精度/RESULT.md::kv-short-wording`） |
+| 采样 / 解码：温度抬高压低代码通过率；`top_k` 只在温度为零时惰性；MMLU 对采样完全无反应 | `docs/subprojects/a06-采样与解码参数/RESULT.md::res10` | 成立 |
+| 投机解码：草稿深度换速度，但既不是单调、也不是到处成立；输出与不开投机不逐字节相同，MMLU 逐位相同是结构事实而不是质量证据 | `docs/subprojects/a07-投机解码/RESULT.md::res11` | 未核实（`docs/subprojects/a07-投机解码/RESULT.md` 的节点没有 status 行） |
+| 规模盘点（引用，非测量；随入库变化） | `docs/subprojects/i02-测量基础设施/RESULT.md::res15` | 成立（`kind: citation`） |
 
 ## 二、负结果（看起来合理的设计在这里输了 / 测不出差异）
 
 | 结论 | 事实所在 | 状态 |
 | --- | --- | --- |
-| MoE 逐层比特分配：均匀分配优于把专家层压到极低位，「比特最多」的配置最差 | `docs/result/result.yaml::res8` | 成立（`scope: specific`） |
-| QAT 不是量化损失的补救：同标称配方下文件更小，多数低位宽档更差 | `docs/result/result.yaml::res12` | 部分（一个显著项伴随存疑档位） |
-| 第三方方案 GSQ-RCO 相对原生阶梯测不出差异 | `docs/result/result.yaml::res13` | 成立（`scope: specific`） |
-| 未测不是 0：显存不足与架构无法加载的配置登记为未测 | `docs/result/result.yaml::res14` | 部分（明确登记为未测） |
-| MultiPL-E 旧列不可比：不同模型跑了不同语言子集，近零分数是语言覆盖造成的假象 | `docs/result/result.yaml::res16` | 成立 |
-| m160 面板的格在生成前失败；同批原始完成物显示模型不写函数体 | `docs/result/result.yaml::res19` | 成立 |
-| 生成协议改变 MultiPL-E 分数（同一模型 raw 与 chat 差异大） | `docs/result/result.yaml::res18` | 部分（`status: provisional`） |
+| MoE 逐层比特分配：钉住总比特后均匀优于专家优先，但那是单个对照且对手是已知病态臂；「比特最多最差」那三点的差不能归因给分配 | `docs/subprojects/a04-MoE 各层比特分配/RESULT.md::strategy-verdict`、`docs/subprojects/a04-MoE 各层比特分配/RESULT.md::migrated-res8` | 部分（三点的分配归因已撤回） |
+| QAT 不是量化损失的补救，也不是被否定的补救：它是同标称档下更小比特的选项；低位宽档更低但差不能归给训练 | `docs/subprojects/a09-量化感知训练 QAT/RESULT.md::qat-analysis`、`docs/subprojects/a09-量化感知训练 QAT/RESULT.md::qat-2bit-pairs` | 部分（`provisional` 的外推部分保留） |
+| 第三方方案 GSQ-RCO 相对原生阶梯在本设计的分辨力边界上只有一格露出信号，按多重比较读不成立；旧措辞「所有差值都跨 0」已撤回 | `docs/subprojects/a10-第三方量化方案/RESULT.md::position-nearest-iq3s`、`docs/subprojects/a10-第三方量化方案/RESULT.md::multiplicity-18` | 部分（撤回理由在 `docs/subprojects/a10-第三方量化方案/RESULT.md::res13`） |
+| 未测不是 0：显存不足、架构无法加载的格登记为非测量，不是低分 | `docs/subprojects/i02-测量基础设施/RESULT.md::res14` | 成立（登记为未测） |
+| MultiPL-E 旧列不可比：不同模型跑了不同的语言子集，近零分数是语言覆盖造成的假象；现行规则是不池化不同语言 | `docs/subprojects/i02-测量基础设施/RESULT.md::res29` | 成立 |
+| m160 面板没有产出测量：格在生成前失败，脚本把失败形态记成 CORRUPT；同批原始完成物显示是模型不写函数体 | `docs/subprojects/i01-判分与基准有效性/RESULT.md::res19` | 成立 |
+| 生成协议改变 MultiPL-E 分数（跨面板比较，不是同一面板内的受控比较） | `docs/subprojects/i01-判分与基准有效性/RESULT.md::res18` | 部分（`provisional`） |
 
 ## 三、撤回记录
 
 | 被撤回的说法 | 事实所在 | 状态 |
 | --- | --- | --- |
-| 全 `Exception` 的格曾被归因为整轮运行失败，随后又被归因为旧后处理破坏缩进；两种归因都已撤回，成因改为模型把函数体首行写在第 0 列。「必须记缺失、不得写 0」这一半仍成立 | `docs/result/result.yaml::res17b`、`::res17`、`::res24` | 已撤回（两种归因） |
-| 旧 `strip_fences` 只在围栏闭合时剥离，把 Markdown 围栏当语法错误；该批 chat 分数作废，只补正确后处理重算 | `docs/result/result.yaml::res20` | 已撤回（旧分数作废） |
-| 旧 `strip_fences` 的 `text.strip()` 抹掉无围栏完成物的首行缩进，并因此造成 gemma-4-26B-A4B py 的 `Exception`：观察成立、因果撤回（同一签名在修正 harness 下依然存在） | `docs/result/result.yaml::res21` | 已撤回（因果从句） |
-| m160 的前提「12b 没有任何 cpp/py 数据」不成立：m6b 面板已有 chat cpp 数据；同批 py 格因配置不同（ctx=4096、模板未核对）已被 m161 重测取代，不并入 | `docs/result/result.yaml::res22` | 已撤回（前提作废） |
+| 全 `Exception` 的格曾被归因为整轮运行失败，随后又被归因为旧后处理破坏缩进；两种归因都已撤回，成因改为模型把函数体首行写在第 0 列。「必须记缺失、不得写 0」这一半仍成立 | `docs/subprojects/i01-判分与基准有效性/RESULT.md::res17`、`docs/subprojects/i01-判分与基准有效性/RESULT.md::res17b`、`docs/subprojects/i01-判分与基准有效性/RESULT.md::res21` | 已撤回（两种归因） |
+| 旧 `strip_fences` 只在围栏闭合时剥离，把 Markdown 围栏当语法错误；该批 chat 分数作废，只补正确后处理重算 | `docs/subprojects/i01-判分与基准有效性/RESULT.md::res20` | 已撤回（旧分数作废） |
+| 旧 `strip_fences` 的 `text.strip()` 抹掉无围栏完成物的首行缩进，并因此造成 gemma-4-26B-A4B py 的 `Exception`：观察成立、因果撤回（同一签名在修正后的 harness 下依然存在） | `docs/subprojects/i01-判分与基准有效性/RESULT.md::res21` | 已撤回（因果从句） |
+| m160 的前提「12b 没有任何 cpp/py 数据」不成立：m6b 面板已有 chat cpp 数据；同批 py 格因配置不同已被 m161 重测取代，不并入 | `docs/subprojects/a12-多语言代码 MultiPL-E/RESULT.md`（「gemma-4-12b 的 m6b cpp 两格走另一套协议串（ctx=4096、模板未核对）」一节） | 已撤回（前提作废；该文件不给节点 id、也不写 status 行，判定取自该节正文） |
+| 按基准汇总的位宽步长中位数、每比特分数变化中位数、能力型减知识型的配对差这三条旧值撤回：聚合口径、区间类型与聚类单位在原稿里都没有记录，无法重算 | `docs/subprojects/a01-量化位宽/RESULT.md::res2`、`docs/subprojects/a01-量化位宽/RESULT.md::res3`、`docs/subprojects/a01-量化位宽/RESULT.md::res4` | 已撤回（不可复核；方向改由 `docs/subprojects/a01-量化位宽/RESULT.md::an2` 承载） |
+| 「陈旧脚本根路径未修」这条登记作废：`.wrapup/` 的可执行脚本已改为按自身位置定位，历史记录类文件按原样保留（改写它们等于伪造运行记录） | `docs/subprojects/i02-测量基础设施/RESULT.md::res27` | 已撤回（已修） |
+| 「MultiPL-E 表仍渲染重复行」这条登记作废：逐语言表的行键已改成「模型 + 显示标签」；行键装不下 `top_k` 是已裁决接受的限制，不是待修缺陷 | `docs/subprojects/i02-测量基础设施/RESULT.md::res28`、`docs/subprojects/i02-测量基础设施/RESULT.md::res41` | 已撤回（已修） |
+| 「研究证据可恢复性待修复」这条登记作废：报告的输入有限且随仓库分发，干净 clone 一条命令逐字节重建报告 | `docs/subprojects/i02-测量基础设施/RESULT.md::res24`、`docs/subprojects/i02-测量基础设施/RESULT.md::res25` | 已撤回（已修） |
+| 「文档检查受阻，不得记为通过」这条登记作废：标准已落进本仓库，`python3 docs/check_docs.py` 退出 0 | `docs/subprojects/i02-测量基础设施/RESULT.md::res32` | 已撤回（已修） |
 
-## 四、推断性判断（`author: agent`、`status: provisional`，不是测量结论）
+## 四、推断性判断（`author: agent`，不是测量结论）
 
 | 结论 | 事实所在 | 状态 |
 | --- | --- | --- |
-| 位宽该选多大取决于家族自己的曲线拐点，没有统一档 | `docs/result/result.yaml::an1` | 部分（`provisional`） |
-| 判断量化够不够看代码/推理/指令，不要看知识类基准 | `docs/result/result.yaml::an2` | 部分（`provisional`） |
-| 小模型做困难多步任务需要更多位宽 | `docs/result/result.yaml::an3` | 部分（`provisional`） |
-| 同文件大小下比较「方案/字节」比「厂商标签」更重要 | `docs/result/result.yaml::an4` | 部分（`provisional`） |
-| 不要用 PPL 做决策 | `docs/result/result.yaml::an5` | 部分（`provisional`） |
-| 不要指望 QAT 挽回量化损失：它更像「同配方下体积更小」的选项 | `docs/result/result.yaml::an6` | 部分（`provisional`） |
-| 换生成协议后必须重测：协议本身会改变量化结论的符号 | `docs/result/result.yaml::an7` | 部分（`provisional`） |
+| 位宽该选多大取决于家族自己的曲线拐点，没有统一档；按当前数据只有 Qwen3.5-2B 有带区间的拐点 | `docs/subprojects/a01-量化位宽/RESULT.md::an1` | 部分（`provisional`） |
+| 判断量化够不够看代码/推理/指令，不要看知识类基准；原措辞「MMLU 几乎不动」已在节点内收窄为「敏感度约为代码的一半」 | `docs/subprojects/a01-量化位宽/RESULT.md::an2` | 部分（`provisional`） |
+| 小模型做困难多步任务需要更多位宽 | `docs/subprojects/a02-模型规模/RESULT.md::an3` | 部分（`provisional`） |
+| 同文件大小下比较「方案/字节」比「厂商标签」更重要；标签代理的是比特分配 | `docs/subprojects/a03-量化方案与厂商/RESULT.md::an4` | 部分（`provisional`） |
+| 不要用 PPL 做决策 | `docs/subprojects/i01-判分与基准有效性/RESULT.md::an5` | 部分（`provisional`） |
+| 不要指望 QAT 挽回量化损失：它更像「同配方下体积更小」的选项 | `docs/subprojects/a09-量化感知训练 QAT/RESULT.md::an6` | 成立（节点已改写为「不是被否定的补救」，替代原来的 `provisional`） |
+| 换生成协议后必须重测：协议本身会改变量化结论的符号 | `docs/subprojects/i01-判分与基准有效性/RESULT.md::an7` | 部分（`provisional`） |
 
 ## 五、未闭合的问题与阻塞
 
 | 结论 | 事实所在 | 状态 |
 | --- | --- | --- |
-| 硬阻塞实验不是缺失也不是 0：显存不足记 `BLOCKED-on-VRAM`，架构无法加载记 `GATE-FAIL` | `docs/plan/plan.yaml::plan1` | 部分（阻塞，未测） |
-| 研究证据可恢复性待修复：result 的来源仍指向已退役的 `.scratch/originals`，`make_report.py` 依赖 `.wrapup` 与本机路径 | `docs/plan/plan.yaml::evidence_repair` | 部分（未修） |
-| 文档检查受阻，不得记为通过：`python3 docs/check_docs.py` 因共享 schema 缺失而退出 | `docs/plan/plan.yaml::evidence_repair` | 部分（阻塞） |
-| 陈旧根路径：`.wrapup/` 下多个脚本硬编码已不存在的 `/home/z/hf/research`，重跑会在准备阶段静默失败 | `docs/plan/plan.yaml::plan10` | 部分（未修） |
-| m161 已完成入库与报告重生成；独立复核尚未执行 | `docs/result/result.yaml::res24`、`docs/plan/plan.yaml::plan14` | 部分（复核未执行） |
-| MultiPL-E chat 同一个 cell 的三次记录值不一致，可复现性未裁决：两个候选原因与裁决命令见节点 | `docs/plan/plan.yaml::plan15` | 部分（未裁决） |
+| 硬阻塞实验不是缺失也不是 0：显存不足、本环境缺运行时、本环境不可测三类分开登记，各有名字与统一入口，不合成一张表 | `docs/subprojects/i02-测量基础设施/RESULT.md::res72`、`docs/subprojects/a11-扩散式解码/RESULT.md::res10` | 成立（三类未测的名称与登记入口；具体格见 `docs/subprojects/i02-测量基础设施/RESULT.md::res14`） |
+| MultiPL-E chat 同一个 cell 的跨 run 差异只裁决了一半：四槽批处理被排除、旧判分值不可复现；残留是 m26 用的提示集已被删除，输入差不可再验，所以该列单次值仍按噪声档读 | `docs/subprojects/i01-判分与基准有效性/RESULT.md::res29`、`docs/subprojects/i01-判分与基准有效性/RESULT.md::res25` | 部分（不得声称已完全裁决） |
+| m161 的入库与报告重生成有节点为证；「`3eea78f` 独立复核判为接受但带注解」只出现在 `STATUS.md`，`docs/` 下没有任何节点记录它 | `docs/subprojects/i02-测量基础设施/RESULT.md::res23`、`docs/subprojects/a12-多语言代码 MultiPL-E/RESULT.md`（「chat 面板的逐格值（m161）」一节） | 未核实（复核无节点，`STATUS.md` 不是节点） |

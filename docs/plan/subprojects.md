@@ -57,9 +57,24 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 ## 里程碑状态（研究结束）
 
-十六个单元全部结项。交付面是 `report.html`：21 节 / 86 图，从库与入库派生索引重建，干净 clone 里**逐字节可复现**。整合验证（由 meta 独立跑，不复用子项目的清单）：`./reproduce.sh` **46 PASS / 0 FAIL**，各单元自己的验收装置在干净树里全 rc=0，只有 `a13`（缺 `bfclenv`）与 `i01`（按其契约 exit 2 = 逻辑与门绿、真实数据不可得）如实报不可得。
+十六个单元全部结项。交付面是 `report.html`：21 节 / 86 图，从库与入库派生索引重建，干净 clone 里**逐字节可复现**。整合验证（由 meta 独立跑，不复用子项目的清单）：`./reproduce.sh` exit 0，逐行结论由该命令当场产生——本文件不复制那份计数；本机在 `c19c168` 上实测 47 PASS / 0 FAIL / 1 WARN（2 分 07 秒），重跑即得，其中 WARN 那一条就是下面 `p-entry1` 登记的漂移。各单元自己的验收装置在干净树里全 rc=0，只有 `a13`（缺 `bfclenv`）与 `i01`（按其契约 exit 2 = 逻辑与门绿、真实数据不可得）如实报不可得。
 
 未测分三类，读法不同：`BLOCKED-on-VRAM`（已定价、未买）、`GATE-FAIL`（本环境缺运行时，如扩散解码的架构名表）、「本环境不可测」（没有逐题产物、没有对照臂、跨语料不可比）。统一入口在 `docs/subprojects/i02-测量基础设施/RESULT.md::res72`。
+
+## entry — 下一个里程碑：根目录的两道门说真话
+
+研究交付物已经能被一条命令重建，但**读者进入仓库的那两道门没有跟着改建**：`STATUS.md` 与 `FINDINGS.md` 仍指向 `021e6b8` 搬走的 `docs/plan/plan.yaml` 与 `docs/result/result.yaml`，实测 42 条节点引用里只有 1 条解析得到（`python3 checks/router_refs.py`）。里程碑 `entry` 结束时，从根目录读起的人不会踩到任何一条死路径，而且这件事由一条会自己变红的检查守着，不靠谁记得。
+
+| 包 | 内容 | 验收（命令） | 依赖 |
+|---|---|---|---|
+| `r-entry1` | `checks/router_refs.py` 与它的负控：三份根路由里每条 `docs/…::id` 与每个 `docs/…` 路径都必须在树上解析得到；看不到输入不算通过 | `python3 checks/router_refs_negative_control.py` exit 0（未改动副本绿、四种破坏各自红、缺路由文件 exit 2） | — |
+| `r-entry2` | `FINDINGS.md` 每行指到 HEAD 上真实存在的节点，状态取该节点自己的 `状态：` 行；已退役或被修掉的项进「撤回记录」并写死因 | `python3 checks/router_refs.py` exit 0，且 `grep -c 'docs/result/result.yaml\|docs/plan/plan.yaml' FINDINGS.md` 为 0 | r-entry1 |
+| `r-entry3` | `STATUS.md` 与 HEAD 对齐：只引用能解析的路径，当前状态与下一步按本文件写 | `python3 checks/router_refs.py` exit 0 | r-entry1 |
+| `r-entry4` | 根目录无未归类路径：运行日志按类忽略，逐题产物按 README 的判据入库 | `git status --porcelain` 无输出 | — |
+| `p-entry1` | `report_inputs/size_claims.json` 与 a02 的产物不一致（`python3 report_inputs/build_size_claims.py --check` exit 1），而 `./reproduce.sh` 只记 WARN 就继续：报告第二节停在这个旧值上仍判绿 | 该命令 exit 0，且报告重建后逐字节相同（或第二节的改动经复核后重新入库） | — |
+| `p-entry2` | 把 `./reproduce.sh` 里「输入与其来源不一致」的 WARN 判成 FAIL，让漂移必须被处理而不是被记录 | 一个故意改坏的输入使 `./reproduce.sh` 非零退出（负控） | p-entry1 |
+
+里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
 ## 共享仓库的写权（避免互相踩）
 

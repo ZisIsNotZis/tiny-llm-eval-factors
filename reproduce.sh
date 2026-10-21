@@ -192,6 +192,15 @@ else
     record FAIL "仍有脚本硬编码退役根路径：python3 checks/stale_roots.py"
 fi
 
+# 6b) 路由文件（STATUS/FINDINGS/README）里印出的每条引用都要解析得到：
+#     迁移把 plan.yaml / result.yaml 搬走后，路由指过去读不到的路径与节点 id 曾长期无人发现。
+out=$(python3 checks/router_refs.py 2>&1); rc=$?
+case "$rc" in
+    0) record PASS "路由文件的引用都可解析（$(printf '%s' "$out" | grep -m1 'resolved' | sed 's/^ *//')）" ;;
+    2) record BLOCKED "路由文件缺失：$(printf '%s' "$out" | grep -m1 '^BLOCKED:' | sed 's/^BLOCKED: //')" ;;
+    *) record FAIL "路由文件里有无法解析的引用（$(printf '%s' "$out" | grep -c 'missing-')条）：python3 checks/router_refs.py" ;;
+esac
+
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
 if python3 checks/moe_feasibility_negative_control.py >/tmp/reproduce_mf.$$ 2>&1; then
     record PASS "第四节可行性的负控（超界计数改 0 则从「预算比较」变「分配比较」）"

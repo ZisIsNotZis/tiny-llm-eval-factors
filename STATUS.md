@@ -1,33 +1,35 @@
 # STATUS
 
-路由文件：只记「它是什么、现在什么状态、下一步落在哪」。数值与结论的当前值在 `docs/result/result.yaml`，研究问题与里程碑状态在 `docs/plan/plan.yaml`；本文件不复制它们的值，也不写 `文件:行` 引用（行号随修订漂移）。`::` 后面是节点 id。
+路由文件：只记「它是什么、现在什么状态、下一步落在哪」。数值与结论的当前值在各自的子项目节点里（`docs/plan/subprojects.md` 的单元表指向每个单元的 `RESULT.md`）；本文件不复制它们的值，也不写 `文件:行` 引用（行号随修订漂移）。`::` 后面是节点 id。
 
 ## 它是什么
 
-一个可复现的本地语言模型推理因子测量工作台：量化、模型规模、解码协议与基准行为。数据 SSOT 是 `experiments.sqlite`；`report.html` 由 `make_report.py` 从库与评测文件生成、不得手改；方法与协议在 `docs/method/method.yaml`。
+一个可复现的本地语言模型推理因子测量工作台：量化、模型规模、解码协议与基准行为。数据 SSOT 是 `experiments.sqlite`；`report.html` 由 `make_report.py` 从库与入库派生索引生成、不得手改；方法与协议在 `docs/method/method.yaml`。
 
 ## 当前状态
 
-**活跃。** 里程碑 m161 已完成，并在 `3eea78f` 经独立复核判为**接受但带注解**（accept with notes）：复核在 fresh context 中按 `proof.review` 审视结果层与整个 m161 改动集，阻塞的因果归因自相矛盾、无法由命令重现的数字、引用了不存在的测试三项已逐条关闭并各留一条命令，测量层可重现，其余注解为文字性问题、不另立工作项。m161 交付的内容：
+**研究里程碑已达成**（`c19c168`：十六个单元全部结项，21 节 / 86 图）。判据是能跑的命令，不是这句话：`./reproduce.sh` 在 `c19c168` 上 exit 0、2 分 07 秒，`report.html`（sha256 `ce4e7cb0…`）从库重建后逐字节相同；逐行结论由该命令当场产生，本文件不复写那份计数。
 
-- 测量与入库：`docs/result/result.yaml::res24`（重测的 chat 格与端到端控制格）、`::res23`（重复行去重与 `ingest_mpl` 幂等修复）。当前库行数、去重前后的集合差与备份名都在 `res23` 的证据里。
-- 报告已由 `make_report.py` 重生成；数据质量节现在从库与 `.wrapup/mres/*_eval.json` 现算（`make_report.py::data_quality_html`），不再带手写数字。
+**正在推进的里程碑是 `entry`**，工作包与验收写在 `docs/plan/subprojects.md::entry`：研究交付物已经能被一条命令重建，但读者进入仓库的那两道门（本文件与 `FINDINGS.md`）没有跟着那次文档搬迁改建，42 条节点引用里只有 1 条解析得到。它在本次推进里被修掉的部分：
+
+1. 两份根路由不再指向已退役的按层 yaml 文件；`FINDINGS.md` 的每行指到它现在真正住在哪个子项目节点。
+2. 这件事不再靠人记得：`python3 checks/router_refs.py` 解析三份根路由里的每条节点引用与每个文档路径，`checks/router_refs_negative_control.py` 证明它会红，`./reproduce.sh` 已按 `FAIL` 调用它。
+3. 根目录没有未归类路径：运行日志按类忽略，两组逐题评测产物按 README 的判据入库（`git status --porcelain` 无输出）。
 
 仍开放，均不得记为通过：
 
-1. **MultiPL-E 表渲染重复行未修**：`docs/plan/plan.yaml::plan16`——同一模型的两条协议串渲染成同一个行标签，表格里出现两行同名同值的行；成因是表格行键，不是标签。
-2. **MultiPL-E chat 单次值的可复现风险未裁决**：`docs/plan/plan.yaml::plan15`——同一个 cell 的多次记录值、两个候选原因和裁决命令都在该节点。
-3. **陈旧脚本根路径未修**：`docs/plan/plan.yaml::plan10`。
-4. **硬阻塞实验**（显存不足、架构无法加载）不是缺失也不是 0：`docs/plan/plan.yaml::plan1`。
-5. **文档层阻塞（先于 m161 存在，未修）**：证据可恢复性与文档检查受阻都登记在 `docs/plan/plan.yaml::evidence_repair`；`python3 docs/check_docs.py` 目前因共享 schema 缺失而退出，不得记为通过。
+1. **`report_inputs/size_claims.json` 与 a02 的产物不一致**：`python3 report_inputs/build_size_claims.py --check` exit 1，而 `./reproduce.sh` 只记 WARN 就继续，所以报告第二节停在这个旧值上仍判绿。工作包：该里程碑表里的 `p-entry1`，紧接着的 `p-entry2` 是让它必须被处理而不是被记录。
+2. **三类未测不是 0**：`BLOCKED-on-VRAM`（已定价、未买）、`GATE-FAIL`（本环境缺运行时）、「本环境不可测」；入口 `docs/subprojects/i02-测量基础设施/RESULT.md::res72`。
+3. **已记录的两条测量限制**（属 i02 的验收边界，不是缺陷待办）：表格行键容纳不下 `top_k`（`docs/subprojects/i02-测量基础设施/RESULT.md::res41`）、审计只能证明值在面板多重集里而非逐格归属。
 
 ## 事实落在哪
 
-1. 当前问题、里程碑与未决项：`docs/plan/plan.yaml`。
-2. 当前结论与证据：`docs/result/result.yaml`。
-3. 方法/协议：`docs/method/method.yaml`；产品与需求：`docs/product/product.yaml`、`docs/need/`、`docs/pain/`、`docs/architecture/`。
-4. 数据：`experiments.sqlite`；报告：`report.html`（生成物，不得手改）；本地产物：`.wrapup/`（不入库，规则见 `README.md` 与 `AGENTS.md`）。
+1. 研究单元的划分、goal / AC / 资源、里程碑与工作包：`docs/plan/subprojects.md`。
+2. 每个单元的当前结论、证据与复现命令：`docs/subprojects/<id>-<name>/RESULT.md`；未解问题在同一个目录的 `PLAN.md`。
+3. 方法 / 协议：`docs/method/method.yaml`；产品与需求：`docs/product/product.yaml`、`docs/need/`、`docs/pain/`、`docs/architecture/`。
+4. 数据：`experiments.sqlite`；报告：`report.html`（生成物，不得手改）；本地产物：`.wrapup/`（入库判据见 `README.md`）。
+5. 基础设施检查：`checks/`（`checks/README.md` 逐条说明每个脚本证明什么）；一条命令核全部：`./reproduce.sh`。
 
 ## 下一步
 
-按仓内已写明的顺序：`plan16` 的表格行键修复 → `plan15` 的可复现性裁决 → `plan10` 的脚本根路径修复；`evidence_repair` 的文档检查与证据可恢复性在获得授权后单独处理。
+按仓内已写明的顺序：`r-entry1` → `r-entry2` / `r-entry3` → `r-entry4`（本次推进已做）→ `p-entry1` 的 `size_claims` 漂移裁决 → `p-entry2` 把这类 WARN 判成 FAIL。未测项按 `docs/plan/subprojects.md` 的三类读法对待，不并入本文件的「当前状态」。
