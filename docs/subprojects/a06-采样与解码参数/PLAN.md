@@ -132,3 +132,11 @@
   起服后断言 server 自报的 `n_slots` 与 `-np` 相符，不符即作废该次测量。
 - CPU：5%，两个并发以内；普查与逐题分析都是秒级只读脚本。
 - 改库前做编号备份（`experiments.sqlite.bakN`），入库只走 `migrate_db.py`（见 `AGENTS.md`）。
+
+## 已测未入库（`m165-vendor`）：入库前排序判据不含这些格
+
+- 产物目录 `.wrapup/mres/m165-vendor/`；逐格清单 `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl`（R1）与 `variant_panel.json`（R2）；
+  运行脚本 `run_vendor_arm.sh`（R1）与 `vendor_arm_r2.py`（R2）。
+- **在 `migrate_db.py` 补上 `vendor-recommended` 的 ingest 之前，这 10 个格不进 `experiments` 表，因此也不在 `rank_survival.py` 的判据里。**
+  这不是通过，是尚未纳入：`rank_survival.py --check` 现在退出 0 而它根本看不到这批格。补 ingest 之后必须把 `SELECTION` 加一行再 `--write` + `--check`。
+- 已做的生效判别与依据见 `RESULT.md::vendor-param-effect`（`/props` 回显五个量 + `top_k=1`/`top_p=0.1` 重现贪心的塌缩判据，两条端点各 2 个 prompt，32 项检查 31 项 PASS）。

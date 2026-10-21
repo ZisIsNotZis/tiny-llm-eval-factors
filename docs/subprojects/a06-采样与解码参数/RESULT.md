@@ -146,6 +146,13 @@
 - repro: `python3 "docs/subprojects/a06-采样与解码参数/rank_survival.py" --check` 与本文件 `res-vram-and-props` 的探针命令。
 - 后果：那条「未验证」可以关掉，且**不能**用「temp>0 两次输出应不同」去关（固定 seed 下它会假红，见 `res-effect-control`）。
 
+## vendor-param-effect :: 五个厂商采样量**在两条路线上都真的进了采样器**：R1 的服务端启动带 `--temp 1.0 --top-p 1.00 --top-k 20 --min-p 0.0 --presence-penalty 2.0`，`/props` 逐字回显这五个值且 `n_slots = 1`；同一台服务器上 `/completion` 与 `/v1/chat/completions` 两个端点各 2 个 prompt，`top_k=1` 与 `top_p=0.1` 都**逐字重现**贪心输出、`temperature 0` 与 `1.0` 不同、固定 seed 下两者各自可重复——32 项检查里 31 项 PASS，唯一 FAIL 是一处 8-token 清单题上的 `presence_penalty 0 vs 2.0`（同一题上 `5.0 vs 2.0` 为 PASS）。
+
+- kind: measured
+- evidence: 捕获 `evidence/vendor-param-effect-<rev>.txt`（含 `/props` 回显与 32 行检查）；`/props` 文件 `evidence/` 之外另有 `.wrapup/mres/m165-vendor/props/{q2,q3,q4,q3-code}.json` 四份。
+- repro: `python3 "docs/subprojects/a06-采样与解码参数/vendor_param_effect_probe.py" --port 8141`，前置条件是服务器用那五个 flag 起好。
+- 限制：`/props` 只证明**服务端默认值**被接受，不证明请求体没覆盖它；请求体层面由塌缩判据（`top_k=1`/`top_p=0.1` 重现贪心）证明，两者要一起读。也不证明参数被按**正确的量纲**应用（例如 penalty 的缩放），只证明它改变了采样结果且方向与预期一致。
+
 ## res-two-routes :: 厂商臂的参数只能分两条路线到达采样器，因为两个客户端里只有一个自由度：`mpl_run.py` 的 raw 请求体只有 `prompt/temperature/n_predict/stop`（`mpl_run.py:146-150`），`evalplus.codegen` 的 CLI 只有 `--temperature`，所以代码列上的 `top_p/top_k/min_p/presence_penalty` 必须**在起服时**传（`run_m31.sh:66-68` 就是这么跑 `top_k` 的：`-c 4096 --top-p 0.95 --top-k $TK --min-p 0.05 --seed 1234`）；而 lm-eval 那条走 `--gen_kwargs`，五个量能逐请求传。
 
 - kind: measured
@@ -156,12 +163,12 @@
   ③ `variant_panel.py` 里 i02 加的 `CODEGEN_UNSUPPORTED = {"vendor-recommended"}` 挡的是**它自己**的 codegen 调用，不覆盖 `m31` 模式，所以在 R1 上 EvalPlus 那一格仍然可测（`--temperature 1.0` + 服务端默认的其余四个量）。
 - 限制：`/props` 的这两种行为是一条**实测**结论的一部分（`res-vram-and-props` 里默认 `temperature=0.8`），但「逐请求参数不写进 `/props`」是从「`/props` 显示 0.8 而面板声明 0/0.3/0.7」推出的，没有单独读数；要坐实得在 lm-eval 路线跑一次并同时抓 `/props` 与 `--gen_kwargs` 日志。
 
-## res-effect-control :: 「采样参数真的生效」的正确负控是**同 seed 下改一个参数看输出变不变**，不是「temp>0 所以两次输出应该不同」：同一个 seed=1234 下，`temperature=0` 两次请求逐字相同（确定性），`temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0` 两次请求也**逐字相同**（llama.cpp 每请求按 seed 重置 RNG），而把 `presence_penalty` 从 2.0 改成 0.0（其余不变）输出立刻改变。所以判据是：固定 seed 重复 → 全同；只改一个参数 → 必须不同；两者同时成立才证明参数进了采样器。
+## res-effect-control :: 「参数真的生效」必须用结构性判据，不能用「改一个参数看输出变不变」：结构性判据是 `top_k=1` 或 `top_p=0.1` 会把候选集塌成 argmax，所以它的输出必须**逐字等于** `temperature=0` 的输出——一个被忽略的参数做不出这件事；再配「固定 seed 重复全同」当阴性对照。单点 A/B 会两头骗人：它既可能**假红**（我最早那次 `presence_penalty 2.0→0.0` 变了，而 i02 同一个改动没变），也可能**假绿**（下面的探针里 `presence_penalty 0 vs 2.0` 在「Name three colours」这题上完全相同，因为 8 个 token 的清单没有可罚的重复）。
 
 - kind: measured
-- evidence: 探针输出：greedy 两次都是 `'The sea is a vast, endless expanse of turquoise…'`；vendor 两次都是 `'The sea is an infinite expanse of endless blue…'`；`presence_penalty=0.0` 变成 `'The vast, untamed sea is a living mirror…'`。
-- repro: 见 `res-vram-and-props` 的探针命令，把请求体换成相同的 `messages` 与 `seed`、只改采样字段，发四次。
-- 后果（对 i02 的实现与对 i01 的地板都成立）：① 一个「temp>0 两次输出不同」式的负控会**假红**，因为固定 seed 下它是确定的；② 反过来，采样面板的 `seed` 列是 NULL（`ingest_variant` 写 `"seed": None`），所以那些格**不**可复现——i01 的五跑 Jaccard 0.53–0.67 与「固定 seed 逐字相同」并不矛盾，它们说的是两种不同的测量装置。
+- evidence: `vendor_param_effect_probe.py` 在 R1 的服务器上跑 4 个 prompt × 8 项检查 = 32 项，**31 项 PASS、1 项 FAIL**，唯一 FAIL 就是上面那处 `presence_penalty 0 vs 2.0`；同一 prompt 上 `presence_penalty 5.0 vs 2.0` 是 PASS，说明这个量确实活着。捕获 `evidence/vendor-param-effect-<rev>.txt`。
+- repro: 起服时把五个量当服务端 flag 传好，然后 `python3 "docs/subprojects/a06-采样与解码参数/vendor_param_effect_probe.py" --port 8141`（退出 0 = 全过，1 = 有检查没过，2 = 服务器不可达或 `/props` 没回显这五个量）。
+- 后果：① 「temp>0 所以两次输出应该不同」是错的形状（固定 seed 下 temp 1.0 两次也逐字相同）；② i02 观察到的「改 `presence_penalty`/`top_k` 输出没变」与「改 `presence_penalty` 输出变了」都不构成「参数被吞」的证据，它们是同一类单点巧合的两个方向；③ 判「生效」要么用塌缩判据，要么用 `/props`（服务端 flag 路线下它回显全部五个量）。
 
 ## 五、厂商推荐采样（`plan3`）
 

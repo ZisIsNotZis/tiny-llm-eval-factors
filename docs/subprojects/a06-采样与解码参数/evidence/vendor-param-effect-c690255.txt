@@ -1,0 +1,49 @@
+server /props params: {'temperature': 1.0, 'top_p': 1.0, 'top_k': 20, 'min_p': 0.0, 'presence_penalty': 2.0}
+server n_slots      : 1
+
+== /completion  (R1: mpl_run.py raw) ==
+  prompt 0: 'def count_words(s):\n    """Return th'
+    seed makes temp-0 repeatable        : PASS
+    seed makes temp-1 repeatable        : PASS
+    temperature 0 vs 1.0 differ         : PASS
+    top_k=1 equals greedy               : PASS
+    top_p=0.1 equals greedy             : PASS
+    min_p=0.9 differs from temp-1.0     : PASS
+    presence_penalty 0 vs 2.0 differ    : PASS
+    presence_penalty 5.0 vs 2.0 differ  : PASS
+    texts: T0='    return len(s.split())\n\n#' | T1='    word_count = 0\n    for c' | T1k1='    return len(s.split())\n\n#' | T1p01='    return len(s.split())\n\n#' | T1m09='    return len(s.split())\n\n#' | T1pp0='    s = s.replace(" ", " ")\n' | T1pp5='    \n        if not hasattr('
+  prompt 1: 'Write a Python function that returns'
+    seed makes temp-0 repeatable        : PASS
+    seed makes temp-1 repeatable        : PASS
+    temperature 0 vs 1.0 differ         : PASS
+    top_k=1 equals greedy               : PASS
+    top_p=0.1 equals greedy             : PASS
+    min_p=0.9 differs from temp-1.0     : PASS
+    presence_penalty 0 vs 2.0 differ    : PASS
+    presence_penalty 5.0 vs 2.0 differ  : PASS
+    texts: T0='The function should take an ' | T1='Create 12 test cases with in' | T1k1='The function should take an ' | T1p01='The function should take an ' | T1m09='The function should take an ' | T1pp0='Sum the first n squares.\nFor' | T1pp5='Create one variable with all'
+
+== /v1/chat/completions  (R2: lm-eval) ==
+  prompt 0: 'Write one short sentence about river'
+    seed makes temp-0 repeatable        : PASS
+    seed makes temp-1 repeatable        : PASS
+    temperature 0 vs 1.0 differ         : PASS
+    top_k=1 equals greedy               : PASS
+    top_p=0.1 equals greedy             : PASS
+    min_p=0.9 differs from temp-1.0     : PASS
+    presence_penalty 0 vs 2.0 differ    : PASS
+    presence_penalty 5.0 vs 2.0 differ  : PASS
+    texts: T0='Rivers are the great arterie' | T1="Rivers serve as nature's gre" | T1k1='Rivers are the great arterie' | T1p01='Rivers are the great arterie' | T1m09='Rivers are the great arterie' | T1pp0="Rivers serve as nature's gre" | T1pp5="Rivers serve as nature's gre"
+  prompt 1: 'Name three colours, separated by com'
+    seed makes temp-0 repeatable        : PASS
+    seed makes temp-1 repeatable        : PASS
+    temperature 0 vs 1.0 differ         : PASS
+    top_k=1 equals greedy               : PASS
+    top_p=0.1 equals greedy             : PASS
+    min_p=0.9 differs from temp-1.0     : PASS
+    presence_penalty 0 vs 2.0 differ    : FAIL
+    presence_penalty 5.0 vs 2.0 differ  : PASS
+    texts: T0='Blue, Green, Red' | T1='Red, Blue, Yellow' | T1k1='Blue, Green, Red' | T1p01='Blue, Green, Red' | T1m09='Blue, Red, Green' | T1pp0='Red, Blue, Yellow' | T1pp5='Red and Blue with White are '
+
+FAIL: 1 check(s) did not hold
+  - /v1/chat/completions  (R2: lm-eval) prompt 1: presence_penalty 0 vs 2.0 differ
