@@ -155,10 +155,14 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
      `experiments.sqlite.bak30`。要做的：每个 ingester 只改 `(run_tag, source_file)` 自身前缀内的行；
      `n_items`/`protocol` 只能「读现值，为空才补写」并记 ledger；回填那 14 + 32 行；负控造三行分属
      三个 ingester 的行，跑两次 refresh 断言逐字未变。
-  2. **py 取代的收尾**：38 条 skip ledger 逐格原因已给出，但 §13 只按总数给了语料代次表注，
+  2. **同类的第二层**：干净 clone 里跑一轮 `migrate_db.py` 会丢 **924 行** `mres/%` 记录，
+     因为 `.wrapup/mres` 没有随仓库完整分发，而各 REFRESH ingester 先删后读。
+     控制 `checks/mres_prefix_delete_negative_control.py` 把这个情形报成「不可得」（exit 2，reproduce 记 SKIP 并印出丢了多少行）。
+     正确修法：读不到输入就**不删**，并在 ledger 里说明。
+  3. **py 取代的收尾**：38 条 skip ledger 逐格原因已给出，但 §13 只按总数给了语料代次表注，
      未逐格标注；`a14` 的 27 个 py `testfrac` 值尚未随二元列换到同一代（`evidence/py_testfrac_regrade.json`），
      这是「两列各说一代」的口子；§15 的绝对水平中位 +0.027 与 7 对近差翻转的文字也未改。
-  3. `a07`（spec-decode 是否逐字节同贪心）/`a08`（thinking 开关是另一协议）/`a11`（扩散：`未测` + 门槛 + 价格，不写 0）落地时接报告。
+  4. `a07`（spec-decode 是否逐字节同贪心）/`a08`（thinking 开关是另一协议）/`a11`（扩散：`未测` + 门槛 + 价格，不写 0）落地时接报告。
 - 阻塞/风险：报告只依赖库 + `report_inputs/*` 派生索引；索引落后于子项目产物时 `reproduce.sh` 报 WARN，
   必须显式重建。工作树里的 `experiments.sqlite` 常有别的子项目未提交的写入，所以 `report.html`
   一律在 HEAD 的干净 clone 里重建再拷回，避免把未提交的库改动烤进报告。
