@@ -14,8 +14,8 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（三层文档 + `result.yaml` 的 `res12`/`an6` 迁入并删除）。
-- 在办：`WP2`（配对装置）。下一个派给谁：本层编排者（递归不可用，见下）；`WP6` 独立复核由 meta 派 fresh-context reviewer。
+- 已完成：`WP1`（三层文档 + `result.yaml` 的 `res12`/`an6` 迁入并删除）、`WP2`（`analysis/qat_pairs.py`：10 条预期成立、`--selftest` 翻红、缺输入 exit 2、只用夹具也复现）、`WP3`（4-bit 与 2-bit 两档的配对差 + 区间）、`WP4`（12B MMLU 归位，判「不可分辨」）。
+- 在办：无。下一个派给谁：**meta 派 `WP5`（转 i02 改报告第十节）与 `WP6`（fresh-context reviewer）**——本层不改 `make_report.py`，也不自评通过。
 - **递归状态**：本层的运行时**提供**派孙接口（任务书声明的 `worker`/`reviewer`），但本层只有一个 shell 与读写工具的子 agent 上下文时按 `@fail_loud` 写在这里：实际是否派过、派了谁，逐条记在 `RESULT.md` 的证据里。没派就不写派过，复核因此仍由 meta 派。
 - 未测（不是 0）：见「GPU 队列」与 `RESULT.md::qat-unmeasured`。库内**没有任何一对是比特预算钉住的**（所有 QAT 文件都比同标称原生文件小 0.36–0.95 比特/权重），这是本轴结论的天花板，不是可忽略的注脚。
 
@@ -24,9 +24,9 @@
 | 工作包 | owner | AC（可证伪） | 依赖 | 预算 | 状态 |
 |---|---|---|---|---|---|
 | WP1 文档归位 | 本层编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`result.yaml` 的 `res12`/`an6` 已迁入并删除该文件；`python3 docs/check_docs.py` 退出 0；提交在 main 且按路径点名 | — | 1 会话 | **完成** |
-| WP2 配对装置 | 本层编排者 | `analysis/qat_pairs.py` 一条命令打印：(a) 每个 QAT 文件的**实测** bits/参数与逐类分配轮廓（读 gguf 头）；(b) 每个 QAT 文件的同族同标称档原生对应件是否存在（`MATCHED` / `NO_COUNTERPART` / `PROTOCOL_MISMATCH`），含库内声明但无数据的对；(c) 每对逐基准 Δ + Newcombe 区间 + 该格 `n_items`；(d) 该族原生阶梯（逐基准、按实测比特排序）与 QAT 点在阶梯上的位置（段内线性插值 + 残差，外推单独标）；缺输入退出 2 | WP1 | ≤30 CPU 分钟 | **在办** |
-| WP3 同标称配方配对结论 | 本层编排者 | `RESULT.md::qat-4bit-pairs` 与 `::qat-2bit-pairs` 给每对逐基准 Δ + 区间；明确写出「标称配方相同 ≠ 比特预算相同」的实测差值，并把每对的比特预算差与分配轮廓差一起列出；2-bit 档单独成节 | WP2 | ≤20 CPU 分钟 | 待做 |
-| WP4 12B 异常归位 | 本层编排者 | `RESULT.md::qat-12b-mmlu` 用该族原生阶梯（同协议、n=912）把 −0.197 拆成「比特预算能解释的部分」与「段内插值残差」，并给出判定（QAT 效应 / 比特效应 / 不可分辨）与推翻它的观测 | WP2 | ≤20 CPU 分钟 | 待做 |
+| WP2 配对装置 | 本层编排者 | `analysis/qat_pairs.py` 一条命令打印：(a) 每个 QAT 文件的**实测** bits/参数与逐类分配轮廓（读 gguf 头，冻结在 `analysis/fixtures/qat_alloc.json`）；(b) 每个 QAT 文件的同族同标称档原生对应件是否存在（`MATCHED` / `UNMEASURED`），含报告声明但无数据的对；(c) 每对逐基准 Δ + Newcombe 区间 + 该格 `n_items`；(d) 该族原生阶梯（逐基准、按实测比特排序）与 QAT 点在阶梯上的位置（段内线性插值 + 残差，外推与「段不上升」单独标为不可用）；(e) 同文件同协议重跑旁证；(f) 报告的 `QAT_PAIRS` 与库内数据对账；缺输入退出 2 | WP1 | ≤30 CPU 分钟（实测整跑 38 s） | **完成** |
+| WP3 同标称配方配对结论 | 本层编排者 | `RESULT.md::qat-4bit-pairs` 与 `::qat-2bit-pairs` 给每对逐基准 Δ + 区间；明确写出「标称配方相同 ≠ 比特预算相同」的实测差值，并把每对的比特预算差与分配轮廓差一起列出；2-bit 档单独成节 | WP2 | ≤20 CPU 分钟 | **完成**（`qat-label-not-bits`/`qat-allocation`/`qat-4bit-pairs`/`qat-2bit-pairs`） |
+| WP4 12B 异常归位 | 本层编排者 | `RESULT.md::qat-12b-mmlu` 用该族原生阶梯（同协议、n=912）把 −0.197 拆成「比特预算能解释的部分」与「段内插值残差」，并给出判定（QAT 效应 / 比特效应 / 不可分辨）与推翻它的观测 | WP2 | ≤20 CPU 分钟 | **完成**（判「不可分辨」；残差 −0.088，段斜率 0.250/比特，`res12` 的「原生档位存疑」改指向它那一列） |
 | WP5 结论进报告 | meta（转 i02；本层不改 `make_report.py`） | 报告第十节按本文件「给 `report.html` 第十节的建议文本」改写，并处理 `QAT_PAIRS` 里**两侧没数据的两对**（31B、26B-A4B）——现在图会把缺的一侧画成空柱，读者会以为测过 | WP3、WP4 | ≤20 CPU 分钟 | 待派 |
 | WP6 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；先跑 `analysis/qat_pairs.py` 与 `A09_SELFTEST=1` 再判 | WP1–WP5 | ≤30 CPU 分钟/份 | 待派 |
 
