@@ -22,6 +22,13 @@
 2. 用到 gitignored 输入才能得到的结论，必须在 `RESULT.md` 标「clean clone 不可复算」，并给出代价。不许混进「clone 里绿」的那一类。
 3. `testfrac` 的逐题文件是上一轮（m38/m41）的产物，复用前先确认它对应的 `<tag>_eval.json` 在场且逐题判定一致；不一致就是发现，不是噪声。
 
+## 语料与产物必须绑定（res19 踩出来的）
+
+1. 读 `.wrapup/prompts/` 前先算 sha256；任何「同一路径、不同内容」都当两个测量。2026-10-14 之前 `/tmp/MultiPL-E/prompts` 与今天的不是同一份，后果是 py 格移动 0–5 道题、`cpp/js/java` 一题不动。
+2. 新算的产物必须把语料 sha256 与生成命令写在旁边；没有这行，数字只能当证据物，不能当复现。
+3. `mpl_run.py eval` 读钉住语料（`PROMPTS`，可用 `MULTIPLE_PROMPTS` 覆盖），`testfrac.py` 仍读 `/tmp/MultiPL-E/prompts`——两条路径的输入不同，比较前先对齐。
+4. 语言选择性偏差是指纹：如果「不稳定」只出现在一种语言，先怀疑语料或该语言的探针，不要写进噪声。
+
 ## 判分实现本身是变量
 
 1. `testfrac.py` 靠注入探针计数（cpp 覆盖 `assert` 宏、js 猴补 `node:assert`、py 用 ast 改写 `assert`、java 改写 `assert(`），所以它与 harness 的二元判定一致性**必须实测**，不能假设。实测不一致时，先判是不是探针改变了程序行为，再考虑拒绝该格。

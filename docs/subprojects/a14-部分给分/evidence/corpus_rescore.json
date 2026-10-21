@@ -1,0 +1,605 @@
+{
+ "what": "用今天的钉住语料 + harness 自己的判分路径重算已落盘完成物，与入库 _eval.json 逐题对照",
+ "scorer": ".wrapup/mpl_run.py eval (eval_one 自 7cd7f61 至 HEAD 逐字节相同)",
+ "command": "cd .wrapup && for tag in <已落盘完成物的格>; do python3 mpl_run.py eval --lang ${tag##*-} --samples mres/$tag.jsonl --out /tmp/a14/corpus/$tag.json; done",
+ "pinned_corpus_sha256": {
+  "py": "ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb",
+  "cpp": "9817096b6547e8b2dad2c91b81fbb5247049b4d68d166b16fa80e72db3d27d91",
+  "js": "71fd847d0d3396374e9778ef1767789cccc1094596a59261489671c649d587c5",
+  "java": "db1a604e7912c148cae80951f952047c474a1906ad90224a4cc477bd8d67b5eb"
+ },
+ "cells": [
+  {
+   "tag": "m1-qwen4b-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 55,
+   "pass_pinned_corpus": 55,
+   "flipped": []
+  },
+  {
+   "tag": "m1-qwen4b-q2-java",
+   "lang": "java",
+   "n": 158,
+   "pass_stored": 51,
+   "pass_pinned_corpus": 51,
+   "flipped": []
+  },
+  {
+   "tag": "m1-qwen4b-q2-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 55,
+   "pass_pinned_corpus": 55,
+   "flipped": []
+  },
+  {
+   "tag": "m1-qwen4b-q2-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 57,
+   "pass_pinned_corpus": 58,
+   "flipped": [
+    "HumanEval_79_decimal_to_binary"
+   ]
+  },
+  {
+   "tag": "m1-qwen4b-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 73,
+   "pass_pinned_corpus": 73,
+   "flipped": []
+  },
+  {
+   "tag": "m1-qwen4b-q3-java",
+   "lang": "java",
+   "n": 158,
+   "pass_stored": 77,
+   "pass_pinned_corpus": 77,
+   "flipped": []
+  },
+  {
+   "tag": "m1-qwen4b-q3-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 86,
+   "pass_pinned_corpus": 86,
+   "flipped": []
+  },
+  {
+   "tag": "m1-qwen4b-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 81,
+   "pass_pinned_corpus": 80,
+   "flipped": [
+    "HumanEval_74_total_match",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "m21-bonsai-q2g64-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 112,
+   "pass_pinned_corpus": 112,
+   "flipped": []
+  },
+  {
+   "tag": "m21-bonsai-q2g64-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 123,
+   "pass_pinned_corpus": 128,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_158_find_max",
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary"
+   ]
+  },
+  {
+   "tag": "m3-e2b-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 48,
+   "pass_pinned_corpus": 48,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e2b-q2-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 19,
+   "pass_pinned_corpus": 19,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e2b-q2-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 30,
+   "pass_pinned_corpus": 29,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "m3-e2b-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 86,
+   "pass_pinned_corpus": 86,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e2b-q3-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 59,
+   "pass_pinned_corpus": 59,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e2b-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 56,
+   "pass_pinned_corpus": 56,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e4b-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 76,
+   "pass_pinned_corpus": 76,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e4b-q2-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 33,
+   "pass_pinned_corpus": 33,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e4b-q2-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 80,
+   "pass_pinned_corpus": 80,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e4b-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 119,
+   "pass_pinned_corpus": 119,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e4b-q3-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 74,
+   "pass_pinned_corpus": 74,
+   "flipped": []
+  },
+  {
+   "tag": "m3-e4b-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 103,
+   "pass_pinned_corpus": 102,
+   "flipped": [
+    "HumanEval_151_double_the_difference",
+    "HumanEval_74_total_match",
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "m3-g12b-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 0,
+   "pass_pinned_corpus": 0,
+   "flipped": []
+  },
+  {
+   "tag": "m3-g12b-q2-java",
+   "lang": "java",
+   "n": 158,
+   "pass_stored": 0,
+   "pass_pinned_corpus": 0,
+   "flipped": []
+  },
+  {
+   "tag": "m3-g12b-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 2,
+   "pass_pinned_corpus": 2,
+   "flipped": []
+  },
+  {
+   "tag": "m3-gr3b-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 6,
+   "pass_pinned_corpus": 6,
+   "flipped": []
+  },
+  {
+   "tag": "m3-gr3b-q2-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 8,
+   "pass_pinned_corpus": 8,
+   "flipped": []
+  },
+  {
+   "tag": "m3-gr3b-q2-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 9,
+   "pass_pinned_corpus": 9,
+   "flipped": []
+  },
+  {
+   "tag": "m3-gr3b-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 77,
+   "pass_pinned_corpus": 77,
+   "flipped": []
+  },
+  {
+   "tag": "m3-gr3b-q3-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 73,
+   "pass_pinned_corpus": 73,
+   "flipped": []
+  },
+  {
+   "tag": "m3-gr3b-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 39,
+   "pass_pinned_corpus": 40,
+   "flipped": [
+    "HumanEval_161_solve"
+   ]
+  },
+  {
+   "tag": "m3-iq2m-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 18,
+   "pass_pinned_corpus": 18,
+   "flipped": []
+  },
+  {
+   "tag": "m3-iq2m-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 23,
+   "pass_pinned_corpus": 23,
+   "flipped": []
+  },
+  {
+   "tag": "m3-iq2m-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 26,
+   "pass_pinned_corpus": 26,
+   "flipped": []
+  },
+  {
+   "tag": "m3-iq2xxs-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 1,
+   "pass_pinned_corpus": 1,
+   "flipped": []
+  },
+  {
+   "tag": "m3-iq2xxs-java",
+   "lang": "java",
+   "n": 158,
+   "pass_stored": 2,
+   "pass_pinned_corpus": 2,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 7,
+   "pass_pinned_corpus": 7,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q2-java",
+   "lang": "java",
+   "n": 158,
+   "pass_stored": 3,
+   "pass_pinned_corpus": 3,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q2-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 8,
+   "pass_pinned_corpus": 8,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q2-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 11,
+   "pass_pinned_corpus": 11,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 11,
+   "pass_pinned_corpus": 11,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q3-java",
+   "lang": "java",
+   "n": 158,
+   "pass_stored": 15,
+   "pass_pinned_corpus": 15,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q3-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 21,
+   "pass_pinned_corpus": 21,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q08b-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 21,
+   "pass_pinned_corpus": 21,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 18,
+   "pass_pinned_corpus": 18,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q2-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 18,
+   "pass_pinned_corpus": 18,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q2-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 22,
+   "pass_pinned_corpus": 22,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 39,
+   "pass_pinned_corpus": 39,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q3-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 51,
+   "pass_pinned_corpus": 51,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 43,
+   "pass_pinned_corpus": 42,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "m3-q36-35b-q2-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 114,
+   "pass_pinned_corpus": 114,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q36-35b-q2-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 112,
+   "pass_pinned_corpus": 113,
+   "flipped": [
+    "HumanEval_158_find_max",
+    "HumanEval_65_circular_shift",
+    "HumanEval_74_total_match",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "m3-q36-35b-q3-cpp",
+   "lang": "cpp",
+   "n": 161,
+   "pass_stored": 116,
+   "pass_pinned_corpus": 116,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q36-35b-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 122,
+   "pass_pinned_corpus": 124,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "m3-q4-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 56,
+   "pass_pinned_corpus": 56,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q4-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 44,
+   "pass_pinned_corpus": 44,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q5-js",
+   "lang": "js",
+   "n": 161,
+   "pass_stored": 47,
+   "pass_pinned_corpus": 47,
+   "flipped": []
+  },
+  {
+   "tag": "m3-q5-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 45,
+   "pass_pinned_corpus": 44,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "mt1-bonsai17b-g64-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 67,
+   "pass_pinned_corpus": 67,
+   "flipped": []
+  },
+  {
+   "tag": "mt1-bonsai8b-g64-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 99,
+   "pass_pinned_corpus": 101,
+   "flipped": [
+    "HumanEval_140_fix_spaces",
+    "HumanEval_158_find_max",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "pan-bonsai27b-1bit-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 60,
+   "pass_pinned_corpus": 62,
+   "flipped": [
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift"
+   ]
+  },
+  {
+   "tag": "pan-bonsai4b-ternary-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 109,
+   "pass_pinned_corpus": 111,
+   "flipped": [
+    "HumanEval_151_double_the_difference",
+    "HumanEval_158_find_max",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ]
+  },
+  {
+   "tag": "pan-glm47flash-q2kxl-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 56,
+   "pass_pinned_corpus": 57,
+   "flipped": [
+    "HumanEval_79_decimal_to_binary"
+   ]
+  },
+  {
+   "tag": "pan-glm47flash-q3-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 79,
+   "pass_pinned_corpus": 84,
+   "flipped": [
+    "HumanEval_127_intersection",
+    "HumanEval_151_double_the_difference",
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary"
+   ]
+  },
+  {
+   "tag": "pan-glm47flash-tq1-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 19,
+   "pass_pinned_corpus": 17,
+   "flipped": [
+    "HumanEval_146_specialFilter",
+    "HumanEval_69_search"
+   ]
+  },
+  {
+   "tag": "pan-qwen35-35a3b-iq1m-py",
+   "lang": "py",
+   "n": 161,
+   "pass_stored": 91,
+   "pass_pinned_corpus": 93,
+   "flipped": [
+    "HumanEval_127_intersection",
+    "HumanEval_151_double_the_difference",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ]
+  }
+ ]
+}

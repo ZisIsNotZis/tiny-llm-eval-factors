@@ -178,25 +178,68 @@
   ```
   实跑输出：两行同为 `498b6060d3efce406eb59825fb4cb23c5d32a1c766010f4c1ec0f3d84276ed01`。
 
-### res16 但测试语料没被钉住：今天重算同一格得到 58/161，已入库的是 57/161 —— 已入库的逐题比例是证据物，不是可重跑复现
+### res16 今天重算同一格得到 58/161，已入库的是 57/161 —— 不是判分不稳定，是 py 测试语料被重建过（见 res19 的判别实验）
 
-- 今天的 `/tmp/MultiPL-E/prompts/humaneval-py.jsonl` 与仓库的 `.wrapup/prompts/humaneval-py.jsonl` **逐字节相同**（两者 sha256 都是 `ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb`）。
-- 但用今天的语料重算，与已入库的 `testfrac_m1-qwen4b-q2-py.jsonl` 不一致：**40/161** 道题的分母 `n_tests` 不同（均值 **7.317** vs **7.019**），格级 **pass 58 vs 57**、`mean_frac` **0.569358 vs 0.543334**、`micro_frac` **0.533956 vs 0.508850**。
-- 方向很明确：**已入库的文件与 harness 的二元判定 0/161 不一致（res7 的同一检查），而今天的语料有 1 道题相反**——`HumanEval_79_decimal_to_binary` 今天 5/5 全过被判 True，harness 判 False。所以漂的是今天的副本，不是已入库的文件。
-- 结论（服务 AC ③）：已入库的逐题比例是**证据物**，内部自洽且与 harness 二元判定逐题一致；但它**不是**「拿仓库里任何东西就能重算出同一组数」的**复现**——产出它的那个语料副本已不在盘上。这与 `i01::res25` 对 `plan15` 的归因同一个类：测试语料不是被钉住的输入。
-- 对 a14 结论的影响：无。res11–res13 的对照全部用**同一批已入库文件**做成对比较，且 res7 用 12218 道题证明这批文件的二元判定与 harness 一致；若换成今天重算的一套，结论会整体偏移（不向）。
-- 状态：current。
-- 证据：`.wrapup/testfrac_m1-qwen4b-q2-py_summary.jsonl`（pass 57 / mean_frac 0.543334 / mean_tests_per_item 7.019）vs 上面 res15 的实跑汇总行。
+- 今天的 `/tmp/MultiPL-E/prompts/humaneval-py.jsonl` 与仓库的 `.wrapup/prompts/humaneval-py.jsonl` **逐字节相同**（两者 sha256 都是 `ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb`）；但两份都**不是** 2026-09-30 产出入库产物时用的那份：`.wrapup/prompts/humaneval-py.jsonl` 的 mtime 是 `2026-10-14 20:51`，在 b57a71f（2026-10-19）才被钉进仓库，而入库的 py 产物与 `_eval.json` 都是 `2026-09-30 08:06–20:31` —— 用的是当时 `/tmp` 里的旧副本。
+- 用今天的语料重算，与已入库的 `testfrac_m1-qwen4b-q2-py.jsonl` 不一致：**40/161** 道题的分母 `n_tests` 不同（均值 **7.317** vs **7.019**），格级 **pass 58 vs 57**、`mean_frac` **0.569358 vs 0.543334**、`micro_frac` **0.533956 vs 0.508850**。
+- 分母的 40 条里，**37 条**是因为当时的计数口径排除常量真断言（`assert True`）而今天的不排除：用「排除 `assert True`」这条规则在今天的文本上重算，161 道题里 **157 道**与入库值一致（今天代码的口径只对得上 121 道）。剩下 **4 道在任何口径下都推不出来**，所以**文本真的变了**：
+
+  | 题目 | 入库 n_tests | 今天文本 A（全部断言） | 今天文本 B（排除 assert True） |
+  |---|---|---|---|
+  | `HumanEval_33_sort_third` | 4 | 7 | 7 |
+  | `HumanEval_44_change_base` | 12 | 7 | 7 |
+  | `HumanEval_53_add` | 5 | 6 | 6 |
+  | `HumanEval_78_hex_key` | 6 | 7 | 7 |
+
+- 结论：已入库的逐题比例是**证据物**，内部自洽且与 harness 二元判定逐题一致（res7）；但它**不是**「拿仓库里任何东西就能重算出同一组数」的**复现**——产出它的语料文本已不在盘上，且新旧文本在断言内容上也不同（见 res19 的 47 个判定翻转）。这与 `i01::res25` 对 `plan15` 的归因同一个类：测试语料不是被钉住的输入。
+- 对 a14 结论的影响：无。res11–res13 的对照全部用**同一批已入库文件**做成对比较，且 res7 用 12218 道题证明这批文件的二元判定与 harness 一致。
+- 状态：current（机制在 res19 判别完毕）。
+- 证据：`.wrapup/testfrac_m1-qwen4b-q2-py_summary.jsonl`（pass 57 / mean_frac 0.543334 / mean_tests_per_item 7.019）vs res15 的实跑汇总行；`.wrapup/prompts/humaneval-py.jsonl` 的 mtime 与 b57a71f 的日期。
 - 复现：
   ```
   sha256sum /tmp/MultiPL-E/prompts/humaneval-py.jsonl .wrapup/prompts/humaneval-py.jsonl
-  python3 -c "
-  import json
-  ship={json.loads(l)['name']:json.loads(l) for l in open('.wrapup/testfrac_m1-qwen4b-q2-py.jsonl')}
-  fresh={json.loads(l)['name']:json.loads(l) for l in open('/tmp/r1.jsonl')}
-  print('n_tests 不同:',sum(1 for n in ship if ship[n]['n_tests']!=fresh[n]['n_tests']))"
+  ls -l --time-style=long-iso .wrapup/prompts/humaneval-py.jsonl .wrapup/mres/m1-qwen4b-q2-py.jsonl .wrapup/mres/m1-qwen4b-q2-py_eval.json
+  python3 "docs/subprojects/a14-部分给分/corpus_version_check.py"   # 四道不可达题 + 逐格摘要一起校
   ```
-  实跑输出：两行同为 `ac14c3b0…26edb`；`n_tests 不同: 40`。
+  实跑输出：两行同为 `ac14c3b0…26edb`；mtime 分别为 `2026-10-14 20:51` / `2026-09-30 08:06` / `2026-09-30 08:06`。
+
+### res19 判别实验：不是判分侧不稳定，是 py 测试语料被重建过 —— 47/10608 个判定翻转**全部**落在 py，cpp+java+js 0/6422
+
+问的是：`58 vs 57` 这 1 道题到底是「评分侧不稳定」还是「入库时用的是旧测试」？两者后果不同，所以先做能区分的实验。
+
+1. **同一批完成物、同一份语料、连跑两次判分**：`mpl_run.py eval` 两次都 `pass=58`，两份输出 `sha256` 同为 **fe71bad6…a35bc**（`testfrac.py` 另一条路径也是两次逐字节相同，见 res15）。不稳定假设在第一步就不成立。
+2. **定位那一题**：`HumanEval_79_decimal_to_binary`。
+   - 入库 `_eval.json`：`pass=False`、`status=Exception`；入库 `testfrac`：`n_tests=4, n_pass=0, frac=0.0, binary_pass=False, status=NoOutput`。
+   - 今天：harness `pass=True status=OK`；`testfrac` `n_tests=5, n_pass=5, frac=1.0, binary_pass=True, status=OK`。
+   - 完成物是纯整数进制转换（`decimal % 2`、字符串前插），**无任何不确定性源**：完成物与测试里 `random`/`hash`/`time`/`set(`/`dict(`/`shuffle`/`datetime`/`glob` 的出现次数**全部为 0**；`PYTHONHASHSEED` 取 `0/1/42/12345` 各跑 3 次，**12/12 返回码都是 0**（Python 3.12.3，numpy 2.5.4 在场）。
+   - 关键细节：该题入库 `n_tests=4` **等于**今天文本在「排除 `assert True`」口径下的值 4，所以这一题的**分母没变**，变的是**判定**——只能是某条断言的**期望值**变了，这是任何计数规则都看不见的文本改动。
+3. **环境差异逐个排除**：`eval_one`（写 `prompt + completion + "\n" + tests`、跑 `python3`、超时 10 s）在**加入这批产物的那个提交 7cd7f61 与 HEAD 之间逐字节相同**；`run_eval` 唯一的改动是提示路径从写死的 `/tmp/...` 改成 `prompt_path(...)`（即改成读钉住语料）。完成物本身也没重生成过：`.wrapup/mres/m1-qwen4b-q2-py.jsonl` 的 mtime 是 `2026-09-30 08:06:24`，其 `_eval.json` 是 `08:06:51`（相差 27 秒）。
+4. **能区分的实验**：用今天的钉住语料 + harness 自己的判分路径，把**已落盘完成物**全量重算（66 个格：cpp 19 / java 6 / js 15 / py 26，共 **10608** 道题）：
+
+   | 语言 | 格 | 题 | 判定翻转 |
+   |---|---|---|---|
+   | py | 26 | 4186 | **47（1.123%），分布在 17 个格** |
+   | cpp | 19 | 3059 | **0** |
+   | js | 15 | 2415 | **0** |
+   | java | 6 | 948 | **0** |
+
+   判分侧不稳定不会挑语言：超时、浮点、`hash` 随机化、进程环境都会随机落在任何语言上。翻转**全部**在 py，而不是 py 的 6422 道 cpp/java/js 一题也不动——这只能来自「py 的 `tests` 文本换了」。
+5. **幅度**：17 个 py 格改变分数，最大 **+5 道题**（`m21-bonsai-q2g64-py` 123→128、`pan-glm47flash-q3-py` 79→84，即 **+3.1 个百分点**），最小 −2（`pan-glm47flash-tq1-py` 19→17）；17 格净 +17 道题，方向是新语料对 py 略宽松。
+
+**结论**：这是「入库时用的是旧测试」，不是「评分侧 1 题不稳定」。已入库的 py 产物是 2026-09-30 用当时的 `/tmp` 副本算的；今天的语料在 2026-10-14 重建、2026-10-19 才钉进仓库。
+
+**对 `i01::res32`（确定性解码地板 = 0）意味着什么**：**地板 0 仍成立**，因为它是用**同一份语料**内的重复测量定的（`np1`×2 与 `npauto`×2 完成物逐字节相同），本实验不动它。但它把 `i01::res25` 里 plan15 那 6/161 的「(a) 提示集」从「不可测」变成**有实测机制和量级**：一次语料重建就能让 py 格移动 **0–5 道题**，正好是 6/161 的量级。所以 i01 把 plan15 写成「未记录的输入差」可以升级为「已测的语料版本差」，但不得说成已证就是那一次的原因（那个语料副本已不在）。
+
+- 状态：current。
+- 证据：`docs/subprojects/a14-部分给分/evidence/corpus_rescore.json`（66 格逐格的旧/新通过数与翻转题名，含四个语料文件的 sha256）。
+- 复现：
+  ```
+  python3 "docs/subprojects/a14-部分给分/corpus_version_check.py"                 # 静态四条证据 + 逐格摘要对账，实跑 PASS
+  python3 "docs/subprojects/a14-部分给分/corpus_version_check.py" --negative-control
+  # 重算某一格（需要 gitignored 完成物）：
+  # cd .wrapup && python3 mpl_run.py eval --lang py --samples mres/m1-qwen4b-q2-py.jsonl --out /tmp/h1.json
+  ```
+  实跑负控输出：`给 HumanEval_79_decimal_to_binary 追加一条必失败断言后，判分给出 pass=False status=Exception` —— 与入库那条历史记录的形状一致，证明「语料变了 → 判定翻」这条链两端都观测到了。
 
 ## 不可得清单与代价（WP6）
 
