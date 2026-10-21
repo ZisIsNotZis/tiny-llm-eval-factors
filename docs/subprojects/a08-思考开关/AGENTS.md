@@ -43,6 +43,13 @@
 - 负控：`--selftest` 必须证明「改坏一行 → 检查变红」。一条不会失败的检查等于没有检查。
 - 脚本只读打开库（`file:experiments.sqlite?mode=ro`），禁止写库。
 - 任何结论在干净 clone 里要能重算或至少能读到（fixture + 来源 sha256 随仓库走）。
+- **本装置只守本子项目的基准集**（`thinking_pairs.py::BENCHES`：gsm8k / gsm8k-strict / ifeval / mmlu /
+  arc_challenge / truthfulqa_mc2 / humaneval* / mbpp*），**不覆盖 BFCL、MultiPL-E 语言列、testfrac 等**。
+  也就是说 `--check` 与 `run_all.py` 对别的基准的漂移是**盲的**（实测：29 行 BFCL 的 `n_items` 被抹成 NULL 时它照绿）。
+  它不是全库门；全库的洁净检查在 i02 的 `db_check` 里。
+- `--check` 比的是**工作树里的库**，所以别的子项目一入库它就可能变红（实测过一次：i02 的 a14 py 语料取代让
+  `humaneval-py off` 从 136 变 131）。正确处置是重跑 `--write` 并把**库与 fixture 一起**提交，
+  绝不手改 fixture 去迁就漂移；判据是「干净 clone（库与 fixture 同一提交）rc=0」。
 
 ## GPU 与库
 
