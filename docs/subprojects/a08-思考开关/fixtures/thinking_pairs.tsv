@@ -1,4 +1,5 @@
 class	bench	model	off_tag	on_tag	off_mt	on_mt	budget_matched	n_items	score_off	score_on	delta_items	off_wall_s	on_wall_s	wall_ratio	note
+extraction	ifeval	Qwen3.5-2B-UD-Q4_K_XL.gguf	a08-ifeval-off-25	a08-ifeval-on-25	4096	4096	1	25	0.6	0.04	-14	64.3	558.8	8.69051	
 knowledge-loglik	mmlu	Qwen3.5-2B-UD-Q4_K_XL.gguf	a08-mmlu-off-16	a08-mmlu-on-16	1024	1024	1	912	0.622807	0.622807	0	238.3	195.3	0.819555	
 reasoning	gsm8k	Qwen3.5-2B-UD-IQ2_M.gguf	m62-qwen-2b-iq2m	m62gs-gsm8k	1024	4096	0	100	0.38	0.02	-36	134.1	1507.7	11.2431	预算不同：差同时含开关与预算两个变量
 reasoning	gsm8k	Qwen3.5-2B-UD-IQ2_XXS.gguf	m61-qwen-2b-iq2xxs	m61gs-gsm8k	1024	4096	0	100	0.06	0.01	-5	260.9	1454.6	5.57532	预算不同：差同时含开关与预算两个变量

@@ -3,16 +3,18 @@
 ## 现在（每次改动都要让这一节为真）
 
 - **里程碑 M1「研究结束」未达成**；只剩一个里程碑，结项条件是下面 AC 全绿。
-- **在做**：WP2 最后一条臂 `a08-ifeval-on-25` 在锁队列里（`A08_LOCK_WAIT=1800`）；已得数 4 条臂见下。
-- **已得数**（都进了库、都写进 `RESULT.md` 的 res7–res11）：`--probe` 端点探针、`a08-gsm8k-off-4096`（0.67，
-  与 `m66gs-gsm8k` 的 0.34 构成预算对齐对）、`a08-mmlu-off-16`、`a08-mmlu-on-16`（两者 0.622807 逐位相同）、
-  `a08-ifeval-off-25`（0.6）。`a08-gsm8k-on-4096`（复现臂，≈11 min）仍可砍。
-- **剩余**：WP2 的 `a08-ifeval-on-25`；WP3 的第二次入库（把 ifeval-on 那一格写进库并重算 fixture）；
-  WP4 的结论收口（`RESULT.md` 已写 5 条新事实，抽出类要等那条臂）；WP5 独立复核。
-- **下一个派给谁**：a08 worker 收 ifeval-on → 第二次入库 → 收口；之后派 fresh reviewer 做 WP5。
+- **在做**：WP4 收口已完成初稿，等 WP5 独立复核。
+- **已得数**（都进了库、都写进 `RESULT.md` 的 res6–res10，答案摘要在第 7 行）：
+  `--probe` 端点探针、`a08-gsm8k-off-4096`（0.67，与 `m66gs-gsm8k` 的 0.34 构成预算对齐对）、
+  `a08-mmlu-off-16` 与 `a08-mmlu-on-16`（0.622807 逐位相同）、`a08-ifeval-off-25`（0.60）、
+  `a08-ifeval-on-25`（**0.04**，23/25 题撞满 4096）。`run_all.py` 三项全绿（三类基准各一对，只剩 code 类无 on 格）。
+- **砍掉的**：`a08-gsm8k-on-4096`（复现臂，≈11 min）。理由：同协议的 on 格已在库里（`m66gs-gsm8k`），
+  而「确定性解码逐字复现」是 i01 已确立的事实，重跑不给本轴 AC 增加证据；把 GPU 让给还在排队的子项目。
+- **剩余**：WP5 独立复核（唯一未完成的工作包）。
+- **下一个派给谁**：派 fresh reviewer 做 WP5（不是本 worker 自评）。
 - **需要 meta 知道**：WP3 第一次入库用的是共享 `migrate_db.py`，refresh 把 14 行 BFCL 多轮格的 `n_items`
   抹成 NULL、并给 32 行 `variant-*` 的协议串加上了 `;sampling=default`（分数不变）。改前状态在
-  `experiments.sqlite.bak30`，a13/i02 需要决定是否回填（见 `RESULT.md::res11`）。
+  `experiments.sqlite.bak30`，a13/i02 需要决定是否回填（见 `RESULT.md::res10`）。
 
 ## 这一轴要回答什么
 
@@ -40,10 +42,10 @@ AC（可证伪）：
 | id | 工作包 | owner | 依赖 | 预算 | AC（可证伪） | 状态 |
 |---|---|---|---|---|---|---|
 | WP1 | 清点库里已有的开/关格，定配对与预算混淆的判据，落三份 fixture | a08 worker | — | 0 GPU，CPU 分钟级 | `analysis/thinking_pairs.py --check` 与 `--selftest` 退出 0；`fixtures/thinking_pairs.tsv` 每对都标出 `budget_matched` | **完成** |
-| WP2 | 跑预算对齐的受控臂，**一次调用一条臂**：gsm8k off@4096、mmlu off/on（16/科）、ifeval off/on（25 题） | a08 worker | WP1；GPU 锁 | ≈28 GPU 分钟合计（单臂 3–10 min，见 GPU 队列），CPU ≈1 核 | 每条臂的 `lmeval_panel.json` 里 `reasoning`/`max_gen_toks`/`ctx` 与臂定义一致，`server.log` 有 `n_slots = 1`；起服后 30 s 内 `/props` 答 200（preflight）；每臂单独 `rc` 记在 `fixtures/arm_runs.tsv` | **进行中** |
-| WP3 | 入库：编号备份 → `migrate_db.py` → 行数对账 → 重算 fixture | a08 worker | WP2 | CPU 分钟级 | 改库前后行数差 = 本轴新增格数（逐条列出）；`db_check` 绿；skip ledger 为空 | 待 WP2 |
-| WP4 | `RESULT.md` 结论 + 未测清单 + 报告面交接说明 | a08 worker | WP3 | CPU 分钟级 | 每条结论一条 `- evidence:` 一条 `- repro:`；未测项带理由与解除条件；不出现无出处数字 | 待 WP3 |
-| WP5 | 独立复核（fresh reviewer，非本 worker） | meta 派 | WP4 | 一次复核预算 | 干净 clone 里 `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"` 贴出命令与退出码；P1 类缺陷为零 | 待 WP4 |
+| WP2 | 跑预算对齐的受控臂，**一次调用一条臂**：gsm8k off@4096、mmlu off/on（16/科）、ifeval off/on（25 题） | a08 worker | WP1；GPU 锁 | 实测 ≈20 GPU 分钟（off 臂 198 s、mmlu 两臂 434 s、ifeval 两臂 623 s，含加载） | 六条臂全得数（一条失败一次 `rc=port-busy` 记在账上后重跑成功）；`n_slots = 1`、preflight 全绿 | **完成** |
+| WP3 | 入库：编号备份 → `migrate_db.py` → 行数对账 → 重算 fixture | a08 worker | WP2 | CPU 分钟级 | 两次入库：3323→3331（+8 = 本轴 5 + a06 3）、3355→3355（全列多重集 0/0）；`bak30`/`bak48` 都 integrity ok | **完成** |
+| WP4 | `RESULT.md` 结论 + 未测清单 + 报告面交接说明 | a08 worker | WP3 | CPU 分钟级 | 三类基准各一对（reasoning/extraction/knowledge-loglik）、code 类显式未测；每条结论带 `- evidence:` 与 `- repro:` | **完成** |
+| WP5 | 独立复核（fresh reviewer，非本 worker） | meta 派 | WP4 | 一次复核预算 | 干净 clone 里 `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"` 贴出命令与退出码；P1 类缺陷为零 | **待派** |
 
 ## 已知的坑（从别的子项目继承，不改）
 

@@ -1,5 +1,6 @@
 class	bench	model	reasoning	score	n_items	max_gen_toks	mt_source	ctx	wall_s	requests	gen_tokens	gen_per_item	cap_hits	prompt_tokens	gen_ms	tag	protocol	cost_note	log_sha256
 extraction	ifeval	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.6	25	4096	db	8192	64.3	25	6645	265.8	0	1302	36738.0	a08-ifeval-off-25	lmeval-0.4.13-chat-reasoning-off		b1bf0b0847e5f9f40ef46a6a031b12c407de5f90a1dc16d707b9ccc076cd1405
+extraction	ifeval	Qwen3.5-2B-UD-Q4_K_XL.gguf	on	0.04	25	4096	db	8192	558.8	25	99335	3973.4	23	1252	531359.5	a08-ifeval-on-25	lmeval-0.4.13-chat-reasoning-on		609e51b1bf7a0af9d1b8dcf38b12ccd66e6f8dff8730c2c13fe35ed1c97cd5fa
 knowledge-loglik	mmlu	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.622807	912	1024	panel-json:profiles	8192	238.3	3648						a08-mmlu-off-16	lmeval-0.4.13-gguf-shim-reasoning-off	shared-log(requests=3648)	edcd447a154b67dc08b7cb13cdca3a7ab9be7b3eef4db938475685d72059156d
 knowledge-loglik	mmlu	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.622807	912	1024	panel-json	8192	125.3							m66-qwen-2b-q4kxl	lmeval-0.4.13-gguf-shim-reasoning-off	shared-log(multi-task panel)	
 knowledge-loglik	mmlu	Qwen3.5-2B-UD-Q4_K_XL.gguf	on	0.622807	912	1024	panel-json:profiles	8192	195.3	3648						a08-mmlu-on-16	lmeval-0.4.13-gguf-shim-reasoning-on	shared-log(requests=3648)	7cd1b47b33c96c90835afddd218bf166b943013cf6d7889fab52290335534cdf

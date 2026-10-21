@@ -4,6 +4,24 @@
 未测的写「未测 + 理由 + 解除条件」，不填默认值。数字只从
 `analysis/thinking_pairs.py --write` 产出（`--check` 复算，`--selftest` 证明会变红）。
 
+## 答案摘要（每落地一条臂就更新这一节）
+
+问题：报告的聊天协议固定关思考，那么**分数里有多少可归因于这个协议选择**？
+
+| 基准类 | 开/关对照 | 同预算下的差 | 生成代价 | 墙钟 | 状态 |
+|---|---|---|---|---|---|
+| 推理类 gsm8k | `a08-gsm8k-off-4096` 0.67 vs `m66gs-gsm8k` 0.34（都 4096） | **−33 题 / 100** | 关 266–770 token/题 vs 开 ≈1990 token/题；26/100 开思考题撞满 4096 | 198 s → 664 s（3.35×） | 已测 |
+| 抽取类 ifeval | `a08-ifeval-off-25` 0.60 vs `a08-ifeval-on-25` 0.04（都 4096，25 题） | **−14 题 / 25** | 关 266 token/题 vs 开 3973 token/题；**23/25 撞满 4096** | 64.3 s → 558.8 s（8.7×） | 已测 |
+| 知识-对数似然类 mmlu | `a08-mmlu-off-16` 0.622807 vs `a08-mmlu-on-16` 0.622807（n=912） | **0 题（逐位相同）** | 不生成；原始 completions 端点对开关完全无反应 | 238 s ↔ 195 s（同一张卡的负载波动，不是协议差） | 已测（一个模型、一个任务） |
+| 代码类 humaneval/mbpp/MultiPL-E | 无 | 不可得 | — | — | **未测**（619 个 EvalPlus `auto` 格没记 reasoning；31 个 `off` 格无 on 对照）|
+
+这四行合起来就是「协议选择的代价」的当前答案：**凡是生成类基准，关思考都在省 3–9 倍时间的同时拿到更高的分；
+唯一不吃这一刀的是对数似然类，因为它根本不生成**。但注意这个差里有一半是**预算饥饿**而不是「思考更笨」：
+开思考的题有 23/25（ifeval）与 26/100（gsm8k）在 4096 处被截断，而关思考撞满预算的题数是 **0**。
+所以本轴能说「在本研究协议的预算上限内，开思考必亏」；**不能说**「思考对推理无助」——8192/16384 预算下能不能
+救回被截断的题，**没有测**（见 res11）。
+
+
 ## res1 :: 库里有 13 个思考开的格，全部是 gsm8k；另外三类基准一个 open 格都没有
 
 这是这一轴最硬的一条：**报告的聊天分数里，只有推理类（gsm8k）有开/关两种测量**，抽取类（ifeval）、
@@ -72,7 +90,7 @@
   它的 0.01 不是「思考答错了」，而是「思考没写完」；granite-3b 一题都没打满（491 token/题），
   分数与关思考**逐位相同**（0.12 对 0.12），说明在它身上开关既没有帮助也没有伤害。
   所以 13 对里的负差至少有两条不同的机制（截断 / 真的换了答案），而现有的逐题产物不足以分开它们
-  （`log_samples` 没开，见 res12）。
+  （`log_samples` 没开，见 res11）。
 
 ## res4 :: 墙钟代价 2.2×–11.2×，且与 token 数不成比例
 
@@ -97,7 +115,7 @@
 - 负控：`--selftest` 把一份 fixture 副本改一行，检查必须变红（实测 rc=0 且打印 `PASS negative control`）。
 - repro: `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"`
 
-## res7 :: 预算对齐的对照（WP2 的第一刀）：同一模型、同一 4096 预算，只改 `--reasoning`
+## res6 :: 预算对齐的对照（WP2 的第一刀）：同一模型、同一 4096 预算，只改 `--reasoning`
 
 Qwen3.5-2B-UD-Q4_K_XL、gsm8k、`--limit 100`、贪心、ctx 16384、`max_gen_toks=4096`，两条臂除
 `--reasoning off/on` 外逐字相同：
@@ -117,7 +135,7 @@ Qwen3.5-2B-UD-Q4_K_XL、gsm8k、`--limit 100`、贪心、ctx 16384、`max_gen_to
   同一 on 臂 26/100 题在 4096 处被截断（res3 的 `cap_hits`）。
 - 未测：4096 以上（8192/16384）能否救回被截断的 26 题。成本 ≈45–90 min/100 题，未排。
 
-## res8 :: 知识-对数似然类：开关**逐位不改分**，而且机制上到不了那条路（两重证据）
+## res7 :: 知识-对数似然类：开关**逐位不改分**，而且机制上到不了那条路（两重证据）
 
 同模型、mmlu `--limit 16`（每科，n=912）两条臂，只有 `--reasoning` 不同：
 
@@ -136,7 +154,7 @@ Qwen3.5-2B-UD-Q4_K_XL、gsm8k、`--limit 100`、贪心、ctx 16384、`max_gen_to
 - repro: `python3 "docs/subprojects/a08-思考开关/analysis/thinking_pairs.py" --check`
 - 结论的边界：这只测了 mmlu 一个任务、一个模型；arc_challenge / truthfulqa_mc2 未测（同类机制，但没测）。
 
-## res9 :: 端点差分：`--reasoning on` 把推理流放进 `reasoning_content`，`content` 仍是最终答案
+## res8 :: 端点差分：`--reasoning on` 把推理流放进 `reasoning_content`，`content` 仍是最终答案
 
 - chat 端点、同一提示（Natalia 卖夹子那道题）：
   - `off`：`content='192'`，`completion_tokens=4`，没有 `reasoning_content` 字段 —— **答错**（正确答案 72）。
@@ -145,17 +163,29 @@ Qwen3.5-2B-UD-Q4_K_XL、gsm8k、`--limit 100`、贪心、ctx 16384、`max_gen_to
 - 读法：这是 n=1 的机制演示，不是分数结论；它证明两件事：(1) 开关真的改变了生成（不是空操作）；
   (2) 判分器看到的 `content` 里**没有**推理流，所以「IFEval 因为判分器看到推理流而掉到 0.00」这个旧解释
   在 build 4399 上不成立 —— 更可能的机制是推理流把预算吃光、`content` 返回空（finish_reason=length）。
-  哪一种成立由 `a08-ifeval-on-25` 臂判（见 res10）。
+  哪一种成立由 `a08-ifeval-on-25` 臂判：**判出来了，是预算被吃光**（res9：23/25 题撞满 4096）。
 
-## res10 :: 抽取类的关思考基线已经测到，开思考一侧待一条臂
+## res9 :: 抽取类：同一 4096 预算下，开思考把 IFEval 从 0.60 打到 0.04，代价 8.7× 墙钟
 
-- `a08-ifeval-off-25`：ifeval、25 题、`max_gen_toks=4096`、贪心 → **prompt_level_strict 0.6**，墙钟 64.3 s。
-- 开思考那一臂（同 25 题、同 4096 预算）**尚未得数**：第一次尝试被记录为 `rc=port-busy`（上一条臂的 server
-  还在退出时端口仍被占用，`fixtures/arm_runs.tsv` 有这一行），第二次在锁队列里等（`A08_LOCK_WAIT=1800`）。
-  在它落地之前，`RESULT` 里**没有**任何 ifeval 的开关结论。
-- evidence: `fixtures/arm_runs.tsv` 的 `a08-ifeval-off-25` / `a08-ifeval-on-25` 两行
+同模型、ifeval、`--limit 25`、贪心、`max_gen_toks=4096`、ctx 8192，两条臂只有 `--reasoning` 不同：
 
-## res11 :: 入库的账（WP3）：+8 行 = 本轴 5 格 + 别的子项目 3 格；同时发现共享入库路径有副作用
+| 臂 | 协议 | prompt-level strict | inst-level strict | 生成 token/题 | 撞满 4096 的题数 | 墙钟 |
+|---|---|---|---|---|---|---|
+| `a08-ifeval-off-25` | `lmeval-0.4.13-chat-reasoning-off` | **0.60**（15/25） | 0.703 | 265.8 | **0/25** | 64.3 s |
+| `a08-ifeval-on-25` | `lmeval-0.4.13-chat-reasoning-on` | **0.04**（1/25） | 0.054 | 3973.4 | **23/25** | 558.8 s |
+
+- 差 = **−14 题 / 25**，墙钟 **8.7×**，token **15×**。这一对 `budget_matched=1`。
+- 机制：关思考的 25 条响应最长 769 token、0 条撞满；开思考 23/25 条在 4096 处被截断（`server.log` 的逐请求
+  `eval time = … / 4096 tokens`）。所以这个 0.04 是**「思考没写完」**，不是「指令检查器看到了推理流」——
+  后者是 `docs/method/method.yaml` 协议表里的旧解释，在 build 4399 上被 res8 的端点差分推翻（推理流进
+  `reasoning_content`，`content` 仍是干净的答案字段）。这条更正对报告有影响：旧的「开思考时 IFEval 0.00」
+  不能再说成判分器缺陷。
+- evidence: `fixtures/thinking_pairs.tsv`（`bench=ifeval` 行）、`fixtures/thinking_cells.tsv`（两格的
+  `gen_per_item` / `cap_hits`）、`fixtures/logs/a08-ifeval-{off,on}-25.*`
+- repro: `python3 "docs/subprojects/a08-思考开关/analysis/thinking_pairs.py" --check`
+- 限制：n=25（prompt-level 粒度 4%）；IFeval 的严格判分还要求格式，截断必然连带格式失败，两者在现有产物里分不开。
+
+## res10 :: 入库的账（WP3）：+8 行 = 本轴 5 格 + 别的子项目 3 格；同时发现共享入库路径有副作用
 
 - 改库前：3323 行（其中 `source_file LIKE 'mres/%'` 915 行）；改后：3331 行（mres 923 行）。
   差额 +8 = 本轴 5 行（`a08-gsm8k-off-4096` 的 gsm8k 与 gsm8k-strict 两行、`a08-mmlu-off-16`、
@@ -167,11 +197,16 @@ Qwen3.5-2B-UD-Q4_K_XL、gsm8k、`--limit 100`、贪心、ctx 16384、`max_gen_to
   2. **14 行 BFCL 多轮格的 `n_items` 从 200/其它值变成 NULL**（`m11/m14/m17/m19/m20/m22/m32/m36`），
      即当前 `ingest_*` 不再写这一列，refresh 把它抹了。
   这两条都不属于 a08 的写权范围，已上报 meta；`bak30` 是改前状态，可整库回滚或按格回填。
-- evidence: `.tmp/a08_ingest1.out`（备份行数与 sha256、逐 ingest 插入数、`rows 3323 -> 3331`）、
-  本文件上一条命令的全列多重集差异
+- 第二次入库（补 `a08-ifeval-on-25`）：备份 `experiments.sqlite.bak48`（3355 行，integrity ok），
+  `rows 3355 -> 3355`，全列多重集差异 **added 0 / removed 0** —— 因为那一格在我入库前已被别的子项目
+  的 refresh 写进去了（`campaign` 计数 788 → 789）。库里现在有本轴 6 格：
+  `a08-gsm8k-off-4096`（gsm8k 0.67 / gsm8k-strict 0.37）、`a08-ifeval-off-25`（0.60）、
+  `a08-ifeval-on-25`（0.04）、`a08-mmlu-off-16` 与 `a08-mmlu-on-16`（都是 0.622807）。
+- evidence: `.tmp/a08_ingest1.out` 与 `.tmp/a08_ingest2.out`（备份行数与 sha256、逐 ingest 插入数、
+  `rows … -> …`）、以及两次入库前后整库的全列多重集差异（脚本见提交前的命令记录）
 - repro: 上面两个库（`bak30` 与当前库）的全列多重集差异命令见 `.tmp/a08_diff.py` 所在的记录；重跑即同结果。
 
-## res12 :: 未测（不是 0）
+## res11 :: 未测（不是 0）
 
 1. **抽取类（ifeval）的开/关对照**：库里 `on` 格 0 个。历史笔记说开思考时 IFEval 跌到 0.00、
    每题 27 s 对 5 s（`docs/method/method.yaml` 的协议表，出处是早期 campaign 的口头记录），
@@ -185,5 +220,5 @@ Qwen3.5-2B-UD-Q4_K_XL、gsm8k、`--limit 100`、贪心、ctx 16384、`max_gen_to
 4. **前沿大模型族（27B–35B）**：一臂 27B @4096 ≈10–25 min/100 题，未排进本轮 2% 配额。
 5. **逐题产物**：`log_samples` 没开，所以「哪些题翻转」不可得，只有聚合分与 token 计数。
    这直接限制了两条机制的分离（截断 vs 换答案），见 res3。
-6. **预算响应的形状**：关思考在 1024 与 4096 两个预算下的差已测（+1 题，见 res7），
+6. **预算响应的形状**：关思考在 1024 与 4096 两个预算下的差已测（+1 题，见 res6），
    以及开思考在 8192/16384 下是否能救回被截断的题——后者成本 ≈45–90 min/100 题，**未排**。
