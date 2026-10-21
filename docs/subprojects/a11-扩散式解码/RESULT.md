@@ -73,3 +73,12 @@
 - evidence: `git ls-files .wrapup | grep -c diffusion` → `0`；`docs/subprojects/i02-测量基础设施/non_measurements.tsv` 的 nm4 行
 - producer: `git ls-files .wrapup | grep -i diffusion`；`sqlite3 experiments.sqlite "select count(*) from experiments where lower(model) like '%diffusion%'"` → `0`
 - 这条是给 i02 的（登记册归它），本子项目不改别的目录。
+
+## res9 :: a11 的 `PLAN.md` 让报告侧的派生索引变陈旧：`report_inputs/open_questions.json` 的 `items` 与 `skipped` 都随 PLAN.md 集合变，重生它必须连 `report.html` 一起重生，而这两个文件归 i02/meta；所以本子项目不改它们，`reproduce.sh` 记 WARN 而不 FAIL。
+
+- kind: citation
+- status: current
+- from: result.res2
+- evidence: 干净 clone 里 `./reproduce.sh` 退出 0、36 条 PASS、2 条 WARN（另一条是 a05 的 `kv_evidence.json`）；`git diff report.html` 的唯一差异是「未解问题」索引页脚与列表多了 a11 一节与条目
+- producer: `python3 report_inputs/build_open_questions.py --check` → `FAIL: … is stale`；`./reproduce.sh` → `WARN open_questions.json 与 PLAN.md 不一致`
+- 交回 meta 的一句：下次重生成报告输入与 `report.html` 时带上 a11（它现在有「未解问题」一节），本子项目不越权改那两个文件。
