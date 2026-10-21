@@ -213,12 +213,43 @@
   `m169/none` vs `m170/none`、`m169/none` vs `m170/none-r2`、`m170/none` vs `m170/none-r2`，
   以及投机臂的跨会话对 `m125/n2` vs `m169/draft-mtp2`）；逐对数值在 `fixtures/ident_pairs.tsv`。
 - repro: `python3 "docs/subprojects/a07-投机解码/spec_evidence.py"` 的 `[E]` 段；
-  `python3 "docs/subprojects/a07-投机解码/spec_evidence.py" --check`（fixture 与库/自算逐字对）。
+  `python3 "docs/subprojects/a07-投机解码/spec_evidence.py" --check`（fixture 与库/自算/入库字节逐字对）。
+  入库的 6 个臂的完成物原文在 `evidence/bytes/`（每个 164 条、共 988 KB），逐题 sha256 在
+  `fixtures/ident_bytes.tsv`，每臂指纹在 `fixtures/ident_arms.tsv`：四个 `none` 臂的指纹都是
+  `6cb6c82e601d…`、两个深度 2 臂都是 `e00510e693ad…`——**只读哈希表也能在 clone 里得出「地板 = 0」**
+  （见 `byte-evidence-in-repo`）。
 - 限制：这是**单模型（0.8B）、单 harness（EvalPlus humanEval 164 题）、单槽（`-np 1`）**上的地板。
   9B/35B 没有跨会话对（`m128`/`m129` 的每个深度只跑过一次），所以地板在更大模型上未复验；
   多槽（`-np>1`）的地板 i01 在 MultiPL-E 上测过（四槽与单槽逐字节相同），但 a07 没有复验。
   另外：`m169` 的第二次 `none` 臂是**同一目录的重复运行**（`evalplus` 接续上次产物），
   它被 `[E]` 段自动标注并排除出「独立会话」，真正的地板由 `m170` 的两个独立目录给出。
+
+## byte-evidence-in-repo :: 承重证据已入库：6 个 0.8B 臂的完成物原文（164 条/臂，988 KB）随仓库走，`--check` 在**没有 `.wrapup` 的 clone 里**逐条核 sha256 + 行数，并从字节重算地板 7 对全同——地板不再是一张没有输入绑定的 fixture 表
+
+- kind: measured
+- evidence: `evidence/bytes/MANIFEST.tsv`（6 个文件的 sha256 与行数）、`fixtures/ident_bytes.tsv`（984 条逐题 sha256）、
+  `fixtures/ident_arms.tsv`（6 个臂指纹）、`fixtures/sources.txt`（含这 6 个文件与 12 个 `.wrapup` 输入）。
+  `--check` 的输出第二行：`入库字节 6 臂：逐条 sha256 + 行数全部对上；从字节重算的地板 7 对全同`。
+- repro: 在只有 `docs/` 与 `experiments.sqlite` 的临时树里
+  `python3 "docs/subprojects/a07-投机解码/spec_evidence.py" --check` → 退出 0 且打印上面那行；
+  `python3 "docs/subprojects/a07-投机解码/spec_evidence.py"`（主命令）在同一棵树里退出 2（[A]–[D] 的 `.wrapup` 输入确实缺）。
+  本机再跑 `--check`：`本机重算 34 对与 fixture 逐字相符（含无入库字节的 9B 臂）`。
+- 限制：入库的是 **0.8B** 的 6 个臂。9B 的 19 对（`m128` 四深度）没有入库字节，只在有 `.wrapup` 的本机可证；
+  这一点由 `--check` 明写（`另 19 对无入库字节`），不算成通过。
+
+## byte-forgery-red :: 伪造负控成立（三次演练）：改任一臂的任一条完成物，主命令与 `--check` 都**变红并点名**——`--selftest` 三例全红
+
+- kind: measured
+- evidence: `--selftest` 输出三行：分数层（+0.05 → `--check` 退 1，101 行）、入库字节层（改一条 → 退 1 且点名该臂）、
+  本机字节层（`verify_live` 报 1 条且点名该臂）。另做过一次真伪造：往
+  `.wrapup/mres/m169-ident-08b-mtp/codegen/none/humaneval/*.raw.jsonl` 追加一条改过的 `HumanEval/0` 后，
+  主命令退 **1** 并打印
+  `RED m169-ident-08b-mtp/none: 行数 165 ≠ 入库 164` 与
+  `RED m169-ident-08b-mtp/none/HumanEval/0: 完成物 sha256 变了 af6abd4583c0… → 6d4d88489db5…`；
+  `--check` 同样退 1 并打同两行；地板「其中不同的」从 0 变成 3 对。
+- repro: `python3 "docs/subprojects/a07-投机解码/spec_evidence.py" --selftest`（退出 0 = 三例都红）。
+- 限制：`verify_live` 只能看见它知道的 6 个臂；9B 的臂没有入库字节，改它们不会被点名（`--check` 的
+  「本机重算 ≠ fixture」那一步能抓到，因为 9B 的 19 对也在 fixture 里）。
 
 ## byte-identity-spec-effect :: 在地板 = 0 的前提下，开 `draft-mtp n=2` 让 164 题里 **73 条完成物逐字节不同**（91 条相同），分数从 52/164（0.3171）变成 49/164（0.2988）——这是**同一会话内只改草稿深度**的对照
 
@@ -255,6 +286,15 @@
   再是 `identity_report()` 里按**臂名**而不是**目录名**取产物（同一处错误的第二次）。两处都已修，
   `m170-ident-08b-floor` 用独立目录 `none` 与 `none-r2` 重跑，两臂 52/164 且逐字节 164/164 相同——
   修法已验证，且这一对现在由 `spec_evidence.py` 的 `byte_pairs()`（按目录名）给出。
+
+## ident-inputs-in-exit2 :: `[E]` 的输入现在也在 exit 2 契约里：移走 `.wrapup/mres/m169-ident-08b-mtp` 后主命令退 **2**、点名 3 个缺输入，并把「地板对 3 / 期望 7」打出来；地板对数不等于 7 也算不可得
+
+- kind: measured
+- evidence: 移走该目录后主命令输出：`地板对: 3 对（期望 7）` + `UNMEASURED: 缺输入 3 项`
+  （两个臂的 raw 与 `ident_control.json`），退出码 **2**（此前是 0 且只把计数印成 3）。
+- repro: `mv .wrapup/mres/m169-ident-08b-mtp /tmp/x && python3 "docs/subprojects/a07-投机解码/spec_evidence.py"; echo $?`（期望 2），之后移回。
+- 限制：期望值是写死的常量 `EXPECTED_FLOOR_PAIRS = 7`（4 个深度 0 会话的 C(4,2)=6，加同深度的
+  `m125/n2` vs `m169/draft-mtp2`）。加臂就要同时改这个常量，否则会误报不可得——这是故意的，宁严不宽。
 
 ## vram-only-null-by-design :: `m169-vram-9b` 的两行 `humaneval: null` 是 `--vram-only` 的设计，不是加载失败：两臂都 `n_slots=1`、`n_ctx_slot=8192`，`gpu_minutes` 0.06/0.07 分钟就是「起服 + 读显存」的耗时（不跑 benchmark）
 

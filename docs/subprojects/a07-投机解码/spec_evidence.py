@@ -45,6 +45,15 @@ WR = REPO / ".wrapup"
 MRES = WR / "mres"
 DB = REPO / "experiments.sqlite"
 FIX = HERE / "fixtures"
+BYTES = HERE / "evidence" / "bytes"   # 入库的完成物原文：字节地板在干净 clone 里要能被**从字节**证明
+# 支撑「字节地板 = 0」与 0.8B 的投机效应所需的臂（每个 164 条完成物、约 40 KB）。
+BYTE_ARMS = (("m125-spec-0.8b", "n0"), ("m125-spec-0.8b", "n2"),
+             ("m169-ident-08b-mtp", "none"), ("m169-ident-08b-mtp", "draft-mtp2"),
+             ("m170-ident-08b-floor", "none"), ("m170-ident-08b-floor", "none-r2"))
+# 4 个深度 0 会话 → C(4,2)=6 对，加「m125/n2 vs m169/draft-mtp2」这一对同深度跨会话 = 7 对。
+EXPECTED_FLOOR_PAIRS = 7
+EXPECTED_IDENT_TAGS = ("m169-ident-08b-mtp", "m170-ident-08b-floor",
+                       "m169-vram-08b-mtp", "m169-vram-9b")
 HFROOT = Path("/home/z/hf")
 
 PANEL_GLOB = "*-spec-*/spec_panel.json"
@@ -242,6 +251,98 @@ def byte_pairs(tags=("m125-spec-0.8b", "m169-ident-08b-mtp", "m170-ident-08b-flo
     return out
 
 
+def item_sha(text):
+    """一条完成物的 sha256（对解出来的字符串取，不是对 jsonl 行取，避免键序影响）。"""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def arm_sha(per_item):
+    """一个臂的指纹：对 `task_id<TAB>sha256` 排序后取 sha256。规则写死在这里，谁都能重算。"""
+    blob = "\n".join(f"{t}\t{per_item[t]}" for t in sorted(per_item))
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
+def raw_path(livedir, tag, arm):
+    hits = glob.glob(str(Path(livedir) / tag / "codegen" / arm / "humaneval" /
+                         "*_openai_temp_0.0.raw.jsonl"))
+    return Path(hits[0]) if hits else None
+
+
+def read_raw(path):
+    """(逐题完成物原文, 行数)：行数单独留一份，因为重复行会在 dict 里被折叠。"""
+    texts, n = {}, 0
+    for line in open(path, encoding="utf-8"):
+        n += 1
+        d = json.loads(line)
+        texts[d["task_id"]] = d["solution"]
+    return texts, n
+
+
+def committed_bytes(bytesdir=None):
+    """从入库的完成物原文重算 ({(tag,arm): {task: sha}}, {(tag,arm): 行数}, manifest)。"""
+    bd = Path(bytesdir) if bytesdir else BYTES
+    per_arm, counts, manifest = {}, {}, []
+    man = bd / "MANIFEST.tsv"
+    if man.exists():
+        for line in open(man, encoding="utf-8").read().splitlines()[1:]:
+            f, digest, rows = line.split("\t")
+            manifest.append({"file": f, "sha256": digest, "rows": int(rows)})
+    for tag, arm in BYTE_ARMS:
+        f = bd / f"{tag}__{arm}.raw.jsonl"
+        if not f.exists():
+            continue
+        texts, n = read_raw(f)
+        per_arm[(tag, arm)] = {t: item_sha(x) for t, x in texts.items()}
+        counts[(tag, arm)] = n
+    return per_arm, counts, manifest
+
+
+def verify_live(livedir=None):
+    """把**本机**的完成物与入库字节逐条对：任何一条变了就点名，返回 RED 行列表。
+
+    这就是「伪造必须红」的那条检查：改动任一臂的任一条完成物，或往文件里多写一行，
+    都会在这里被点到 tag/arm/task_id（重复行由行数抓）。
+    """
+    committed, committed_n, _ = committed_bytes()
+    live_dir = Path(livedir) if livedir else MRES
+    red = []
+    for (tag, arm), want in committed.items():
+        p = raw_path(live_dir, tag, arm)
+        if p is None:
+            continue                        # 缺输入由 main 的 missing 列表负责（exit 2）
+        texts, n = read_raw(p)
+        if n != committed_n[(tag, arm)]:
+            red.append(f"RED {tag}/{arm}: 行数 {n} ≠ 入库 {committed_n[(tag, arm)]}"
+                       f"（多写/少写行也算改了字节）")
+        got = {t: item_sha(x) for t, x in texts.items()}
+        if set(got) != set(want):
+            miss = sorted(set(want) - set(got))[:3]
+            extra = sorted(set(got) - set(want))[:3]
+            red.append(f"RED {tag}/{arm}: 题集变了（缺 {miss} 多 {extra}）")
+        for t in sorted(set(got) & set(want)):
+            if got[t] != want[t]:
+                red.append(f"RED {tag}/{arm}/{t}: 完成物 sha256 变了 "
+                           f"{want[t][:12]}… → {got[t][:12]}…")
+    return red
+
+
+def pairs_from_hashes(per_arm):
+    """只从哈希表推出 (kind, tag_a, arm_a, tag_b, arm_b, n, identical, differing)。"""
+    out = []
+    keys = sorted(per_arm)
+    for i, a in enumerate(keys):
+        for b in keys[i + 1:]:
+            common = set(per_arm[a]) & set(per_arm[b])
+            if not common:
+                continue
+            same = sum(1 for t in common if per_arm[a][t] == per_arm[b][t])
+            out.append({"tag_a": a[0], "arm_a": a[1], "tag_b": b[0], "arm_b": b[1],
+                        "n": len(common), "identical": same,
+                        "differing": len(common) - same,
+                        "kind": ("floor" if arm_depth(a[1]) == arm_depth(b[1]) else "spec")})
+    return out
+
+
 def gguf_bytes(model_path):
     try:
         return os.path.getsize(model_path)
@@ -323,6 +424,13 @@ def build_rows():
                            "plain_bytes": gguf_bytes(plain) if plain else None})
     m28, m28_missing = build_m28()
     missing.extend(m28_missing)   # 缺 m28_speed.jsonl 也是缺输入：不能静默退出 0
+    # [E] 的输入同样在 exit 2 契约里：少一个臂就不能声称「地板 = 0」。
+    for tag, arm in BYTE_ARMS:
+        if raw_path(MRES, tag, arm) is None:
+            missing.append(f"{tag}/codegen/{arm}/humaneval/*_openai_temp_0.0.raw.jsonl")
+    for tag in EXPECTED_IDENT_TAGS:
+        if not (MRES / tag / "ident_control.json").exists():
+            missing.append(f"{tag}/ident_control.json")
     ident, ident_peritem = load_ident()
     ident_pairs = byte_pairs()
     return {"speed": speed, "quality": quality, "peritem": peritem,
@@ -495,13 +603,16 @@ COLS = {
                       "codegen_rc", "evaluate_rc"],
     "ident_peritem": ["tag", "arm", "task_id", "pass"],
     "ident_pairs": ["tag_a", "arm_a", "tag_b", "arm_b", "n", "identical", "differing", "kind"],
+    "ident_arms": ["tag", "arm", "items", "arm_sha256"],
+    "ident_bytes": ["tag", "arm", "task_id", "sha256"],
 }
 
 
 FIXKEY = {"speed_depth": "speed", "quality_depth": "quality",
           "peritem_humaneval": "peritem", "byte_identity": "byteid", "device": "device",
           "m28_speed": "m28", "ident_control": "ident", "ident_peritem": "ident_peritem",
-          "ident_pairs": "ident_pairs"}
+          "ident_pairs": "ident_pairs", "ident_arms": "ident_arms",
+          "ident_bytes": "ident_bytes"}
 
 
 def _fmt(v):
@@ -510,6 +621,32 @@ def _fmt(v):
     if isinstance(v, float):
         return f"{v:.12g}"
     return str(v)
+
+
+def write_byte_evidence():
+    """把支撑字节地板的 6 个臂的完成物原文拷进仓库，并写出指纹表与清单。
+
+    这些文件是 `byte-floor-zero` 与 `byte-identity-spec-effect` 的**唯一承重证据**：
+    入库之后，干净 clone 里也能从字节把它们重算出来，不必依赖 `.wrapup`。
+    """
+    BYTES.mkdir(parents=True, exist_ok=True)
+    missing, man, arms, per_item = [], [], [], []
+    for tag, arm in BYTE_ARMS:
+        src = raw_path(MRES, tag, arm)
+        if src is None:
+            missing.append(f"{tag}/codegen/{arm}/humaneval/*_openai_temp_0.0.raw.jsonl")
+            continue
+        dst = BYTES / f"{tag}__{arm}.raw.jsonl"
+        shutil.copy(src, dst)
+        texts, n = read_raw(dst)
+        man.append(f"{dst.name}\t{hashlib.sha256(dst.read_bytes()).hexdigest()}\t{n}")
+        h = {t: item_sha(x) for t, x in texts.items()}
+        arms.append({"tag": tag, "arm": arm, "items": n, "arm_sha256": arm_sha(h)})
+        per_item.extend({"tag": tag, "arm": arm, "task_id": t, "sha256": h[t]} for t in sorted(h))
+    if man:
+        (BYTES / "MANIFEST.tsv").write_text("file\tsha256\trows\n" + "\n".join(man) + "\n",
+                                            encoding="utf-8")
+    return {"ident_arms": arms, "ident_bytes": per_item}, missing
 
 
 def write_fixtures(built):
@@ -526,6 +663,12 @@ def write_fixtures(built):
         src.append(f"{hashlib.sha256(open(p, 'rb').read()).hexdigest()}  {p[len(str(REPO)) + 1:]}")
     for f in sorted(glob.glob(str(MRES / "*-spec-*/codegen/n*/humaneval/*_openai_temp_0.0.raw.jsonl"))):
         src.append(f"{hashlib.sha256(open(f, 'rb').read()).hexdigest()}  {f[len(str(REPO)) + 1:]}")
+    for tag, arm in BYTE_ARMS:
+        p = raw_path(MRES, tag, arm)
+        if p:
+            src.append(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {str(p)[len(str(REPO)) + 1:]}")
+    for f in sorted(BYTES.glob("*.jsonl")):
+        src.append(f"{hashlib.sha256(f.read_bytes()).hexdigest()}  {str(f)[len(str(REPO)) + 1:]}")
     (FIX / "sources.txt").write_text("\n".join(src) + "\n", encoding="utf-8")
 
 
@@ -540,8 +683,9 @@ def read_fixture(name):
 
 
 # ---------- 自检（--check） ----------
-def check(fixdir=None):
-    """三条：fixture 内部一致、与库一致、与本次重算一致。返回 0/1/2。"""
+def check(fixdir=None, bytesdir=None, livedir=None):
+    """五条：fixture 内部一致、与库一致、与本次重算一致、**与入库完成物字节一致**、
+    以及「地板对数 = 期望值」。返回 0/1/2（2 = 入库字节缺失，字节地板在 clone 里不可证）。"""
     fix = Path(fixdir) if fixdir else FIX
     if not fix.exists():
         print("MISSING fixture dir: %s" % fix)
@@ -659,16 +803,110 @@ def check(fixdir=None):
             print("BAD ident_pairs: %s/%s vs %s/%s identical+differing != n"
                   % (r["tag_a"], r["arm_a"], r["tag_b"], r["arm_b"]))
             bad += 1
+    # 6) 入库完成物字节：clone 里也要能从字节证明地板，而不是只相信一张 fixture 表。
+    bd = Path(bytesdir) if bytesdir else BYTES
+    committed, committed_n, manifest = committed_bytes(bd)
+    if len(committed) != len(BYTE_ARMS):
+        print("MISSING 入库字节: %s 下只有 %d/%d 个臂的完成物——字节地板不可证"
+              % (bd, len(committed), len(BYTE_ARMS)))
+        return 2
+    ident_bytes = _read(fix, "ident_bytes") if fixdir else read_fixture("ident_bytes")
+    ident_arms = _read(fix, "ident_arms") if fixdir else read_fixture("ident_arms")
+    idx = {(r["tag"], r["arm"], r["task_id"]): r["sha256"] for r in ident_bytes}
+    for key, per in committed.items():
+        for t, h in per.items():
+            got = idx.get((key[0], key[1], t))
+            if got is None:
+                print("MISSING ident_bytes 行: %s/%s/%s" % (key[0], key[1], t))
+                bad += 1
+            elif got != h:
+                print("BAD ident_bytes: %s/%s/%s 入库 %s… 与完成物 %s…"
+                      % (key[0], key[1], t, got[:12], h[:12]))
+                bad += 1
+    for r in ident_arms:
+        key = (r["tag"], r["arm"])
+        if key not in committed:
+            print("BAD ident_arms: %s/%s 没有入库完成物" % key)
+            bad += 1
+            continue
+        if int(r["items"]) != committed_n[key]:
+            print("BAD ident_arms: %s/%s 行数 %s ≠ 完成物 %d" % (key[0], key[1], r["items"], committed_n[key]))
+            bad += 1
+        if r["arm_sha256"] != arm_sha(committed[key]):
+            print("BAD ident_arms: %s/%s 指纹与完成物不符" % key)
+            bad += 1
+    # 清单自校验：文件字节的 sha256 与行数
+    for m in manifest:
+        f = bd / m["file"]
+        if not f.exists():
+            print("MISSING 入库文件: %s" % m["file"])
+            bad += 1
+        elif hashlib.sha256(f.read_bytes()).hexdigest() != m["sha256"]:
+            print("BAD MANIFEST: %s 的 sha256 与文件不符" % m["file"])
+            bad += 1
+
+    # 7) 只从**哈希表**重算每一对，与 ident_pairs 对账：地板那几对必须在 clone 里可复算。
+    from_hashes = pairs_from_hashes(committed)
+    fix_pairs = {(r["tag_a"], r["arm_a"], r["tag_b"], r["arm_b"]):
+                 (int(r["n"]), int(r["identical"]), int(r["differing"]))
+                 for r in ident_pairs}
+    for p in from_hashes:
+        k = (p["tag_a"], p["arm_a"], p["tag_b"], p["arm_b"])
+        if k not in fix_pairs:
+            print("MISSING ident_pairs 行: %s/%s vs %s/%s" % k)
+            bad += 1
+        elif fix_pairs[k] != (p["n"], p["identical"], p["differing"]):
+            print("BAD ident_pairs: %s/%s vs %s/%s fixture %s ≠ 从字节重算 %s"
+                  % (k + (fix_pairs[k], (p["n"], p["identical"], p["differing"]))))
+            bad += 1
+    floor = [p for p in from_hashes if p["kind"] == "floor"]
+    if len(floor) != EXPECTED_FLOOR_PAIRS:
+        print("BAD 地板对数: 从入库字节重算得 %d 对，期望 %d" % (len(floor), EXPECTED_FLOOR_PAIRS))
+        bad += 1
+    for p in floor:
+        if p["differing"] != 0:
+            print("BAD 地板: %s/%s vs %s/%s 有 %d 条不同（地板应为 0）"
+                  % (p["tag_a"], p["arm_a"], p["tag_b"], p["arm_b"], p["differing"]))
+            bad += 1
+
+    # 8) 本机全量重算（含没有入库字节的 9B 臂）：每一对都要与 fixture 逐字相符，
+    #    否则「fixture 是从本机算出来的」这句话在本机就不成立了。
+    live_all = 0
+    try:
+        live_pairs_now = byte_pairs()
+    except Exception:                                  # noqa: BLE001 —— clone 里没有 .wrapup
+        live_pairs_now = []
+    for p in live_pairs_now:
+        k = (p["tag_a"], p["arm_a"], p["tag_b"], p["arm_b"])
+        if k not in fix_pairs:
+            print("MISSING ident_pairs 行（本机有、fixture 没有）: %s/%s vs %s/%s" % k)
+            bad += 1
+        elif fix_pairs[k] != (p["n"], p["identical"], p["differing"]):
+            print("BAD ident_pairs（本机重算 ≠ fixture）: %s/%s vs %s/%s fixture %s ≠ 本机 %s"
+                  % (k + (fix_pairs[k], (p["n"], p["identical"], p["differing"]))))
+            bad += 1
+    live_all = len(live_pairs_now)
+
+    # 9) 本机完成物 vs 入库字节（伪造/漂移都会在这里点名）；clone 里没有 .wrapup 就跳过。
+    red = verify_live(livedir)
+    for r in red:
+        print(r)
+        bad += 1
+    live_pairs = len(ident_pairs) - len(from_hashes)   # 没有入库字节、只在有 .wrapup 的本机可证的对数
     con.close()
 
     if bad:
         print("CHECK FAILED: %d 处不一致" % bad)
         return 1
     print("CHECK OK: %d 质量行 / %d 速度行 / %d 逐题行 / %d 字节对，与库一致；每臂 n_slots=1；"
-          "逐题通过率复原 humaneval 分数；控制运行 %d 臂 / %d 条逐题 / %d 对字节（地板 %d 对全同）"
+          "逐题通过率复原 humaneval 分数；控制运行 %d 臂 / %d 条逐题 / %d 对字节"
           % (len(quality), len(speed), len(peritem), len(byteid),
-             len(ident), len(ident_peritem), len(ident_pairs),
-             sum(1 for r in ident_pairs if r.get("kind") == "floor" and int(r["differing"]) == 0)))
+             len(ident), len(ident_peritem), len(ident_pairs)))
+    print("           入库字节 %d 臂：逐条 sha256 + 行数全部对上；从**字节**重算的地板 %d 对全同；"
+          "另 %d 对无入库字节（只在有 .wrapup 的本机可证）；本机 vs 入库 0 处不一致"
+          % (len(committed), len(floor), max(live_pairs, 0)))
+    if live_all:
+        print("           本机重算 %d 对与 fixture 逐字相符（含无入库字节的 9B 臂）" % live_all)
     return 0
 
 
@@ -679,7 +917,8 @@ def _read(fix, name):
 
 
 def selftest():
-    """负控：把 fixture 复制到临时目录并改坏一处，证明 --check 会退出 1。"""
+    """负控三例：分数层、入库字节层、本机字节层，三处改坏都必须让检查变红并点名。"""
+    ok = []
     with tempfile.TemporaryDirectory() as td:
         for f in FIX.glob("*.tsv"):
             shutil.copy(f, td)
@@ -695,10 +934,53 @@ def selftest():
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             rc = check(fixdir=td)
-        n = len(buf.getvalue().strip().splitlines())
-        print("selftest: 把 quality_depth 的每一格分数 +0.05 后，--check 退出 %d（期望 1），报 %d 行缺陷"
-              % (rc, n))
-        return 0 if rc == 1 else 1
+        out = buf.getvalue()
+        ok.append(rc == 1)
+        print("selftest[1] 分数行 +0.05：--check 退 %d（期望 1），报 %d 行"
+              % (rc, len(out.strip().splitlines())))
+
+    # 2) 入库字节：改掉一个臂的一条完成物 → 必须红并点名该臂
+    with tempfile.TemporaryDirectory() as td:
+        bd = Path(td) / "bytes"
+        shutil.copytree(BYTES, bd)
+        tag, arm = BYTE_ARMS[2]                       # m169-ident-08b-mtp/none
+        f = bd / f"{tag}__{arm}.raw.jsonl"
+        with open(f, "a", encoding="utf-8") as fh:     # 追加一条 HumanEval/0，内容改一个字
+            rec = json.loads(open(f, encoding="utf-8").readline())
+            rec["solution"] = rec["solution"] + " "
+            fh.write(json.dumps(rec) + "\n")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = check(bytesdir=bd, livedir=str(Path(td) / "nolive"))
+        out = buf.getvalue()
+        named = f"{tag}/{arm}" in out
+        ok.append(rc == 1 and named)
+        print("selftest[2] 入库完成物被改一条：--check 退 %d（期望 1），点名该臂 %s"
+              % (rc, "是" if named else "否"))
+
+    # 3) 本机字节：把入库文件当成「本机产物」摆好，改掉一条 → verify_live 必须点名
+    with tempfile.TemporaryDirectory() as td:
+        live = Path(td)
+        for tag, arm in BYTE_ARMS:
+            d = live / tag / "codegen" / arm / "humaneval"
+            d.mkdir(parents=True, exist_ok=True)
+            shutil.copy(BYTES / f"{tag}__{arm}.raw.jsonl",
+                        d / f"{tag}-{arm}_openai_temp_0.0.raw.jsonl")
+        tag, arm = BYTE_ARMS[3]                        # m169/draft-mtp2
+        p = live / tag / "codegen" / arm / "humaneval" / f"{tag}-{arm}_openai_temp_0.0.raw.jsonl"
+        rows = p.read_text(encoding="utf-8").splitlines()
+        rec = json.loads(rows[0])
+        rec["solution"] = rec["solution"].replace("\n", "\n ", 1)
+        rows[0] = json.dumps(rec)
+        p.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        red = verify_live(livedir=live)
+        named = any(f"{tag}/{arm}" in r for r in red)
+        ok.append(bool(red) and named)
+        print("selftest[3] 本机完成物被改一条：verify_live 报 %d 条（期望 ≥1），点名该臂 %s"
+              % (len(red), "是" if named else "否"))
+
+    print("selftest: %d/3 例成立（任何一例不红都算这条检查没有负控）" % sum(ok))
+    return 0 if all(ok) else 1
 
 
 def main():
@@ -723,14 +1005,44 @@ def main():
     section_c(built["byteid"])
     section_d(built["device"])
     section_e(built["ident"], built["ident_pairs"])
+
+    # 字节校验：本机完成物必须与入库字节逐条一致（伪造/漂移）。
+    red = verify_live()
+    print("\n[E2] 入库字节校验（%d 臂的完成物逐条比；入库在 %s）"
+          % (len(BYTE_ARMS), BYTES.relative_to(REPO)))
+    if red:
+        for r in red:
+            print("  " + r)
+    else:
+        print("  通过：本机 %d 臂与入库字节逐条一致（行数 + 每条 sha256）" % len(BYTE_ARMS))
+    floor = [r for r in built["ident_pairs"] if r["kind"] == "floor"]
+    print("  地板对: %d 对（期望 %d），其中不同的 %d 对"
+          % (len(floor), EXPECTED_FLOOR_PAIRS, sum(1 for r in floor if r["differing"])))
+
     if missing:
         print("\nUNMEASURED: 缺输入 %d 项:" % len(missing))
         for m in missing:
             print("  missing %s" % m)
         return 2
+    if len(floor) != EXPECTED_FLOOR_PAIRS:
+        print("\nUNMEASURED: 地板只有 %d 对，期望 %d —— 少一对就不能声称「地板 = 0」"
+              % (len(floor), EXPECTED_FLOOR_PAIRS))
+        return 2
+    if red:
+        print("\nFORGED/DRIFT: %d 处完成物与入库字节不一致（上面逐条点名）；这条承重证据不可信"
+              % len(red))
+        return 1
     if args.write:
+        ev, ev_missing = write_byte_evidence()
+        if ev_missing:
+            print("\nUNMEASURED: 入库字节缺 %d 个臂的完成物:" % len(ev_missing))
+            for m in ev_missing:
+                print("  missing %s" % m)
+            return 2
+        built.update(ev)
         write_fixtures(built)
-        print("\n--write: fixtures 已重写到 %s" % FIX)
+        print("\n--write: fixtures 已重写到 %s；入库字节 %d 个臂 → %s"
+              % (FIX, len(BYTE_ARMS), BYTES))
     return 0
 
 

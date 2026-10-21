@@ -29,7 +29,8 @@
   跑到 91/164 题时作废；改为**在 0.8B 上做**（同一类 -MTP 文件，臂成本约 1/4），并把显存拆成 `--vram-only` 臂。
 - 下一步派给谁：`WP4`（结论落文档 + 报告口径上报）由本编排者接着做（已在 `RESULT.md` 落地）；
   `WP5`（独立复核）由 meta 派 fresh-context reviewer —— **这是唯一未完成的包**。
-- 真正未做的：只有 `WP5`；`WP1`–`WP4` 已落地。
+- 终审（ACCEPT WITH NOTES）提的四处已修并各自实测，见 `WP6`；`WP5` 的复核结论取代本人自评。
+- 真正未做的：没有未做的工作包；等 meta 的整合与最终干净 clone。
 
 ## 工作包
 
@@ -39,6 +40,7 @@
 | WP2 装置内字节负控 | a07 编排者（GPU 槽 1） | 同一 -MTP 文件、同一 server 旗标（`--spec-type none`、`-c 8192 -np 1 -ngl 99`）、同一 humanEval 164 题跑两次，两次完成物**逐字节相同**（翻转 0 道）；另跑一臂 `draft-mtp n=2` 作为第三条字节对照。若两次 `none` 不同，登记「本装置的字节地板未知」并让 `[C]` 的差异不可归因——不许默默沿用 i01 的地板 | `WP1` 的 `[C]` 结论；GPU 锁 | 0.8B 三臂，实测约 25–30 GPU 分钟（今日同卡竞争下） | 完成：地板 164/164（跨会话）、投机效应 91/164；产物 `m169-ident-08b-mtp`、`m170-ident-08b-floor` |
 | WP3 草稿的运行期显存成本 | a07 编排者（GPU 槽 2） | 同一模型 `--spec-type none` 与 `draft-mtp n=2` 各起服一次（`--vram-only`，不跑 benchmark），`nvidia-smi` 的整卡 `memory.used` 差与本进程占用差并列，并断言 `n_slots=1`；与权重字节差（MTP 头）分开写，不许把两者相加成一个「草稿成本」；9B/35B 的**权重**差仍标 UNKNOWN | `WP2` 之后同一个锁 | 0.8B 两臂（含在 `WP2` 里）+ 9B 两臂约 3 GPU 分钟 | 完成：0.8B 1126→1222 MiB、9B 5992→6368 MiB（`m169-vram-08b-mtp`、`m169-vram-9b`） |
 | WP4 结论落文档 + 报告口径上报 | a07 编排者 | `RESULT.md` 的每条事实带 `- evidence:` 与 `- repro:`；报告第八节里与实测冲突的句子（「所有深度分数无差别」「可以放心开：它买速度，不伤质量」）在 `RESULT.md::report-wording-defect` 里逐字引用并给出替代文本；不手改 `make_report.py`/`report.html` | `WP2`、`WP3` | 0 GPU | 完成（事实在 `RESULT.md` 的「六」节） |
+| WP6 终审四处（D1–D4） | a07 编排者 | D1：`[E]` 的每个输入进 `missing`（缺 → exit 2），并断言地板对数 = 7（少一对也算不可得）；D2：`evidence/bytes/` 入库 6 臂完成物 + `ident_bytes`/`ident_arms`/`MANIFEST`，`--check` 在无 `.wrapup` 的 clone 里从**字节**重算地板并退 0，缺入库字节则退 2；D3：`--selftest` 三例（分数层 / 入库字节层 / 本机字节层）全红且点名该臂，真伪造使主命令与 `--check` 各自退 1；D4：捕获换成承载脚本的那个 revision | `WP2`、`WP3` | 0 GPU | 完成（证据：`RESULT.md::byte-evidence-in-repo`、`::byte-forgery-red`、`::ident-inputs-in-exit2`） |
 | WP5 独立复核 | fresh-context reviewer（meta 派） | 先跑命令再判：`spec_evidence.py`（期望退出 0）、`--check`（0）、`--selftest`（0）、以及在空临时树里跑主命令（期望 2）；贴命令与输出，指出证据缺口；其裁决取代本人自评 | `WP1`–`WP4` 落地 | 一次复核 | 待派 |
 
 ### res11 的迁移与终态
@@ -59,7 +61,7 @@
 |---|---|---|---|
 | 速度-深度 | 达成（带两条限制） | 深度换速度，但**非单调**：4B/9B/35B 到 n4 仍涨（+77%…+92%），2B 在 n4 掉头（+12.7%→+8.0%）；**长上下文反向**（ctx=16384 时每一档都更慢，n4 −15.6%，逐次区间不重叠）。限制：tok/s 只存 3 次重复的均值（无 CI），同卡竞争负载没记录 | `speed-depth-panels`、`speed-depth-02b`、`speed-depth-nonmonotone`、`speed-depth-longctx-negative`、`speed-reps-spread` |
 | 质量-深度 | 达成 | 质量列**不是**同一个测量：会生成的三列在深度上改判 0–8 道题（i01 地板 0），方向随模型变；MMLU 逐位相同是结构事实（对数似然），只能当正控。所以投机格各自测量、永不与贪心格池化 | `quality-mmlu-inert`、`quality-moves-items`、`peritem-flips-exceed-floor` |
-| 逐字节同一性 | 达成 | 地板 = **0**（同配置两次运行 164/164 逐字节相同，相隔 9 天）；开 `draft-mtp n=2` 后 **73/164 条完成物不同**、分数 52→49；全库 1489/2460（60.5%）。且「分数同一」与「字节同一」互不推出（35B：51 条字节不同而判决 0 翻转） | `byte-floor-zero`、`byte-identity-spec-effect`、`byte-identity-fails`、`byte-vs-judgement-decoupled` |
+| 逐字节同一性 | 达成（承重证据已入库） | 地板 = **0**（同配置两次运行 164/164 逐字节相同，相隔 9 天）；开 `draft-mtp n=2` 后 **73/164 条完成物不同**、分数 52→49；全库 1489/2460（60.5%）。且「分数同一」与「字节同一」互不推出（35B：51 条字节不同而判决 0 翻转）。承重证据（0.8B 六臂完成物）已入库，clone 里可证；伪造会使主命令与 `--check` 各自退 1 |
 
 ## 判据（写死，避免事后挑解释）
 

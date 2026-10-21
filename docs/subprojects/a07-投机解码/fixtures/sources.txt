@@ -23,3 +23,15 @@ d9e016d7dbd251272e56953cb8a3cfaf02320f8a229ecf970b90b419c4e4047f  .wrapup/mres/m
 51bcab262ce148d8a50f0adb3996c312031fb01fb905801afba8573147820187  .wrapup/mres/m129-spec-35b/codegen/n1/humaneval/m129-spec-35b-n1_openai_temp_0.0.raw.jsonl
 51bcab262ce148d8a50f0adb3996c312031fb01fb905801afba8573147820187  .wrapup/mres/m129-spec-35b/codegen/n2/humaneval/m129-spec-35b-n2_openai_temp_0.0.raw.jsonl
 b26c219861188e1dfe5037dfd70b2b685aedd73ccee13c05096bea21ff77ce27  .wrapup/mres/m129-spec-35b/codegen/n4/humaneval/m129-spec-35b-n4_openai_temp_0.0.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  .wrapup/mres/m125-spec-0.8b/codegen/n0/humaneval/m125-spec-0.8b-n0_openai_temp_0.0.raw.jsonl
+9b2d5f2af5ba0d11ee23e5709efadb2d9d865589294809dbec65bb46c1a59d9b  .wrapup/mres/m125-spec-0.8b/codegen/n2/humaneval/m125-spec-0.8b-n2_openai_temp_0.0.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  .wrapup/mres/m169-ident-08b-mtp/codegen/none/humaneval/m169-ident-08b-mtp-none_openai_temp_0.0.raw.jsonl
+9b2d5f2af5ba0d11ee23e5709efadb2d9d865589294809dbec65bb46c1a59d9b  .wrapup/mres/m169-ident-08b-mtp/codegen/draft-mtp2/humaneval/m169-ident-08b-mtp-draft-mtp2_openai_temp_0.0.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  .wrapup/mres/m170-ident-08b-floor/codegen/none/humaneval/m170-ident-08b-floor-none_openai_temp_0.0.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  .wrapup/mres/m170-ident-08b-floor/codegen/none-r2/humaneval/m170-ident-08b-floor-none_openai_temp_0.0.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  docs/subprojects/a07-投机解码/evidence/bytes/m125-spec-0.8b__n0.raw.jsonl
+9b2d5f2af5ba0d11ee23e5709efadb2d9d865589294809dbec65bb46c1a59d9b  docs/subprojects/a07-投机解码/evidence/bytes/m125-spec-0.8b__n2.raw.jsonl
+9b2d5f2af5ba0d11ee23e5709efadb2d9d865589294809dbec65bb46c1a59d9b  docs/subprojects/a07-投机解码/evidence/bytes/m169-ident-08b-mtp__draft-mtp2.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  docs/subprojects/a07-投机解码/evidence/bytes/m169-ident-08b-mtp__none.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  docs/subprojects/a07-投机解码/evidence/bytes/m170-ident-08b-floor__none-r2.raw.jsonl
+a3922da490f5cbbff8e4463b2594acdc3aac0bb31823bdb049b5e9fb0c441ad1  docs/subprojects/a07-投机解码/evidence/bytes/m170-ident-08b-floor__none.raw.jsonl
