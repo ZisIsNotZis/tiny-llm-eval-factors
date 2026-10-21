@@ -173,24 +173,24 @@
   {
    "bench": "GSM8K",
    "slope": {
-    "est": 0.2042,
-    "lo": 0.1094,
-    "hi": 0.299
+    "est": 0.2046,
+    "lo": 0.1099,
+    "hi": 0.2994
    },
    "IQ": {
-    "est": -0.0221,
-    "lo": -0.2947,
-    "hi": 0.2504
+    "est": -0.0235,
+    "lo": -0.2959,
+    "hi": 0.2488
    },
    "local": {
-    "est": -0.1729,
+    "est": -0.1731,
     "lo": -0.5388,
-    "hi": 0.193
+    "hi": 0.1925
    },
    "bartowski": {
-    "est": -0.097,
-    "lo": -0.5863,
-    "hi": 0.3922
+    "est": -0.0972,
+    "lo": -0.5862,
+    "hi": 0.3917
    },
    "n": 61
   },
@@ -225,7 +225,7 @@
    "significant_benches": [],
    "crosses_zero_on": 9,
    "half_width_min": 0.1039,
-   "half_width_max": 0.2726,
+   "half_width_max": 0.2723,
    "identified_by": "",
    "families": []
   },
@@ -234,7 +234,7 @@
    "significant_benches": [],
    "crosses_zero_on": 9,
    "half_width_min": 0.1585,
-   "half_width_max": 0.3659,
+   "half_width_max": 0.3656,
    "identified_by": "",
    "families": []
   },
@@ -243,7 +243,7 @@
    "significant_benches": [],
    "crosses_zero_on": 9,
    "half_width_min": 0.2119,
-   "half_width_max": 0.4893,
+   "half_width_max": 0.4889,
    "identified_by": "",
    "families": []
   }
@@ -251,7 +251,7 @@
  "slope_significant_on_all": true,
  "slope_range": [
   0.0446,
-  0.2042
+  0.2046
  ],
  "unidentifiable_sources": ""
 }

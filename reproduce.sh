@@ -262,6 +262,20 @@ else
 fi
 rm -f /tmp/reproduce_oq.$$
 
+if python3 checks/py_corpus_regrade_check.py >/tmp/reproduce_pcr.$$ 2>&1; then
+    record PASS "py 语料取代行与 a14 清单逐条一致、旧行未被改写"
+else
+    record FAIL "$(grep -m1 '  - ' /tmp/reproduce_pcr.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_pcr.$$
+
+if python3 checks/mres_prefix_delete_negative_control.py >/tmp/reproduce_mpd.$$ 2>&1; then
+    record PASS "REFRESH 删除范围的负控（探针行跑完两次 migrate 仍在、mres/% 行一条不丢、两次行数相同）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_mpd.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_mpd.$$
+
 if python3 checks/superseded_pointer_negative_control.py >/tmp/reproduce_sup.$$ 2>&1; then
     record PASS "superseded 指针的负控（悬空指针 → db_check 变红并点名）"
 else

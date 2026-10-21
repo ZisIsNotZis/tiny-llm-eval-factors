@@ -31,9 +31,9 @@
   "of_total_rows": 3233
  },
  "protocol_rows": {
-  "total": 1442,
+  "total": 1474,
   "with_size": 291,
-  "null": 1151,
+  "null": 1183,
   "with_size_by_protocol": [
    {
     "protocol": "multipl-e-raw-greedy-768",
@@ -52,8 +52,8 @@
     "rows": 19
    }
   ],
-  "lmeval_total": 485,
-  "lmeval_null": 485
+  "lmeval_total": 491,
+  "lmeval_null": 491
  },
  "skipped_no_recipe": 12,
  "curves": {

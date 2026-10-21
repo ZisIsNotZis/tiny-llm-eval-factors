@@ -17,6 +17,7 @@ Changes
 
 Run:  python3 migrate_db.py
 """
+import ast
 import collections
 import csv
 import json
@@ -622,6 +623,9 @@ def ingest_m29(con):
 M165_MODELS = {
     "q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
     "q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+    # q4 之前漏在这里，q4-cpp/q4-py 以 unknown_model 被跳过（有 ledger，但不是「不该入」）。
+    # 同一族的 Q4_K_XL 在库里与 bpw_map 里都有：rowid 1931 `Qwen3.5-2B-UD-Q4_K_XL.gguf`。
+    "q4": "Qwen3.5-2B-UD-Q4_K_XL.gguf",
 }
 
 
@@ -1458,8 +1462,14 @@ def ingest_campaign(con):
     """
     if not os.path.isdir(CAMPAIGN_ROOT):
         print("  (no campaign results)"); return 0
-    # drop previous campaign rows, then re-read (REFRESH semantics)
-    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%'")
+    # drop previous **campaign** rows, then re-read (REFRESH semantics).
+    # 删的范围只能是本 ingester 自己产出的那两种文件名（`mres/<tag>/lmeval_panel.json#<metric>`
+    # 与 `mres/<tag>/evalplus.json`）。这里曾经写成 `source_file LIKE 'mres/%'`，于是同一轮里
+    # 把排在 ONCE 里的其它 ingester 刚插的行一并删掉——m165 的 5 格就是这么没了，而 mres/ 下
+    # 一共 923 行（含 spec/variant 面板与 a08 的面板格）都共享这个前缀。宽前缀是所有写 mres/ 的
+    # ingester 的公共资源，不是任何一个 ingester 的私有范围。
+    con.execute("DELETE FROM experiments WHERE source_file LIKE 'mres/%/lmeval_panel.json#%' "
+                "OR source_file LIKE 'mres/%/evalplus.json'")
     n = 0
     for tag_dir in sorted(os.listdir(CAMPAIGN_ROOT)):
         d = os.path.join(CAMPAIGN_ROOT, tag_dir)
@@ -2011,25 +2021,58 @@ PY_REGRADE_MANIFEST = os.path.join(
 PY_REGRADE_SUFFIX = "corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14"
 
 
+def models_of(rec):
+    """清单的 `db_models`：有的是 JSON 数组，有的是单引号 Python 字面量，两种都读。"""
+    raw = (rec.get("db_models") or "").strip()
+    if not raw:
+        return []
+    try:
+        return list(json.loads(raw))
+    except json.JSONDecodeError:
+        return list(ast.literal_eval(raw))
+
+
 def _regrade_candidates(con, rec):
-    """清单的一行 → 这条改分格在库里对应的那些候选行（按身份列逐层筛，不含分数猜测）。"""
-    models = json.loads(rec["db_models"])
-    run_tags = set(rec["db_run_tags"].split(","))
+    """清单的一行 → 活库里这条改分格的候选行，判据只用身份列，不用 rowid、不用分数。
+
+    **不能用清单里的 `db_rowids`**：清单是某个时刻的快照，并发入库（以及本脚本自己插的行）
+    会把 rowid 漂走——实测 14083/14129 两个 rowid 在几十分钟内就消失了，而按 rowid 找会把
+    `m26-q38-27b-q2-py` 判成 `unique` 并对上另一族模型（Nemotron）。所以判据是
+    (model, bench, language, protocol_old, n_items)：模型名来自清单的 `db_models`，
+    `protocol_old` 只填到了 59/98 行，没填时退到 `db_protocols` 的候选集合。
+    """
+    models = models_of(rec)
+    n = int(rec["n"])
+    if not models:
+        return []
+    # `protocol_old` 是 summary 里的名字（50 格有、39 格没有），而库里那一行的协议串可能
+    # 退化成 DEFAULT_MPL_PROTOCOL（summary 没记 protocol 时）。所以先按 protocol_old 找，
+    # 找不到再用清单给的候选集合 `db_protocols` 找；每一步都要求**候选唯一**。
+    tries = ([rec["protocol_old"]] if rec["protocol_old"] else []) + \
+            [[p for p in (rec["db_protocols"] or "").split("|") if p]]
     saved_factory = con.row_factory
-    con.row_factory = sqlite3.Row        # 按列名读：这一段的判据全是列名，不按下标猜
-    out = []
-    for rid in [int(x) for x in rec["db_rowids"].split(",") if x]:
-        row = con.execute("SELECT rowid, * FROM experiments WHERE rowid=?", (rid,)).fetchone()
-        if row is None:
-            continue
-        same = abs(row["_score"] - float(rec["score_old"])) < 1e-6
-        if not same:
-            continue
-        if row["model"] not in models or row["run_tag"] not in run_tags:
-            continue
-        out.append(row)
-    con.row_factory = saved_factory
-    return out
+    con.row_factory = sqlite3.Row
+    try:
+        for prots in tries:
+            if not prots:
+                continue
+            # 清单的 `bench` 是族名（`humaneval-multipl-e` / `humaneval-py`），库里同一族的行
+            # 两种 `_bench` 都有，所以按族匹配，不按 `_bench` 字面匹配。
+            q = ("SELECT rowid, * FROM experiments WHERE model IN (%s) "
+                 "AND _bench IN ('humaneval-py','humaneval-multipl-e') "
+                 "AND language='py' AND bench_family='humaneval-multipl-e' "
+                 "AND protocol IN (%s) AND (n_items IS NULL OR n_items=?) "
+                 # 取代行自己不能当「旧行」再去取代一次（否则协议串会被加两遍后缀）
+                 "AND protocol NOT LIKE '%%;corpus=%%'"
+                 % (",".join("?" * len(models)), ",".join("?" * len(prots))))
+            rows = con.execute(q, [*models, *prots, n]).fetchall()
+            if len(rows) == 1:
+                return rows
+            if rows:
+                return rows          # 多于一个：交给调用方按「候选不唯一」跳过
+        return []
+    finally:
+        con.row_factory = saved_factory
 
 
 def ingest_py_regrade(con):
@@ -2054,21 +2097,14 @@ def ingest_py_regrade(con):
             continue
         n = int(rec["n"])
         cand = _regrade_candidates(con, rec)
-        chosen = None
-        if len(cand) == 1:
-            chosen = cand[0]
-        else:
-            p_old = rec["protocol_old"]
-            by_proto = [r for r in cand if p_old and r["protocol"] == p_old]
-            if len(by_proto) == 1:
-                chosen = by_proto[0]
-            else:
-                srcs = set(rec["db_source_files"].split(","))
-                by_src = [r for r in cand if r["source_file"] in srcs]
-                if len(by_src) == 1:
-                    chosen = by_src[0]
-        if chosen is None:
-            note_skip(tag, "同分候选跨多个协议，无法确定行身份", cell)
+        if len(cand) != 1:
+            note_skip(tag, "活库候选不唯一或模型不匹配" if cand else "活库里找不到该格",
+                      f"{cell}（候选 {len(cand)}）")
+            continue
+        chosen = cand[0]
+        if chosen["_score"] is None or abs(chosen["_score"] - float(rec["score_old"])) > 1e-6:
+            note_skip(tag, "旧行分数与清单 score_old 不符（不覆盖）",
+                      f"{cell}（库里 {chosen['_score']}，清单 {rec['score_old']}）")
             continue
         if chosen["rowid"] in claimed:
             note_skip(tag, f"两个格解析到同一行（另一格是 {claimed[chosen['rowid']]}）", cell)

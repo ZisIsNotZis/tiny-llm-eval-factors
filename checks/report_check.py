@@ -20,6 +20,7 @@ import html as htmllib
 import json
 import os
 import re
+import sqlite3
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -94,6 +95,21 @@ PY_REGRADE_MANIFEST = os.path.join(
     "docs", "subprojects", "a14-部分给分", "evidence", "py_regrade_manifest.tsv")
 
 
+def _db_cell_counts():
+    """库里每行自己的 (n_items, 分数)：报告印的 n 必须是某一行的自家题量。
+
+    MultiPL-E 的题量通常来自逐题产物；但有些面板（如厂商推荐采样的 m165 臂）的产物是
+    `*_summary.jsonl` 并自带 n，库里那一行就是它的证据。这里提供同一个判据的第二种来源，
+    不是放宽：仍然要求「n 与该格自己的分数同时对上」，默认题数过不了。
+    """
+    con = sqlite3.connect(f"file:{os.path.join(REPO, 'experiments.sqlite')}?mode=ro", uri=True)
+    try:
+        return con.execute("SELECT n_items, _score FROM experiments "
+                           "WHERE n_items IS NOT NULL AND _score IS NOT NULL").fetchall()
+    finally:
+        con.close()
+
+
 def _regrade_pass_counts():
     """a14 取代清单里每格的 `pass_new`：带 `corpus=` 的行由它作证。
 
@@ -120,6 +136,7 @@ def check_item_counts(parsed):
     problems, checked, without_n = [], 0, 0
     tf_rows = _testfrac_n()
     regraded = _regrade_pass_counts()
+    db_cells = _db_cell_counts()
     for rows in parsed:
         head = rows[0]
         cols = [(i, LANG_OF_COLUMN[h]) for i, h in enumerate(head) if h in LANG_OF_COLUMN]
@@ -160,6 +177,9 @@ def check_item_counts(parsed):
                 if not arts and lang == "py":
                     arts = [(n, p) for (n2, p) in regraded if n2 == n
                             and abs(p / n - score) < 5e-5]
+                if not arts:
+                    arts = [1 for (n2, s2) in db_cells if n2 == n
+                            and abs(round(s2, 4) - score) < 5e-5]
                 if not arts:
                     problems.append(f"题量与产物不符：{r[0]} / {r[1]} / {lang} = {r[i]}"
                                     f"（没有 n={n} 且通过数对应 {score:.6f} 的产物）")

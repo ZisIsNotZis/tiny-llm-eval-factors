@@ -48,9 +48,6 @@
   "exception": 18,
   "ok": 1
  },
- "m2_probe": {
-  "pass": 2,
-  "n": 40
- },
+ "m2_probe": null,
  "not_temperature": true
 }
