@@ -169,7 +169,8 @@
 | R1 q2-cpp | **1/161 = 0.0062**（贪心 18/161 = 0.1118） | `mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,top_p=1.0,top_k=20,min_p=0.0,presence_penalty=2.0` | 完成，8.5 GPU 分钟；状态 `SyntaxError=142,Exception=18,OK=1` |
 | R1 q2-py | **3/161 = 0.0186**（贪心 22/161 = 0.1366） | 同上 | 完成，3.8 GPU 分钟；状态 `Exception=158,OK=3` |
 | R1 q3-cpp | **4/161 = 0.0248**（贪心 39/161 = 0.2422） | 同上 | 完成，10.3 GPU 分钟；状态见 `histograms.jsonl` |
-| R1 q3-py / q4-cpp / q4-py / q3-EvalPlus | — | 同上（ctx=4096） | 排队（q3-py 在跑；逐格完成即追加本表） |
+| R1 q3-py | **7/161 = 0.0435**（贪心 43/161 = 0.2671） | 同上 | 完成，3.3 GPU 分钟（输出短，故快）；状态见 `histograms.jsonl` |
+| R1 q4-cpp / q4-py / q3-EvalPlus | — | 同上（ctx=4096） | q4-cpp 在跑；逐格完成即追加本表 |
 
 - 状态直方图由 `cell_histograms.py` 从 `*_eval.json` 重算，写入 `.wrapup/mres/m165-vendor/histograms.jsonl`（幂等，可随跑随算）。
 - 两个已完成格的塌陷形态**不同**：cpp 是 `SyntaxError=142`（输出不是合法 C++），py 是 `Exception=158`（代码能解析但跑不起来）。所以「塌陷」的证据是状态分布，不是分数。
