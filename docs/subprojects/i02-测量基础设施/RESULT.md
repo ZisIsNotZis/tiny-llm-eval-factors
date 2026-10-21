@@ -417,28 +417,27 @@
   不是环境差异。开关只给这条负控用，默认关闭。
 - producer: `python3 checks/refresh_guard_differential_control.py`（输出里 `1)`/`2)`/`3)` 三行就是前后对照）
 
-## res71 :: 全仓最终验收：九个子项目的入口在这棵树上逐个跑过，八个绿、`a08` 红一条（一格的计数差，来自 i02 的 py 语料取代）。
+## res71 :: 全仓最终验收：九个子项目的入口逐棵树跑过——本机工作树 8 绿 + 1 红（`a08`），干净 clone 6 绿 + 2 个 2（不可得，按契约）+ 1 红。
 
 - kind: measured
 - status: current
-- evidence: 在同一棵树、同一份库上逐个跑（命令与退出码如下表）。`a08` 的红不是环境问题：
-  它的 `reasoning_census` 用 `count(*)` 数**行**，而 i02 的 py 语料取代给其中一格加了取代行
-  （旧行保留、`superseded_by` 指新行），于是 `code / humaneval-py / off` 从 131 变 132；
-  a08 的 fixture 记的是取代前的 131。修法在 a08 侧：census / pairs 查询加 `superseded_by IS NULL`
-  再重生成 fixture（i02 不改别的子项目的文件；报告侧早已按同一规则过滤）。
-- producer: 见下表的命令列；`./reproduce.sh`（干净 clone）
+- evidence: 同一份库、同一批命令，分别在本机工作树与干净 clone（`git clone` 后未改任何文件）里跑。
+  三种退出码按仓库既有语义读：**0 = 测过且成立**；**2 = 不可得**（缺输入，不许当成通过）；1 = 有断言不成立。
 
-| 子项目 | 入口 | 退出码 |
-|---|---|---|
-| a01 量化位宽 | `analysis/run_all.py` | 0 |
-| a04 MoE 比特分配 | `analysis/run_all.py` | 0 |
-| a07 投机解码 | `spec_evidence.py`（另有 `--check` / `--selftest`） | 0 |
-| a08 思考开关 | `analysis/run_all.py` | **1**（`thinking_pairs --check`：census 131 vs 132，见上） |
-| a10 第三方方案 | `analysis/run_all.py` | 0 |
-| a11 扩散解码 | `analysis/run_all.py` | 0 |
-| a12 MultiPL-E | `mpl_cell_audit.py`（干净 clone 里也 exit 0，341/341 traced） | 0 |
-| a13 BFCL | `audits/run_all.py` | 0 |
-| a14 部分给分 | `py_regrade.py` | 0 |
+| 子项目 | 入口 | 本机工作树 | 干净 clone | 说明 |
+|---|---|---|---|---|
+| a01 量化位宽 | `analysis/run_all.py` | 0 | 0 | 夹具随仓库分发 |
+| a04 MoE 比特分配 | `analysis/run_all.py` | 0 | 0 | 同上 |
+| a07 投机解码 | `spec_evidence.py` / `--check` | 0 | **2** / **0** | 裸跑要 `.wrapup/mres/*-spec-*` 与 `m28_speed.jsonl`（不随仓库分发）→ 2；`--check` 只读 fixtures + 库，clone 里 **0**（80 质量行 / 20 速度行 / 3280 逐题 / 15 字节对全部对上，入库 6 臂的字节 sha256 逐条对得上） |
+| a08 思考开关 | `analysis/run_all.py` | **1** | **1** | `thinking_pairs --check`：census 记 131、重算 132。原因不是环境：它的 census 用 `count(*)` 数**行**，而 i02 的 py 语料取代给其中一格加了取代行（旧行保留、`superseded_by` 指新行）。修法在 a08 侧（census/pairs 查询加 `superseded_by IS NULL` 再重生成 fixture）；i02 不改别的子项目的文件，报告侧早已按同一规则过滤 |
+| a10 第三方方案 | `analysis/run_all.py` | 0 | 0 | — |
+| a11 扩散解码 | `analysis/run_all.py` | 0 | 0 | 门槛与价格都是入库事实（GATE-FAIL 不等于 0 分） |
+| a12 MultiPL-E | `mpl_cell_audit.py` | 0 | 0 | clone 里 341/341 已评分格全部追到证据（summary 251 / per-item 78 / a14 清单 12），untraced 0 |
+| a13 BFCL | `audits/run_all.py` | 0 | **2** | clone 里 `MISSING INPUT: .wrapup/bfclenv/bin/python`——它要一个本地 venv，二进制环境不随仓库分发，所以是「不可得」而不是通过；本机全绿 |
+| a14 部分给分 | `py_regrade.py` | 0 | 0 | 取代清单与证据随仓库分发 |
+
+- 结论：**唯一需要别人动手的一条是 a08 的 census 过滤**；两条 2 都是「输入不在场」的既定契约，不是失败也不是通过。
+- producer: 上表每条命令；`./reproduce.sh`（干净 clone，47 PASS / 0 WARN / 0 FAIL / 1 SKIP=kv 输入不在场）
 
 ## res72 :: 十六轴总账：每轴一句结论 + 已记录的限制 + 未测的统一入口。
 
