@@ -3,9 +3,11 @@
 ## 现在（每次改动都要让这一节为真）
 
 - **里程碑 M1「研究结束」未达成**；只剩一个里程碑，结项条件是下面 AC 全绿。
-- **在做**：WP2「预算对齐的受控臂」——六条臂在 GPU 锁里排队（在 `a06` 的厂商臂之后）。
-- **剩余**：WP3 入库、WP4 结论与未测清单、WP5 独立复核。
-- **下一个派给谁**：a08 worker 继续 WP2（臂跑完 → WP3）；WP3 落地后派 fresh reviewer 做 WP5。
+- **在做**：WP2「预算对齐的受控臂」，改成**一次调用一条臂**、锁等待 600 s 上限（见「踩过的坑 5」）。
+  当前进度：`--probe` 在排队（`a07` 的 `run_ident_control.py` 持锁）。
+- **剩余**：WP2 的 5 条臂（`a08-gsm8k-off-4096`、`a08-mmlu-off-16`、`a08-mmlu-on-16`、
+  `a08-ifeval-off-25`、`a08-ifeval-on-25`；`a08-gsm8k-on-4096` 是复现臂，可砍）、WP3 入库、WP4 结论、WP5 独立复核。
+- **下一个派给谁**：a08 worker 逐条跑臂并按臂入库/写 RESULT；臂齐后派 fresh reviewer 做 WP5。
 
 ## 这一轴要回答什么
 
@@ -33,7 +35,7 @@ AC（可证伪）：
 | id | 工作包 | owner | 依赖 | 预算 | AC（可证伪） | 状态 |
 |---|---|---|---|---|---|---|
 | WP1 | 清点库里已有的开/关格，定配对与预算混淆的判据，落三份 fixture | a08 worker | — | 0 GPU，CPU 分钟级 | `analysis/thinking_pairs.py --check` 与 `--selftest` 退出 0；`fixtures/thinking_pairs.tsv` 每对都标出 `budget_matched` | **完成** |
-| WP2 | 跑预算对齐的受控臂：gsm8k off/on @4096、ifeval off/on @4096（50 题）、mmlu off/on（16/科） | a08 worker | WP1；GPU 锁 | ≈70 GPU 分钟（≤4 GB 显存、独占锁内），CPU ≈1 核 | 每条臂的 `lmeval_panel.json` 里 `reasoning`/`max_gen_toks`/`ctx` 与臂定义一致，`server.log` 有 `n_slots = 1`；六臂全得数或显式失败 | **进行中** |
+| WP2 | 跑预算对齐的受控臂，**一次调用一条臂**：gsm8k off@4096、mmlu off/on（16/科）、ifeval off/on（25 题） | a08 worker | WP1；GPU 锁 | ≈28 GPU 分钟合计（单臂 3–10 min，见 GPU 队列），CPU ≈1 核 | 每条臂的 `lmeval_panel.json` 里 `reasoning`/`max_gen_toks`/`ctx` 与臂定义一致，`server.log` 有 `n_slots = 1`；起服后 30 s 内 `/props` 答 200（preflight）；每臂单独 `rc` 记在 `fixtures/arm_runs.tsv` | **进行中** |
 | WP3 | 入库：编号备份 → `migrate_db.py` → 行数对账 → 重算 fixture | a08 worker | WP2 | CPU 分钟级 | 改库前后行数差 = 本轴新增格数（逐条列出）；`db_check` 绿；skip ledger 为空 | 待 WP2 |
 | WP4 | `RESULT.md` 结论 + 未测清单 + 报告面交接说明 | a08 worker | WP3 | CPU 分钟级 | 每条结论一条 `- evidence:` 一条 `- repro:`；未测项带理由与解除条件；不出现无出处数字 | 待 WP3 |
 | WP5 | 独立复核（fresh reviewer，非本 worker） | meta 派 | WP4 | 一次复核预算 | 干净 clone 里 `python3 "docs/subprojects/a08-思考开关/analysis/run_all.py"` 贴出命令与退出码；P1 类缺陷为零 | 待 WP4 |
@@ -51,19 +53,33 @@ AC（可证伪）：
 
 ## GPU 队列
 
-| 臂 | 任务 | limit | reasoning | max_gen_toks | ctx | 预估 | 触发条件 |
-|---|---|---|---|---|---|---|---|
-| endpoint probe | chat + completions 各一次真实请求 | — | off, on | 512 / 64 | 8192 | 1 min | 拿到锁即刻 |
-| a08-gsm8k-off-4096 | gsm8k | 100 | off | 4096 | 16384 | 3 min | probe 之后 |
-| a08-ifeval-off-50 | ifeval | 50 | off | 4096 | 8192 | 3 min | 同上 |
-| a08-mmlu-off-16 | mmlu | 16/科 | off | 1024 | 8192 | 4 min | 同上 |
-| a08-mmlu-on-16 | mmlu | 16/科 | on | 1024 | 8192 | 4 min | 同上 |
-| a08-ifeval-on-50 | ifeval | 50 | on | 4096 | 8192 | 25–35 min | 同上 |
-| a08-gsm8k-on-4096 | gsm8k | 100 | on | 4096 | 16384 | 25 min | 最后；可砍 |
+**一次调用一条臂**：`bash "docs/subprojects/a08-思考开关/run_arm.sh" <臂>`。锁等待上限 600 s
+（`A08_LOCK_WAIT` 可调），超时打印持锁 pid 并 exit 2，不留僵住的进程；拿锁后第一行是
+`[arm <tag>] starting server: model=… task=… limit=… reasoning=… max_gen_toks=… ctx=… port=…`，
+起服后 30 s 内 preflight（`/props` 200 + 日志里 `n_slots = 1,`）不成立就打印原因并 exit 1。
 
-一次 `bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a08-思考开关/run_thinking_arms.py"` 串行跑完全部臂；
-每臂追加一行到 `fixtures/arm_runs.tsv`。资源说明：显存需求 ≈3.5 GB（2B Q4 + 16k ctx），独占锁内不与他人并行，
-所以不启用「≤4 GB 旁跑」例外。
+| 臂（批） | 任务 | limit | reasoning | max_gen_toks | ctx | 预估 | 触发条件 |
+|---|---|---|---|---|---|---|---|
+| `--probe` | chat + completions 各一次真实请求（off 与 on 各一轮） | — | off, on | 512 / 64 | 8192 | 2–3 min | 先做；它同时验证起服/preflight 链路 |
+| `a08-gsm8k-off-4096` | gsm8k | 100 | off | 4096 | 16384 | 3–4 min | probe 绿后 |
+| `a08-mmlu-off-16` / `a08-mmlu-on-16` | mmlu | 16/科（912 题） | off / on | 1024 | 8192 | 3–4 min 每臂 | 各自单独一次调用 |
+| `a08-ifeval-off-25` | ifeval | 25 | off | 4096 | 8192 | 3 min | — |
+| `a08-ifeval-on-25` | ifeval | 25 | on | 4096 | 8192 | 8–10 min | 本轴唯一贵臂；见下 |
+| `a08-gsm8k-on-4096` | gsm8k | 100 | on | 4096 | 16384 | ≈11 min | 复现臂（`m66gs-gsm8k` 已是同协议格），**可砍** |
+
+预估依据（不是拍脑袋）：2B Q4 加载 ≈20 s；生成吞吐 ≈300 token/s（`m66gs` 日志的逐请求 `tg`）；
+prompt 侧 5-shot ≈1100 token/题。`a08-ifeval-on-25` 之所以不能更小到无条件：25 题是这一臂的最小可比单位
+（IFEval prompt-level strict 的粒度是 4%），而要判的方向是「判分器是否看到推理流」（历史记录说会掉到 0.00），
+量级远大于粒度；再小就只剩 3–4 题的判别力。
+资源说明：显存需求 ≈3.5 GB（2B Q4 + 16k ctx），独占锁内不与他人并行，所以不启用「≤4 GB 旁跑」例外。
+
+## 踩过的坑
+
+5. **一次 `flock` 串六条臂 = 静默排队 27 分钟**（2026-10-21）。证据：`bash .wrapup/gpu_locked.sh python3
+   run_thinking_arms.py` 的进程在 `a06` 的厂商臂后面等了 27 分钟，`.tmp/a08_arms.out` **0 字节**、
+   `fixtures/endpoint_probe/` 与 `.wrapup/mres/a08-*` 都不存在、GPU 上没有我们的 server —— 也就是说脚本
+   连第一条臂的起服都没走到，它只是排在别人的锁后面。原因不是脚本卡住：`flock -w 21600` 的等待期内
+   python 进程根本还没被 `exec`。改法：一次调用一条臂 + 600 s 有界等待 + 起服前后两行可见输出（见 GPU 队列）。
 
 ## 未测（不是 0，见 `RESULT.md` 的同一清单）
 

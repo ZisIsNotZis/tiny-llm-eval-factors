@@ -1,31 +1,34 @@
 #!/usr/bin/env python3
-"""a08 思考开关：同一模型上「只改 --reasoning」的受控臂。
+"""a08 思考开关：同一模型上「只改 --reasoning」的受控臂，**一次调用只跑一条臂**。
 
-轴的判据是「同一格、同一预算下，只切换 server 的 --reasoning」。历史格全都把思考关掉，
-唯一的 on 格（13 个 gsm8k）跑在 max_gen_toks=4096 而对应的 off 格是 1024，所以那 13 对
-**预算混淆**，不能直接读成思考效应。本脚本补上预算对齐的一侧，并把 ifeval（抽取类）和
-mmlu（对数似然类）也各跑一对，使每一类基准都有自己的开/关对照。
+为什么改成一条臂一次调用：一次 `flock` 串六条臂时，第一条失败就把整批吞掉，而排队等锁的进程
+既没有输出也不释放位置——2026-10-21 就是这样白等了 27 分钟（`a06` 的厂商臂持锁），
+`.tmp/a08_arms.out` 0 字节、`.wrapup/mres/` 下没有任何产物、GPU 侧没有我们的 server。
+所以：**持锁时间 = 一条臂的时间**，起服前后各有一次可打红的 preflight。
 
-一条臂 = (task, limit, reasoning, max_gen_toks, ctx)。同一 task 的两条臂除 reasoning 外
-逐字相同，所以是「一格换一个开关」，不是「某次重跑」。
+一条臂 = (task, limit, reasoning, max_gen_toks, ctx)。同一 task 的两条臂除 reasoning 外逐字相同，
+所以是「一格换一个开关」，不是「某次重跑」。
 
-复用 `.wrapup/lmeval_run.py`（i02 的量测基础设施）：它负责起服、断言端口、EchoShim、
-离线环境变量、panel json 与 timings_s 的写法。本脚本只做两件它做不到的事：
-  1. 把 per-task profile 钉成「预算对齐」的那一组（它的 DEFAULT_PROFILE 是 1024/8192，
-     且 run_panel 会用 profile 覆盖 --ctx/--max-gen-toks，所以只能从 TASK_PROFILE 给）；
-  2. 开跑前先对两个端点各发一次真实请求，把 `--reasoning on/off` 到底改了什么落盘成证据
-     （`fixtures/endpoint_probe/*.json`），否则「开关生效」只是推断。
+复用 `.wrapup/lmeval_run.py`（i02 的量测基础设施）：它负责起服、EchoShim、离线环境变量、
+panel json 与 `timings_s` 的写法。本脚本只做它做不到的三件事：
+  1. 把 per-task profile 钉成「预算对齐」的那一组（它的 `DEFAULT_PROFILE` 是 1024/8192，且
+     `run_panel` 会用 profile 覆盖 CLI 的 `--ctx/--max-gen-toks`，所以只能从 `TASK_PROFILE` 给）；
+  2. 起服**前**打一行 `[arm] starting server …`，起服**后** 30 秒内必须拿到 `/props`，
+     失败就打印原因并 exit 1 —— 不允许静默持锁；
+  3. 端点探针：`--reasoning on/off` 在两个端点上各改了什么，落盘成 `fixtures/endpoint_probe/*.json`
+     （否则「开关生效」只是推断）。
 
-用法（必须在 GPU 锁下）：
-    bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a08-思考开关/run_thinking_arms.py"
-
-每一步都追加一行到 `fixtures/arm_runs.tsv`（tag、臂参数、退出码、时间戳）。
+用法（一次一条臂，锁等待有上限）：
+    bash "docs/subprojects/a08-思考开关/run_arm.sh" a08-gsm8k-off-4096
+    bash "docs/subprojects/a08-思考开关/run_arm.sh" --probe
 """
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -42,15 +45,21 @@ LLAMA_PORT = int(os.environ.get("A08_LLAMA_PORT", "8910"))
 SHIM_PORT = int(os.environ.get("A08_SHIM_PORT", "8911"))
 
 # (tag, task, limit, reasoning, max_gen_toks, ctx)
-# 顺序 = 价值顺序：先把便宜的、判据最强的一侧落地，最贵的复现臂放最后。
+# 每条臂的预估（2B Q4，加载 ≈20 s，生成 ≈300 token/s，prompt 侧 5-shot ≈1100 token/题）：
+#   gsm8k off @4096   ≈ 3 min（关思考答案短）
+#   mmlu  off/on @16  ≈ 3 min/臂（对数似然，不生成）
+#   ifeval off @25    ≈ 3 min
+#   ifeval on  @25    ≈ 8–10 min（思考串把 4096 预算吃掉，是这一轴唯一贵的臂）
+#   gsm8k on @4096    ≈ 11 min（100 题 × ≈1990 token，已有 m66gs 同协议格，作复现臂）
 ARMS: list[tuple[str, str, int, str, int, int]] = [
     ("a08-gsm8k-off-4096", "gsm8k", 100, "off", 4096, 16384),
-    ("a08-ifeval-off-50", "ifeval", 50, "off", 4096, 8192),
     ("a08-mmlu-off-16", "mmlu", 16, "off", 1024, 8192),
     ("a08-mmlu-on-16", "mmlu", 16, "on", 1024, 8192),
-    ("a08-ifeval-on-50", "ifeval", 50, "on", 4096, 8192),
+    ("a08-ifeval-off-25", "ifeval", 25, "off", 4096, 8192),
+    ("a08-ifeval-on-25", "ifeval", 25, "on", 4096, 8192),
     ("a08-gsm8k-on-4096", "gsm8k", 100, "on", 4096, 16384),
 ]
+BY_TAG = {a[0]: a for a in ARMS}
 
 
 def load_lmeval_run():
@@ -72,8 +81,36 @@ def note(row: dict) -> None:
                             "started", "finished")) + "\n")
 
 
+def preflight_server(tag: str, port: int, log: Path) -> None:
+    """起服后的证明：30 秒内 `/props` 必须答 200，且 server 自报 `n_slots = 1`。
+
+    两件事都做不到就打印原因并 exit 1：一个起不来的 server 不许把持锁的进程留在那里。
+    """
+    import requests
+
+    why = []
+    try:
+        r = requests.get(f"http://127.0.0.1:{port}/props", timeout=30)
+        ok = r.status_code == 200 and isinstance(r.json(), dict)
+        if not ok:
+            why.append(f"/props status={r.status_code}")
+    except Exception as exc:  # noqa: BLE001
+        ok = False
+        why.append(f"/props: {exc!r}")
+    text = log.read_text(errors="replace") if log.exists() else ""
+    if "n_slots = 1," not in text:
+        ok = False
+        why.append("server.log 里没有 `n_slots = 1,`（-np 1 未生效）")
+    print(f"[arm {tag}] preflight: props_ok={ok} port={port}", flush=True)
+    if not ok:
+        tail = "\n".join(text.splitlines()[-20:])
+        print(f"[arm {tag}] PREFLIGHT FAILED: {'; '.join(why)}\n--- server.log tail ---\n{tail}",
+              flush=True)
+        raise SystemExit(1)
+
+
 def assert_single_slot(tag: str) -> None:
-    """起服后断言 server 自报的 n_slots 与 -np 1 相符；不符即作废该次测量。"""
+    """跑完再断言一次（起服与结束各一次，日志被轮换也能抓）。"""
     log = MRES / tag / "server.log"
     text = log.read_text(errors="replace") if log.exists() else ""
     if "n_slots = 1," not in text:
@@ -92,6 +129,30 @@ def run_arm(tag: str, task: str, limit: int, reasoning: str, mgt: int, ctx: int)
     if task == "mmlu":
         argv += ["--mmlu-limit", str(limit)]
     started = f"{time.time():.0f}"
+    print(f"[arm {tag}] starting server: model={Path(MODEL).name} task={task} limit={limit} "
+          f"reasoning={reasoning} max_gen_toks={mgt} ctx={ctx} port={LLAMA_PORT}", flush=True)
+    # 起服前先把端口前提说清楚：端口被占时 lmeval_run 会 SystemExit，这里给出同一事实
+    preflight_ports_ok = True
+    listening = subprocess.run(["ss", "-ltnH"], capture_output=True, text=True).stdout
+    for p in (LLAMA_PORT, SHIM_PORT):
+        if f":{p} " in listening:
+            print(f"[arm {tag}] PREFLIGHT FAILED: 端口 {p} 已被占用（ss -ltnH）", flush=True)
+            preflight_ports_ok = False
+    if not preflight_ports_ok:
+        note({"tag": tag, "task": task, "limit": limit, "reasoning": reasoning,
+              "max_gen_toks": mgt, "ctx": ctx, "rc": "port-busy", "started": started,
+              "finished": f"{time.time():.0f}"})
+        return 1
+    # 起服后的 preflight 挂在 run_panel 会调用的那个函数上：它起完服、还没开始跑基准时，
+    # 我们在 30 秒内用 `/props` 证明这个 server 真的活着，并把 `n_slots = 1` 断言在日志里。
+    orig_start = lr.start_llama
+
+    def start_with_preflight(binary, model, port, logfile, reasoning="off"):
+        proc = orig_start(binary, model, port, logfile, reasoning)
+        preflight_server(tag, port, logfile)
+        return proc
+
+    lr.start_llama = start_with_preflight
     sys.argv = argv
     rc = lr.main()
     if (MRES / tag / "server.log").exists():
@@ -99,7 +160,7 @@ def run_arm(tag: str, task: str, limit: int, reasoning: str, mgt: int, ctx: int)
     note({"tag": tag, "task": task, "limit": limit, "reasoning": reasoning,
           "max_gen_toks": mgt, "ctx": ctx, "rc": rc, "started": started,
           "finished": f"{time.time():.0f}"})
-    print(f"[a08] arm {tag}: rc={rc}", flush=True)
+    print(f"[arm {tag}] rc={rc}", flush=True)
     return rc
 
 
@@ -116,13 +177,13 @@ def endpoint_probe() -> None:
     out.mkdir(parents=True, exist_ok=True)
     lr = load_lmeval_run()
     log = out / "probe_server.log"
+    lr.CTX_SIZE = 8192
     for reasoning in ("off", "on"):
-        lr.CTX_SIZE = 8192
+        print(f"[probe] starting server: reasoning={reasoning} ctx=8192 port={LLAMA_PORT}",
+              flush=True)
         proc = lr.start_llama(LLAMA, MODEL, LLAMA_PORT, log, reasoning)
         try:
-            text = log.read_text(errors="replace")
-            if "n_slots = 1," not in text:
-                raise SystemExit("probe: server 未自报 n_slots = 1，作废该次探针")
+            preflight_server("probe-" + reasoning, LLAMA_PORT, log)
             chat = requests.post(
                 f"http://127.0.0.1:{LLAMA_PORT}/v1/chat/completions",
                 json={"messages": [{"role": "user", "content": "Natalia sold 48 clips in April and half as many in May. How many clips did she sell in total? Answer with the number only."}],
@@ -133,10 +194,9 @@ def endpoint_probe() -> None:
                       "temperature": 0, "logprobs": 3}, timeout=1800).json()
             (out / f"chat_{reasoning}.json").write_text(json.dumps(chat, indent=1))
             (out / f"completions_{reasoning}.json").write_text(json.dumps(comp, indent=1))
-            print(f"[a08] probe reasoning={reasoning} done", flush=True)
+            print(f"[probe] reasoning={reasoning} done", flush=True)
         finally:
             lr.stop_llama(proc, log)
-    # /props 是 server 的默认参数，不证明单次请求生效；记下来只作环境快照
     (out / "README.txt").write_text(
         "每个文件 = 一次真实请求的原始 JSON。chat_* 走生成类基准的端点，completions_* 走\n"
         "对数似然类的端点（EchoShim 从 top_logprobs 读真 logprob）。差分判据见 RESULT.md。\n"
@@ -144,16 +204,32 @@ def endpoint_probe() -> None:
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--arm", action="append", default=[],
+                    help="只跑这条臂（tag）；可重复。默认全部（不要在共享锁下这样用）")
+    ap.add_argument("--probe", action="store_true", help="先跑端点探针")
+    ap.add_argument("--list", action="store_true")
+    a = ap.parse_args()
+    if a.list:
+        for tag, task, limit, reasoning, mgt, ctx in ARMS:
+            print(f"{tag}\t{task}\tlimit={limit}\treasoning={reasoning}\t"
+                  f"max_gen_toks={mgt}\tctx={ctx}")
+        return 0
     if not Path(MODEL).exists():
         raise SystemExit(f"模型不存在：{MODEL}")
-    if "--probe-only" not in sys.argv:
+    if a.probe:
         endpoint_probe()
-    for arm in ARMS:
-        rc = run_arm(*arm)
-        if rc != 0:
-            print(f"[a08] arm {arm[0]} 退出码 {rc}，继续跑后续臂（失败的臂在 RESULT 里记未得数）",
-                  flush=True)
-    return 0
+    if a.arm:
+        unknown = [t for t in a.arm if t not in BY_TAG]
+        if unknown:
+            raise SystemExit(f"未知臂：{unknown}；可用：{sorted(BY_TAG)}")
+        arms = [BY_TAG[t] for t in a.arm]
+    else:
+        arms = ARMS
+    rc = 0
+    for arm in arms:
+        rc = run_arm(*arm) or rc
+    return rc
 
 
 if __name__ == "__main__":
