@@ -1,0 +1,6 @@
+tag	task	limit	reasoning	max_gen_toks	ctx	rc	started	finished
+a08-gsm8k-off-4096	gsm8k	100	off	4096	16384	0	1792546132	1792546335
+a08-mmlu-off-16	mmlu	16	off	1024	8192	0	1792546335	1792546579
+a08-mmlu-on-16	mmlu	16	on	1024	8192	0	1792546579	1792546780
+a08-ifeval-off-25	ifeval	25	off	4096	8192	0	1792546780	1792546849
+a08-ifeval-on-25	ifeval	25	on	4096	8192	port-busy	1792546849	1792546849

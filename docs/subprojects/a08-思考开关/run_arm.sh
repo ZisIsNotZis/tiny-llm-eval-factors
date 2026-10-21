@@ -27,6 +27,11 @@ for a in "$@"; do
     fi
 done
 
+# 排锁之前先证明前提存在：模型路径错的时候不该占着锁排队
+if ! python3 "$HERE/run_thinking_arms.py" --check-model; then
+    echo "[a08] $(date +%H:%M:%S) PREFLIGHT FAILED: 模型路径不存在，未排锁、未起服" >&2
+    exit 1
+fi
 holders="$(fuser "$LOCK" 2>/dev/null | tr -d ' ')"
 echo "[a08] $(date +%H:%M:%S) requesting $LOCK (max ${WAIT}s; holders: ${holders:-none})" >&2
 cd "$REPO" || exit 2

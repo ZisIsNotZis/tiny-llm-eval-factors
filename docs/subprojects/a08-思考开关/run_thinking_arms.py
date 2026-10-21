@@ -38,8 +38,9 @@ REPO = HERE.parents[2]
 WR = REPO / ".wrapup"
 MRES = WR / "mres"
 
-MODEL = os.environ.get(
-    "A08_MODEL", "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q4_K_XL.gguf")
+# 历史 panel（m66gs 等）里记的是老布局的 `/home/z/hf/mscache/unsloth/...`，那个目录已经不在；
+# 现在可用的是 `/home/z/hf/` 下的符号链接（指向 models--unsloth--Qwen3.5-2B-GGUF 的 snapshot）。
+MODEL = os.environ.get("A08_MODEL", "/home/z/hf/Qwen3.5-2B-UD-Q4_K_XL.gguf")
 LLAMA = os.environ.get("LLAMA_SERVER", "/home/z/.local/bin/llama-server")
 LLAMA_PORT = int(os.environ.get("A08_LLAMA_PORT", "8910"))
 SHIM_PORT = int(os.environ.get("A08_SHIM_PORT", "8911"))
@@ -209,7 +210,13 @@ def main() -> int:
                     help="只跑这条臂（tag）；可重复。默认全部（不要在共享锁下这样用）")
     ap.add_argument("--probe", action="store_true", help="先跑端点探针")
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--check-model", action="store_true",
+                    help="只检查模型路径存在（不需要 GPU/锁）；run_arm.sh 在排锁之前调它")
     a = ap.parse_args()
+    if a.check_model:
+        ok = Path(MODEL).exists()
+        print(f"{'ok' if ok else 'MISSING'}: {MODEL} -> {os.path.realpath(MODEL)}")
+        return 0 if ok else 1
     if a.list:
         for tag, task, limit, reasoning, mgt, ctx in ARMS:
             print(f"{tag}\t{task}\tlimit={limit}\treasoning={reasoning}\t"
@@ -219,6 +226,8 @@ def main() -> int:
         raise SystemExit(f"模型不存在：{MODEL}")
     if a.probe:
         endpoint_probe()
+        if not a.arm:      # `--probe` 单独用 = 只跑探针；要跑臂必须显式 --arm
+            return 0
     if a.arm:
         unknown = [t for t in a.arm if t not in BY_TAG]
         if unknown:

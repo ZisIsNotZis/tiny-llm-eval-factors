@@ -188,9 +188,18 @@ def cells() -> list[dict]:
         """)
     ons = [r for r in rows if r["reasoning"] == "on" and r["_score"] is not None]
     keys = {(r["model"], r["_bench"], r["n_items"]) for r in ons}
+    # 本子项目自己跑出来的臂（`fixtures/arm_runs.tsv` 的 tag）无条件进表：它们是这一轴的主动证据，
+    # 哪怕暂时还没有配对的另一侧（例如 ifeval 目前只有关思考那一臂）。
+    arm_tags = set()
+    runs = FIX / "arm_runs.tsv"
+    if runs.exists():
+        import csv as _csv
+        arm_tags = {r["tag"] for r in _csv.DictReader(runs.open(), delimiter="\t")
+                    if r.get("tag") and r.get("rc") in ("0", 0)}
     keep = [r for r in rows
             if r["_score"] is not None
-            and (r["reasoning"] == "on" or (r["model"], r["_bench"], r["n_items"]) in keys)]
+            and (r["reasoning"] == "on" or (r["model"], r["_bench"], r["n_items"]) in keys
+                 or (r["run_tag"] in arm_tags))]
     out = []
     for r in keep:
         mt, mtsrc = effective_mt(r)

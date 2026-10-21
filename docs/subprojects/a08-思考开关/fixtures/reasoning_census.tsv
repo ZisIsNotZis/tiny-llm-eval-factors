@@ -7,11 +7,12 @@ code	humaneval-py	off	117	53
 code	mbpp	auto	219	44
 code	mbpp	off	612	188
 code	mbpp-plus	off	74	65
-extraction	ifeval	off	107	70
+extraction	ifeval	off	109	70
 knowledge-loglik	arc_challenge	off	72	59
-knowledge-loglik	mmlu	off	107	70
+knowledge-loglik	mmlu	off	109	70
+knowledge-loglik	mmlu	on	1	1
 knowledge-loglik	truthfulqa_mc2	off	79	66
-reasoning	gsm8k	off	103	66
+reasoning	gsm8k	off	105	66
 reasoning	gsm8k	on	13	13
-reasoning	gsm8k-strict	off	75	62
+reasoning	gsm8k-strict	off	76	62
 reasoning	gsm8k-strict	on	13	13

@@ -1,4 +1,8 @@
 class	bench	model	reasoning	score	n_items	max_gen_toks	mt_source	ctx	wall_s	requests	gen_tokens	gen_per_item	cap_hits	prompt_tokens	gen_ms	tag	protocol	cost_note	log_sha256
+extraction	ifeval	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.6	25	4096	db	8192	64.3	25	6645	265.8	0	1302	36738.0	a08-ifeval-off-25	lmeval-0.4.13-chat-reasoning-off		b1bf0b0847e5f9f40ef46a6a031b12c407de5f90a1dc16d707b9ccc076cd1405
+knowledge-loglik	mmlu	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.622807	912	1024	panel-json:profiles	8192	238.3	3648						a08-mmlu-off-16	lmeval-0.4.13-gguf-shim-reasoning-off	shared-log(requests=3648)	edcd447a154b67dc08b7cb13cdca3a7ab9be7b3eef4db938475685d72059156d
+knowledge-loglik	mmlu	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.622807	912	1024	panel-json	8192	125.3							m66-qwen-2b-q4kxl	lmeval-0.4.13-gguf-shim-reasoning-off	shared-log(multi-task panel)	
+knowledge-loglik	mmlu	Qwen3.5-2B-UD-Q4_K_XL.gguf	on	0.622807	912	1024	panel-json:profiles	8192	195.3	3648						a08-mmlu-on-16	lmeval-0.4.13-gguf-shim-reasoning-on	shared-log(requests=3648)	7cd1b47b33c96c90835afddd218bf166b943013cf6d7889fab52290335534cdf
 reasoning	gsm8k	Qwen3.5-2B-UD-IQ2_M.gguf	off	0.38	100	1024	panel-json	8192	134.1							m62-qwen-2b-iq2m	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
 reasoning	gsm8k	Qwen3.5-2B-UD-IQ2_M.gguf	on	0.02	100	4096	db	16384	1507.7	100	340298	3403.0	82	108490	1474791.7	m62gs-gsm8k	lmeval-0.4.13-chat-reasoning-on		74dff214dd1e8e05d141b415ce0b6788152a39d2bf63020eec4261f1596b5059
 reasoning	gsm8k	Qwen3.5-2B-UD-IQ2_XXS.gguf	off	0.06	100	1024	panel-json	8192	260.9							m61-qwen-2b-iq2xxs	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
@@ -9,6 +13,7 @@ reasoning	gsm8k	Qwen3.5-2B-UD-Q2_K_XL.gguf	off	0.44	100	1024	panel-json	8192	177
 reasoning	gsm8k	Qwen3.5-2B-UD-Q2_K_XL.gguf	on	0.09	100	4096	db	16384	994.7	100	329933	3299.3	78	108490	962679.9	m64gs-gsm8k	lmeval-0.4.13-chat-reasoning-on		b04c94130856d28f57da0f966e6d6b6589820d6f734ff9caf35d105f1b2f0ae0
 reasoning	gsm8k	Qwen3.5-2B-UD-Q3_K_XL.gguf	off	0.65	100	1024	panel-json	8192	152.8							m65-qwen-2b-q3kxl	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
 reasoning	gsm8k	Qwen3.5-2B-UD-Q3_K_XL.gguf	on	0.19	100	4096	db	16384	569.5	100	174632	1746.3	27	108490	538228.6	m65gs-gsm8k	lmeval-0.4.13-chat-reasoning-on		b1957c771baab70ab5dece92f58b142c997ff9bcd00891d95a2ee0b3c99681a5
+reasoning	gsm8k	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.67	100	4096	db	16384	198.0	100	27967	279.7	1	108690	148716.1	a08-gsm8k-off-4096	lmeval-0.4.13-chat-reasoning-off		8b638028c395a943e44de55dc616a90b302d4841b508d53af92a606cadd6227b
 reasoning	gsm8k	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.66	100	1024	panel-json	8192	107.2							m66-qwen-2b-q4kxl	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
 reasoning	gsm8k	Qwen3.5-2B-UD-Q4_K_XL.gguf	on	0.34	100	4096	db	16384	664.3	100	199025	1990.2	26	108490	633428.1	m66gs-gsm8k	lmeval-0.4.13-chat-reasoning-on		adf1c0398498b076dbf9a698f96b994bdb0015094e362de68c6f97f0ead64e57
 reasoning	gsm8k	Qwen3.5-2B-UD-Q5_K_XL.gguf	off	0.73	100	1024	panel-json	8192	101.2							m67-qwen-2b-q5kxl	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
@@ -30,6 +35,7 @@ reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q2_K_XL.gguf	off	0.36	100	1024	panel-json	8
 reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q2_K_XL.gguf	on	0.06	100	4096	db	16384	994.7	100	329933	3299.3	78	108490	962679.9	m64gs-gsm8k	lmeval-0.4.13-chat-reasoning-on		b04c94130856d28f57da0f966e6d6b6589820d6f734ff9caf35d105f1b2f0ae0
 reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q3_K_XL.gguf	off	0.55	100	1024	panel-json	8192	152.8							m65-qwen-2b-q3kxl	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
 reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q3_K_XL.gguf	on	0.16	100	4096	db	16384	569.5	100	174632	1746.3	27	108490	538228.6	m65gs-gsm8k	lmeval-0.4.13-chat-reasoning-on		b1957c771baab70ab5dece92f58b142c997ff9bcd00891d95a2ee0b3c99681a5
+reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.37	100	4096	db	16384	198.0	100	27967	279.7	1	108690	148716.1	a08-gsm8k-off-4096	lmeval-0.4.13-chat-reasoning-off		8b638028c395a943e44de55dc616a90b302d4841b508d53af92a606cadd6227b
 reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q4_K_XL.gguf	off	0.37	100	1024	panel-json	8192	107.2							m66-qwen-2b-q4kxl	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
 reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q4_K_XL.gguf	on	0.32	100	4096	db	16384	664.3	100	199025	1990.2	26	108490	633428.1	m66gs-gsm8k	lmeval-0.4.13-chat-reasoning-on		adf1c0398498b076dbf9a698f96b994bdb0015094e362de68c6f97f0ead64e57
 reasoning	gsm8k-strict	Qwen3.5-2B-UD-Q5_K_XL.gguf	off	0.62	100	1024	panel-json	8192	101.2							m67-qwen-2b-q5kxl	lmeval-0.4.13-chat-reasoning-off	shared-log(multi-task panel)	
