@@ -184,6 +184,18 @@
 - repro: `python3 "docs/subprojects/a06-采样与解码参数/cell_histograms.py"`（退出 0 = 至少读到一个格；产物目录或 `*_eval.json` 全缺时退出 2）。
 - 后果：① 「厂商档让分数下降」这句话不够——cpp 上是**语法**塌陷、py 上是**运行期**塌陷，两者的可解释性不同；② 判定阶梯是否存活必须先看 `at_floor`，地板格之间比分数是没有意义的（规则预注册在 `PLAN.md`）。
 
+## vendor-collapse-mechanism :: 塌陷的机制假设（**未验证，可证伪**）：厂商档让 C++ 关键字与运算符的密度掉三分之一、同时把不同 token 的比例抬高——`cpp_kw_share` 0.322→0.218、`punct_density` 0.151→0.132、`types/tokens` 0.344→0.380、平均长度 71.9→115.4 词。这个形状与 `presence_penalty=2.0` 的机制一致：它按「这个 token 已经出现过」收费，而代码恰恰靠重复的结构 token 活着（缩进、`return`、`std::`、`{}`、复用变量名），于是模型被推离这些 token，转向更少重复但不像代码的串。**H-B** 是另一条：`top_p=1.0` + `min_p=0.0` 完全不截断尾部，temp 1.0 下会采到远尾的 token。两条不互斥。
+
+- kind: measured
+- evidence: 同一模型同一语言同 ctx 同 seed 的三组补全上算的分布统计：贪心锚点 `.wrapup/mres/m31-q3-tk1-cpp.jsonl`（39/161，未塌陷）、`m27-q3-t0.3-cpp.jsonl`（28/161）、厂商档 `.wrapup/mres/m165-vendor/mpl-q3-cpp-vendor.jsonl`（4/161）。
+- repro: 按上面四个量重算——`cpp_kw_share` = C++ 关键字/类型词数 ÷ 空白分词数；`types/tokens` = 每个补全内不同 token ÷ token 数（只算 ≥8 token 的补全）；`punct_density` = 运算符与括号字符数 ÷ 字符数。
+- 支持 H-A 的旁证：贪心锚点的典型补全是退化重复（`std::string temp; … temp2; … temp3; … temp6;`），正是 presence penalty 要罚的形状；温度轴到 0.6 只把 q3 cpp 压到 24/161，而厂商档到 4/161——0.6 到 1.0 之间的温度不可能单独产生一个 10 倍差，所以除了温度还有别的量在起作用。
+- **可证伪的判别实验（一件事，不是两件）**：只把 `presence_penalty` 置 0，其余四个量与服务器设置不动（temp 1.0、top_p 1.0、min_p 0.0、seed 1234、ctx 4096），重跑 `q3-cpp` 一格。
+  - 若塌陷消失（回到接近 39/161，或至少远高于 0.05 地板）→ **H-A 是主因**；
+  - 若仍是 ~4/161 → H-A 被否，指向 H-B（无约束尾部）。
+  - 若要**分别归因**（而不是二选一），再加一格 `presence_penalty=2.0` + `top_p=0.95` + `min_p=0.05`，构成 2×2。
+- 限制：这条诊断是**相关不是因果**——厂商档与锚点在四个量上同时不同，分布形状支持 H-A 但不排除 H-B 同时起作用；温度从 0.6 到 1.0 这一段没有单独测过。
+
 ## 五、厂商推荐采样（`plan3`）
 
 ## res-vendor-value :: 厂商（unsloth）给 Qwen3.5-2B 的推荐采样参数拿到了：非思考文本任务是 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0, repetition_penalty=1.0`；它落在本研究测过的每一个设置**之外**——温度只有 1.0 一档与已测的 0/0.3/0.6/0.7 都不同，`top_p` 1.00 对已钉住的 0.95，`min_p` 0.0 对 0.05，并且多一个已测协议里恒为 0 的 `presence_penalty=2.0`。
