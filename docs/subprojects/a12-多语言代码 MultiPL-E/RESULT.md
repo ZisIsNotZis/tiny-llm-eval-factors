@@ -7,7 +7,7 @@
 
 - 审计：`python3 "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py"`，退出 0 = 谱系、全 Exception、协议设置、提示集哈希、报告行归属五项全绿。
 - 负控：`bash "docs/subprojects/a12-多语言代码 MultiPL-E/mpl_negative_control.sh"`，退出 0 = 干净报告通过、两处人为篡改都被拒。
-- 已存捕获（文件名带短 revision，首部记 `report.html` 的 sha256）：`evidence/audit-1169ef1-clean-clone.txt`（干净 clone 里的 HEAD 报告，退出 0、0 个脏路径）、`evidence/negative-control-1169ef1.txt`（退出 0，三处篡改全被拒）。两份都绑定 `report.html` 的 sha256 `d7b2ed52834ed7a2…`；该文件在 `90f3511`（i02 回填最后 2 格的 `n_items`）之后换过一次哈希，旧捕获连同旧哈希一起退役。
+- 已存捕获（文件名带短 revision，首部记 `report.html` 的 sha256 `6d5db1ad0d800954…`）：`evidence/audit-373c14c-this-machine.txt`（本机 HEAD，退出 0）、`evidence/negative-control-373c14c.txt`（退出 0，四处篡改全被拒）、`evidence/audit-373c14c-clean-clone.txt`（干净 clone，**退出 1**，原因见下）。
 
 ## 审计的负控能力：四处篡改都被拒
 
@@ -20,6 +20,7 @@
 - 结论：库中 MultiPL-E 共 349 个格，其中 341 个有分数、8 个是 NULL；341 个有分数的格全部追到落盘产物——251 个命中 panel summary 的同语言同分值行，78 个只命中 per-item eval，12 个走 a14 的改分清单（`;corpus=` 行，见「追溯按行的代次分开」），未追溯 0 个。
 - 证据：两格 eval-only 是 `m26-q38-27b-q2-cpp_fixed_eval.json`（102/161=0.6335，summary 记 35/161）与 `m6b-g12b-q2-cpp_fixed_eval.json`（4/161=0.0248，summary 记 2/161）。题数来自 `n_items`：i02 已从产物回填（`migrate_db.py` 的 backfill，最后 2 格见 `90f3511`），MultiPL-E 里的 8 个 NULL 格就是 4 个全 Exception 的 js/rb 格加上它们在 `third-family-code` 协议串下的 4 份副本（见「四行伪 0」）；满格题数为 cpp/py/js/rb 161、java 158、rs 155。
 - 限制：`[1]` 是**多重集成员检查**，不是逐格绑定，确切形状是：以库中该格的 `source_file` 为一张池子，把该面板 summary 的每一行折成 `(语言, 分值)` 放进 `collections.Counter`，库里同文件的每个格消耗其中一份（`mpl_cell_audit.py::cells_with_lineage`）。它证明的是「这个值出现在该面板该语言的产物里」，**不**证明「这一行属于这个模型文件」。直接后果：把同一面板、同一语言的两格在库与报告里**同时互换**，`[1]` 仍 exit 0——两份产物都没变、多重集也没变；负控的三处篡改（协议行、题量、协议串）不覆盖这种情况，所以这不是负控能拒的错，而是这条检查的边界。per-item eval 的配对键 `(语言, 通过数, 题数)` 同样不含模型：341 个格里 141 个只命中一份 eval、189 个命中多份、65 个键对应多份文件（多份时只接受状态直方图一致）。把格绑到模型上的只有 `[7]` 的一行一句（该 (模型, 协议标签, 语言) 下必须存在这个值）与库里的 `run_tag`/`source_file` 两列；把 `[1]` 读成逐格绑定会高估它。审计自己把这条印在 `[1]` 段：`the key is not model-unique, so it proves a file reproduces the cell, not that the file is this model's`。
+- 限制（干净 clone）：在本机 `[1]` 是 341/341，但**干净 clone 里是 338/341**——3 条 m165 vendor 行的 `source_file` 是 `mres/m165-vendor/vendor_r1_summary.jsonl`，而 `.gitignore:27` 忽略 `.wrapup/mres/*`，那份 summary 不随仓库分发，于是 clone 里读不到它、这三行记 untraced。这与 a12 的判据无关，是 `*_eval.json` 那类分发缺口（`f7187c1` 修过一半）的同类；捕获 `evidence/audit-373c14c-clean-clone.txt` 把这三行与原因一起留在案上，不假装 clone 是绿的。
 - 复算：审计脚本 `[1]` 段。
 
 ## 报告：报告印出的每个格都属于它自己那一行协议，且是库中已存的格
