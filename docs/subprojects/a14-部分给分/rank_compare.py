@@ -182,7 +182,7 @@ def main():
         # 已知错误的副本：同语言内把 mean_frac 在各格之间打乱，破坏「二元—比例」的对应关系。
         # （不可以用「在题间打乱 frac」——那个变换保均值，平均比例不变，测不到东西。）
         rnd = random.Random(0)
-        for lang in {c["lang"] for c in cells.values()}:
+        for lang in sorted({c["lang"] for c in cells.values()}):
             ts = [t for t in sorted(cells) if cells[t]["lang"] == lang]
             vals = [cells[t]["mean_frac"] for t in ts]
             rnd.shuffle(vals)
@@ -191,7 +191,7 @@ def main():
         st = analyse(cells, pairs(cells))
         spear = {lang: spearman(*[[cells[t][k] for t in sorted(cells) if cells[t]["lang"] == lang]
                                   for k in ("pass_at_1", "mean_frac")])
-                 for lang in base_spear}
+                 for lang in sorted(base_spear)}
         print(f"负控（同语言内打乱 mean_frac）：反转 {len(st['reversal'])} 对（原样 {len(base['reversal'])}），"
               f"二元并列且比例分开 {len(st['binary_tie_live'])} 对（原样 {len(base['binary_tie_live'])}）")
         print("  Spearman 原样 " + " ".join(f"{k}={v:.3f}" for k, v in sorted(base_spear.items())))
