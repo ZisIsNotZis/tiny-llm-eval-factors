@@ -1,0 +1,81 @@
+tag	gguf	bench	depth	score	n_items
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	mmlu	0	0.524122807018	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	gsm8k	0	0.46	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	ifeval	0	0.58	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	humaneval	0	0.317073170732	164
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	mmlu	1	0.524122807018	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	gsm8k	1	0.5	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	ifeval	1	0.54	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	humaneval	1	0.323170731707	164
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	mmlu	2	0.524122807018	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	gsm8k	2	0.44	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	ifeval	2	0.52	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	humaneval	2	0.298780487805	164
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	mmlu	4	0.524122807018	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	gsm8k	4	0.42	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	ifeval	4	0.56	
+m125-spec-0.8b	Qwen3.5-0.8B-UD-Q4_K_XL.gguf	humaneval	4	0.30487804878	164
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	mmlu	0	0.625	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	gsm8k	0	0.6	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	ifeval	0	0.66	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval	0	0.506097560976	164
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	mmlu	1	0.625	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	gsm8k	1	0.56	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	ifeval	1	0.7	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval	1	0.542682926829	164
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	mmlu	2	0.625	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	gsm8k	2	0.54	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	ifeval	2	0.72	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval	2	0.530487804878	164
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	mmlu	4	0.625	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	gsm8k	4	0.6	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	ifeval	4	0.68	
+m126-spec-2b	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval	4	0.55487804878	164
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	mmlu	0	0.745614035088	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	gsm8k	0	0.92	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	ifeval	0	0.78	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	humaneval	0	0.829268292683	164
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	mmlu	1	0.745614035088	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	gsm8k	1	0.92	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	ifeval	1	0.8	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	humaneval	1	0.817073170732	164
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	mmlu	2	0.745614035088	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	gsm8k	2	0.92	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	ifeval	2	0.78	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	humaneval	2	0.80487804878	164
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	mmlu	4	0.745614035088	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	gsm8k	4	0.9	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	ifeval	4	0.82	
+m127-spec-4b	Qwen3.5-4B-UD-Q4_K_XL.gguf	humaneval	4	0.835365853659	164
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	mmlu	0	0.793859649123	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	gsm8k	0	0.96	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	ifeval	0	0.88	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	humaneval	0	0.871951219512	164
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	mmlu	1	0.793859649123	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	gsm8k	1	0.96	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	ifeval	1	0.88	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	humaneval	1	0.871951219512	164
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	mmlu	2	0.793859649123	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	gsm8k	2	0.96	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	ifeval	2	0.86	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	humaneval	2	0.890243902439	164
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	mmlu	4	0.793859649123	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	gsm8k	4	0.98	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	ifeval	4	0.88	
+m128-spec-9b	Qwen3.5-9B-UD-Q4_K_XL.gguf	humaneval	4	0.878048780488	164
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	mmlu	0	0.844298245614	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	gsm8k	0	0.98	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	ifeval	0	0.86	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	humaneval	0	0.914634146341	164
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	mmlu	1	0.844298245614	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	gsm8k	1	0.98	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	ifeval	1	0.86	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	humaneval	1	0.914634146341	164
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	mmlu	2	0.844298245614	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	gsm8k	2	0.98	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	ifeval	2	0.86	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	humaneval	2	0.914634146341	164
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	mmlu	4	0.844298245614	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	gsm8k	4	0.98	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	ifeval	4	0.84	
+m129-spec-35b	Qwen3.6-35B-A3B-UD-IQ4_XS.gguf	humaneval	4	0.908536585366	164

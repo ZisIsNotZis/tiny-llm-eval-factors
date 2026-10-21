@@ -1,0 +1,2 @@
+CHECK OK: 80 质量行 / 20 速度行 / 3280 逐题行 / 15 字节对，与库一致；每臂 n_slots=1；逐题通过率复原 humaneval 分数
+check rc=0

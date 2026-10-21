@@ -1,8 +1,0 @@
-res11:
-  _text: 投机解码：草稿深度越大速度越快（0.8B 约 +36%、9B 约 +93%）；分数随深度几乎不变，MMLU 在每个深度逐位相同。
-  author: measurement
-  origin: .scratch/originals/L2-结果.md 思考开关/投机解码
-  scope: general
-  status: current
-  domain:
-    kind: measured
