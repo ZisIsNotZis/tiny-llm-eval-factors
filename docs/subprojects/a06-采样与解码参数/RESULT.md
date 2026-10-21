@@ -13,6 +13,9 @@
 - 已存捕获：`evidence/census-6fc5b0c.txt`（退出 0，267 行）与
   `evidence/census-negative-control-6fc5b0c.txt`（在空临时树里跑同一脚本，四个输入全缺 → 打印四条 `missing …` 并退出 2）。
   负控证明这条检查会失败，不是空转。
+- 逐题判决：`python3 "docs/subprojects/a06-采样与解码参数/peritem_moves.py"`，退出 0 = 36 个 (档位 × 语言 × 设置) 对全部比完；
+  缺任一 `_eval.json` 时打印 `UNMEASURED` 并退出 **2**。捕获 `evidence/peritem-2552615.txt`（退出 0）与
+  `evidence/peritem-negative-control-2552615.txt`（空临时树 → 6 个产物全缺、退出 2）。
 
 ## 一、协议普查
 
@@ -64,9 +67,39 @@
 - repro: 普查 `[E2]` 段。
 - 限制：`m27` 的 14 行与 `m31` 的 30 行 `n_items` 是 NULL，所以分母是从分值反推的，不是库里读的；反推的口径是「同一语言满格 161 题」（i02 已从产物回填其余格），若某格实际题数不是 161 则本题的题数换算全部失效——但 11 个分值全部落在 161 的整数格上，这个巧合的概率极低。
 
-## 三、次序存活
+## 三、逐题判决移动（`m27` / `m31` 的 161 题产物）
 
-## level-order-py-stable :: 在 python 上，量化档的次序在 7 个已测解码设置下**全部存活**：Q2 < Q3 < Q4 在 temp 0.3（top_k 1/20/40/64/200）与 temp 0.6 上都不变，21 个设置对 × 3 个档对 = 45 个非平比较，**0 个反转**。
+## peritem-reshuffle :: 换协议在分数完全不动的时候也会重排逐题判决：36 个 (档位, 语言, 设置) 对里，Q2 cpp 的 6 个设置净移动全是 0 道题，但逐题 6 上 / 6 下、Jaccard 0.50；Q3 py 净 0 而 8 上 / 8 下、Jaccard 0.69；Q4 cpp 净 0 而 9 上 / 9 下、Jaccard 0.61；全部 36 对的 Jaccard 落在 0.40–0.69，所以「分数没变」不等于「判决没变」。
+
+- kind: measured
+- evidence: `evidence/peritem-2552615.txt` 的 36 行（`jacc` 列）；最小 0.40 出现在 Q3 cpp temp 0.6，最大 0.69 出现在 Q3 py 的 temp 0.3 与全部 `top_k` 设置。
+- repro: `python3 "docs/subprojects/a06-采样与解码参数/peritem_moves.py"`。
+- 限制：Jaccard 衡量 pass 集合的重合，不衡量「哪一道题」；同一格里 6 上 6 下可以互相抵消成净 0，所以它必须与 `net` 列一起读。
+
+## peritem-net-hides-flips :: 净分数移动会系统性低估逐题不稳定，最极端的一格是 Qwen3.5-2B Q3 py 在 temp 0.6：净分只动 **+1 道题**（43→44），而逐题 **15 上 / 14 下**、Jaccard 0.50——29 道题换了判决，净移动只报 1。这与 i01 在 temp=0.3 五跑上测到的同一现象同构（净摆动 ≤6/164 而 8–15 上 / 6–12 下）。
+
+- kind: measured
+- evidence: `evidence/peritem-2552615.txt` 的 `q3 py temp 0.6` 行：`delta +1 up 15 down 14 net +1 jacc 0.50`。
+- repro: 同上。
+- 限制：i01 的地板是 EvalPlus 的 164 题格、本表是 MultiPL-E 的 161 题格，两个 harness 的逐题集合与判分器都不同，所以「本表的翻转数与 i01 的翻转数同量级」是指示性对比，**不是受控对比**；把它当受控对比会高估证据强度。
+
+## peritem-separable :: 36 个协议对里只有 **13 个**的净移动超过 i01 的五跑地板（|net| > 6 道题）：Q3 cpp 的 temp 0.3（−11）、temp 0.6（−15）与 `top_k≥20`（−11），Q2 py 的 temp 0.6（−7），Q4 py 的 temp 0.3 / temp 0.6 / `top_k≥20`（各 +7）；其余 23 个的移动（0、+1、+4、−6）与重复噪声不可分。
+
+- kind: measured
+- evidence: `evidence/peritem-2552615.txt` 的 `separable` 列：13 行 `yes, |net|>floor`，23 行 `NO, |net|<=floor`。
+- repro: 同上；判据写死在脚本的 `FLOOR_NET = 6`，锚点写在 `ANCHORS`（Q2 用真正的 temp=0 行 `m27-q2-t0.0`，Q3/Q4 用 `m31-*-tk1`）。
+- 限制：这是单次运行对单次运行的比较，所以「超过地板」只说明移动大于重复噪声的观测上限，**不**说明它可重复；要可重复就得加重复。
+
+## peritem-topk-inert-above-20 :: 温度 0.3 下 `top_k` 20 / 40 / 64 / 200 四个设置在每一个 (档位, 语言) 上给出逐题完全相同的结果（up / down / Jaccard 三列全等），所以 `m31` 名义上测了 5 档 `top_k`，实际只有 2 个不同的测量：`top_k=1` 与 `top_k≥20`。
+
+- kind: measured
+- evidence: `evidence/peritem-2552615.txt` 里 `top_k 20 / 40 / 64 / 200 @ temp 0.3` 四行在 6 个 (档位, 语言) 上三列逐字相同（例如 q3 cpp 四行都是 `up 4 down 15 jacc 0.56`）。
+- repro: 同上；或 `sqlite3 experiments.sqlite "SELECT model,language,ROUND(_score,4) FROM experiments WHERE run_tag='m31-topk' AND top_k IN ('20','40','64','200') ORDER BY 1,2,3"`。
+- 限制：这只证明在这三个模型、161 题、温度 0.3 下 `top_k≥20` 不动；不能推成「`top_k` 普遍惰性」——`top_k=1` 对 Q3 cpp 就移动了 11 道题。
+
+## 四、次序存活
+
+## level-order-py-stable :: 在 python 上，量化档的次序在 7 个已测解码设置下**全部存活**：Q2 < Q3 < Q4 在 temp 0.3（top_k 1/20/40/64/200）与 temp 0.6 上都不变，21 个设置对 × 3 个档对 = 45 个非平比较，**0 个反转**；但这个存活是**聚合分层面**的——同一批格里逐题集合只重合 0.41–0.69（见 `peritem-reshuffle`），所以「次序存活」不许读成「判决相同」。
 
 - kind: measured
 - evidence: 普查 `[E2]` 段 `py level-pair order: concordant=45 discordant=0 over 7 settings`；逐档值见 `[E2]` 的 7 行（Q2 15–26 题、Q3 43–44 题、Q4 44–51 题）。
@@ -85,7 +118,7 @@
 - evidence: 普查 `[E3]` 段：`greedy cells: 54 over 54 models` / `families with a temp>0 twin: 1 ['Qwen3.5-2B']` / `greedy models with NO temp>0 twin: 47`。
 - repro: 普查 `[E3]` 段。
 
-## 四、厂商推荐采样（`plan3`）
+## 五、厂商推荐采样（`plan3`）
 
 ## res-vendor-gap :: 厂商推荐采样这一档的取值现在取不到：本机 `curl` 到 `huggingface.co` 12 秒超时（`curl: (28) Connection timed out`），且 unsloth 的本地缓存 `models--unsloth--Qwen3.5-2B-GGUF/snapshots/f6d5376…/` 里只有 4 个 `.gguf` 软链、没有模型卡；按 `@absent`，这一档记「不可得」，不填任何猜的默认值。
 
@@ -101,14 +134,14 @@
 - repro: `python3 -c "import json;p=json.load(open('.wrapup/mres/m131-sampling/variant_panel.json'));print([ (k,v['humaneval']) for k,v in p['rows'].items()])"`。
 - 限制：这是**推断**，不是厂商推荐臂的测量：它只说「若厂商推荐值落在 0.3–0.7 且不改 `top_p`，则分数已在已测范围内」，不改 `top_p` 这一前提未测（`top_p` 在所有已测协议里都钉在 0.95）。`plan3` 因此保持 provisional，不结项。
 
-## 五、逐题判决与限制
+## 六、限制
 
 ## limit-per-item :: 逐题判决只在 MultiPL-E 上有产物：`.wrapup/mres/m27-*_eval.json`、`m31-*_eval.json` 存在（可按题号比对），而标准列的 `m131` 只有聚合分（`.wrapup/mres/m131-sampling/codegen/*/humaneval/*_eval_results.json` 只存 `date/hash/eval`，`eval` 里是每题的解，不带每题通过与否；lm-eval 的 `results` 只有 `acc` 与 `stderr`），所以标准列的逐题判决移动在这个库上**不可从产物重算**，只能重跑。
 
 - kind: measured
 - evidence: `python3 -c "import json;print(list(json.load(open('.wrapup/mres/m131-sampling/codegen/greedy/humaneval/m131-sampling-greedy_openai_temp_0.0_eval_results.json')).keys()))"` → `['date','hash','eval']`；同目录 `*.jsonl` 每题只有 `task_id`/`solution`；`m131-sampling/sampling_greedy_mmlu_*.json` 的 `results` 每项只有 `{name,alias,sample_len,'acc,none','acc_stderr,none'}`。
 - repro: 上面这条命令；`ls .wrapup/mres/m27-*_eval.json .wrapup/mres/m31-*_eval.json | wc -l`（44 个）。
-- 后果：`PLAN.md` 的 `WP2` 逐题分析只在 MultiPL-E 的 161 题上做；标准列若要逐题，只能重跑（`WP3` 的 `variant` 档若重跑就顺手拿逐题产物）。
+- 后果：`WP2` 的逐题分析已在第三节做完（MultiPL-E 的 161 题，四个 `peritem-*` 事实）；标准列若要逐题，只能重跑（`WP3`/`WP4` 重跑时顺手拿逐题产物）。
 
 ## limit-n-items :: `m27` 的 14 行与 `m31` 的 30 行 `n_items` 是 NULL（全库 241 行 NULL 的一部分），所以本子项目的题数换算全部靠「同语言满格 161」这一口径反推，并且用「`score × 161` 全为整数」自证；这一条不进报告，报告仍按 i02 的回填口径印题数。
 
@@ -124,14 +157,15 @@
 - status: current
 - kind: measured
 - 迁移后的当前判定：三句都复现，但第二句要加限定。① 代码通过率被压低：HumanEval `m131` −10/164（0.5732→0.5122，temp 0.3 与 0.7 相同），MultiPL-E cpp 上 temp 0.6 把 Q3 从 39/161 压到 24/161（−15 道）；② 「温度 0 时 top_k 无影响」成立且是 6/6 与 12/12 个格逐字相同，但**温度 0.3 时 top_k 影响 11 道题**（见 `topk-not-inert-at-temp0.3`），所以这句必须读成「只在温度 0 时惰性」；③ MMLU 0/456 五档全同，成立。
-- evidence: 本节 `score-moves-m131`、`topk-inert-at-temp0`、`topk-not-inert-at-temp0.3`、`level-order-cpp-inverts`。
+- evidence: 本节 `score-moves-m131`、`topk-inert-at-temp0`、`topk-not-inert-at-temp0.3`、`level-order-cpp-inverts`、`peritem-separable`。
+- 逐题层面的补充：「代码通过率被压低」这一句在逐题上比在分数上剧烈得多——Q3 cpp temp 0.6 是 21 上 / 6 下之后的净 −15，而 Q3 py temp 0.6 净 +1 却翻了 29 道题（`peritem-net-hides-flips`）。
 - repro: 普查 `[D]`、`[E1]`、`[E2]` 段。
 
-## 六、报告里 temp>0 的格该怎么读
+## 七、报告里 temp>0 的格该怎么读
 
-## report-temp-cells :: `report.html` 第六节（采样 / 解码参数）里的 temp>0 格（`mpl-raw-t0.3-768`、`mpl-raw-t0.6-768`、`mpl-raw-t0.3-768;topk-set=…`、`variant-sampling-temp0.3/0.7-*`）不是固定协议分数的「更宽松版本」，也不能与贪心格同权读：它们是**不同的格**，逐题集合与贪心格不同（MultiPL-E cpp 上差 11–15 道题），而分数只差 0.04–0.09；所以正确的读法是「该格的协议就是它的身份，跨协议只读方向、不读差值的显著性」，并且方向在 python 上稳、在 cpp 上不稳——一个读者从第六节读到「温度压低代码分」是安全的，读到「Q3 比 Q4 好」是不安全的（贪心下 Q3>Q4，temp>0 下 Q3<Q4）。
+## report-temp-cells :: `report.html` 第六节（采样 / 解码参数）里的 temp>0 格（`mpl-raw-t0.3-768`、`mpl-raw-t0.6-768`、`mpl-raw-t0.3-768;topk-set=…`、`variant-sampling-temp0.3/0.7-*`）不是固定协议分数的「更宽松版本」，也不能与贪心格同权读：它们是**不同的格**，逐题集合与贪心格不同：MultiPL-E 161 题上净差 11–15 道题、逐题翻转 15–21 道，Jaccard 0.40–0.56，而分数只差 0.04–0.09；所以正确的读法是「该格的协议就是它的身份，跨协议只读方向、不读差值的显著性」，并且方向在 python 上稳、在 cpp 上不稳——一个读者从第六节读到「温度压低代码分」是安全的，读到「Q3 比 Q4 好」是不安全的（贪心下 Q3>Q4，temp>0 下 Q3<Q4）；也不能把「两格分数相同」读成「两格测的是同一个东西」（Q3 py 净 0 而 8 上/8 下）。
 
 - kind: measured
-- evidence: `level-order-cpp-inverts`、`topk-not-inert-at-temp0.3`、`score-moves-m131`；报告第六节的标签碰撞（`m31` 的 `top_k` 格与 `m27` 的 `t0.3` 格挤成同一个 `raw·temp=0.3` 标签）已由 a12 登记给 i02，a06 只提供上面这三条的数值证据。
+- evidence: `level-order-cpp-inverts`、`peritem-reshuffle`、`peritem-net-hides-flips`、`topk-not-inert-at-temp0.3`、`score-moves-m131`；报告第六节的标签碰撞（`m31` 的 `top_k` 格与 `m27` 的 `t0.3` 格挤成同一个 `raw·temp=0.3` 标签）已由 a12 登记给 i02，a06 只提供上面这三条的数值证据。
 - repro: `python3 "docs/subprojects/a06-采样与解码参数/sampling_census.py"` 的 `[E1]`/`[E2]` 段。
 - 限制：本节没有改报告，也没有改 `mktables.py`；第六节把 m31 与 m27 的格并成一行的问题属 i02。a06 的贡献是给出「并了之后读者会读错哪一个方向」的具体数（Q3-vs-Q4 在 cpp 上反转）。

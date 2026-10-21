@@ -1,0 +1,46 @@
+# command : python3 docs/subprojects/a06-采样与解码参数/peritem_moves.py 
+# git HEAD: 2552615196e6ceb691e4856080a8a1b463808d9f
+# floor   : i01 five-repeat temp=0.3 net score move <= 6 of 164
+
+level lang setting                   n pass(g) pass(s)  delta   up  down  net   jacc  separable
+q2    cpp  temp 0.3                161      18      18     +0    6     6   +0   0.50  NO, |net|<=floor
+q2    cpp  temp 0.6                161      18      18     +0    5     5   +0   0.57  NO, |net|<=floor
+q2    cpp  top_k 20 @ temp 0.3     161      18      18     +0    6     6   +0   0.50  NO, |net|<=floor
+q2    cpp  top_k 40 @ temp 0.3     161      18      18     +0    6     6   +0   0.50  NO, |net|<=floor
+q2    cpp  top_k 64 @ temp 0.3     161      18      18     +0    6     6   +0   0.50  NO, |net|<=floor
+q2    cpp  top_k 200 @ temp 0.3    161      18      18     +0    6     6   +0   0.50  NO, |net|<=floor
+q2    py   temp 0.3                161      22      26     +4   12     8   +4   0.41  NO, |net|<=floor
+q2    py   temp 0.6                161      22      15     -7    3    10   -7   0.48  yes, |net|>floor
+q2    py   top_k 20 @ temp 0.3     161      22      26     +4   12     8   +4   0.41  NO, |net|<=floor
+q2    py   top_k 40 @ temp 0.3     161      22      26     +4   12     8   +4   0.41  NO, |net|<=floor
+q2    py   top_k 64 @ temp 0.3     161      22      26     +4   12     8   +4   0.41  NO, |net|<=floor
+q2    py   top_k 200 @ temp 0.3    161      22      26     +4   12     8   +4   0.41  NO, |net|<=floor
+q3    cpp  temp 0.3                161      39      28    -11    4    15  -11   0.56  yes, |net|>floor
+q3    cpp  temp 0.6                161      39      24    -15    6    21  -15   0.40  yes, |net|>floor
+q3    cpp  top_k 20 @ temp 0.3     161      39      28    -11    4    15  -11   0.56  yes, |net|>floor
+q3    cpp  top_k 40 @ temp 0.3     161      39      28    -11    4    15  -11   0.56  yes, |net|>floor
+q3    cpp  top_k 64 @ temp 0.3     161      39      28    -11    4    15  -11   0.56  yes, |net|>floor
+q3    cpp  top_k 200 @ temp 0.3    161      39      28    -11    4    15  -11   0.56  yes, |net|>floor
+q3    py   temp 0.3                161      43      43     +0    8     8   +0   0.69  NO, |net|<=floor
+q3    py   temp 0.6                161      43      44     +1   15    14   +1   0.50  NO, |net|<=floor
+q3    py   top_k 20 @ temp 0.3     161      43      43     +0    8     8   +0   0.69  NO, |net|<=floor
+q3    py   top_k 40 @ temp 0.3     161      43      43     +0    8     8   +0   0.69  NO, |net|<=floor
+q3    py   top_k 64 @ temp 0.3     161      43      43     +0    8     8   +0   0.69  NO, |net|<=floor
+q3    py   top_k 200 @ temp 0.3    161      43      43     +0    8     8   +0   0.69  NO, |net|<=floor
+q4    cpp  temp 0.3                161      37      37     +0    9     9   +0   0.61  NO, |net|<=floor
+q4    cpp  temp 0.6                161      37      31     -6   11    17   -6   0.42  NO, |net|<=floor
+q4    cpp  top_k 20 @ temp 0.3     161      37      37     +0    9     9   +0   0.61  NO, |net|<=floor
+q4    cpp  top_k 40 @ temp 0.3     161      37      37     +0    9     9   +0   0.61  NO, |net|<=floor
+q4    cpp  top_k 64 @ temp 0.3     161      37      37     +0    9     9   +0   0.61  NO, |net|<=floor
+q4    cpp  top_k 200 @ temp 0.3    161      37      37     +0    9     9   +0   0.61  NO, |net|<=floor
+q4    py   temp 0.3                161      44      51     +7   16     9   +7   0.58  yes, |net|>floor
+q4    py   temp 0.6                161      44      51     +7   17    10   +7   0.56  yes, |net|>floor
+q4    py   top_k 20 @ temp 0.3     161      44      51     +7   16     9   +7   0.58  yes, |net|>floor
+q4    py   top_k 40 @ temp 0.3     161      44      51     +7   16     9   +7   0.58  yes, |net|>floor
+q4    py   top_k 64 @ temp 0.3     161      44      51     +7   16     9   +7   0.58  yes, |net|>floor
+q4    py   top_k 200 @ temp 0.3    161      44      51     +7   16     9   +7   0.58  yes, |net|>floor
+
+# up   = fail under the anchor, pass under the setting
+# down = pass under the anchor, fail under the setting
+# net  = score move in items (signed); 'separable' compares |net| with i01's repeat floor of 6/164
+# jacc = |pass(g) and pass(s)| / |pass(g) or pass(s)|

@@ -1,0 +1,14 @@
+
+UNMEASURED: missing per-item product(s):
+  /tmp/tmp.w2q5INFqzX/.wrapup/mres/m27-q2-t0.0-cpp_eval.json
+  /tmp/tmp.w2q5INFqzX/.wrapup/mres/m27-q2-t0.0-py_eval.json
+  /tmp/tmp.w2q5INFqzX/.wrapup/mres/m31-q3-tk1-cpp_eval.json
+  /tmp/tmp.w2q5INFqzX/.wrapup/mres/m31-q3-tk1-py_eval.json
+  /tmp/tmp.w2q5INFqzX/.wrapup/mres/m31-q4-tk1-cpp_eval.json
+  /tmp/tmp.w2q5INFqzX/.wrapup/mres/m31-q4-tk1-py_eval.json
+# command : python3 docs/subprojects/a06/peritem_moves.py 
+# git HEAD: 
+# floor   : i01 five-repeat temp=0.3 net score move <= 6 of 164
+
+level lang setting                   n pass(g) pass(s)  delta   up  down  net   jacc  separable
+EXIT=2

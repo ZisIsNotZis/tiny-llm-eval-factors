@@ -17,20 +17,21 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（文档归位 + 协议普查）。普查脚本 `sampling_census.py` 退出 0，六段输出全部落到 `RESULT.md` 的事实里。
-- 在办：`WP2` 逐题判决移动（`m27`/`m31` 的 `_eval.json` 产物已在盘上，纯 CPU，秒级）——这是 AC 里「逐题判决」那一半。
-- 下一步派给谁：`WP2` 派给本子项目的 worker（CPU 槽，不需要 GPU）；
-  `WP3`（厂商推荐臂）现在**外部阻塞**：本机无外网，模型卡不在本地缓存，见下；
-  `WP4`（规模次序）需要一个 GPU 槽，排队等 `nvidia-smi` 的空闲显存在实测之后决定（不设圆整数门槛）。
-- 真正未做的三件，按 AC 的权重排序：`WP3` 厂商推荐臂（AC 明文要求）、`WP4` 规模次序存活（本子项目 substance 的第二个问句）、
-  `WP5` 独立复核（必须有，不能自评）。
+- 已完成：`WP1`（文档归位 + 协议普查）与 `WP2`（逐题判决移动）。
+  两个只读脚本都退出 0，捕获在 `evidence/`：`census-6fc5b0c.txt`（267 行）、`peritem-2552615.txt`（36 对），
+  各自带一份负控（空临时树里跑同一脚本 → 输入全缺、exit 2）。
+- 在办：`WP3`（厂商推荐臂）**外部阻塞**：本机无外网，模型卡也不在本地缓存，见 `RESULT.md` 的 `res-vendor-gap`。
+- 下一步派给谁：`WP4`（规模次序）需要一个 GPU 槽，先看 `nvidia-smi` 的 `memory.free` 再决定能否起服；
+  `WP5`（独立复核）由 meta 派 fresh-context reviewer——复核可先针对 `WP1`/`WP2` 的产物做，不必等 `WP3`/`WP4`。
+- 真正未做的只剩两件：`WP3` 的厂商推荐值（等外网）+ `WP4` 的规模次序（等显存）。
+  AC 的「温度/top-k 结论可复算」那一半已经完成；「厂商推荐采样 vs 固定协议受控检查完成」那一半在两个轴上都不成立于当前环境。
 
 ## 工作包
 
 | 工作包 | owner | AC（可证伪） | 依赖 | 预算 | 状态 |
 |---|---|---|---|---|---|
 | WP1 文档归位 + 协议普查 | a06 编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 与 `result.yaml` 已删除且 `plan3`/`res10` 以 `## <id> :: <text>` 事实存活；`sampling_census.py` 退出 0，缺任一输入（库 / `m27_summary.jsonl` / `m31_summary.jsonl` / `variant_panel.json`）时退出 2；`python3 docs/check_docs.py` 退出 0 | — | 1 会话 | 完成 |
-| WP2 逐题判决在协议改变时移动多少 | a06 worker（CPU 槽） | 对 `.wrapup/mres/m27-*_eval.json` 与 `m31-*_eval.json` 逐题比 greedy 锚点与每个 temp>0 / top_k 设置，给出每 (模型, 语言, 设置) 的 up/down 翻转数与 Jaccard，并回答「净分数移动 vs 逐题翻转」是否与 i01 的 temp=0.3 五跑地板同量级；缺产物时 exit 2 | WP1 | 0.2 CPU 时 | 待派 |
+| WP2 逐题判决在协议改变时移动多少 | a06 worker（CPU 槽） | 对 `.wrapup/mres/m27-*_eval.json` 与 `m31-*_eval.json` 逐题比 greedy 锚点与每个 temp>0 / top_k 设置，给出每 (模型, 语言, 设置) 的 up/down 翻转数与 Jaccard，并回答「净分数移动 vs 逐题翻转」是否与 i01 的 temp=0.3 五跑地板同量级；缺产物时 exit 2 | WP1 | 0.2 CPU 时 | 完成：`peritem_moves.py` 比完 36 对（3 档 × 2 语言 × 6 设置）退出 0；Jaccard 0.40–0.69，23/36 对净移动 ≤ 6 道题（与 i01 五跑地板不可分），最极端一格净 +1 而 15 上/14 下；负控在空临时树里 exit 2 |
 | WP3 厂商推荐采样臂（`plan3` 的受控检查） | a06 编排者（需要外网取值）+ GPU worker | 在 `.wrapup/mres/*/variant_panel.json` 的 sampling 轴里加入名为 `vendor` 的一档，其采样参数逐字取自模型卡（记录 URL + 抓取日期到 `RESULT.md`），与 `greedy` 同模型同 bench 同 n_items 对照；若模型卡不可达，则本条 AC 记为「不可得 + 原因 + 已有什么」，不得用猜的值填 | 模型卡可达（本机当前无外网，见下） | 约 10 GPU 分钟/模型/档（m131 实测 5 档 4 个基准共约 45 分钟） | 阻塞（外网） |
 | WP4 规模次序在采样下是否存活 | GPU worker | 同族 ≥3 个规模（例如 Qwen3.5-0.8B/2B/4B）在同一 bench、同一 ctx 下各有 greedy 与一档 temp>0 的格；给出规模对的 win/loss 与次序反转数，且与 WP1 的量化档结论分开报告 | 一个 GPU 槽 + `variant_panel.py` 的 sampling 轴（已在盘上） | ≤40 GPU 分钟（2 个模型 × 2 档 × 4 基准，按 m131 的 9–10 分钟/档估） | 待派（等显存） |
 | WP5 独立复核 | fresh-context reviewer（meta 派） | 对本目录三份文档与 `sampling_census.py` 的输出给裁决，指出证据缺口；reviewer 的结论取代本人的自评 | WP1–WP4 | 一次复核 | 待派 |
