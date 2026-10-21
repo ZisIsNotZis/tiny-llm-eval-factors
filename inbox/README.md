@@ -1,25 +1,28 @@
-# mail/ — messages between this project and the layer above it
+# inbox/ — messages between this project and the layer above it
 
-This directory is the door, not a shelf. A message written *to* `local_lm_research` lands here; a
-message *from* `local_lm_research` is written into the receiver's own `mail/`, never kept here. The
-directory is tracked by git so a message survives a change of machine, and it is created the first
-time something is written.
+This directory is the door, not a shelf. It is the one place this project and root exchange messages:
+a report this project sends is written here because root reads it here, and root's answers land here
+to be read when this project next wakes. The directory is tracked by git so a message survives a
+change of machine, and it is created the first time something is written.
 
-One file per message. The file name is `<YYYY-MM-DD>-<topic>.md`; the date is the day it was
-written, not the day it was read.
+One file per message. The file name is `<YYYY-MM-DD>-<topic>.md`; the date is the day it was written,
+not the day it was read.
 
 ## Shape of a file
 
-Five header lines, then a blank line, then the body, then the effort.
+Four header lines, then a blank line, then the body, then the effort.
 
 ```
-kind:    contract | report | cost | direction | resource
+kind:    report | contract | cost | direction | resource
 from:    <agent name> (<how it was launched>)
-to:      <agent name, or `root`>
 spend:   <class, not a number>
 id:      <the message this answers, or `none — first contact`>
 ```
 
+- The direction is read from `from:` and needs no line of its own: a file whose `from:` is this
+  project is a report on its way up to root, and a file whose `from:` is root or the person is an
+  answer landed here for this project. There is no `to:` line because the pair is fixed by the
+  directory.
 - `kind` sets the route. `contract` goes to the layer that wrote the contract. `cost` goes to
   whoever owns the commitment. `direction` goes to the person unchanged, carrying only the writer's
   own cost and priority rows. `resource` goes to whoever holds that budget.
