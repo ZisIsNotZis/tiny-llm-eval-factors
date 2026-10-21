@@ -262,6 +262,20 @@ else
 fi
 rm -f /tmp/reproduce_oq.$$
 
+if python3 checks/superseded_pointer_negative_control.py >/tmp/reproduce_sup.$$ 2>&1; then
+    record PASS "superseded 指针的负控（悬空指针 → db_check 变红并点名）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_sup.$$ | cut -c1-160)"
+fi
+rm -f /tmp/reproduce_sup.$$
+
+if python3 checks/superseded_filter_negative_control.py >/tmp/reproduce_supf.$$ 2>&1; then
+    record PASS "报告过滤被取代行的负控（去掉过滤 → 被取代的行以第二个分数回到表里）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_supf.$$ | cut -c1-160)"
+fi
+rm -f /tmp/reproduce_supf.$$
+
 if python3 checks/docs_dup_id_negative_control.py >/tmp/reproduce_dup.$$ 2>&1; then
     record PASS "doc id 唯一性的负控（同文件重复 → FAIL 并点名；跨文件同名 → PASS）"
 else
