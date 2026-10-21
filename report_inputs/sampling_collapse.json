@@ -1,0 +1,56 @@
+{
+ "source": "docs/subprojects/a06-采样与解码参数/RESULT.md",
+ "mpl_losses": [
+  {
+   "cell": "q2-cpp",
+   "from": 18,
+   "to": 1,
+   "lost": 17
+  },
+  {
+   "cell": "q2-py",
+   "from": 22,
+   "to": 3,
+   "lost": 19
+  },
+  {
+   "cell": "q3-cpp",
+   "from": 39,
+   "to": 4,
+   "lost": 35
+  },
+  {
+   "cell": "q3-py",
+   "from": 43,
+   "to": 7,
+   "lost": 36
+  },
+  {
+   "cell": "q4-cpp",
+   "from": 37,
+   "to": 6,
+   "lost": 31
+  },
+  {
+   "cell": "q4-py",
+   "from": 44,
+   "to": 12,
+   "lost": 32
+  }
+ ],
+ "evalplus": {
+  "from": 94,
+  "to": 59,
+  "lost": 35
+ },
+ "floor_cpp": {
+  "syntax": 142,
+  "exception": 18,
+  "ok": 1
+ },
+ "m2_probe": {
+  "pass": 2,
+  "n": 40
+ },
+ "not_temperature": true
+}

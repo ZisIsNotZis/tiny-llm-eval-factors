@@ -302,3 +302,10 @@
 - evidence: `reproduce.sh` 顶部 `export A10_NO_GGUF=1`，让 a10 的 `build_fixture.py --check` 在 clone 里报「未核对 gguf 源」而不是通过。自查同类风险：`build_size_claims`（读 a02 的 `analysis/*.json`）、`build_moe_feasibility`（读 a04 的 `fixtures/*.json`）、`build_bfcl_judge`/`build_gsq`（读子项目 `RESULT.md`）、`build_bfcl_gap`（读 tracked 的 `.wrapup/*_summary.jsonl`）、`build_paired_deltas`/`build_reproducibility`（读 i01 `RESULT.md`）都只依赖入库文件；唯一执行外部脚本的是 `build_kv_evidence`（跑 a05 的 `kv_evidence.py`）与 `build_scheme_effects`（跑 a03 的 `attrib.py`），两者只读库与 tracked fixture，且 `--check` 不一致会 WARN 而不是通过。
 - producer: `grep -n "A10_NO_GGUF" reproduce.sh`；`./reproduce.sh`
 
+## res63 :: 报告第六节按 a06 的厂商臂实测改：是绝对丢题（−17~−36），不是比例塌陷，也不是温度。
+
+- kind: measured
+- status: current
+- evidence: 第六节由 `report_inputs/sampling_collapse.json` 渲染（`build_sampling_collapse.py` 读 a06 的 `RESULT.md`）：MultiPL-E 六格 18→1/22→3/39→4/43→7/37→6/44→12（−17…−36），EvalPlus HumanEval 94→59（−35），损失不是常数；cpp 的直方图 `SyntaxError=142, Exception=18, OK=1`（语法塌陷）与 py 的「能解析跑不起来」是两种失效形态；temp 0.3/0.6 下 cpp 仍是 18/161，且把截断量改回固定协议、`presence_penalty` 置 0、只留 `temperature=1.0` 时该格仍是 2/40——所以不是温度、截断量也不是主因。「10 倍塌陷」只在相对意义成立，固定协议比厂商档宽容的正是这十几到三十几道题。
+- producer: `python3 report_inputs/build_sampling_collapse.py --check`；`python3 checks/sampling_collapse_negative_control.py`（丢题数改成 0 → 正文改口成「与固定协议差距为零」）
+

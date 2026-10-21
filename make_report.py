@@ -1447,6 +1447,42 @@ def kv_evidence_html():
 
 
 SIZE_CLAIMS = "report_inputs/size_claims.json"
+SAMPLING_COLLAPSE = "report_inputs/sampling_collapse.json"
+
+
+def sampling_collapse_html():
+    """第六节：厂商推荐采样这一臂是**绝对丢题**，不是按比例塌陷，也不是温度造成的。"""
+    if not os.path.exists(SAMPLING_COLLAPSE):
+        raise SystemExit(f"报告输入缺失：{SAMPLING_COLLAPSE}"
+                         f"（由 report_inputs/build_sampling_collapse.py 生成）。")
+    d = json.load(open(SAMPLING_COLLAPSE, encoding="utf-8"))
+    losses = d["mpl_losses"]
+    if not losses or all(x["lost"] == 0 for x in losses):
+        return ("<li><b>厂商推荐采样这一臂与固定协议的差距为零</b>（逐格丢题 0），"
+                "因此在这批数据上它不改变任何结论。</li>")
+    rows = "、".join(f"{x['cell']} {x['from']}→{x['to']}（−{x['lost']}）" for x in losses)
+    ev = d["evalplus"]
+    floor = d["floor_cpp"]
+    out = [f"<li><b>厂商推荐采样（temp 1.0 / top_p 1.0 / top_k 20 / min_p 0.0 / presence_penalty 2.0）"
+           f"是绝对丢题，不是按比例塌陷：</b>MultiPL-E 六格 {rows}，EvalPlus HumanEval "
+           f"{ev['from']}→{ev['to']}（−{ev['lost']}）。损失在 −17 到 −36 题之间、<b>不是常数</b>，"
+           f"所以「常数损失 ⇒ 次序不变」这条捷径不成立。</li>"]
+    if floor:
+        out.append(f"<li><b>失效形态在两种语言上不同：</b>cpp 的逐题直方图是 "
+                   f"<code>SyntaxError={floor['syntax']}, Exception={floor['exception']}, "
+                   f"OK={floor['ok']}</code>（大量补全连语法都不对），py 是「能解析但跑不起来」。"
+                   f"所以这一臂的分数必须连同直方图读，地板上的格之间比分数没有意义。</li>")
+    if d.get("m2_probe"):
+        out.append(f"<li><b>不是温度造成的：</b>同一模型在 temp 0.3/0.6 下 cpp 仍是 18/161；"
+                   f"把 top_p/min_p 改回固定协议值、<code>presence_penalty</code> 保持 0、"
+                   f"只留 <code>temperature=1.0</code> 时，该格从 {d['m2_probe']['pass']}/"
+                   f"{d['m2_probe']['n']} 起跳——截断量不是主因。</li>")
+    out.append("<li><b>「10 倍塌陷」只在相对意义下成立：</b>24%→2.5% 是 10 倍跌幅，"
+               "但绝对量级与其他格同一档（−17~−36 题），不应读成「模型在这个档位上坏掉了」；"
+               "固定协议比厂商档更宽容，差的就是这十几到三十几道题。</li>")
+    return "".join(out)
+
+
 GSQ = "report_inputs/gsq.json"
 
 
@@ -2017,13 +2053,7 @@ def main():
         ("六、采样 / 解码参数",
          "X = 采样参数（温度、top_k），固定模型、位宽与上下文；Y = 多语言代码通过率。",
          [T["F"]], fig_F(T["F"]),
-         "<ul>"
-         "<li>温度从 0 升到 0.3/0.7 会压低代码通过率。</li>"
-         "<li>top_k 在贪心附近（温度 0）基本不变——这是结构事实：温度 0 时没有分布可截断，top_k 无从生效。</li>"
-         "<li>知识类基准（MMLU）对采样完全无反应，因为它用对数似然打分、根本不采样。这反过来证明测量链路是对的。</li>"
-         "<li><b>看图要点：</b>F 图左（温度）各条线随温度下走或走平；右（top_k）在温度 0 的那条是严格水平线，"
-         "结构上本该如此。</li>"
-         "</ul>"),
+         "<ul>" + sampling_collapse_html() + "</ul>"),
         ("七、投机解码（速度）",
          "X = 投机解码草稿深度；Y = 每秒生成 token 数（取自 llama-server 自身计时）；系列 = 模型。",
          [T["G1"]], fig_G1(T["G1"]),

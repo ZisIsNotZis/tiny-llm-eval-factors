@@ -67,6 +67,7 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/size_claims.json report_inputs/kv_evidence.json \
          report_inputs/bfcl_gap.json report_inputs/moe_feasibility.json \
          report_inputs/bfcl_judge.json report_inputs/gsq.json \
+         report_inputs/sampling_collapse.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -84,6 +85,16 @@ if python3 report_inputs/build_bfcl_judge.py --check >/dev/null 2>&1; then
     record PASS "bfcl_judge.json 与 a13 的判分器事实一致"
 else
     record WARN "bfcl_judge.json 与 a13 的事实不一致：python3 report_inputs/build_bfcl_judge.py"
+fi
+if python3 report_inputs/build_sampling_collapse.py --check >/dev/null 2>&1; then
+    record PASS "sampling_collapse.json 与 a06 的事实一致"
+else
+    record WARN "sampling_collapse.json 与 a06 的事实不一致：python3 report_inputs/build_sampling_collapse.py"
+fi
+if python3 checks/sampling_collapse_negative_control.py >/dev/null 2>&1; then
+    record PASS "第六节厂房档口径的负控（丢题数改 0 → 无差）"
+else
+    record FAIL "第六节厂商档口径的负控未通过"
 fi
 if python3 report_inputs/build_gsq.py --check >/dev/null 2>&1; then
     record PASS "gsq.json 与 a10 的事实一致"
