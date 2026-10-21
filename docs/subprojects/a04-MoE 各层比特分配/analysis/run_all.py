@@ -134,6 +134,36 @@ def main(argv=None):
     check("pin-fixture", "入库夹具 pin_feasibility.json 与重算一致，22 对（4 可等 / 18 不可等）",
           pin_fixture_matches)
 
+    def paired(bench, want_b, want_c, p_max, d_min):
+        import paired as pr
+        r = pr.compare("uni45", "exq4", bench, plus=True)
+        print("    paired %s: %d/%d vs %d/%d, discordant %d:%d, p=%.3g, Δ=%+.4f"
+              % (bench, r["k_a"], r["n"], r["k_b"], r["n"], r["b_only_a"], r["c_only_b"],
+                 r["p_mcnemar_exact"], r["delta"]))
+        return (not r["tasks_unmatched"] and r["b_only_a"] == want_b and r["c_only_b"] == want_c
+                and r["p_mcnemar_exact"] < p_max and r["delta"] >= d_min
+                and r["ci_wald"][0] > 0)
+
+    check("paired-he-plus", "HumanEval+ 逐题配对：99/164 对 22/164，77:0，p<1e-20，Δ≥0.45",
+          lambda: paired("humaneval", 77, 0, 1e-20, 0.45))
+    check("paired-mbpp-plus", "MBPP+ 逐题配对：220/378 对 90/378，136:6，p<1e-30，Δ≥0.30",
+          lambda: paired("mbpp", 136, 6, 1e-30, 0.30))
+
+    def strategy_definition_matters():
+        files = [n for n in ap.ALLOC if ap.is_moe(n)]
+        a = {}
+        for n in files:
+            a[ap.strategy(n)] = a.get(ap.strategy(n), 0) + 1
+        b = {}
+        for n in files:
+            k = ap.strategy_alt(n, ("embed",))
+            b[k] = b.get(k, 0) + 1
+        print("    definitions: A=%s  B(含 embed)=%s" % (dict(sorted(a.items())), dict(sorted(b.items()))))
+        return (a == {"专家优先": 1, "均匀": 2, "非专家优先": 12} and b.get("专家优先", 0) == 0)
+
+    check("strategy-definition", "桶定义 A 给 12/2/1；含 embed 的 B 让「专家优先」归零",
+          strategy_definition_matters)
+
     def third_arm_pinned():
         """钉住档的第三策略判定：均匀臂 vs exq4 在 HumanEval+ 上可分辨且方向为均匀更高。"""
         cells, _ = ap.a03.load()

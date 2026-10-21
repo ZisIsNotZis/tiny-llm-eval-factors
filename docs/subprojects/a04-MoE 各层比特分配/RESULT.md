@@ -21,7 +21,7 @@
 
 ## 一、语料里有什么（`kind: measured`）
 
-### moe-population :: a03 夹具的 51 个文件里有 **14 个是 MoE**（有 `ffn-expert` 桶），分属 5 族：LFM2.5-8B-A1B（5 个）、GLM-4.7-Flash（3）、Qwen3.6-35B-A3B（3）、gemma-4-26B-A4B（2）、Qwen3.5-35B-A3B（1）；专家桶占参数量 90.51%–92.99%，即这些模型的「比特放在哪」几乎完全由「专家层拿多少」与「非专家层拿多少」两个数决定。
+### moe-population :: a03 夹具的 51 个文件里有 **14 个是 MoE**（有 `ffn-expert` 桶），加上本层自建的 1 个共 **15 个**，分属 5 族：LFM2.5-8B-A1B（6 个，含自建臂）、GLM-4.7-Flash（3）、Qwen3.6-35B-A3B（3）、gemma-4-26B-A4B（2）、Qwen3.5-35B-A3B（1）；专家桶占参数量 90.51%–92.99%，即这些模型的「比特放在哪」几乎完全由「专家层拿多少」与「非专家层拿多少」两个数决定。
 
 - author: measurement
 - scope: general
@@ -83,7 +83,7 @@
 
 ## 三、三个策略与受控对照（`kind: measured`）
 
-### strategies :: 按 `AGENTS.md` 第 1 条的机械规则（专家桶 vs 层桶 = attn/稠密 FFN/共享专家的参数加权均值，带宽 0.5 比特/参数）把 14 个 MoE 文件分成 3 个策略：**非专家优先 12 个**、**均匀 1 个**（`m55-Q3_K_M`，专家 3.792 vs 层桶 3.977）、**专家优先 1 个**（`m55-exq4`，专家 4.500 vs 层桶 2.952）；`embed` 不参与方向判定（K-quant 模板把它钉在 4.5–8.5，是另一套机制），但一并打印。
+### strategies :: 按 `AGENTS.md` 第 1 条的机械规则（专家桶 vs 层桶 = **attn / 稠密 FFN / 共享专家**的参数加权均值，带宽 0.5 比特/参数）把 **15 个** MoE 文件分成 3 个策略：**非专家优先 12 个**、**均匀 2 个**（`m55-Q3_K_M` 专家 3.792 vs 层桶 3.977；自建臂 4.515 vs 4.722）、**专家优先 1 个**（`m55-exq4`，专家 4.500 vs 层桶 2.952）；`embed` 与 `other` **不参与方向判定**（K-quant 模板把 `embed` 钉在 4.5–8.5、`other` 是混杂桶，两者都不是「层」），但一并打印。规则文字与代码逐字一致（`LAYER_BUCKETS = (attn, ffn-dense, ffn-shexp)`）；另一个候选口径的后果是机械可查的：把 `embed` 也算进 `b_layer`，`exq4` 从**专家优先**翻成**非专家优先**、「专家优先」在 15 个文件里归零（14 非专家优先 / 1 均匀 / 0 专家优先），`strategy-counts` 断言随之失效——所以桶定义只能有一份，就是这三个桶。
 - author: measurement
 - scope: general
 - status: current
@@ -143,28 +143,49 @@
 - repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/build_fixture.py" --check`；`python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --infeasible | grep a04-uni45`
 - 说明：分数见 `third-arm-pinned`（六基准齐、`bad_rate` 0、同协议）。
 
-### third-arm-pinned :: 钉住档（`Δbpw = −0.048`、`L1_pw = 0.176`）上，**均匀**（本层自建臂，4.531）对**专家优先**（`m55-exq4`，4.483）的逐基准差值是 HumanEval +0.4817 [+0.3838,+0.5654]、HumanEval+ +0.4695 [+0.3720,+0.5535]、MBPP +0.4339 [+0.3669,+0.4947]、MBPP+ +0.3439 [+0.2761,+0.4070]、MMLU +0.1952 [+0.1510,+0.2383]、GSM8K +0.2400 [+0.1081,+0.3606]（六列区间都不含 0），ARC-c +0.0900 [−0.0459,+0.2213] 与 IFEval +0.0900 [−0.0467,+0.2221] 跨 0，TruthfulQA −0.1153 不套区间；而比特预算对这些差的贡献只有 +0.0064…+0.0097。
+### third-arm-pinned :: 钉住档（`Δbpw = −0.048`、`L1_pw = 0.176`）上，**均匀**（本层自建臂，4.531）对**专家优先**（`m55-exq4`，4.483）的逐基准差值是 HumanEval +0.4817 [+0.3838,+0.5654]、HumanEval+ +0.4695 [+0.3720,+0.5535]、MBPP +0.4339 [+0.3669,+0.4947]、MBPP+ +0.3439 [+0.2761,+0.4070]、MMLU +0.1952 [+0.1510,+0.2383]、GSM8K +0.2400 [+0.1081,+0.3606]（六列区间都不含 0），ARC-c +0.0900 [−0.0459,+0.2213] 与 IFEval +0.0900 [−0.0467,+0.2221] 跨 0，TruthfulQA −0.1153 不套区间；而比特预算对这些差的贡献按 `a03::slopes` 的同族固定效应斜率 **+0.1779 ± 0.0726（n=65 格，95% [0.036,+0.320]）** 折算只有 **+0.0017…+0.0155**。
 - author: measurement
 - from: result.own-arm
 - scope: specific
 - status: current
 - kind: measured
 - evidence: 自建臂的六列分数在 `experiments.sqlite`（`model='LFM2.5-8B-A1B-a04-uni45.gguf'`，协议 `evalplus-0.3.1-openai-chat-greedy-{base,plus}` 与 `lmeval-0.4.13-{gguf-shim,chat}-reasoning-off`，`n_items` 164/164/378/378/912/100/100/100/100）；落盘面板在 `.wrapup/mres/m164-a04-uni45/`（`lmeval_panel.json`、`evalplus.json`、`codegen/*/`），入库走 `migrate_db.py`（备份 `experiments.sqlite.bak19`），`checks/db_check.py` PASS
-- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --pairs --family LFM2.5-8B`（打印该对九列差值 + 区间 + 比特预算项）
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --pairs --family LFM2.5-8B`（打印该对九列差值 + 非配对区间 + 比特预算项）；配对检验见 `paired-he-plus` / `paired-mbpp-plus`
 - 三档归类：HumanEval / HumanEval+ / MBPP / MBPP+ / MMLU / GSM8K 六列**可分辨**（方向：均匀更高）；ARC-c 与 IFEval **不可分辨**（可见性下限 = 半宽 0.134，即这两个 100 题列只能探测 ≥0.13 的差）；TruthfulQA 属**通道不可用**（概率质量均值，`i01::res26`，不作判定）。无任何一格是「本次不可用」——该臂的两个面板都跑成、无 `errors`、`bad_rate` = 0。
 - 说明：两侧同一套 base 权重（8,467,856,832 参数）、同一协议串、同 `n_items`、同 `ctx`/`np`/`temp`/`reasoning`，所以「同一总比特、比特放不同层」是唯一变化量；`Δbpw` 只值 HumanEval+ 0.0086，**预算解释不了 0.34–0.47 的差**。
-- 说明：这条是本层唯一一个把「分配」从「预算」分离出来并测出可分辨差的对照，也是 `expert-first` 策略的判定依据。
+- 说明：这条是本层唯一一个把「分配」从「预算」分离出来并测出可分辨差的对照，也是 `expert-first` 策略的判定依据——但它是 **n=1**，且对手是一条已知病态的臂：`exq4` 在 4.483 比特/权重上 HumanEval 只有 0.1402，**低于本族 2.764 比特那一档的 0.3110**，即它的分数不是「比特少」也不是「分配不同」能单独解释的低，所以正确的读法是「exq4 这条配方形状（专家 4.5 + 非专家压到 ~2.95）被否定」，不是「专家优先这一类策略被一般性否定」。
 - 会推翻它：同两文件同配置重跑出现六列中任一列区间含 0（复现负控未测，见 `unmeasured-items`）。
 
-### uniform-slope-check :: 同为**均匀**轮廓、只差总比特的另一对（本层自建臂 4.531 对 `m55-Q3_K_M` 3.881，`Δbpw = +0.650`）在代码四列上可分辨：HumanEval +0.2683 [+0.1608,+0.3671]、HumanEval+ +0.2683 [+0.1610,+0.3669]、MBPP +0.1640 [+0.0948,+0.2310]、MBPP+ +0.1005 [+0.0294,+0.1702]；五列 lm-eval 全跨 0（MMLU +0.0351 [−0.0107,+0.0806]、ARC-c 0.0000、GSM8K +0.0200、IFEval −0.0900）。
+### paired-he-plus :: 用两臂的**逐题**判定做配对检验：HumanEval+ 上 99/164 对 22/164，discordant **77 : 0**（A 只过 77、B 只过 0），McNemar 精确双侧 p = **1.32e-23**，差值 **+0.4695**，95% 区间 Wald 配对 **[+0.3931,+0.5459]**、条件精确 **[+0.4256,+0.4695]**（`c=0` 时条件精确的上端退化到点估计，这是它的正常行为）。
+- author: measurement
+- from: result.third-arm-pinned
+- scope: specific
+- status: current
+- kind: measured
+- evidence: 逐题产物入库为 `.wrapup/mres/a04-arm-uni45-humaneval-evalplus_eval.json`（sha256 `66bd15bd5bcd2217cee3962f860e8f587f6c8a71dda5f5b75f32e71dfc5df7bb`，源 `.wrapup/mres/m164-a04-uni45/codegen/humaneval/…_eval_results.json`）与 `.wrapup/mres/a04-arm-exq4-humaneval-evalplus_eval.json`（sha256 `0d8880262e960597a9177dc7559c0d445dcb2855bb0de5fa0d90493d6c1ddda9`，源 `.wrapup/mres/m109-lfm25-8b-a1b-m55-exq4/codegen/humaneval/…_eval_results.json`）；`.gitignore` 的 `!.wrapup/mres/*_eval.json` 让它们随仓库走
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/paired.py" --bench humaneval`
+- 说明：配对检验比非配对区间强得多（同一道题上比较），所以「区间不含 0」在这里不是靠样本量硬撑；两臂的 `n_items` 都是 164 且题号集合完全相同（`paired.py` 会打印 `tasks_unmatched` 为空）。
+
+### paired-mbpp-plus :: MBPP+ 上 220/378 对 90/378，discordant **136 : 6**，McNemar 精确双侧 p = **3.84e-33**，差值 **+0.3439**，95% 区间 Wald 配对 **[+0.2928,+0.3951]**、条件精确 **[+0.3083,+0.3639]**；base 判分（不带 plus）是 263/378 对 99/378、discordant 167 : 3、p = 1.09e-45。
+- author: measurement
+- from: result.third-arm-pinned
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `.wrapup/mres/a04-arm-uni45-mbpp-evalplus_eval.json`（sha256 `10f13a11dec7114e552479868ab8160d6a154d8227e579c3c7a5bbd3f5f43088`）与 `.wrapup/mres/a04-arm-exq4-mbpp-evalplus_eval.json`（sha256 `4cebdd98db4c9893ec147fd51394834f69b864bd5ed3db0682a81d1974a13c34`）
+- repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/paired.py" --bench mbpp`
+- 说明：这一列不是「6 题翻转导致」——discordant 的不对称度 136:6 就是这个结论的全部内容；`i01::res31` 记的 MBPP+ 1/378 空体缺陷对差值的影响上限约 0.003，不影响判定。
+
+### mixed-pair-uni45-q3km :: 同一族、同为**均匀**轮廓的另一对（本层自建臂 4.531 对 `m55-Q3_K_M` 3.881）在代码四列上可分辨：HumanEval +0.2683 [+0.1608,+0.3671]、HumanEval+ +0.2683 [+0.1610,+0.3669]、MBPP +0.1640 [+0.0948,+0.2310]、MBPP+ +0.1005 [+0.0294,+0.1702]；五列 lm-eval 全跨 0（MMLU +0.0351 [−0.0107,+0.0806]、ARC-c 0.0000、GSM8K +0.0200、IFEval −0.0900）。
 - author: measurement
 - from: result.three-arm-scores, result.own-arm
 - scope: specific
 - status: current
 - kind: measured
-- evidence: `experiments.sqlite` 的两行模型；协议同上
+- evidence: `experiments.sqlite` 的两行模型（协议同上）；轮廓见两份入库夹具
 - repro: `python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/alloc_pairs.py" --pairs --family LFM2.5-8B`
-- 说明：这是本族的**预算**项在代码列上的实测尺度：0.650 比特值 HumanEval+ 0.268，即本族代码列的每比特斜率约 **0.41**，明显高于 `a03::slopes` 的合并值 0.178。所以用 a03 的合并斜率给本族的预算项打折会**低估**预算贡献；在 `third-arm-pinned` 里这不影响结论——即便按 0.41/比特算，`Δbpw = 0.048` 也只值 0.020，远小于 0.34–0.47。
+- retracted: 上一版把这一对叫「只差总比特」并据此算出本族代码列每比特斜率 ≈0.41，撤回——它的 `L1_pw = 0.777` **大于** `|Δbpw| = 0.650`，按本层自己的规则 2 它不是预算对，而是预算与分配同时变了的混合对；两点估计出来的斜率既无区间又是 13.5 倍外推（`Δbpw` 0.048 vs 0.650），不得使用。本族的预算项统一用 `a03::slopes` 的固定效应斜率 +0.1779 ± 0.0726（n=65）。
+- 说明：这一对仍然有用，但只能当**混合对照**读：同为均匀轮廓、多 0.65 比特、代码四列更高而 lm-eval 五列测不出——它同时说明 lm-eval 那几列（mmlu 除外）在 100 题上探测不到这个量级的差。
 
 ### unpinnable-pairs :: 把「能不能被钉住」逐对算一遍：在 4 个有 ≥2 份文件的 MoE 族里，**可钉住 4 对、不可能钉住 18 对**（22 对总数的 82% 不可能）。不可能的那些正好是分数差最大的那些（`exq2`–`exq4` 专家桶差 1.875 对 0.513 的上界、`GLM` 三档 1.552 对 0.025 的上界）。
 - author: measurement
@@ -180,7 +201,7 @@
 
 ## 四、判定（`kind: analysis`）
 
-### strategy-verdict :: 三个策略各自的判定（钉住档内）：**均匀 > 专家优先**——在 `Δbpw = −0.048` 的钉住对照上，均匀在六个可分辨列上全面更高（代码 +0.34…+0.48、MMLU +0.195、GSM8K +0.240），预算项只值 ≤0.010；**均匀 vs 非专家优先 不可分辨**——两对 `L1_pw = 0.381` 的对照 16 格全跨 0、可见性下限 0.135，所以在 3.8–3.9 比特这一带把非专家层从 4.0 抬到 8.5 测不出好处。**专家优先在本架构上不可推广**：`expert-bound` 给出它最多只能挪 0.03–0.51 比特，18/22 对根本不能被摆到同总比特，唯一可钉住的那一对（本条第一句）显著更差。
+### strategy-verdict :: 三个策略各自的判定（钉住档内）：**均匀 > 专家优先**——在 `Δbpw = −0.048` 的钉住对照上，均匀在六个可分辨列上全面更高（代码 +0.34…+0.48、MMLU +0.195、GSM8K +0.240），预算项按 `a03::slopes`（+0.1779 ± 0.0726，95% [0.036,+0.320]）只值 0.0017–0.0155；配对检验 HE+ 77:0、p=1.3e-23，MBPP+ 136:6、p=3.8e-33；**均匀 vs 非专家优先 不可分辨**——两对 `L1_pw = 0.381` 的对照 16 格全跨 0、可见性下限 0.135，所以在 3.8–3.9 比特这一带把非专家层从 4.0 抬到 8.5 测不出好处。**专家优先在本架构上不可推广**：`expert-bound` 给出它最多只能挪 0.03–0.51 比特，18/22 对根本不能被摆到同总比特，唯一可钉住的那一对（本条第一句）显著更差。
 - author: agent
 - from: result.third-arm-pinned, result.pinned-null, result.expert-bound
 - scope: general
@@ -189,17 +210,18 @@
 - evidence: 三条 `kind: measured` 事实的机器读数
 - repro: 见三条各自的复算命令
 - 说明：这条是本层对 AC「≥3 种分配策略受控结论」的回答——三个策略都有钉住档内的对照，两个有方向（均匀 ≥ 专家优先、均匀 vs 非专家优先不可分辨），第三个方向的可行域由上界钉死。
+- 说明（适用范围，别外推）：`均匀 > 专家优先` 这一条是 **n=1 对**，对手是 `exq4`——一条**已知病态**的臂（4.483 比特/权重上 HumanEval 0.1402，低于本族 2.764 比特档的 0.3110）。所以能被这条证据否定的说法是「把非专家层砍到 ~2.95 去喂专家仍然安全」，**不是**「专家优先这一类策略一般性地更差」；要后者需要在别的族或别的专家桶高度上重复。
 - 会推翻它：另一族（GLM / gemma / Qwen3.6）出现同方向的钉住对照反例，或 `third-arm-pinned` 重跑不再显著。
 
-### tier1a-verdict :: `plan6` 的 Tier-1A（专家级/逐张量 MoE 量化）判定：**类别级分配这一维已判完，Tier-1A 要买的东西在这一维上没有价值，它的价值只能在「专家桶内部」**。依据：`expert-bound` 证明在 91.5%–93% 专家占比下、固定总比特时专家桶只能挪 0.03–0.51 比特；`third-arm-pinned` 证明把非专家层压到 ~2.95 去喂专家（正是 exq4 这类「专家优先」配方的形状）在钉住总比特下可分辨地更差（代码 −0.34…−0.48）。剩下唯一没测的一维是**桶内结构**（哪几层 / 哪几个专家的比特不同），本语料 15 个 MoE 文件里没有任何一对构成那一维的对照，所以它本轮**未测**。资源结论（全部实测）：源必须是全精度权重——`LFM2.5-8B-A1B-BF16.gguf` = 16,947,260,768 字节（16.95 GB，`stat -Lc%s`），`plan6` 写的 ~70 GB 是 26B/35B 的量级、本层未验证；单臂构建 207.0 s（本臂）/ 63.8–145.5 s（`m55` 三臂）；单臂六基准面板 1,406 s ≈ 23.4 分钟（lm-eval 1,330 s：mmlu 149.5 + arc 158.4 + tqa 181.7 + gsm8k 306.4 + ifeval 534.3；code 484 + 519 s）；即**一臂端到端 ≈3.5 分钟 CPU + 23.4 分钟 GPU**。
+### tier1a-verdict :: `plan6` 的 Tier-1A（专家级/逐张量 MoE 量化）判定：**类别级分配这一维已判完，Tier-1A 要买的东西在这一维上没有价值，它的价值只能在「专家桶内部」**。依据：`expert-bound` 证明在 91.5%–93% 专家占比下、固定总比特时专家桶只能挪 0.03–0.51 比特；`third-arm-pinned` 证明把非专家层压到 ~2.95 去喂专家（正是 exq4 这类「专家优先」配方的形状）在钉住总比特下可分辨地更差（代码 −0.34…−0.48）。剩下唯一没测的一维是**桶内结构**（哪几层 / 哪几个专家的比特不同），本语料 15 个 MoE 文件里没有任何一对构成那一维的对照，所以它本轮**未测**。资源结论（全部实测）：源必须是全精度权重——`LFM2.5-8B-A1B-BF16.gguf` = 16,947,260,768 字节（16.95 GB，`stat -Lc%s`），`plan6` 写的 ~70 GB 是 26B/35B 的量级、本层未验证；单臂构建 207.0 s（本臂）/ 63.8–145.5 s（`m55` 三臂）；单臂六基准面板 **2,692.3 s ≈ 44.9 分钟 GPU** = lm-eval **1,330.3 s**（mmlu 149.5 + arc 158.4 + tqa 181.7 + gsm8k 306.4 + ifeval 534.3，取 `lmeval_panel.json` 的 `timings_s` 合计）+ EvalPlus code **1,362 s**（humaneval 484 + mbpp 878，取 `evalplus.json` 的 `timings_s.total`）；即**一臂端到端 ≈3.5 分钟 CPU + 44.9 分钟 GPU**。
 - author: agent
 - from: result.expert-bound, result.third-arm-pinned, result.own-arm
 - scope: general
 - status: current
 - kind: analysis
-- evidence: 尺寸 `stat -Lc%s`；构建耗时 `llama-quantize` 自报；面板耗时 `.wrapup/mres/m164-a04-uni45/lmeval_panel.json` 的 `timings_s` 与 `.wrapup/m164_code2.out` 的 `DONE bench` 行（484 s / 519 s）
-- repro: `stat -Lc%s /home/z/hf/LFM2.5-8B-A1B-BF16.gguf`；`python3 -c "import json;print(json.load(open('.wrapup/mres/m164-a04-uni45/lmeval_panel.json'))['timings_s'])"`；`grep 'DONE bench' .wrapup/m164_code2.out`
-- 说明：可证伪形式——造出两臂「同一类别轮廓、不同的桶内结构、总比特钉住」，若六列出现可分辨差，则「Tier-1A 在类别级没价值、只在桶内」这一判定要被改写成「桶内也有价值」；成本已实测，所以这一步的报价是 2 臂 × 23.4 ≈ 47 GPU 分钟 + 7 分钟 CPU。
+- evidence: 尺寸 `stat -Lc%s`；构建耗时 `llama-quantize` 自报（`quantize time = 206998.52 ms`）；面板耗时 = `lmeval_panel.json` 的 `timings_s` 合计 1,330.3 s + `evalplus.json` 的 `timings_s.total` 1,362 s
+- repro: `stat -Lc%s /home/z/hf/LFM2.5-8B-A1B-BF16.gguf`；`python3 -c "import json;d=json.load(open('.wrapup/mres/m164-a04-uni45/lmeval_panel.json'));print(sum(d['timings_s'].values()))"`；`python3 -c "import json;print(json.load(open('.wrapup/mres/m164-a04-uni45/evalplus.json'))['timings_s'])"`
+- 说明：可证伪形式——造出两臂「同一类别轮廓、不同的桶内结构、总比特钉住」，若六列出现可分辨差，则「Tier-1A 在类别级没价值、只在桶内」这一判定要被改写成「桶内也有价值」；成本已实测，所以这一步的报价是 **2 臂 × 44.9 ≈ 89.7 GPU 分钟（≈1.5 小时）+ 7 分钟 CPU**。（上一版写「两臂 ≈47 分钟」是把 code 段 1,362 s 误记成 519 s 得出的，低估约 1.9 倍；本版按产物合计。）
 
 ### harness-env :: 在本仓库当前路径下跑面板时，`gsm8k`/`ifeval` 两个生成任务曾直接失败：venv 的入口脚本 shebang 写的是仓库搬家前的旧根 `/home/z/hf/research/.wrapup/lmenv/bin/python3.12`，那个路径已不存在，`subprocess` 报 `FileNotFoundError`（实跑：`.wrapup/mres/m164-a04-uni45` 的第一次面板在 mmlu 0.4825 / arc 0.4600 之后、truthfulqa 之后死于这一行）。两个入口脚本的 shebang 已改指当前根，`lm_eval --help` 正常；但 `.wrapup/lmenv/` 被 `.gitignore` 排除，所以**干净 clone 里这一条会重新出现**，需要重装 venv 或同样修 shebang。
 - author: measurement
@@ -210,7 +232,7 @@
 - repro: `grep -c FileNotFoundError .wrapup/m164_lmeval.out`；`head -1 .wrapup/lmenv/bin/lm_eval`
 - 说明：这是测量基础设施的缺陷，归 `i02`；本层只记录它曾把一次面板弄死，并说明为何 `m164` 的面板重跑了一次。
 
-### unmeasured-items :: 逐题结果不落库（`i01::res26`：lm-eval 未开 `--log_samples`），所以本层所有区间都是非配对的（两比例差的 Newcombe method 10），跨 0 只能写「不可分辨」并附半宽，不能写「相等」；同一格在相同协议下重跑是否复现入库值**未测**（复现负控未跑，GPU 排队）。
+### unmeasured-items :: `experiments.sqlite` 只存聚合分（`i01::res26`：lm-eval 未开 `--log_samples`），所以表驱动的区间都是**非配对**的（两比例差的 Newcombe method 10），跨 0 只能写「不可分辨」并附半宽；**例外**是 EvalPlus 的两个代码基准：两臂的逐题判定已在盘上，已作为 `_eval.json` 入库，配对检验见 `paired-he-plus` / `paired-mbpp-plus`（lm-eval 那五列仍然只有聚合分，不能配对）。同一格在相同协议下重跑是否复现入库值**未测**（复现负控未跑）。
 - author: agent
 - scope: general
 - status: current

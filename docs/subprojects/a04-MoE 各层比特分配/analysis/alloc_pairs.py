@@ -226,6 +226,43 @@ def print_infeasible(family=None):
     return 0
 
 
+def b_layer_alt(name, extra):
+    """替代口径的层桶均值：把 `extra` 里的桶也算进「非专家」。只用来说明口径选择有后果。"""
+    classes = ALLOC[name]["classes"]
+    keys = [c for c in tuple(LAYER_BUCKETS) + tuple(extra) if c in classes]
+    den = sum(classes[c]["params"] for c in keys)
+    return sum(classes[c]["bits"] * classes[c]["params"] for c in keys) / den if den else float("nan")
+
+
+def strategy_alt(name, extra):
+    gap = b_layer_alt(name, extra) - b_expert(name)
+    if abs(gap) <= UNIFORM_BAND:
+        return "均匀"
+    return "非专家优先" if gap > 0 else "专家优先"
+
+
+def print_definitions():
+    """桶定义的两个候选各自的策略分布。这是「口径选择有后果」的机械证据。"""
+    files = [n for n in ALLOC if is_moe(n)]
+    for label, extra in (("A 层桶=attn/ffn-dense/ffn-shexp（本层采用）", ()),
+                         ("B 层桶=上述+embed（备选，不用）", ("embed",))):
+        counts = {}
+        for n in files:
+            k = strategy(n) if not extra else strategy_alt(n, extra)
+            counts[k] = counts.get(k, 0) + 1
+        print("%-44s %s" % (label, dict(sorted(counts.items()))))
+        if extra:
+            for n in sorted(files):
+                if strategy(n) != strategy_alt(n, extra):
+                    print("    变化：%-40s %s → %s（专家 %.3f / 层桶 %.3f → %.3f）"
+                          % (n, strategy(n), strategy_alt(n, extra), b_expert(n),
+                             b_layer(n), b_layer_alt(n, extra)))
+    print()
+    print("定义 A 保住了三个策略（%d 个 MoE 文件）；定义 B 让「专家优先」归零，"
+          "全库只剩两个策略，`strategy-counts` 断言随之失效——所以桶定义只能有一份，就是 A。"
+          % len(files))
+
+
 def print_strategies():
     files = [n for n in ALLOC if is_moe(n)]
     files.sort(key=lambda n: (strategy(n), b_expert(n)))
@@ -309,6 +346,7 @@ def main(argv=None):
     ap.add_argument("--bounds", action="store_true", help="打印钉住总比特时专家桶能挪多少的上界")
     ap.add_argument("--summary", action="store_true", help="钉住 MoE 配对的总账（格数 / 不含 0 数 / 最大半宽）")
     ap.add_argument("--infeasible", action="store_true", help="逐对判能不能被钉住（只读入库夹具）")
+    ap.add_argument("--definitions", action="store_true", help="两种桶定义下的策略分布（口径选择的后果）")
     ap.add_argument("--pair", nargs=2, metavar=("A", "B"), default=None)
     ap.add_argument("--family", default=None)
     args = ap.parse_args(argv)
@@ -325,6 +363,9 @@ def main(argv=None):
         return 0
     if args.infeasible:
         return print_infeasible(args.family)
+    if args.definitions:
+        print_definitions()
+        return 0
     if args.summary:
         return print_summary(args.family)
     print_strategies()

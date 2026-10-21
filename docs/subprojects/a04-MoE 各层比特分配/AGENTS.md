@@ -5,7 +5,7 @@
 
 ## 这个轴的口径（违反一条，结论就作废）
 
-1. **策略 = 张量类别上的比特向量，不是标签名**。按机械规则从实测轮廓判：把 `ffn-expert` 的 bits 记为 `b_exp`，其余有实义桶（`attn`、`embed`、`ffn-dense`、`ffn-shexp`、`other`，不含 `norm`/`router` 这类按 f32 固定的）的参数加权平均记为 `b_non`；`|b_exp − b_non| ≤ 0.5` 记**均匀**，`b_non − b_exp > 0.5` 记**非专家优先**，`b_exp − b_non > 0.5` 记**专家优先**。档位名（`Q3_K_M`、`UD-`、`IQ`、`m55-*`）与上传者名都不是策略，`a03::label-audit` 已证明标签不可靠。
+1. **策略 = 张量类别上的比特向量，不是标签名**。字段唯一：`b_exp` = `ffn-expert` 桶的 bits；`b_layer` = **`attn` / `ffn-dense` / `ffn-shexp`** 三个「层上真正驻留」的桶按参数量加权的平均（代码里的 `LAYER_BUCKETS`，规则与代码必须逐字一致）。`|b_exp − b_layer| ≤ 0.5` 记**均匀**，`b_layer − b_exp > 0.5` 记**非专家优先**，`b_exp − b_layer > 0.5` 记**专家优先**。`embed` 与 `other` **不参与**：`embed` 被 K-quant 模板钉在 4.5–8.5（同一族内实测 3.438–8.500），是另一套机制；`other` 是混杂桶。把 `embed` 也算进去，`b_layer` 从「层上比特」变成「含嵌入的混合均值」：`exq4` 由**专家优先**变成**非专家优先**，「专家优先」这一档在 15 个 MoE 文件里归零、全库只剩两个策略（`--definitions` 逐行打印这次翻转），`strategy-counts` 断言随之失效——所以桶定义只能有一份，就是这三个桶。档位名（`Q3_K_M`、`UD-`、`IQ`、`m55-*`）与上传者名都不是策略（`a03::label-audit`）。
 2. **两个距离量不许混**：`Δbpw`（总有效位宽差）与 `L1_pw`（参数加权分配距离，比特/参数，定义在 `analysis/profiles.py`）。只有 `L1_pw ≫ |Δbpw|` 才是「分配对照」；`L1_pw ≈ |Δbpw|` 的对照基本只是总比特变了，读它时必须同时给 a03 的比特尺子并把预算部分扣掉。
 3. **钉住判据先写死再比**：三档 `|Δbpw| ≤ 0.05 / 0.15 / 0.45`，每条结论必须写明它落在哪一档；跨档不一致就写「只在某档成立」，不许事后挑档。
 4. **分配轮廓只有一个来源**：`docs/subprojects/a03-量化方案与厂商/analysis/fixtures/alloc_map.json`（只读，不改它、不存第二份）。本层自建的配方必须另存 `analysis/fixtures/*.json` 并带 `build/check` 漂移检查，仓库外的东西（`.wrapup/mres/*`、`/home/z/hf/*.gguf`）不能成为断言的唯一来源。本层现有两份入库夹具：`alloc_a04.json`（自建臂的轮廓，源是 gguf，`--check` 在有源时比对）与 `pin_feasibility.json`（逐对可等总比特性，两个输入都在仓库里，`--check` 在任何 clone 都成立）；两份都由 `analysis/build_*.py` 生成，**不手改**。
