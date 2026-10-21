@@ -1,6 +1,6 @@
 被审 revision: 
-脚本 sha256: f9f9a49eeb038c2717a8037fd3a1956c2c495f52001900009240a63068ae578d
-面板: 0 个 spec panel；产品根: /tmp/tmp.jlXYfETW86/.wrapup
+脚本 sha256: 33703cccaa8df4d0c6b9f2c6fdbbd9435079821105223b8a7eed7c5c9dd46ad8
+面板: 0 个 spec panel；产品根: /tmp/tmp.oSgZLDVMvS/.wrapup
 
 [A] 速度-深度（tok/s，llama-server 自身计时，每深度 3 次重复的均值）
   注：这是单一固定提示词（fibonacci 函数头）上的一次贪心生成测量，不代表全部提示词分布。
@@ -22,7 +22,24 @@
 [D] 装置事实（每个臂 server 自报；MTP 头 = 同一 gguf 名在两个仓库里的文件字节差）
   MTP 头的权重开销（同一 gguf 名，-MTP 仓库文件 − 普通仓库同名文件）：
 
-UNMEASURED: 缺输入 2 项:
-  missing /tmp/tmp.jlXYfETW86/.wrapup/mres/*-spec-*/spec_panel.json
-  missing /tmp/tmp.jlXYfETW86/.wrapup/m28_speed.jsonl
+[E] 装置内负控与草稿的运行期显存（`run_ident_control.py`，同一 -MTP 文件、同一贪心旗标，一次一会话）
+  未跑：没有 `.wrapup/mres/*/ident_control.json`。
+
+[E2] 入库字节校验（6 臂的完成物逐条比；入库在 docs/subprojects/a07-x/evidence/bytes）
+  通过：本机 6 臂与入库字节逐条一致（行数 + 每条 sha256）
+  地板对: 0 对（期望 7），其中不同的 0 对
+
+UNMEASURED: 缺输入 12 项:
+  missing /tmp/tmp.oSgZLDVMvS/.wrapup/mres/*-spec-*/spec_panel.json
+  missing /tmp/tmp.oSgZLDVMvS/.wrapup/m28_speed.jsonl
+  missing m125-spec-0.8b/codegen/n0/humaneval/*_openai_temp_0.0.raw.jsonl
+  missing m125-spec-0.8b/codegen/n2/humaneval/*_openai_temp_0.0.raw.jsonl
+  missing m169-ident-08b-mtp/codegen/none/humaneval/*_openai_temp_0.0.raw.jsonl
+  missing m169-ident-08b-mtp/codegen/draft-mtp2/humaneval/*_openai_temp_0.0.raw.jsonl
+  missing m170-ident-08b-floor/codegen/none/humaneval/*_openai_temp_0.0.raw.jsonl
+  missing m170-ident-08b-floor/codegen/none-r2/humaneval/*_openai_temp_0.0.raw.jsonl
+  missing m169-ident-08b-mtp/ident_control.json
+  missing m170-ident-08b-floor/ident_control.json
+  missing m169-vram-08b-mtp/ident_control.json
+  missing m169-vram-9b/ident_control.json
 exit=2

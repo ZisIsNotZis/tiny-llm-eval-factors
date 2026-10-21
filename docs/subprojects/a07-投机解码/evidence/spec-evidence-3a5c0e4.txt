@@ -1,5 +1,5 @@
-被审 revision: 21f52a58f4a3bb62b82baa0edd570d57a1472847
-脚本 sha256: 2f1ee55e032bc68a60cec8c0bb485ccc70112538dba3c0e7d4e843bd2ffd80a7
+被审 revision: 3a5c0e42c1f59e86f679e60e24bc8eca68b9b3d2
+脚本 sha256: 33703cccaa8df4d0c6b9f2c6fdbbd9435079821105223b8a7eed7c5c9dd46ad8
 面板: 5 个 spec panel；产品根: /home/z/vibe/local_lm_research/.wrapup
 
 [A] 速度-深度（tok/s，llama-server 自身计时，每深度 3 次重复的均值）
@@ -128,3 +128,8 @@
     m169-ident-08b-mtp/draft-mtp2 vs m169-ident-08b-mtp/none: 同一 91/164（差异 73）
     m169-ident-08b-mtp/draft-mtp2 vs m170-ident-08b-floor/none: 同一 91/164（差异 73）
     m169-ident-08b-mtp/draft-mtp2 vs m170-ident-08b-floor/none-r2: 同一 91/164（差异 73）
+
+[E2] 入库字节校验（6 臂的完成物逐条比；入库在 docs/subprojects/a07-投机解码/evidence/bytes）
+  通过：本机 6 臂与入库字节逐条一致（行数 + 每条 sha256）
+  地板对: 7 对（期望 7），其中不同的 0 对
+main rc=0

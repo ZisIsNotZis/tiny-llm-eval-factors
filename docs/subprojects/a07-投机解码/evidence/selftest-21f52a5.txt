@@ -1,1 +1,0 @@
-selftest: 把 quality_depth 的每一格分数 +0.05 后，--check 退出 1（期望 1），报 101 行缺陷
