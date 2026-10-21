@@ -36,6 +36,10 @@ experiments.sqlite.bak*
 !.wrapup/mres/*/vendor_r1_summary.jsonl
 !.wrapup/mres/*/variant_panel.json
 .wrapup/*.log
+# 运行日志与进程戳：与 *.log 同类，是暂存不是证据（谁产出的都算，规则在 README 的「Does not ship」）。
+# 逐题评测产物不在此列：`.wrapup/mres/**/*_eval.json` 由上面的 `!` 规则放行入库。
+.wrapup/*.out
+.wrapup/*.pid
 .wrapup/jars/
 .wrapup/evalpy/
 .wrapup/msenv/
