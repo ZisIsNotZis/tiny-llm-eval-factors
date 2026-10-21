@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -121,12 +122,36 @@ def newcombe(k1, n1, k2, n2):
     return a01.newcombe_diff(k1, n1, k2, n2)
 
 
-def diff_ci(k1, n1, k2, n2, bench=None):
-    """分数差 + 区间；非伯努利列（TruthfulQA）只给差，不给区间（`i01::res26`）。"""
-    d = k1 / n1 - k2 / n2
+def cell_diff(a, b, bench):
+    """(a − b) 的分数差与 95% 区间。
+
+    差值**一律用入库的分数本身**，不走 `round(score×n)/n` 这条回头路：TruthfulQA 的 `acc` 是
+    归一化后的概率质量均值（`i01::res26`），把它当命中数四舍五入会把 +0.0523 变成 +0.0500。
+    区间才用计数，且非伯努利列不给区间。
+    """
+    d = a["score"] - b["score"]
     if bench in NON_COUNT:
         return d, None
-    return d, newcombe(k1, n1, k2, n2)
+    return d, newcombe(k_of(a, bench), a["n_items"], k_of(b, bench), b["n_items"])
+
+
+def cell_p(a, b, bench):
+    """(a − b) 的两条 p 值：(pooled 两比例 z, Fisher 精确)；非伯努利列返回 None。
+
+    为什么要两条：本层唯一「分得开」的那一格在这两条口径上刚好一个过 0.05、一个不过，
+    只报一条就等于挑了对自己有利的那条。多条比较的分母见 `position.py` 的 `multiplicity`。
+    """
+    if bench in NON_COUNT:
+        return None
+    from scipy.stats import fisher_exact, norm
+    k1, n1, k2, n2 = k_of(a, bench), a["n_items"], k_of(b, bench), b["n_items"]
+    p1, p2 = k1 / n1, k2 / n2
+    p = (k1 + k2) / (n1 + n2)
+    se = math.sqrt(p * (1 - p) * (1 / n1 + 1 / n2))
+    z = (p1 - p2) / se if se else float("nan")
+    p_z = 2 * (1 - norm.cdf(abs(z)))
+    p_f = fisher_exact([[k1, n1 - k1], [k2, n2 - k2]])[1]
+    return (p_z, p_f)
 
 
 def sumwidth_ci(k1, n1, lo2, hi2):

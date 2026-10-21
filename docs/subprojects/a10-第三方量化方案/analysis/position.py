@@ -47,8 +47,7 @@ def ladder_steps(cells):
             c0, c1 = cells[m0].get(bench), cells[m1].get(bench)
             if c0 is None or c1 is None:
                 continue
-            k0, k1 = panel.k_of(c0, bench), panel.k_of(c1, bench)
-            d, ci = panel.diff_ci(k1, c1["n_items"], k0, c0["n_items"], bench)
+            d, ci = panel.cell_diff(c1, c0, bench)
             rec["cells"][bench] = {"delta": d, "ci": ci, "slope": d / (b1 - b0),
                                    "n_low": c0["n_items"], "n_high": c1["n_items"]}
         out.append(rec)
@@ -68,8 +67,7 @@ def position_of(tp, cells, sl):
             if a is None or b is None:
                 near["cells"][bench] = {"missing": "缺一侧的格（未测，不是 0）"}
                 continue
-            ka, kb = panel.k_of(a, bench), panel.k_of(b, bench)
-            d, ci = panel.diff_ci(ka, a["n_items"], kb, b["n_items"], bench)
+            d, ci = panel.cell_diff(a, b, bench)
             s = sl[bench][0]
             near["cells"][bench] = {"delta": d, "ci": ci, "n": a["n_items"],
                                     "budget": s * (x - bpw_n)}
@@ -152,8 +150,7 @@ def report(cells, sl, bench_filter=None):
             if c_lo is None or c_hi is None:
                 print(f"      {panel.SHORT[bench]:<7} 缺一侧的格（未测，不是 0）")
                 continue
-            d, ci = panel.diff_ci(panel.k_of(c_hi, bench), c_hi["n_items"],
-                                  panel.k_of(c_lo, bench), c_lo["n_items"], bench)
+            d, ci = panel.cell_diff(c_hi, c_lo, bench)
             txt = "无区间（概率质量列）" if ci is None else f"[{ci[0]:+.4f},{ci[1]:+.4f}]"
             flag = "不可分辨" if ci is None or not resolved(ci) else "该列分得开"
             budget = sl[bench][0] * (b_hi - b_lo)
@@ -198,7 +195,50 @@ def report(cells, sl, bench_filter=None):
             flag = "不可分辨" if not resolved(c["ci"]) else "该列分得开"
             print(f"      {panel.SHORT[bench]:<7} Δ={c['delta']:+.4f} {ci_txt} n={c['n']}"
                   f"  插值={c['p_interp']:.4f} 实测={c['p_tp']:.4f}  {c['side']}  {flag}")
+    multiplicity(out, cells)
     return out
+
+
+def multiplicity(out, cells):
+    """多重比较的分母与 p 值。
+
+    分母不是「格数」：对每个 (tier, 列)，`nearest` 与 `interp` 共用**同一次第三方 run**
+    （`d_near = p_tp − p_nat`、`d_interp = p_tp − (w·p₂ + (1−w)·p₃)` 里的 `p_tp` 是同一个数），
+    所以独立比较的上界是 `tiers × 列 = 2 × 9 = 18`，不是 36；再按采集单位压一层
+    （HE/HE⁺ 与 MBPP/MBPP⁺ 各来自同一次 evalplus run，9 列只对应 7 次 run）就是 14。
+    期望计数把这些差异抹平，所以这里直接报 p 值。
+    """
+    tiers = len(panel.THIRD_PARTY)
+    n_col = tiers * len(panel.BENCH)
+    n_run = tiers * len({b.split("-")[0] for b in panel.BENCH})
+    print("\n== 多重比较：独立比较的上界与 p 值")
+    print(f"  独立比较上界 = tiers × 列 = {tiers} × {len(panel.BENCH)} = {n_col}"
+          f"（同一 tier 的 nearest 与 interp 共用同一次第三方 run）")
+    print(f"  按采集单位 = {n_run}（HE/HE⁺ 与 MBPP/MBPP⁺ 各来自同一次 evalplus run）")
+    print(f"  Bonferroni 门槛：0.05/{n_col} = {0.05 / n_col:.4f}；0.05/{n_run} = {0.05 / n_run:.4f}")
+    found = []
+    for tp, rec in out.items():
+        near = rec["nearest"][0]
+        for bench in panel.BENCH:
+            c = near["cells"].get(bench, {})
+            if c.get("ci") and resolved(c["ci"]):
+                pp = panel.cell_p(cells[tp][bench], cells[near["file"]][bench], bench)
+                found.append((tp, "nearest", near["file"], bench, c["delta"], c["ci"], pp))
+        for bench in panel.BENCH:
+            c = rec["interp"]["cells"].get(bench, {}) if rec["interp"] else {}
+            if c.get("ci") and resolved(c["ci"]):
+                found.append((tp, "interp", None, bench, c["delta"], c["ci"], None))
+    print(f"  区间不含 0 的格：{len(found)} 个")
+    for tp, mode, other, bench, d, ci, pp in found:
+        if pp is None:
+            print(f"    {panel.TIER.get(tp, tp)} / {mode} / {panel.SHORT[bench]} Δ={d:+.4f}"
+                  "  —— 插值档不是比例，没有 p 值，按保守合成区间判")
+            continue
+        pz, pf = pp
+        print(f"    {panel.TIER.get(tp, tp)} / {mode} / {panel.SHORT[bench]} Δ={d:+.4f}"
+              f"  p(pooled z)={pz:.4f}  p(Fisher)={pf:.4f}"
+              f"  Bonferroni {n_col} 过不了: {pf > 0.05 / n_col}"
+              f"  ；未校正 0.05 也只有 z 侧过: {(pz < 0.05) and (pf >= 0.05)}")
 
 
 def main(argv=()):

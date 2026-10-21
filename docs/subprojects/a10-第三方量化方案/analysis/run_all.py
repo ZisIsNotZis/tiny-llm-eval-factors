@@ -47,8 +47,7 @@ def pos_diff(lo, hi, bench, cells):
     a, b = cells[lo].get(bench), cells[hi].get(bench)
     if a is None or b is None:
         return None, None
-    return panel.diff_ci(panel.k_of(b, bench), b["n_items"],
-                         panel.k_of(a, bench), a["n_items"], bench)
+    return panel.cell_diff(b, a, bench)
 
 
 def check(name, ok, detail=""):
@@ -79,6 +78,13 @@ def run(doc, db_path):
           and files[m]["n_params"] == ref["n_params"]
           and files[m]["names_sha"] == ref["names_sha"] for m in tp + nat),
       f"张量 {ref['n_tensors']} 个、参数 {ref['n_params']:,}")
+
+    # ---- 1b. 人口口径：本层装置覆盖的面与第三方标记的计数 ----
+    all_cells, _alldups = panel.a03.load()
+    tp_in_pop = sorted(m for m in all_cells if panel.THIRD_PARTY_MARK in m)
+    A("population: 装置覆盖 66 个「有有效位宽且至少一个规范协议格」的文件，其中第三方标记 2 个",
+      len(all_cells) == 66 and tp_in_pop == sorted(tp),
+      f"{len(all_cells)} 个文件；第三方 {tp_in_pop}")
 
     # ---- 2. 同 tier 标签换上传者/换 base 权重后，逐张量分配是否相同 ----
     for tp_file, tier in doc["tier"].items():
@@ -139,11 +145,22 @@ def run(doc, db_path):
     A("position-interp: 两个档对插值档的 18 个格里 0 格分得开",
       inter_res[tp[0]] == [] and inter_res[tp[1]] == [],
       f"{inter_res}")
-    total = 2 * 9 + 2 * 9
-    with_ci = total - 4          # TruthfulQA 不套二项区间（`i01::res26`）：两个档 × 两种比法
     n_res = len(near_res[tp[0]]) + len(near_res[tp[1]]) + len(inter_res[tp[0]]) + len(inter_res[tp[1]])
-    A("multiplicity: 全部 36 个格里只有 32 个有区间，其中 1 格分得开（95% 名义水平下期望 1.6 格）",
-      total == 36 and with_ci == 32 and n_res == 1, f"{n_res}/{with_ci}（共 {total} 格）")
+    # 分母不是格数：同一 tier 的 nearest 与 interp 共用同一次第三方 run，所以独立比较的上界是
+    # tiers × 列 = 18；按采集单位（evalplus 一次 run 出两列）压一层是 14。
+    n_col = 2 * len(benches)
+    n_run = 2 * len({b.split("-")[0] for b in benches})
+    A("multiplicity: 独立比较的上界 = tiers × 列 = 18（不是 36），按采集单位是 14",
+      n_col == 18 and n_run == 14, f"上界 {n_col}、按 run {n_run}、区间不含 0 的格 {n_res}")
+    he_cell = out[tp[1]]["nearest"][0]["cells"]["humaneval"]
+    pz, pf = panel.cell_p(cells[tp[1]]["humaneval"],
+                          cells[out[tp[1]]["nearest"][0]["file"]]["humaneval"], "humaneval")
+    A("multiplicity: 唯一分得开的那一格两个 p 值（pooled z / Fisher）都过不了 Bonferroni 18 的 0.0028",
+      n_res == 1 and abs(pz - 0.0379) < 5e-4 and abs(pf - 0.0576) < 5e-4
+      and pf > 0.05 / n_col and pz > 0.05 / n_col,
+      f"Δ={he_cell['delta']:+.4f} p_z={pz:.4f} p_Fisher={pf:.4f} 门槛={0.05 / n_col:.4f}")
+    A("multiplicity: 未校正的 0.05 也只有 z 侧过、Fisher 侧不过（所以这一格在边界上）",
+      pz < 0.05 <= pf, f"p_z={pz:.4f} < 0.05 ≤ p_Fisher={pf:.4f}")
 
     # ---- 5b. 第三方方案自己的阶梯：同上传者、同分配策略，只变比特 ----
     tps = sorted(tp, key=lambda m: panel.BPW[m])
@@ -255,6 +272,9 @@ def main(argv=()):
         print(f"看不到输入：缺 {db_path}（退出 2，不是 0）", file=sys.stderr)
         return 2
     print(f"夹具 {panel.FIXTURE.relative_to(panel.REPO)}；库 {db_path.name}")
+    print("本次未核对 gguf 源：断言只用入库夹具。漂移检查要 `A10_NO_GGUF=1 python3 "
+          ".../build_fixture.py --check`（缺源应退 2）；不带该变量时本机 /home/z/hf 会被 glob 到，"
+          "『夹具与源一致』可能只是这台机器上源还在。")
     print(f"第三方档 {doc['third_party']}\n原生阶梯 {doc['native']}\n")
     if a.selftest:
         return selftest(doc, db_path)
