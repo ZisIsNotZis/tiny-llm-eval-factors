@@ -121,28 +121,39 @@ def matrix(kinds, items):
         lang = os.path.basename(f)[len("testfrac_"): -len(".jsonl")].rsplit("-", 1)[-1]
         langs[lang] = langs.get(lang, 0) + 1
     rows = [
-        ("MultiPL-E (cpp/py/js/java)",
+        ("MultiPL-E (cpp/py/java)",
          f"可得：{len(items)} 格逐题文件已入库（{', '.join(f'{k} {v}' for k, v in sorted(langs.items()))}）",
-         "无缺口", "0"),
+         "无缺口", "0",
+         "`python3 docs/subprojects/a14-部分给分/rank_compare.py`"),
         ("MultiPL-E (rs/rb/pl)",
-         "不可得：`.wrapup/testfrac.py::RUNNERS` 只有 cpp/js/py/java，没有这三门语言的断言计数注入",
+         "不可得：`.wrapup/testfrac.py::RUNNERS` 只有 cpp/py/java/js，没有这三门语言的断言计数注入",
          "每门语言一套探针 + 重复二元一致性检查（res7 同一装置）",
-         "CPU：每门语言 ≤60 分钟；GPU 0"),
+         "CPU：每门语言 ≤60 分钟；GPU 0",
+         "写好探针后：`testfrac.py --lang <新语言>` 跑一格，再用 `testfrac_audit.py` 的二元一致性检查看它是否与 harness 判分逐题一致"),
         ("EvalPlus (HumanEval+/MBPP+)",
          "部分：每题失败测试名在 artefact 里，但分母（该题测试数）在数据集侧，不在 artefact 里",
          "EvalPlus 数据集每题测试数（已在 `.wrapup/evalpy` venv 内，gitignored）",
-         "CPU ≤30 分钟，GPU 0（不需重跑模型，fail_tests 已落盘）"),
+         "CPU ≤30 分钟，GPU 0（不需重跑模型，fail_tests 已落盘）",
+         "拿到分母后：对四个 `*-evalplus_eval.json` 算 `(总数-失败数)/总数`，并用 `base_status=='pass'` 逐题校对二元结论必须等价于「失败数==0」"),
         ("lm-eval ifeval",
          "可得且已得：`inst_level_strict_acc` 就是指令级比例，`prompt_level_strict_acc` 是题级；两者同在一个 json 里",
-         "无缺口", "0"),
+         "无缺口", "0",
+         "`python3 docs/subprojects/a14-部分给分/testfrac_audit.py` 的检查3"),
         ("lm-eval gsm8k/mmlu/arc_challenge",
          "不可得：587 份 lmeval_*.json 里 0 份含逐题 samples（历史运行从不传 --log_samples）",
          "该格带 --log_samples 重跑",
-         "GPU：`m100` gsm8k 单格 11 分钟量级，每族 ≥1 格"),
+         "GPU：`m100` gsm8k 单格 11 分钟量级，每族 ≥1 格",
+         "重跑后：读 `results.samples[].exact_match`（或 `acc`），与聚合值对账；同题内部仍是二元，所以这族只能得到「逐题对不对」，得不到「题内部分分」"),
         ("BFCL",
          "不可得：已入库 15 份只有 n/correct/per_category，`.wrapup/bfcl_out` 为空；且 BFCL 一条用例就是一条测试，题内没有更细的官方粒度",
          "重新落盘逐用例原始输出",
-         "本次不做：那是新指标（每轮/每参数通过率），不是现有 Y 的细化"),
+         "本次不做：那是新指标（每轮/每参数通过率），不是现有 Y 的细化",
+         "—（不做，所以不欠验证）"),
+        ("新增一个 MultiPL-E 格的比例（单价）",
+         "可得：只要完成物已落盘，重算比例 ~12 s CPU / 格（res15 实测 11.6 s，161 题，5 并发），0 GPU",
+         "完成物 `.wrapup/mres/<tag>-<lang>.jsonl`（gitignored）+ 已钉住的测试语料",
+         "CPU ~12 s/格；GPU 0。语料不钉住时得到的是另一组数（res16）",
+         "`cd .wrapup && python3 testfrac.py --lang <lang> --samples mres/<tag>-<lang>.jsonl --out /tmp/x.jsonl`，再与 `<tag>_eval.json` 比逐题二元结论"),
     ]
     return rows
 
@@ -169,11 +180,12 @@ def main():
         return 2
 
     if args.matrix:
-        print(f"{'族':34} {'能不能推':120} {'缺什么':60} 代价")
-        for fam, ok, need, cost in matrix(kinds, items):
-            print(f"{fam:34} {ok}")
-            print(f"{'':34} 缺：{need}")
-            print(f"{'':34} 代价：{cost}")
+        for fam, ok, need, cost, verify in matrix(kinds, items):
+            print(f"\n[{fam}]")
+            print(f"  {ok}")
+            print(f"  缺：{need}")
+            print(f"  代价：{cost}")
+            print(f"  验证：{verify}")
         return 0
 
     if args.negative_control:
