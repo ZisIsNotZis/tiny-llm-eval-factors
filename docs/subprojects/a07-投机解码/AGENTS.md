@@ -42,6 +42,20 @@
 - 起服前看 `nvidia-smi --query-gpu=memory.free`；起服后断言 `server.log` 里 `n_slots = 1`（历史五个面板都是 1，
   `--check` 会把这条机器化），不符即作废该次测量。
 
+## 跑 GPU 作业的纪律（踩过三次，别重犯）
+
+- 一律 `setsid nohup bash -c '…' > .wrapup/a07_<tag>.log 2>&1 &`：会话被 30 分钟上限打断时作业要活着。
+  pid 落 `<tag>/client.pid`（客户端）与 `.wrapup/a07_ident.pid`（server），并写进 `PLAN.md` 的「在跑的作业」。
+- **不要用会匹配到自己命令行的 `pkill -f <脚本名>`**：它会把发起它的那个 shell 一起杀掉，
+  并且顺手杀掉同一模式的别的作业（本轴因此丢过一次 0.8B 的跑批）。要停就按 pidfile 里的 pid 停。
+- 子进程必须 `prctl(PR_SET_PDEATHSIG, SIGKILL)`：客户端死了 server 要跟着死，否则留下吃显存的孤儿
+  （实测过一次：客户端死后 server 空转 52 分钟、零请求）。守则演练：`--vram-only --hold-seconds 90` 起服，
+  `kill -9` 客户端，6 秒内 server 必须消失、整卡回到起服前。
+- **同名臂不能共用一个 `codegen/<arm>` 目录**：`evalplus.codegen` 会接续既有输出，第二次运行 5 秒跑完、
+  复用上一次的完成物，于是得到「164/164 相同」的假地板。同名臂目录加 `-r2` 后缀，且比对要按**目录名**取产物。
+- 每臂结束就往 `evidence/spec-runs.jsonl` 追加一行（tag/arm/分数/产物/GPU 分钟/时间）；连续两臂无产物 → 打印原因并 exit 1。
+  进度只看这个账本，不看 `ps`，也不看日志尾部。
+
 ## 脚本纪律
 
 - 数字只从 `spec_evidence.py` 出来：`--write` 落 fixture，`--check` 与库/自算逐字对，`--selftest` 证明检查会变红。

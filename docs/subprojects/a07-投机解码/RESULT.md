@@ -45,6 +45,16 @@
   **同卡上还有什么在跑没有记录**：`server.log` 里只有本进程的日志，`m12x` 五个 panel 都没写 `nvidia-smi` 的占用，
   所以这五个数不能被当成「干净卡上的上限」。
 
+## speed-depth-02b :: 0.8B 上「深度 2 vs 无投机」的 tok/s 对照是 **423.45 → 534.88（+26.3%）**，取自 `m125` 的 `speed_probe`（同文件、同 ctx=8192、同 `-np 1`、3 次重复的均值）；今天为字节负控跑的两臂**没有测 tok/s**，所以不能用 3.80 分钟 vs 3.64 分钟去替代
+
+- kind: measured
+- evidence: `[A]` 段 `m125-spec-0.8b` 的 `n0=423.45(+0.0%) n2=534.88(+26.3%)`；`[E]` 段两臂的 `gpu_minutes`（3.8 / 3.64）。
+- repro: `[A]` 段。
+- 限制：缺的那个数是「今天的 tok/s」——`run_ident_control.py` 不含速度探针（它只为字节与显存而写），
+  要补就得在每臂里加 3 次 `n_predict=256` 的固定生成并读 `timings.predicted_per_second`（约 +10 秒/臂）。
+  臂的墙钟差（3.8 vs 3.64 分钟）**不是**速度对照：两臂的生成 token 总数不同（分数不同→提前停止的位置不同），
+  且今天的卡上一直有别人的进程（起服前整卡 3.2–4.1 GiB），墙钟里含排队。
+
 ## speed-depth-nonmonotone :: 2B 上最深一档不再涨：n2=360.08 已经到顶，n4=345.24 比它低（+12.7% → +8.0%）；4B/9B/35B 在 n4 仍在涨，所以「深度越大越快」不能写成普适句
 
 - kind: measured
@@ -101,11 +111,11 @@
 - evidence: `[C]` 段逐行（`m125-spec-0.8b` n1/n2/n4 同一 90/91/95 条；`m126-spec-2b` 79/91/78；`m127-spec-4b` 112/116/107；
   `m128-spec-9b` 102/100/99；`m129-spec-35b` 113/113/103；合计 1489/2460）。
 - repro: `[C]` 段；逐对本体的来源是 `.wrapup/mres/<tag>/codegen/n<k>/humaneval/*_openai_temp_0.0.raw.jsonl`（evalplus 的原始完成物）。
-- 限制：**归因依赖 i01 的地板**。i01 `res25` 证同一 cell 在不开投机时重跑，完成物 sha256 相同、逐题差异 0 道
-  （但那是在另一个模型文件、另一个 harness 上测的）；本装置内「深度 0 跑两次」的负控是 `WP2`，未完成前这条差异
-  在技术上仍可能是「本装置的 run-to-run 抖动」。反证据：差异的**首次分歧位置中位数在 478–624 字符处**（`[C]` 段），
-  远离 0，说明提示词/模板/前几百个 token 完全一致，分歧发生在生成中途——这与「提示不同」这一替代解释不相容。
-  也只能在 humanEval 上判：gsm8k/ifeval 的历史运行没有 `--log_samples`，没有逐题样本（i01 已登记同一缺陷）。
+- 限制：归因现在**不再依赖 i01 的地板**——本装置自己的字节地板已实测为 0（`byte-floor-zero`：同一配置两次运行 164/164 相同，
+  两次相隔 9 天、不同进程），且投机臂本身也能跨会话逐字节复现（`m125` n2 与今天 `m169` `draft-mtp2` 164/164 相同）。
+  差异的**首次分歧位置中位数在 478–624 字符处**（`[C]` 段），远离 0，说明提示词/模板/前几百个 token 完全一致，
+  分歧发生在生成中途——这与「提示不同」这一替代解释不相容。
+  仍只能在 humanEval 上判：gsm8k/ifeval 的历史运行没有 `--log_samples`，没有逐题样本（i01 已登记同一缺陷）。
 
 ## byte-vs-judgement-decoupled :: 字节同一与判决同一互不推出：35B 在 n1/n2 有 **51 条完成物不同**、但逐题判决翻转 **0 道**、四个分数一字不差；反过来 9B 的 n1 也是 3 上 3 下相抵成同一分数
 
@@ -150,8 +160,9 @@
   五个 spec panel 的 `_file_size`（0.559/1.340/2.912/6.135/18.209 GB）与 `-MTP` 文件字节一致，而不是与普通仓库文件一致。
 - repro: `sqlite3 experiments.sqlite "SELECT DISTINCT model,run_tag,_file_size FROM experiments WHERE run_tag LIKE 'm12%-spec-%'"`。
 - 限制：对 9B 没有影响（普通 9B 仓库不在本机，全部 9B 格都在 MTP 文件上跑）；对 0.8B/2B/4B 有影响——
-  1B 以下那几档的其他格子用的是普通文件，跨格比较就是跨文件比较。这条与 `METHOD_CRITIQUE.md` 第 8 条（「速度用 MTP repo 文件、质量用普通文件」）不同：
-  本仓 `m12x` 的**两个深度臂**用的是同一文件，所以格内比较不受影响。
+  这三档的顶层软链（`/home/z/hf/<name>.gguf`）指向**普通**仓库，所以研究里其他格子用的是普通文件，跨格比较就是跨文件比较。这条与 `METHOD_CRITIQUE.md` 第 8 条（「速度用 MTP repo 文件、质量用普通文件 → 文件不同」）不同：
+  `m12x` 的同一个 panel 在**同一文件**上既量了速度也量了分数（`spec_panel.py` 一个会话里两件事都做），
+  所以第 8 条的前半在 `m12x` 上已不成立；它说的多协议并存仍成立（`m28` 与 `spec-mtp-*` 是两套，且 ctx 不同）。
 
 ## identity-m28-protocol :: `m28-speed` 的 15 行 `protocol` 串在各深度上相同（`m28-mtp-speed-greedy`），深度只存在于 `spec_draft_n_max` 列；按 a06 的「一格的协议 = 它的身份」，这违反约束，深度必须进协议串
 
@@ -161,6 +172,17 @@
 - repro: 上面那条 SQL；`[A2]` 段的注。
 - 限制：报告 G1 表用 `spec_draft_n_max` 当行键，所以呈现上没把两档合并；但任何按 `protocol` 做聚合的查询都会合并。
   修这行属 i02 的库整洁范围，a07 只登记。
+
+## identity-cachetype-asserted :: 库把 100 个 spec 行的 KV 类型写成 `q8_0`，但起服命令里没有 `--cache-type-*`：llama-server build 4399（`4bc272fd72`）的默认是 `f16`，所以这一列是**断言**不是测量；同理 `top_k=40`/`top_p=0.95`/`min_p=0.05` 也是服务端默认值而不是 harness 发的值（只有 `temp=0.0` 是 evalplus 与 lm-eval 真的发过去的，它盖掉了默认的 0.80）
+
+- kind: measured
+- evidence: `.wrapup/spec_panel.py::start_server` 的命令是 `-m … -c 8192 -np 1 -ngl 99 --jinja --reasoning off` + spec 旗标，没有 `--cache-type-k/v`；
+  `migrate_db.py::ingest_spec` 在 `common` 里硬编码 `cache_type_k/v = q8_0`、`top_k = 40`、`top_p = 0.95`、`min_p = 0.05`。
+  默认值由 `llama-server --help` 给出（`-ctk` default: f16；`--temp` default: 0.80；`--top-k` default: 40；`--top-p` default: 0.95；`--min-p` default: 0.05）。
+- repro: `sqlite3 experiments.sqlite "SELECT DISTINCT cache_type_k,top_k,top_p,min_p,temp FROM experiments WHERE run_tag LIKE 'm12%-spec-%'"`；
+  `/home/z/.local/bin/llama-server --help | grep -A2 -- '-ctk'`。
+- 限制：这不推翻任何 a07 的比较——所有比较都在同一 panel 内，两侧的 KV 类型与采样参数逐字相同；但它意味着「投机格是 `kv=q8_0` 的协议」这句话在库里没有证据。
+  修这 100 行的列值属 i02 的库整洁范围，a07 只登记。
 
 ## identity-protocol-separates :: 投机格与贪心格在库里是两个测量：`spec-mtp-draft-mtp-n{1,2,4}-evalplus|lmeval` vs `spec-mtp-none-n0-*`，`spec_type`/`spec_draft_n_max` 也不同——符合 a06 的约束（投机格永不与贪心格池化）
 
@@ -181,6 +203,67 @@
 - 限制：`make_report.py` 与 `report.html` 不是 a07 的写权，a07 只给替代文本，改不改由 i02 与 meta 决定。
   替代文本（建议）：速度那节保留；质量那节改成「MMLU 逐位相同是正控（对数似然，不经草稿）；会生成的三列在深度上改判 0–8 道题，
   且贪心输出与不开投机**不逐字节相同**（humanEval 60.5% 的完成物一致），所以投机格是独立协议，质量列必须各自测量」。
+
+## 六、装置内负控（WP2）与草稿的运行期显存（WP3）
+
+## byte-floor-zero :: 字节地板 = **0**：同一 0.8B -MTP 文件、同一贪心旗标、同一 164 题，`m125`（10-12）、`m169`（10-21 10:24）、`m170` 的两次 `none`（10:43 与 10:46）四个会话两两逐字节相同——**7 对全部 164/164**（差异 0）；`llama-server` 二进制未变（build 4399，2026-09-16）
+
+- kind: measured
+- evidence: `[E]` 段「字节地板」七行（`m125/n0` vs `m169/none`、`m125/n0` vs `m170/none`、`m125/n0` vs `m170/none-r2`、
+  `m169/none` vs `m170/none`、`m169/none` vs `m170/none-r2`、`m170/none` vs `m170/none-r2`，
+  以及投机臂的跨会话对 `m125/n2` vs `m169/draft-mtp2`）；逐对数值在 `fixtures/ident_pairs.tsv`。
+- repro: `python3 "docs/subprojects/a07-投机解码/spec_evidence.py"` 的 `[E]` 段；
+  `python3 "docs/subprojects/a07-投机解码/spec_evidence.py" --check`（fixture 与库/自算逐字对）。
+- 限制：这是**单模型（0.8B）、单 harness（EvalPlus humanEval 164 题）、单槽（`-np 1`）**上的地板。
+  9B/35B 没有跨会话对（`m128`/`m129` 的每个深度只跑过一次），所以地板在更大模型上未复验；
+  多槽（`-np>1`）的地板 i01 在 MultiPL-E 上测过（四槽与单槽逐字节相同），但 a07 没有复验。
+  另外：`m169` 的第二次 `none` 臂是**同一目录的重复运行**（`evalplus` 接续上次产物），
+  它被 `[E]` 段自动标注并排除出「独立会话」，真正的地板由 `m170` 的两个独立目录给出。
+
+## byte-identity-spec-effect :: 在地板 = 0 的前提下，开 `draft-mtp n=2` 让 164 题里 **73 条完成物逐字节不同**（91 条相同），分数从 52/164（0.3171）变成 49/164（0.2988）——这是**同一会话内只改草稿深度**的对照
+
+- kind: measured
+- evidence: `[E]` 段的「投机效应」对：`m169-ident-08b-mtp` 的 `none` vs `draft-mtp:2` → 同一 91/164、差异 73；
+  两臂分数 0.31707317…（52/164）与 0.29878048…（49/164），逐题记录在 `fixtures/ident_peritem.tsv`。
+  这两臂各自都能跨会话逐字节复现（`none` 对应 `m125` n0、`draft-mtp2` 对应 `m125` n2，都是 164/164），
+  所以「73 条不同」不是抖动，是这条路径的稳定行为。
+- repro: `python3 "docs/subprojects/a07-投机解码/spec_evidence.py" --check`（逐题通过率复原两臂分数）；
+  `[E]` 段给出 91/164 的逐字节对。
+- 限制：一个模型、一个深度（n=2）、一个 harness；方向（49 < 52）不能外推成「投机损伤质量」——
+  同一 batch 的历史数据里方向随模型变（`quality-moves-items`）。
+
+## wp3-draft-runtime-vram :: 草稿的运行期显存（与权重字节分开记）：0.8B 上 `none` 的 server 占 1126 MiB、`draft-mtp n=2` 占 1222 MiB（**+96 MiB**）；9B 上 5992 → 6368 MiB（**+376 MiB**）；ctx 都是 8192、KV 都是默认值
+
+- kind: measured
+- evidence: `.wrapup/mres/m169-vram-08b-mtp/ident_control.json`（1126/1222，整卡 4530/4626 MiB）与
+  `.wrapup/mres/m169-vram-9b/ident_control.json`（5992/6368，整卡 10097/10472 MiB，起服前整卡 4099）；
+  每臂 `n_slots=1`、`n_ctx_slot=8192`。
+- repro: `[E]` 段的 `m169-vram-*` 行；`python3 -c "import json;print(json.load(open('.wrapup/mres/m169-vram-9b/ident_control.json'))['rows'])"`。
+- 限制：这是**运行期**口径（多一个草稿上下文的 KV + compute buffer），与 `draft-memory-head-bytes` 的**权重**字节差
+  是两个口径，不能相加成一个「草稿成本」。`server_mib` 取 `nvidia-smi --query-compute-apps` 的该进程占用，
+  与整卡差（+96/+375）一致说明旁边没有新任务挤进来；但**同卡上还有别人的进程**（起服前整卡 3.2–4.1 GiB），
+  所以绝对值只在本次会话的负载下成立。
+
+## ident-arm-dir-collision :: 记录缺陷（已修）：同名臂共用一个 `codegen/<arm>` 目录时，`evalplus.codegen` 会「接续」上一次的产物——`m169` 的第二次 `none` 只花 0.09 分钟就给出 164/164 相同（假地板）；修法是同名臂目录加 `-r<k>` 后缀，重跑 `m170-ident-08b-floor`
+
+- kind: measured
+- evidence: `m169-ident-08b-mtp` 的 ledger 里两个 `none` 臂 `gpu_minutes` 分别是 3.8 与 0.09，产物 164/164 相同；
+  `codegen/none/` 只有一个目录（两臂写同一处）。修后 `run_ident_control.py` 的 `dirname` 逻辑见 `seen[k]`。
+- repro: `grep -n "dirname = k if" "docs/subprojects/a07-投机解码/run_ident_control.py"`；
+  以及 `evidence/spec-runs.jsonl` 的 `m169-ident-08b-mtp` 三行。
+- 限制：这条不改变结论，但它是两次踩坑：先是脚本的臂目录命名（同名臂共用一个目录），
+  再是 `identity_report()` 里按**臂名**而不是**目录名**取产物（同一处错误的第二次）。两处都已修，
+  `m170-ident-08b-floor` 用独立目录 `none` 与 `none-r2` 重跑，两臂 52/164 且逐字节 164/164 相同——
+  修法已验证，且这一对现在由 `spec_evidence.py` 的 `byte_pairs()`（按目录名）给出。
+
+## vram-only-null-by-design :: `m169-vram-9b` 的两行 `humaneval: null` 是 `--vram-only` 的设计，不是加载失败：两臂都 `n_slots=1`、`n_ctx_slot=8192`，`gpu_minutes` 0.06/0.07 分钟就是「起服 + 读显存」的耗时（不跑 benchmark）
+
+- kind: measured
+- evidence: `.wrapup/mres/m169-vram-9b/ident_control.json` 的两行（`error: null`、`server_mib` 5992/6368）；
+  `[E]` 段把 `n_slots`、`n_ctx_slot`、整卡与本进程占用一并打印。
+- repro: `[E]` 段；或上面那条 `python3 -c` 命令。
+- 限制：9B 的**分数**没有在这次跑里测（要 7.4 分钟/臂 × 2，本次只买显存），它的深度分数仍在
+  `quality-moves-items`（`m128` 的四个深度）里，那不是 null 而是已测。
 
 ## 五、未测与不可得（不是 0）
 

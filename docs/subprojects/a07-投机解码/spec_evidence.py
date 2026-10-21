@@ -151,6 +151,97 @@ def build_m28():
     return rows, []
 
 
+IDENT_ARMS = ("n0", "none", "none2", "draft-mtp2")  # 臂目录名 → 深度写在 run 的 json 里
+
+
+def arm_depth(arm):
+    """evalplus 的 `--root codegen/<arm>` 目录名 → 草稿深度。
+
+    `n<k>` 是历史 panel 的臂，`draft-mtp<k>` 是控制运行的臂，`none`/`none-r2` 都是 0。
+    """
+    if arm.startswith("draft-mtp"):
+        return int(arm[len("draft-mtp"):])
+    if re.fullmatch(r"n\d+", arm):
+        return int(arm[1:])
+    return 0
+
+
+def load_ident():
+    """WP2/WP3 的控制运行（`run_ident_control.py`）：臂记录 + 逐题判决 + 同一 tag 内的逐字节对。"""
+    runs, peritem = [], []
+    for path in sorted(glob.glob(str(MRES / "*" / "ident_control.json"))):
+        d = json.load(open(path))
+        tag_dir = Path(path).parent
+        for r in d["rows"]:
+            if "error" in r:
+                continue
+            arm = r["arm"].replace(":", "")
+            runs.append({"tag": d["tag"], "arm": arm, "dir": r.get("dir"),
+                         "arm_depth": arm_depth(r.get("dir") or arm),
+                         "humaneval": r.get("humaneval"), "humaneval_n": r.get("humaneval_n"),
+                         "n_slots": r.get("n_slots"), "n_ctx_slot": r.get("n_ctx_slot"),
+                         "server_mib": r.get("server_mib"),
+                         "gpu_used_before": d.get("gpu_before")[0].split(",")[0].strip()
+                         if d.get("gpu_before") else None,
+                         "gpu_used_after": r.get("gpu_used_mib"),
+                         "codegen_rc": r.get("codegen_rc"), "evaluate_rc": r.get("evaluate_rc")})
+        for ev in sorted(glob.glob(str(tag_dir / "codegen" / "*" / "humaneval" / "*_eval_results.json"))):
+            arm = Path(ev).parent.parent.name
+            for tid, v in json.load(open(ev))["eval"].items():
+                xs = v if isinstance(v, list) else [v]
+                peritem.append({"tag": d["tag"], "arm": arm, "task_id": tid,
+                                "pass": int(all(isinstance(x, dict) and x.get("base_status") == "pass"
+                                                for x in xs))})
+    return runs, peritem
+
+
+def _session_models(tags):
+    """每个 tag 的模型文件路径（realpath）——只有**同一文件**的会话之间才许做字节比较。"""
+    out = {}
+    for tag in tags:
+        for name in ("spec_panel.json", "ident_control.json"):
+            f = MRES / tag / name
+            if f.exists():
+                model = json.load(open(f)).get("model")
+                if model:
+                    out[tag] = os.path.realpath(model)
+                break
+    return out
+
+
+def byte_pairs(tags=("m125-spec-0.8b", "m169-ident-08b-mtp", "m170-ident-08b-floor",
+                     "m128-spec-9b")):
+    """**同一模型文件**下不同会话的逐字节比较（跨模型的对比没有意义，直接不产生）。
+
+    同深度 → 字节地板（同一配置重跑）；不同深度 → 投机效应（只有草稿深度不同）。
+    0.8B：历史 panel `m125` 的四个深度 + 控制运行 `m169` 的 `none`/`draft-mtp2` + `m170` 的两次 `none`；
+    9B：历史 panel `m128` 的四个深度。
+    """
+    models = _session_models(tags)
+    sessions = {}
+    for tag in tags:
+        for f in sorted(glob.glob(str(MRES / tag / "codegen" / "*" / "humaneval" /
+                                      "*_openai_temp_0.0.raw.jsonl"))):
+            arm = Path(f).parent.parent.name
+            sessions[(tag, arm)] = {json.loads(l)["task_id"]: json.loads(l)["solution"]
+                                    for l in open(f, encoding="utf-8")}
+    out = []
+    keys = sorted(sessions)
+    for i, a in enumerate(keys):
+        for b in keys[i + 1:]:
+            if models.get(a[0]) is None or models.get(a[0]) != models.get(b[0]):
+                continue
+            common = [t for t in sessions[a] if t in sessions[b]]
+            if not common:
+                continue
+            differ = [t for t in common if sessions[a][t] != sessions[b][t]]
+            out.append({"tag_a": a[0], "arm_a": a[1], "tag_b": b[0], "arm_b": b[1],
+                        "n": len(common), "identical": len(common) - len(differ),
+                        "differing": len(differ),
+                        "kind": ("floor" if arm_depth(a[1]) == arm_depth(b[1]) else "spec")})
+    return out
+
+
 def gguf_bytes(model_path):
     try:
         return os.path.getsize(model_path)
@@ -231,9 +322,12 @@ def build_rows():
                            "mtp_bytes": gguf_bytes(p["model_path"]),
                            "plain_bytes": gguf_bytes(plain) if plain else None})
     m28, m28_missing = build_m28()
-    missing.extend(m28_missing)
+    missing.extend(m28_missing)   # 缺 m28_speed.jsonl 也是缺输入：不能静默退出 0
+    ident, ident_peritem = load_ident()
+    ident_pairs = byte_pairs()
     return {"speed": speed, "quality": quality, "peritem": peritem,
-            "byteid": byteid, "device": device, "panels": panels, "m28": m28}, missing
+            "byteid": byteid, "device": device, "panels": panels, "m28": m28,
+            "ident": ident, "ident_peritem": ident_peritem, "ident_pairs": ident_pairs}, missing
 
 
 # ---------- 打印 ----------
@@ -359,6 +453,34 @@ def section_d(device):
                   f"  差 {d:+d} B ({100.0*d/r['plain_bytes']:+.2f}%)")
 
 
+def section_e(ident, ident_pairs):
+    print("\n[E] 装置内负控与草稿的运行期显存（`run_ident_control.py`，同一 -MTP 文件、同一贪心旗标，一次一会话）")
+    if not ident:
+        print("  未跑：没有 `.wrapup/mres/*/ident_control.json`。")
+        return
+    seen_dir = {}
+    for r in ident:
+        k = (r["tag"], r.get("dir") or r["arm"])   # 老产物没有 dir 列时按臂名判重
+        seen_dir[k] = seen_dir.get(k, 0) + 1
+        dup = seen_dir[k] > 1          # 只有第二行起才是「复用了同一目录」的那一行
+        hv = "—" if r["humaneval"] is None else f"{r['humaneval']*r['humaneval_n']:.0f}/{r['humaneval_n']}"
+        if dup:
+            hv += "（同一目录的第二次运行：evalplus 接续了上次产物，非独立会话，作废）"
+        print(f"  {r['tag']:<16} {r['arm']:<11} depth={r['arm_depth']}  n_slots={r['n_slots']}"
+              f"  n_ctx_slot={r['n_ctx_slot']}  humanEval={hv}"
+              f"  起服前整卡 {r['gpu_used_before']} MiB → 起服后 {r['gpu_used_after']} MiB"
+              f"  本进程 {r['server_mib']} MiB")
+    for kind, title in (("floor", "字节地板（同一配置、不同会话）"),
+                        ("spec", "投机效应（只有草稿深度不同，同一文件、同一会话族）")):
+        rows = [r for r in ident_pairs if r["kind"] == kind]
+        if not rows:
+            continue
+        print(f"  {title}：")
+        for r in rows:
+            print(f"    {r['tag_a']}/{r['arm_a']} vs {r['tag_b']}/{r['arm_b']}: "
+                  f"同一 {r['identical']}/{r['n']}（差异 {r['differing']}）")
+
+
 # ---------- fixture ----------
 COLS = {
     "speed_depth": ["tag", "gguf", "depth", "tok_s", "rel_pct"],
@@ -368,12 +490,18 @@ COLS = {
     "device": ["tag", "gguf", "depth", "n_slots", "n_req", "med_accept", "med_mean_len",
                "mtp_bytes", "plain_bytes"],
     "m28_speed": ["mode", "depth", "tok_s", "rep_min", "rep_max", "n_predict", "prompt_n"],
+    "ident_control": ["tag", "arm", "dir", "arm_depth", "humaneval", "humaneval_n", "n_slots",
+                      "n_ctx_slot", "server_mib", "gpu_used_before", "gpu_used_after",
+                      "codegen_rc", "evaluate_rc"],
+    "ident_peritem": ["tag", "arm", "task_id", "pass"],
+    "ident_pairs": ["tag_a", "arm_a", "tag_b", "arm_b", "n", "identical", "differing", "kind"],
 }
 
 
 FIXKEY = {"speed_depth": "speed", "quality_depth": "quality",
           "peritem_humaneval": "peritem", "byte_identity": "byteid", "device": "device",
-          "m28_speed": "m28"}
+          "m28_speed": "m28", "ident_control": "ident", "ident_peritem": "ident_peritem",
+          "ident_pairs": "ident_pairs"}
 
 
 def _fmt(v):
@@ -505,14 +633,42 @@ def check(fixdir=None):
         elif abs(float(dbm[k]) - float(r["tok_s"])) > 0.006:
             print("BAD db m28 tok/s: %s n%s db=%.2f fixture=%.2f" % (k[0], k[1], float(dbm[k]), float(r["tok_s"])))
             bad += 1
+    # 5) 控制运行：分数必须由逐题记录复原，n_slots 必须是 1，字节对各分量必须等于题数。
+    ident = _read(fix, "ident_control") if fixdir else read_fixture("ident_control")
+    ident_peritem = _read(fix, "ident_peritem") if fixdir else read_fixture("ident_peritem")
+    ident_pairs = _read(fix, "ident_pairs") if fixdir else read_fixture("ident_pairs")
+    agg2 = {}
+    for r in ident_peritem:
+        k = (r["tag"], r["arm"])
+        agg2.setdefault(k, [0, 0])
+        agg2[k][0] += int(r["pass"])
+        agg2[k][1] += 1
+    for r in ident:
+        if r["n_slots"] and r["n_slots"] != "1":
+            print("BAD n_slots: %s/%s = %s" % (r["tag"], r["arm"], r["n_slots"]))
+            bad += 1
+        k = (r["tag"], r["arm"])
+        if r["humaneval"] and k in agg2:
+            p, n = agg2[k]
+            if abs(p / n - float(r["humaneval"])) > 1e-9:
+                print("BAD ident score: %s/%s = %d/%d vs fixture %.6f"
+                      % (r["tag"], r["arm"], p, n, float(r["humaneval"])))
+                bad += 1
+    for r in ident_pairs:
+        if int(r["identical"]) + int(r["differing"]) != int(r["n"]):
+            print("BAD ident_pairs: %s/%s vs %s/%s identical+differing != n"
+                  % (r["tag_a"], r["arm_a"], r["tag_b"], r["arm_b"]))
+            bad += 1
     con.close()
 
     if bad:
         print("CHECK FAILED: %d 处不一致" % bad)
         return 1
-    print("CHECK OK: %d 质量行 / %d 速度行 / %d 逐题行 / %d 字节对，与库一致；"
-          "每臂 n_slots=1；逐题通过率复原 humaneval 分数"
-          % (len(quality), len(speed), len(peritem), len(byteid)))
+    print("CHECK OK: %d 质量行 / %d 速度行 / %d 逐题行 / %d 字节对，与库一致；每臂 n_slots=1；"
+          "逐题通过率复原 humaneval 分数；控制运行 %d 臂 / %d 条逐题 / %d 对字节（地板 %d 对全同）"
+          % (len(quality), len(speed), len(peritem), len(byteid),
+             len(ident), len(ident_peritem), len(ident_pairs),
+             sum(1 for r in ident_pairs if r.get("kind") == "floor" and int(r["differing"]) == 0)))
     return 0
 
 
@@ -566,6 +722,7 @@ def main():
     section_b(built["quality"], built["peritem"])
     section_c(built["byteid"])
     section_d(built["device"])
+    section_e(built["ident"], built["ident_pairs"])
     if missing:
         print("\nUNMEASURED: 缺输入 %d 项:" % len(missing))
         for m in missing:

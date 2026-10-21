@@ -1,0 +1,130 @@
+被审 revision: 21f52a58f4a3bb62b82baa0edd570d57a1472847
+脚本 sha256: 2f1ee55e032bc68a60cec8c0bb485ccc70112538dba3c0e7d4e843bd2ffd80a7
+面板: 5 个 spec panel；产品根: /home/z/vibe/local_lm_research/.wrapup
+
+[A] 速度-深度（tok/s，llama-server 自身计时，每深度 3 次重复的均值）
+  m125-spec-0.8b   Qwen3.5-0.8B-UD-Q4_K_XL.gguf       n0=423.45(+0.0%)  n1=460.69(+8.8%)  n2=534.88(+26.3%)  n4=576.19(+36.1%)
+  m126-spec-2b     Qwen3.5-2B-UD-Q4_K_XL.gguf         n0=319.62(+0.0%)  n1=350.15(+9.6%)  n2=360.08(+12.7%)  n4=345.24(+8.0%)
+      ! 非单调：最深一档 n4=345.24 低于峰值 360.08（峰值在 n2）
+  m127-spec-4b     Qwen3.5-4B-UD-Q4_K_XL.gguf         n0=184.07(+0.0%)  n1=247.77(+34.6%)  n2=301.90(+64.0%)  n4=336.60(+82.9%)
+  m128-spec-9b     Qwen3.5-9B-UD-Q4_K_XL.gguf         n0=123.37(+0.0%)  n1=176.64(+43.2%)  n2=212.14(+72.0%)  n4=236.62(+91.8%)
+  m129-spec-35b    Qwen3.6-35B-A3B-UD-IQ4_XS.gguf     n0=163.47(+0.0%)  n1=214.17(+31.0%)  n2=262.58(+60.6%)  n4=289.44(+77.1%)
+  注：这是单一固定提示词（fibonacci 函数头）上的一次贪心生成测量，不代表全部提示词分布。
+
+[A2] 速度-深度，第二份独立测量（m28：ctx=16384、seed=1234、每档 3 次重复，括号里是三次的最小–最大）
+  code      n0=168.57(+0.0%)[161.8–172.5]  n1=177.19(+5.1%)[176.2–185.9]  n2=212.80(+26.2%)[206.9–215.5]  n3=223.11(+32.4%)[219.1–225.8]  n4=217.80(+29.2%)[211.3–223.0]
+  longctx   n0=169.25(+0.0%)[165.8–169.3]  n1=155.38(-8.2%)[152.7–155.6]  n2=160.00(-5.5%)[158.5–162.1]  n3=147.37(-12.9%)[143.4–150.0]  n4=142.84(-15.6%)[138.8–143.2]
+  prose     n0=171.57(+0.0%)[171.1–172.7]  n1=173.58(+1.2%)[173.5–174.1]  n2=203.84(+18.8%)[197.9–208.0]  n3=198.12(+15.5%)[191.3–209.4]  n4=204.61(+19.3%)[202.7–207.3]
+  注：m28 只测速度、没跑过任何分数；它的协议串在各深度上相同（深度只在 `spec_draft_n_max` 列里），见 RESULT 的 `identity-m28-protocol`。
+
+[B] 质量-深度（同协议同题；括号里是逐题上/下翻转数，对深度 0）
+  -- mmlu
+  m125-spec-0.8b   Qwen3.5-0.8B-UD-Q4_K_XL.gguf       n0=0.5241  n1=0.5241  n2=0.5241  n4=0.5241
+  m126-spec-2b     Qwen3.5-2B-UD-Q4_K_XL.gguf         n0=0.6250  n1=0.6250  n2=0.6250  n4=0.6250
+  m127-spec-4b     Qwen3.5-4B-UD-Q4_K_XL.gguf         n0=0.7456  n1=0.7456  n2=0.7456  n4=0.7456
+  m128-spec-9b     Qwen3.5-9B-UD-Q4_K_XL.gguf         n0=0.7939  n1=0.7939  n2=0.7939  n4=0.7939
+  m129-spec-35b    Qwen3.6-35B-A3B-UD-IQ4_XS.gguf     n0=0.8443  n1=0.8443  n2=0.8443  n4=0.8443
+  -- gsm8k
+  m125-spec-0.8b   Qwen3.5-0.8B-UD-Q4_K_XL.gguf       n0=0.4600  n1=0.5000  n2=0.4400  n4=0.4200
+  m126-spec-2b     Qwen3.5-2B-UD-Q4_K_XL.gguf         n0=0.6000  n1=0.5600  n2=0.5400  n4=0.6000
+  m127-spec-4b     Qwen3.5-4B-UD-Q4_K_XL.gguf         n0=0.9200  n1=0.9200  n2=0.9200  n4=0.9000
+  m128-spec-9b     Qwen3.5-9B-UD-Q4_K_XL.gguf         n0=0.9600  n1=0.9600  n2=0.9600  n4=0.9800
+  m129-spec-35b    Qwen3.6-35B-A3B-UD-IQ4_XS.gguf     n0=0.9800  n1=0.9800  n2=0.9800  n4=0.9800
+  -- ifeval
+  m125-spec-0.8b   Qwen3.5-0.8B-UD-Q4_K_XL.gguf       n0=0.5800  n1=0.5400  n2=0.5200  n4=0.5600
+  m126-spec-2b     Qwen3.5-2B-UD-Q4_K_XL.gguf         n0=0.6600  n1=0.7000  n2=0.7200  n4=0.6800
+  m127-spec-4b     Qwen3.5-4B-UD-Q4_K_XL.gguf         n0=0.7800  n1=0.8000  n2=0.7800  n4=0.8200
+  m128-spec-9b     Qwen3.5-9B-UD-Q4_K_XL.gguf         n0=0.8800  n1=0.8800  n2=0.8600  n4=0.8800
+  m129-spec-35b    Qwen3.6-35B-A3B-UD-IQ4_XS.gguf     n0=0.8600  n1=0.8600  n2=0.8600  n4=0.8400
+  -- humaneval
+  m125-spec-0.8b   Qwen3.5-0.8B-UD-Q4_K_XL.gguf       n0=0.3171(0↑0↓)  n1=0.3232(4↑3↓)*  n2=0.2988(2↑5↓)*  n4=0.3049(2↑4↓)*
+  m126-spec-2b     Qwen3.5-2B-UD-Q4_K_XL.gguf         n0=0.5061(0↑0↓)  n1=0.5427(7↑1↓)*  n2=0.5305(5↑1↓)*  n4=0.5549(10↑2↓)*
+  m127-spec-4b     Qwen3.5-4B-UD-Q4_K_XL.gguf         n0=0.8293(0↑0↓)  n1=0.8171(3↑5↓)*  n2=0.8049(1↑5↓)*  n4=0.8354(4↑3↓)*
+  m128-spec-9b     Qwen3.5-9B-UD-Q4_K_XL.gguf         n0=0.8720(0↑0↓)  n1=0.8720(3↑3↓)*  n2=0.8902(4↑1↓)*  n4=0.8780(2↑1↓)*
+  m129-spec-35b    Qwen3.6-35B-A3B-UD-IQ4_XS.gguf     n0=0.9146(0↑0↓)  n1=0.9146(0↑0↓)  n2=0.9146(0↑0↓)  n4=0.9085(1↑2↓)*
+  * = 逐题翻转数超过 i01 的确定性地板（0 道题）。没有 * 不等于「没有效应」，只等于「判决层面没看到效应」。
+  注：mmlu 走对数似然、不生成 token，投机解码结构上碰不到它（[C] 的字节差异不会出现在它上面），所以 mmlu 逐深度全同是正控，不是质量证据。
+
+[C] 字节同一性（贪心；同提示词、同 server 旗标，只有 --spec-type/--spec-draft-n-max 不同）
+  m125-spec-0.8b   n1: 同一 90/164（差异 74） 首差中位字符 555  n2: 同一 91/164（差异 73） 首差中位字符 548  n4: 同一 95/164（差异 69） 首差中位字符 554
+  m126-spec-2b     n1: 同一 79/164（差异 85） 首差中位字符 536  n2: 同一 91/164（差异 73） 首差中位字符 490  n4: 同一 78/164（差异 86） 首差中位字符 478
+  m127-spec-4b     n1: 同一 112/164（差异 52） 首差中位字符 507  n2: 同一 116/164（差异 48） 首差中位字符 581  n4: 同一 107/164（差异 57） 首差中位字符 507
+  m128-spec-9b     n1: 同一 102/164（差异 62） 首差中位字符 591  n2: 同一 100/164（差异 64） 首差中位字符 530  n4: 同一 99/164（差异 65） 首差中位字符 493
+  m129-spec-35b    n1: 同一 113/164（差异 51） 首差中位字符 624  n2: 同一 113/164（差异 51） 首差中位字符 624  n4: 同一 103/164（差异 61） 首差中位字符 609
+  合计：逐字节同一 1489/2460 对完成物（60.5%）
+  判据：i01 res25 已证同一 cell 在不开投机时重跑，完成物 sha256 相同、逐题差异 0 道，所以这里的差异不是重复噪声；首差位置远离 0（中位数在数百字符处）说明提示词与模板相同，差异发生在生成中途。
+
+[D] 装置事实（每个臂 server 自报；MTP 头 = 同一 gguf 名在两个仓库里的文件字节差）
+  m125-spec-0.8b   n0  n_slots=1  请求数=n/a（该臂无草稿）  接受率中位=—  草稿长度中位=—
+  m125-spec-0.8b   n1  n_slots=1  请求数=267  接受率中位=0.9242  草稿长度中位=1.92
+  m125-spec-0.8b   n2  n_slots=1  请求数=267  接受率中位=0.8608  草稿长度中位=2.72
+  m125-spec-0.8b   n4  n_slots=1  请求数=267  接受率中位=0.7135  草稿长度中位=3.85
+  m126-spec-2b     n0  n_slots=1  请求数=n/a（该臂无草稿）  接受率中位=—  草稿长度中位=—
+  m126-spec-2b     n1  n_slots=1  请求数=267  接受率中位=0.9234  草稿长度中位=1.92
+  m126-spec-2b     n2  n_slots=1  请求数=267  接受率中位=0.8650  草稿长度中位=2.73
+  m126-spec-2b     n4  n_slots=1  请求数=267  接受率中位=0.7031  草稿长度中位=3.81
+  m127-spec-4b     n0  n_slots=1  请求数=n/a（该臂无草稿）  接受率中位=—  草稿长度中位=—
+  m127-spec-4b     n1  n_slots=1  请求数=267  接受率中位=0.9546  草稿长度中位=1.95
+  m127-spec-4b     n2  n_slots=1  请求数=267  接受率中位=0.9082  草稿长度中位=2.82
+  m127-spec-4b     n4  n_slots=1  请求数=267  接受率中位=0.7873  草稿长度中位=4.15
+  m128-spec-9b     n0  n_slots=1  请求数=n/a（该臂无草稿）  接受率中位=—  草稿长度中位=—
+  m128-spec-9b     n1  n_slots=1  请求数=267  接受率中位=0.9508  草稿长度中位=1.95
+  m128-spec-9b     n2  n_slots=1  请求数=267  接受率中位=0.9009  草稿长度中位=2.80
+  m128-spec-9b     n4  n_slots=1  请求数=267  接受率中位=0.7954  草稿长度中位=4.18
+  m129-spec-35b    n0  n_slots=1  请求数=n/a（该臂无草稿）  接受率中位=—  草稿长度中位=—
+  m129-spec-35b    n1  n_slots=1  请求数=267  接受率中位=0.9747  草稿长度中位=1.97
+  m129-spec-35b    n2  n_slots=1  请求数=267  接受率中位=0.9437  草稿长度中位=2.89
+  m129-spec-35b    n4  n_slots=1  请求数=267  接受率中位=0.8705  草稿长度中位=4.48
+  MTP 头的权重开销（同一 gguf 名，-MTP 仓库文件 − 普通仓库同名文件）：
+  Qwen3.5-0.8B-UD-Q4_K_XL.gguf       -MTP 572984736 B  普通 558772480 B  差 +14212256 B (+2.54%)
+  Qwen3.5-2B-UD-Q4_K_XL.gguf         -MTP 1384902048 B  普通 1339752704 B  差 +45149344 B (+3.37%)
+  Qwen3.5-4B-UD-Q4_K_XL.gguf         -MTP 2990664000 B  普通 2912109728 B  差 +78554272 B (+2.70%)
+  Qwen3.5-9B-UD-Q4_K_XL.gguf         -MTP 6135034208 B；普通仓库同名文件不在本机 → 开销 UNKNOWN（不是 0）
+  Qwen3.6-35B-A3B-UD-IQ4_XS.gguf     -MTP 18209036576 B；普通仓库同名文件不在本机 → 开销 UNKNOWN（不是 0）
+
+[E] 装置内负控与草稿的运行期显存（`run_ident_control.py`，同一 -MTP 文件、同一贪心旗标，一次一会话）
+  m169-ident-08b-mtp none        depth=0  n_slots=1  n_ctx_slot=8192  humanEval=52/164  起服前整卡 3351 MiB → 起服后 4482 MiB  本进程 1126 MiB
+  m169-ident-08b-mtp none        depth=0  n_slots=1  n_ctx_slot=8192  humanEval=52/164（同一目录的第二次运行：evalplus 接续了上次产物，非独立会话，作废）  起服前整卡 3351 MiB → 起服后 4848 MiB  本进程 1126 MiB
+  m169-ident-08b-mtp draft-mtp2  depth=2  n_slots=1  n_ctx_slot=8192  humanEval=49/164  起服前整卡 3351 MiB → 起服后 4944 MiB  本进程 1222 MiB
+  m169-vram-08b-mtp none        depth=0  n_slots=1  n_ctx_slot=8192  humanEval=—  起服前整卡 3403 MiB → 起服后 4530 MiB  本进程 1126 MiB
+  m169-vram-08b-mtp draft-mtp2  depth=2  n_slots=1  n_ctx_slot=8192  humanEval=—  起服前整卡 3403 MiB → 起服后 4626 MiB  本进程 1222 MiB
+  m169-vram-9b     none        depth=0  n_slots=1  n_ctx_slot=8192  humanEval=—  起服前整卡 4099 MiB → 起服后 10097 MiB  本进程 5992 MiB
+  m169-vram-9b     draft-mtp2  depth=2  n_slots=1  n_ctx_slot=8192  humanEval=—  起服前整卡 4099 MiB → 起服后 10472 MiB  本进程 6368 MiB
+  m170-ident-08b-floor none        depth=0  n_slots=1  n_ctx_slot=8192  humanEval=52/164  起服前整卡 3164 MiB → 起服后 4295 MiB  本进程 1126 MiB
+  m170-ident-08b-floor none        depth=0  n_slots=1  n_ctx_slot=8192  humanEval=52/164  起服前整卡 3164 MiB → 起服后 4258 MiB  本进程 1126 MiB
+  字节地板（同一配置、不同会话）：
+    m125-spec-0.8b/n0 vs m169-ident-08b-mtp/none: 同一 164/164（差异 0）
+    m125-spec-0.8b/n0 vs m170-ident-08b-floor/none: 同一 164/164（差异 0）
+    m125-spec-0.8b/n0 vs m170-ident-08b-floor/none-r2: 同一 164/164（差异 0）
+    m125-spec-0.8b/n2 vs m169-ident-08b-mtp/draft-mtp2: 同一 164/164（差异 0）
+    m169-ident-08b-mtp/none vs m170-ident-08b-floor/none: 同一 164/164（差异 0）
+    m169-ident-08b-mtp/none vs m170-ident-08b-floor/none-r2: 同一 164/164（差异 0）
+    m170-ident-08b-floor/none vs m170-ident-08b-floor/none-r2: 同一 164/164（差异 0）
+  投机效应（只有草稿深度不同，同一文件、同一会话族）：
+    m125-spec-0.8b/n0 vs m125-spec-0.8b/n1: 同一 90/164（差异 74）
+    m125-spec-0.8b/n0 vs m125-spec-0.8b/n2: 同一 91/164（差异 73）
+    m125-spec-0.8b/n0 vs m125-spec-0.8b/n4: 同一 95/164（差异 69）
+    m125-spec-0.8b/n0 vs m169-ident-08b-mtp/draft-mtp2: 同一 91/164（差异 73）
+    m125-spec-0.8b/n1 vs m125-spec-0.8b/n2: 同一 99/164（差异 65）
+    m125-spec-0.8b/n1 vs m125-spec-0.8b/n4: 同一 94/164（差异 70）
+    m125-spec-0.8b/n1 vs m169-ident-08b-mtp/draft-mtp2: 同一 99/164（差异 65）
+    m125-spec-0.8b/n1 vs m169-ident-08b-mtp/none: 同一 90/164（差异 74）
+    m125-spec-0.8b/n1 vs m170-ident-08b-floor/none: 同一 90/164（差异 74）
+    m125-spec-0.8b/n1 vs m170-ident-08b-floor/none-r2: 同一 90/164（差异 74）
+    m125-spec-0.8b/n2 vs m125-spec-0.8b/n4: 同一 97/164（差异 67）
+    m125-spec-0.8b/n2 vs m169-ident-08b-mtp/none: 同一 91/164（差异 73）
+    m125-spec-0.8b/n2 vs m170-ident-08b-floor/none: 同一 91/164（差异 73）
+    m125-spec-0.8b/n2 vs m170-ident-08b-floor/none-r2: 同一 91/164（差异 73）
+    m125-spec-0.8b/n4 vs m169-ident-08b-mtp/draft-mtp2: 同一 97/164（差异 67）
+    m125-spec-0.8b/n4 vs m169-ident-08b-mtp/none: 同一 95/164（差异 69）
+    m125-spec-0.8b/n4 vs m170-ident-08b-floor/none: 同一 95/164（差异 69）
+    m125-spec-0.8b/n4 vs m170-ident-08b-floor/none-r2: 同一 95/164（差异 69）
+    m128-spec-9b/n0 vs m128-spec-9b/n1: 同一 102/164（差异 62）
+    m128-spec-9b/n0 vs m128-spec-9b/n2: 同一 100/164（差异 64）
+    m128-spec-9b/n0 vs m128-spec-9b/n4: 同一 99/164（差异 65）
+    m128-spec-9b/n1 vs m128-spec-9b/n2: 同一 112/164（差异 52）
+    m128-spec-9b/n1 vs m128-spec-9b/n4: 同一 100/164（差异 64）
+    m128-spec-9b/n2 vs m128-spec-9b/n4: 同一 103/164（差异 61）
+    m169-ident-08b-mtp/draft-mtp2 vs m169-ident-08b-mtp/none: 同一 91/164（差异 73）
+    m169-ident-08b-mtp/draft-mtp2 vs m170-ident-08b-floor/none: 同一 91/164（差异 73）
+    m169-ident-08b-mtp/draft-mtp2 vs m170-ident-08b-floor/none-r2: 同一 91/164（差异 73）

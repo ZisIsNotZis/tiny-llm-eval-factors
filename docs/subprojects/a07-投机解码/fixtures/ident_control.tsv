@@ -1,0 +1,10 @@
+tag	arm	dir	arm_depth	humaneval	humaneval_n	n_slots	n_ctx_slot	server_mib	gpu_used_before	gpu_used_after	codegen_rc	evaluate_rc
+m169-ident-08b-mtp	none		0	0.317073170732	164	1	8192	1126	3351	4482	0	0
+m169-ident-08b-mtp	none		0	0.317073170732	164	1	8192	1126	3351	4848	0	0
+m169-ident-08b-mtp	draft-mtp2		2	0.298780487805	164	1	8192	1222	3351	4944	0	0
+m169-vram-08b-mtp	none		0			1	8192	1126	3403	4530		
+m169-vram-08b-mtp	draft-mtp2		2			1	8192	1222	3403	4626		
+m169-vram-9b	none		0			1	8192	5992	4099	10097		
+m169-vram-9b	draft-mtp2		2			1	8192	6368	4099	10472		
+m170-ident-08b-floor	none	none	0	0.317073170732	164	1	8192	1126	3164	4295	0	0
+m170-ident-08b-floor	none	none-r2	0	0.317073170732	164	1	8192	1126	3164	4258	0	0
