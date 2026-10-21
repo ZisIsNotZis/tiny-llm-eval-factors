@@ -150,7 +150,6 @@ def summary_lines(source_file):
 
 A14_EVIDENCE = os.path.join(REPO, "docs", "subprojects", "a14-部分给分", "evidence")
 REGRADE_MANIFEST = os.path.join(A14_EVIDENCE, "py_regrade_manifest.tsv")
-TESTFRAC_LEDGER = os.path.join(A14_EVIDENCE, "py_testfrac_regrade.json")
 SCORE_DIGITS = 6
 
 
@@ -168,12 +167,12 @@ def _int_or_none(v):
 
 
 def regrade_rows():
-    """a14's two regrade artefacts, indexed for lineage.
+    """a14's regrade manifest, indexed for lineage.
 
-    `manifest` rows key on (corpus, language, score_new, model, summary file) -- the
-    pass-rate regrade of `multipl-e-raw-greedy-768;corpus=...`.  `testfrac` cells key on
-    (tag, mean_frac_new) -- the per-test-fraction regrade, whose ledger names no model,
-    so `tags_by_model` (only the manifest names models) is the bridge between the two.
+    Rows key on (corpus, language, score_new, model, summary file).  The manifest is the
+    only artefact the audit reads for `;corpus=` rows; a14's per-test-fraction ledger
+    (`py_testfrac_regrade.json`) backs `bench_family='testfrac'` rows, which this audit
+    does not look at.
     """
     manifest = []
     if os.path.exists(REGRADE_MANIFEST):
@@ -188,15 +187,7 @@ def regrade_rows():
                                  "score_new": float(r["score_new"]), "models": models,
                                  "n": _int_or_none(r["n"]),
                                  "summary": os.path.basename(r["summary_file"] or "")})
-    tags_by_model = collections.defaultdict(set)
-    for r in manifest:
-        for m in r["models"]:
-            tags_by_model[m].add(r["tag"])
-    testfrac = []
-    if os.path.exists(TESTFRAC_LEDGER):
-        with open(TESTFRAC_LEDGER, encoding="utf-8") as fh:
-            testfrac = json.load(fh).get("cells", [])
-    return {"manifest": manifest, "testfrac": testfrac, "tags_by_model": tags_by_model}
+    return manifest
 
 
 def regrade_one(rec, regrade, superseded, lang_n):
@@ -209,20 +200,12 @@ def regrade_one(rec, regrade, superseded, lang_n):
     model, proto, lang = rec["model"], rec["protocol"], rec["lang"]
     base = proto.split(";corpus=")[0]
     score = round(rec["score"], SCORE_DIGITS)
-    if "per-test fraction" in base:
-        artefact = "py_testfrac_regrade.json"
-        tags = regrade["tags_by_model"].get(model, set())
-        hits = [c for c in regrade["testfrac"] if c["tag"] in tags
-                and round(float(c["mean_frac_new"]), SCORE_DIGITS) == score]
-        n_of = {c["tag"]: _int_or_none(c.get("n")) for c in regrade["testfrac"]}
-    else:
-        artefact = "py_regrade_manifest.tsv"
-        hits = [r for r in regrade["manifest"]
-                if r["corpus"] == corpus_of(proto) and r["language"] == lang
-                and model in r["models"]
-                and round(r["score_new"], SCORE_DIGITS) == score
-                and r["summary"] == os.path.basename(rec["source_file"] or "")]
-        n_of = {r["tag"]: r["n"] for r in regrade["manifest"]}
+    artefact = "py_regrade_manifest.tsv"
+    hits = [r for r in regrade
+            if r["corpus"] == corpus_of(proto) and r["language"] == lang
+            and model in r["models"] and round(r["score_new"], SCORE_DIGITS) == score
+            and r["summary"] == os.path.basename(rec["source_file"] or "")]
+    n_of = {r["tag"]: r["n"] for r in regrade}
     rec["regrade_src"] = artefact
     rec["regrade_linked"] = proto in superseded.get((model, lang, base), set())
     tags = {h["tag"] for h in hits}
