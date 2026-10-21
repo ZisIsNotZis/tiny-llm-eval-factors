@@ -105,13 +105,10 @@ def post_assertions(con):
     out.append(("目标行全部为 NULL",
                 con.execute("SELECT COUNT(*) FROM experiments WHERE rowid IN (%s) "
                             "AND _score IS NOT NULL" % ",".join(str(r) for r in TARGETS)).fetchone()[0]))
-    # This is the form the acceptance asked for.  It reaches 0 only when the other
-    # third-family rows (12b java/rs) also get n_items backfilled; they are legitimately
-    # scored (158 SyntaxError, 154 SyntaxError + 1 Exception) and their missing n_items is
-    # the backfill's gap, not a score defect, so this repair leaves the count at 4 and
-    # says so instead of widening its own condition.
-    out.append(("third-family 里「有分数、n_items 仍 NULL」的行（其中 4 行是本次修掉的，"
-                "其余是 n_items 回填缺口）",
+    # The acceptance form.  This repair does not force it to 0: the other third-family rows
+    # (12b java/rs) are legitimately scored and their n_items is the backfill's business, so
+    # the count is printed as found instead of the condition being widened to hide it.
+    out.append(("third-family 里「有分数、n_items 仍 NULL」的行（本迁移不负责回填）",
                 con.execute("SELECT COUNT(*) FROM experiments WHERE protocol = ? "
                             "AND _score IS NOT NULL AND n_items IS NULL",
                             (THIRD_FAMILY,)).fetchone()[0]))

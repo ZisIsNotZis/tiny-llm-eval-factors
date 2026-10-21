@@ -120,7 +120,7 @@
 - 结论：报告侧后果：第十三节里 gemma-4-12b 的 `raw` 行不再把 js/rb 印成 `0.0000 (题量未知)`，改成 `—`；`[7]` 的「因缺 n 而跳过」从 4 变 0、比对格数从 188 变 194，`[4]` 的「有分数且全 Exception」从 4 变 0。
 - 结论：审计不修这条，`bad = 4` 会让 `mpl_negative_control.sh` 的 clean run 直接红——这也是为什么它被当成数据缺陷而不是审计口径问题；写侧（m51/m54 的入库路径会再造一遍这种行）归 i02 修，a12 只修数据与审计。
 - 证据：`python3 migrations/null_all_exception_cells.py --dry-run` 打印四行的判据（rowid、协议串、产物直方图、canonical 孪生行为 NULL）；`--apply` 打印备份名、改动行数与前后行数；负控第四种篡改把这四行之一写回 0.0，审计必须以 `all-Exception: 1` 点名并退出 1。
-- 限制：审计要求的「`_score IS NOT NULL AND n_items IS NULL AND protocol LIKE 'mpl-raw-greedy-768-third-family-code'` 计数为 0」目前是 **4**，不是 0：其余四条 third-family 行（12b 的 java/rs）是真实算出来的分数（158 SyntaxError、154 SyntaxError + 1 Exception），它们缺的是 `n_items` 回填，属 i02 的回填缺口，不由这次修分处理；本迁移把这条查询的实际值打印出来，不为了让它归零而放宽自己的条件。
+- 结论（那条查询现在归零）：验收要求的「`_score IS NOT NULL AND n_items IS NULL AND protocol LIKE 'mpl-raw-greedy-768-third-family-code'` 计数为 0」在本次修分后是 **4**，因为另外四条 third-family 行（12b 的 java/rs）是真实算出来的分数、缺的只是 `n_items`；这属回填缺口而不是修分范围，所以当时没有为了让查询归零而放宽迁移的条件，而是把实际值打印出来。i02 已按产物分母回填这四行（`db58584`：java 158 / rs 155），该查询现在是 **0**——两个缺陷各由各自的 owner 修，判据没有因此变软。
 - 复算：`python3 migrations/null_all_exception_cells.py --dry-run`；`sqlite3 experiments.sqlite "SELECT rowid,_score FROM experiments WHERE rowid IN (12015,12017,12029,12031)"`；审计 `[4]` 段。
 
 ## 两语言分歧：拆列的依据
