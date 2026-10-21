@@ -14,13 +14,16 @@
   2. 跑前那 923 个 `mres/%` 行在跑后逐行相同（按 model+_bench+protocol+language+run_tag+source_file+_score 比）；
   3. 连跑两次行数相同（REFRESH 幂等）。
 
-跑完删掉探针，再跑一次 `db_check` 确认库回到干净状态。探针是本控制自己造的行，删除它不算改别人的数据。
+整段跑在**库副本**上（`MIGRATE_DB` 指到临时目录里的那份），共享主库一行都不动：
+`reproduce.sh` 后面还要用主库重建报告，控制不能顺手改它。
+干净 clone 里没有 `.wrapup/mres` 落盘产物，这时「mres 行一条不丢」这一条记为**未验证**（不假装通过）。
 """
 from __future__ import annotations
 
 import os
 import shutil
 import sqlite3
+import tempfile
 import subprocess
 import sys
 from pathlib import Path
@@ -33,17 +36,6 @@ PROBE_TAG = "i02-probe-survive"
 IDENTITY = ("model, _bench, protocol, language, run_tag, source_file, _score")
 
 
-def numbered_backup() -> Path:
-    n = 0
-    for p in REPO.glob("experiments.sqlite.bak[0-9]*"):
-        tail = p.name.split(".bak", 1)[1]
-        if tail.isdigit():
-            n = max(n, int(tail))
-    dst = REPO / f"experiments.sqlite.bak{n + 1}"
-    shutil.copy2(DB, dst)
-    return dst
-
-
 def mres_rows(con):
     return set(con.execute(
         f"SELECT {IDENTITY} FROM experiments WHERE source_file LIKE 'mres/%'").fetchall())
@@ -53,8 +45,9 @@ def count(con):
     return con.execute("SELECT count(*) FROM experiments").fetchone()[0]
 
 
-def run_migrate():
-    r = subprocess.run([sys.executable, "migrate_db.py"], cwd=str(REPO),
+def run_migrate(db_path: Path):
+    env = dict(os.environ, MIGRATE_DB=str(db_path))
+    r = subprocess.run([sys.executable, "migrate_db.py"], cwd=str(REPO), env=env,
                        capture_output=True, text=True)
     if r.returncode != 0:
         print(f"FAIL: migrate_db.py 退出 {r.returncode}：{(r.stdout + r.stderr).strip()[-500:]}")
@@ -87,35 +80,47 @@ def main() -> int:
     if not DB.exists():
         print(f"FAIL: 数据库不存在：{DB}")
         return 1
-    backup = numbered_backup()
-    print(f"0) 编号备份            : {backup.name}（{count(sqlite3.connect(DB))} 行）")
-
-    con = sqlite3.connect(DB)
-    insert_probe(con)
-    before, before_n = mres_rows(con), count(con)
-    con.close()
-    print(f"1) 探针已插入          : {PROBE_SOURCE}；此时 mres/% 行 {len(before)}，全库 {before_n} 行")
-
+    tmp = Path(tempfile.mkdtemp(prefix="mres-delete-control-"))
+    copy = tmp / "experiments.sqlite"
     try:
-        run_migrate()
-        con = sqlite3.connect(DB)
-        alive = probe_present(con)
-        after, after_n = mres_rows(con), count(con)
-        lost = before - after
-        run1_n = after_n
+        # 用 SQLite 在线备份取一份已提交内容完整的副本（WAL 里没检查点的页也要带上）
+        src = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
+        dst = sqlite3.connect(copy)
+        with dst:
+            src.backup(dst)
+        dst.close()
+        src.close()
+        con = sqlite3.connect(copy)
+        insert_probe(con)
+        before, before_n = mres_rows(con), count(con)
         con.close()
-        print(f"2) 跑完一次 migrate     : 探针存活 {alive}（要 True）；"
-              f"mres/% 行 {len(before)} → {len(after)}，丢失 {len(lost)} 行（要 0）")
+        print(f"0) 库副本              : {copy.name}（{before_n} 行），"
+              f"探针 {PROBE_SOURCE} 已插入；mres/% 行 {len(before)}")
+
+        has_inputs = (REPO / ".wrapup" / "mres").is_dir()
+        run_migrate(copy)
+        con = sqlite3.connect(copy)
+        alive = probe_present(con)
+        after = mres_rows(con)
+        lost = before - after
+        run1_n = count(con)
+        con.close()
+        print(f"1) 跑完一次 migrate     : 探针存活 {alive}（要 True）")
         if not alive:
             print("FAIL: 探针被某个 ingester 的 REFRESH 删掉了——删除范围又变宽了")
             return 1
-        if lost:
-            sample = sorted(lost)[:3]
-            print(f"FAIL: 有 {len(lost)} 行 mres/% 记录在跑前跑后不一致，例如：{sample}")
-            return 1
+        if has_inputs:
+            print(f"2) mres/% 行            : {len(before)} → {len(after)}，丢失 {len(lost)} 行（要 0）")
+            if lost:
+                print(f"FAIL: 有 {len(lost)} 行 mres/% 记录在跑前跑后不一致，"
+                      f"例如：{sorted(lost)[:2]}")
+                return 1
+        else:
+            print("2) mres/% 行            : 未验证（本机没有 .wrapup/mres 落盘产物，"
+                  "refresh 读不到输入，这一条记不适用而不是通过）")
 
-        run_migrate()
-        con = sqlite3.connect(DB)
+        run_migrate(copy)
+        con = sqlite3.connect(copy)
         run2_n = count(con)
         still_alive = probe_present(con)
         con.close()
@@ -125,16 +130,7 @@ def main() -> int:
             return 1
         return 0
     finally:
-        con = sqlite3.connect(DB)
-        delete_probe(con)
-        n = count(con)
-        con.close()
-        print(f"4) 探针已清除          : 全库 {n} 行")
-        r = subprocess.run([sys.executable, "checks/db_check.py", "--quiet"],
-                           cwd=str(REPO), capture_output=True, text=True)
-        if r.returncode != 0:
-            print(f"FAIL: 清掉探针后 db_check 未通过：{r.stdout.strip()[-300:]}")
-            sys.exit(1)
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 if __name__ == "__main__":

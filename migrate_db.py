@@ -26,7 +26,8 @@ import re
 import sqlite3
 import sys
 
-DB = "experiments.sqlite"
+# `MIGRATE_DB` 只给负控用：让一次完整的 refresh 跑在**库副本**上，而不是改共享主库。
+DB = os.environ.get("MIGRATE_DB") or "experiments.sqlite"
 
 # Logical gguf names known to the study (the bpw map is the canonical roster).
 try:
