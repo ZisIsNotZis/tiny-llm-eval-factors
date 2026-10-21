@@ -57,7 +57,7 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 ## 共享仓库的写权（避免互相踩）
 
-1. **push 归 meta**：子项目在自己的提交里 `git add <path>` + `git commit`，**不 `git push`**、不 `git reset`、不 rebase 共享历史。分支修复只有 meta 做，且在独立 worktree 里做。这条是踩出来的：一次并发 `push` 把远端 rebase 了一份提交、本地又留了一份，另有一次 `reset` 让别人已提交的两个提交从 main 上消失。
+1. **push 归 meta**：子项目只提交自己的路径，**不 `git push`**、不 `git reset`、不 rebase 共享历史。提交必须带显式路径——`git commit -m … -- <path>…`，**不要用裸 `git commit`**：索引是共享的，别人 `git add` 之后你一提交就会把他的暂存一起定型（已经发生过两次：`i01` 的 PLAN 被扫进 `a06` 的提交，`a06` 的四个文件被扫进 `i01` 的提交）。分支修复只有 meta 做，且在独立 worktree 里做。这条是踩出来的：一次并发 `push` 把远端 rebase 了一份提交、本地又留了一份，另有一次 `reset` 让别人已提交的两个提交从 main 上消失。
 2. **改库前后行数必须相等**，除非本次变更明确就是删行，并且按测量身份逐条对上；「身份去重」把另一个测量当重复删掉过一次（BFCL 的 prompt 协议 20 行被当成 native 的重复），从备份恢复后才修好。任何删除都要先算「应剩多少行」，跑完对账。
 3. 数据库是单一写入点：入库走 `migrate_db.py`，改完立刻 `db_check`，并且在下一次别的子项目入库前确认 skip ledger 为空。
 
