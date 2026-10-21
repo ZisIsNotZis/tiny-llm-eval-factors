@@ -132,6 +132,20 @@
 - repro: `bash .wrapup/gpu_locked.sh bash -c 'nvidia-smi --query-gpu=memory.free --format=csv,noheader; /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/f6d5376be1edb4d416d56da11e5397a961aca8ae/Qwen3.5-2B-UD-Q4_K_XL.gguf --port 8977 -c 8192 -np 1 -ngl 99 --jinja & sleep 20; nvidia-smi --query-gpu=memory.free --format=csv,noheader; curl -s http://127.0.0.1:8977/props | head -c 200; kill %1'`。
 - 限制：这是**空载**占用（无 prompt cache、无 batch），满负荷时 prompt cache 每条约 39.4–39.8 MiB（`server.log` 的 `alloc` 行），所以门槛取 2× 实测值而不是 1×。
 
+## vendor-ingest-gap :: i02 的 `vendor-recommended` 臂（`60446d5`）已经落 main，但**没有入库路径**：`migrate_db.py` 里没有任何 `vendor-recommended` 或 `vendor_recommended` 的字符串，所以那一臂的格只会停在 `.wrapup/mres/*/variant_panel.json`，不会进 `experiments` 表；而 `rank_survival.py` 只读库，因此 `WP3` 的最后一步（把 `vendor` 加进 `SELECTION` 并 `--check` 通过）在补上 ingest 之前无法完成。
+
+- kind: measured
+- evidence: `grep -c "vendor.recommended" migrate_db.py` → 0；`60446d5` 改了 `migrate_db.py`（6 行）但没有加 ingest 函数；那一臂的行只存在于面板产物。
+- repro: `grep -n "vendor" migrate_db.py`（无输出）；`python3 "docs/subprojects/a06-采样与解码参数/rank_survival.py" --check`（当前仍退出 0，因为它还没引用那一臂——这不是通过，是尚未纳入）。
+- 后果：`WP3` 的入库这一步归 `migrate_db.py` 的 owner（i02），a06 不改它。没有 ingest 时，`WP3` 的结论只能从产物 json 读，而「可重算判据」这一半就退化回散文——这正是 `rank-ledger` 要避免的。
+
+## vendor-effect-control-open :: i02 的负控（`checks/vendor_arm_negative_control.py`）自己声明了「服务端是否真的按这五个量采样」那一步**未验证**，理由是「本机没有 gguf」；这个前提不成立：`/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/f6d5376…/` 里有 `UD-Q2/Q3/Q4/Q5_K_XL` 四个 `.gguf`，而这一步只要 20 秒 GPU，做法写在 `res-effect-control`：固定 `seed=1234` 连发两次相同请求必须逐字相同，再把 `presence_penalty` 从 2.0 换成 0.0 必须不同。
+
+- kind: measured
+- evidence: 本文件 `res-effect-control` 的三次实测输出（greedy 两次同、vendor 两次同、改 presence_penalty 后变）就是那一步的现成读数；gguf 清单来自 `ls -lL /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/*/*.gguf`。
+- repro: `python3 "docs/subprojects/a06-采样与解码参数/rank_survival.py" --check` 与本文件 `res-vram-and-props` 的探针命令。
+- 后果：那条「未验证」可以关掉，且**不能**用「temp>0 两次输出应不同」去关（固定 seed 下它会假红，见 `res-effect-control`）。
+
 ## res-two-routes :: 厂商臂的参数只能分两条路线到达采样器，因为两个客户端里只有一个自由度：`mpl_run.py` 的 raw 请求体只有 `prompt/temperature/n_predict/stop`（`mpl_run.py:146-150`），`evalplus.codegen` 的 CLI 只有 `--temperature`，所以代码列上的 `top_p/top_k/min_p/presence_penalty` 必须**在起服时**传（`run_m31.sh:66-68` 就是这么跑 `top_k` 的：`-c 4096 --top-p 0.95 --top-k $TK --min-p 0.05 --seed 1234`）；而 lm-eval 那条走 `--gen_kwargs`，五个量能逐请求传。
 
 - kind: measured
