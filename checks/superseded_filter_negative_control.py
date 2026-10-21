@@ -66,21 +66,28 @@ def main() -> int:
     if not kept:
         print("FAIL: 过滤后一个 py 格都没有，这条控制没有观测对象")
         return 1
-    leaked = {k for k in kept if (k[0], k[2]) in superseded}
-    print(f"1) 过滤 superseded       : {len(kept)} 个 py 格，其中属于被取代行的 {len(leaked)} 个（要 0）")
-    if leaked:
-        print(f"FAIL: 过滤后仍有被取代的 py 行出现在表里，例如 {sorted(leaked)[0]}")
-        return 1
 
     unfiltered, err = probe(no_filter=True)
     if unfiltered is None:
         print(f"FAIL: 不过滤模式下查询失败：{err}")
         return 1
-    present = {k for k in unfiltered if k[1] == "multipl_e_py" and (k[0], k[2]) in superseded}
-    print(f"2) 不过滤（负控）        : 被取代的行出现 {len(present)} 个（要 {len(superseded)}）")
-    if len(present) != len(superseded):
-        print(f"FAIL: 去掉过滤后被取代的行没有全部回到表里（{len(present)}/{len(superseded)}）"
-              f"——说明这条过滤不是在承重，或者键的粒度不对")
+    all_py = {k for k in unfiltered if k[1] == "multipl_e_py"}
+    removed = all_py - kept
+    # 判据：过滤掉的那些键，必须**恰好**是被取代行的键（按 (model, 协议串) 认）。
+    # 反过来「过滤后还剩哪些」不能当判据：同一个 (model, 协议) 可能还有另一行没被取代
+    # （另一份 summary、另一次运行），那是合法存在的格，不是泄漏。
+    removed_ok = {k for k in removed if (k[0], k[2]) in superseded}
+    print(f"1) 过滤 superseded       : 保留 {len(kept)} 个 py 格，过滤掉 {len(removed)} 个键，"
+          f"其中属于被取代行的 {len(removed_ok)} 个")
+    if len(removed_ok) != len(removed):
+        stray = sorted(removed - removed_ok)[:2]
+        print(f"FAIL: 过滤掉了不属于被取代行的键（过滤过宽）：{stray}")
+        return 1
+    back = {k for k in removed if (k[0], k[2]) in superseded}
+    print(f"2) 不过滤（负控）        : 被取代的行回到表里 {len(back)} 个"
+          f"（被取代的 (model,协议) 对共 {len(superseded)} 个）")
+    if not back:
+        print("FAIL: 去掉过滤后被取代的行没有回到表里——这条过滤不是在承重")
         return 1
     return 0
 

@@ -51,9 +51,12 @@ def main(argv):
     con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     con.row_factory = sqlite3.Row
     # 取代行 = 协议串带语料两段的新行；旧行 = 带 `superseded_by` 指针的那些（原地保留）。
+    # 只核对**二元通过率**的取代行：比例行的清单是另一份（`py_testfrac_regrade.json`），
+    # 拿二元清单去对它会必然对不上（这正是本检查第一版报的假错）。
     new_rows = con.execute(
         "SELECT rowid, model, _bench, _score, n_items, protocol, run_tag FROM experiments "
-        "WHERE protocol LIKE ? AND language='py'", ("%" + SUFFIX,)).fetchall()
+        "WHERE protocol LIKE ? AND language='py' "
+        "AND protocol NOT LIKE '%per-test fraction%'", ("%" + SUFFIX,)).fetchall()
     problems, checked, diverged, ambiguous = [], 0, [], []
     for r in new_rows:
         n = r["n_items"] or 0

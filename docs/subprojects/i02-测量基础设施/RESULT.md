@@ -309,3 +309,57 @@
 - evidence: 第六节由 `report_inputs/sampling_collapse.json` 渲染（`build_sampling_collapse.py` 读 a06 的 `RESULT.md`）：MultiPL-E 六格 18→1/22→3/39→4/43→7/37→6/44→12（−17…−36），EvalPlus HumanEval 94→59（−35），损失不是常数；cpp 的直方图 `SyntaxError=142, Exception=18, OK=1`（语法塌陷）与 py 的「能解析跑不起来」是两种失效形态；temp 0.3/0.6 下 cpp 仍是 18/161，且把截断量改回固定协议、`presence_penalty` 置 0、只留 `temperature=1.0` 时该格仍是 2/40——所以不是温度、截断量也不是主因。「10 倍塌陷」只在相对意义成立，固定协议比厂商档宽容的正是这十几到三十几道题。
 - producer: `python3 report_inputs/build_sampling_collapse.py --check`；`python3 checks/sampling_collapse_negative_control.py`（丢题数改成 0 → 正文改口成「与固定协议差距为零」）
 
+
+## res64 :: 非代码基准的 `language` 必须是空——599 行曾是 `python`（全库回填的产物），现在按「重插即恢复」复原，并有一条查询可验证。
+
+- kind: measured
+- status: current
+- evidence: 起因是 `refresh_preserve` 负控抓到的一处改别人的行：`migrate_schema()` 原来无条件
+  `UPDATE experiments SET language='python' WHERE language IS NULL`，把 gsm8k/mmlu/ifeval/arc_challenge/
+  truthfulqa_mc2 这五族**非代码基准**的 599 行（并入 run_tag 之后的行）也写成了 `python`。
+  恢复方式是**重算而不是回滚**：这些行的 ingester（campaign / variant / lmeval 面板）重插时本来就写
+  `language=None`，把回填收窄成 `WHERE language IS NULL AND run_tag IS NULL`（只回填并入 run_tag 之前的老行）
+  之后，下一次 refresh 重插就把它们复原成 NULL；行数、分数、协议串一个字都没改。
+  可验证的查询（非代码基准的 `language` 必须为空；返回 0 行才算成立）：
+  `sqlite3 experiments.sqlite "SELECT bench_family, language, count(*) FROM experiments WHERE bench_family IN ('gsm8k','mmlu','ifeval','arc_challenge','truthfulqa_mc2') AND language IS NOT NULL GROUP BY 1,2"`。
+  负控：`checks/refresh_preserve_negative_control.py` 造一行（variant 地盘、`language` 为空）探针，
+  在这个回填还在时会红——本轮它确实先红后绿，这就是「恢复有据可查」的那条证据。
+- producer: `python3 checks/refresh_preserve_negative_control.py`；`sqlite3 experiments.sqlite "PRAGMA table_info(experiments)"` 与上一条查询
+
+## res65 :: py 语料取代从 11 格推进到 12 格：用清单的 `summary_file` 与 `source_file` 交叉认行，并撤回 4 个互相矛盾的绑定。
+
+- kind: measured
+- status: current
+- evidence: 39 格定位不了的根因是「五元组（model/bench/language/protocol/n_items）落在多行」。清单的
+  `db_source_files` 是那批候选行的来源集合，切不开；能切开的是清单的 `summary_file`（a14 找到这批完成物的
+  那份 summary），也就是 `a12` 的 `mpl_cell_audit.py` 第 `[1]` 段「逐格能不能追溯到一份产物」用的键
+  （只读调用它，未改其文件）。按 `source_file == basename(summary_file)` 过滤后：12 格唯一（新入 5 格，
+  另 7 格此前已入），其余 38 格仍不唯一（同一 summary 内 mult行）或全无候选。
+  **同时撤回了 4 个绑定**：`m3-e2b-q2-py`、`m3-e4b-q3-py`、`m3-q36-35b-q2-py`、`m3-gr3b-q4-py` 的旧行
+  `source_file` 分别指向 m5/m6/m10_granite 的 summary，而清单 `summary_file` 说的是 m3——清单自己的两列互相矛盾，
+  按「不猜」回滚（删新行、清指针，编号备份 `experiments.sqlite.bak71`）。
+  现在每个指针都满足：旧行 `superseded_by` 指向的新行协议串 = 旧协议串 + `;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14`，
+  且旧行 `source_file` == 清单 `summary_file` 的 basename（可逐行复核）。
+  报告 §13 表注随之写成「改分的 50 格里只有 12 格已取代，38 格定位不了、仍是旧语料值」。
+- producer: `python3 migrate_db.py`（幂等）；`python3 checks/py_corpus_regrade_check.py --before experiments.sqlite.bak31`；`python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py`
+
+## res66 :: §15 的比例列与二元列现在同代：11 格比例行按钉住语料重算入新行，旧行标指针；13 格仍是旧语料。
+
+- kind: measured
+- status: current
+- evidence: a14 的 res22 说比例的分母也是测试语料，所以比例列必须与二元列同代。`migrate_db.py::ingest_py_testfrac_regrade`
+  按「`run_tag='m41-testfrac'` 且 `_score == mean_frac_old`」认行（要求唯一），把 a14 的 `mean_frac_new`
+  按同一条身份串后缀入新行、旧行写 `superseded_by`：**11 格**（27 个重算格里有 16 个库里根本没有比例行）。
+  报告 §15 的表注写明「11 格已按钉住语料重算、13 格仍是旧语料，不可直接比」，数字从库里读。
+- producer: `python3 migrate_db.py`；`python3 report_inputs/../checks/report_check.py`；表注文本见 `make_report.py::testfrac_corpus_note`
+
+## res67 :: 取代行会让 a12 的谱系审计把它们记成「untraced」——这是语料代次的必然结果，不是数据丢失。
+
+- kind: measured
+- status: provisional
+- evidence: 只读跑 `mpl_cell_audit.py`：`[1] scored cells traced 337/345`，其中 **8 条 UNTRACED 全是 `;corpus=` 行**——
+  重评后的分数不可能被旧 summary 复现（summary 记的是旧语料的通过数），它的证据物是 a14 的取代清单
+  （逐格 `pass_new`）而不是 summary。同一份审计的 `[7] report cells read: 198; not belonging to their protocol row: 0`
+  在报告重建后为 0，`[9] stored protocols that disagree ...: 0`。需 a12 决定是否在其 `[1]` 里把带 `corpus=` 的行算作
+  「以清单为证据物」，i02 不改它的文件。
+- producer: `python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py`

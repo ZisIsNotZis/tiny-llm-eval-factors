@@ -143,28 +143,24 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
 
 ## 当前在做什么 / 下一步（接手先读这一节）
 
-- 已完成（最近提交 `6135a87`，干净 clone 42 PASS / 0 FAIL / 0 WARN / 1 SKIP，`report.html` sha256 `3706202574f5…`）：
-  1. **refresh 不再改写别人的行**：`;sampling=default` 的编造去掉（32 行回到 bak30 的协议串）；
-     `n_items` 这类「别人补过的列」改成「删除前快照、重插后为空才补写」并记 ledger（14 行 BFCL 已回填，
-     `migrations/restore_refresh_losses.py --from experiments.sqlite.bak30 --apply`，行数 3351→3351）；
-     `migrate_schema` 的 `language='python'` 全库回填收窄到「并入 run_tag 之前的老行」
-     （它曾把 599 行 gsm8k/mmlu/ifeval 的「不是代码基准」改写成 python，负控当场抓到）。
-     负控 `checks/refresh_preserve_negative_control.py`：三行探针（campaign / variant / 普通）跑两次
-     完整 refresh 逐字未变、全库摘要相同、净改动 0 行；本轮它真的红过一次（language 回填那条）。
-  2. **读不到输入就不删**：campaign / spec / variant 的删除范围改成「这一轮确实会重建的文件」
-     （按盘上面板枚举，不用共享前缀），一个都读不到时保留现状并让 `migrate_db.py` 以 2 退出。
-     干净 clone 里由「3350 → 2426（丢 924 行）」变「3350 → 3350，exit 2」。
-  3. **两条 WARN 收尾**：`size_claims` 改为「a02 产物不在场 → 2（不可得），不是过期」，索引已重算；
-     `open_questions` 跟上 a11 的「未解问题」一节（10 节 / 31 条 / 跳过 6）。
-  4. §13 表注写明「改分 50 格里只有 11 格已按钉住语料取代，39 格定位不了、仍是旧语料值，两代不可直接比」。
+- 已完成（最近提交 `6135a87`，本轮再加 4 条事实 `res64`–`res67`）：
+  1. **refresh 不再改写别人的行**：`;sampling=default` 的编造去掉（32 行回 bak30 的协议串）；
+     `n_items` 改成「删除前快照、重插后为空才补写」（14 行 BFCL 已回填）；`language='python'` 全库回填
+     收窄到「并入 run_tag 之前的老行」（599 行非代码基准行按重插恢复为 NULL，见 `res64` 的查询与负控）。
+  2. **读不到输入就不删**：campaign / spec / variant 的删除范围改成「本轮确实会重建的文件」，
+     读不到就保留现状并 exit 2；干净 clone 由「丢 924 行」变「一条不丢」。
+  3. **py 取代 12/50**（`res65`）：用清单的 `summary_file` 与库的 `source_file` 交叉认行（a12 的
+     `mpl_cell_audit.py::[1]` 用的正是这个键，只读调用），并**撤回 4 个两个来源互相矛盾的绑定**；
+     §13 表注按实际数写成「12 格已取代、38 格仍是旧语料、不可直接比」。
+  4. **【指标口径】§15 比例列与二元列同代**（`res66`）：11 格比例行按同一身份串重算入新行，13 格仍旧；
+     表注写明两代不可直接比。
+  5. a12 的谱系审计把带 `corpus=` 的 8 行记成 untraced（`res67`，provisional）——重评分数不可能被旧 summary
+     复现，证据物是 a14 的清单；要不要改它的 `[1]` 判据归 a12，i02 不动它的文件。
 - **未做（下一轮）**：
-  1. py 取代仍停在 11/50：39 格「同一分数落在多行、候选跨多个协议」需要 a12 的 `mpl_cell_audit.py`
-     按 `(model, run_tag, source_file)` 逐格认行（或 a14 补一份逐格 `source_file` 映射），认行成功才入库。
-  2. `a14` 的 27 个 py `testfrac` 值（`evidence/py_testfrac_regrade.json`）尚未换到与二元列同一代，
-     §15 的中位 +0.027 与 7 对近差翻转文字也未改。
-  3. 历史遗留：155 行非代码基准的 `language` 仍是早年全库回填写下的 `python`（现在只影响身份串可比性，
-     不影响报告口径）；若要修，须按 `bench_family` 逐类给依据，不能再一次全库回填。
-- 阻塞/风险：报告只依赖库 + `report_inputs/*` 派生索引；索引落后时 `reproduce.sh` 报 WARN 而不是自动重建。
+  1. 38 格 py 仍未取代：其中 8 格是**同一 summary 内多行**（同 model+协议+n），需要另一条能切开的键
+     （例如该行 `completed_at`/`rep`，或 a14 补一份逐格 eval 文件指纹）；其余是清单两列互相矛盾或全无候选。
+  2. 16 个 testfrac 重算格库里没有比例行（无产物可对），不会入；若要让比例列全覆盖，需要 a14 重新产出它们的比例。
+- - 阻塞/风险：报告只依赖库 + `report_inputs/*` 派生索引；索引落后时 `reproduce.sh` 报 WARN 而不是自动重建。
   工作树里的 `experiments.sqlite` 常有别的子项目未提交的写入，`report.html` 一律在 HEAD 的干净 clone 里
   重建再拷回。
 

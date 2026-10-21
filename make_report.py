@@ -1002,8 +1002,10 @@ def mpl_py_corpus_note():
     50 这个总数来自 a14 的取代清单（committed），已取代的格数来自库里 `superseded_by`，
     两个都不在本函数里写死。
     """
+    # 只数**二元通过率**的取代行：比例列（`per-test fraction`）有自己的表注，mix 在一起会把
+    # 「50 个改分格里取代了几格」算成 62。
     n_sub = CON.execute("SELECT count(*) FROM experiments WHERE superseded_by IS NOT NULL "
-                        "AND language='py'").fetchone()[0]
+                        "AND language='py' AND protocol NOT LIKE '%per-test fraction%'").fetchone()[0]
     if not n_sub:
         return ""
     corpus = gen = ""
@@ -1026,7 +1028,8 @@ def mpl_py_corpus_note():
     n_old = CON.execute(
         "SELECT count(*) FROM experiments WHERE bench_family='humaneval-multipl-e' "
         "AND language='py' AND _score IS NOT NULL AND superseded_by IS NULL "
-        "AND protocol NOT LIKE '%;corpus=%'").fetchone()[0]
+        "AND protocol NOT LIKE '%;corpus=%' AND protocol NOT LIKE '%per-test fraction%'"
+    ).fetchone()[0]
     return (f"<li><b>py 列大部分仍是旧测试语料下的值，两代不可直接比。</b>"
             f"a14 用钉住的语料（sha <code>{corpus[:12]}</code>）复判了同一批落盘完成物，"
             f"改分的 {changed_total} 格里只有 <b>{n_sub} 格</b>在活库里能唯一定位、已按新协议串"
@@ -1215,12 +1218,36 @@ def _testfrac_n():
     return out
 
 
+def testfrac_corpus_note():
+    """§15 表注：比例列的语料代次与重建了哪些格（数字全从库里读）。
+
+    a14 的 res22：部分给分的分母是测试语料，语料换一代，比例列与二元列就各说一代。
+    能唯一定位的比例行已按同一身份串（`…;corpus=…;gen_corpus=…`）重算入新行；剩下的行
+    库里根本没有比例行（或撞多行），仍是旧语料下的值——两代不可直接比。
+    """
+    n_new = CON.execute(
+        "SELECT count(*) FROM experiments WHERE run_tag='m41-testfrac' "
+        "AND superseded_by IS NULL AND protocol LIKE '%;corpus=%'").fetchone()[0]
+    n_old = CON.execute(
+        "SELECT count(*) FROM experiments WHERE run_tag='m41-testfrac' "
+        "AND superseded_by IS NULL AND protocol NOT LIKE '%;corpus=%'").fetchone()[0]
+    if not n_new:
+        return ""
+    return (f"<li><b>比例列也有语料代次：</b>其中 <b>{n_new} 格</b>已按钉住的测试语料重算"
+            f"（与二元列同一条身份串），另有 <b>{n_old} 格</b>仍是旧语料下的值"
+            f"（库里没有可唯一定位的比例行），两者<b>不可直接比</b>。</li>")
+
+
 def table_testfrac():
     tf_n = _testfrac_n()
     cells = {}
+    # 与被取代的二元行同一条规则：一个格在报告里只出现一次。比例行也有语料代次
+    # （a14 的 res22：比例的分母同样是测试语料），重算过的那几格以 `corpus=` 串入新行，
+    # 旧行由 `superseded_by` 指出去。
     for model, arm, lang, score in CON.execute(
             "SELECT model,_bench,language,_score FROM experiments "
-            "WHERE run_tag='m41-testfrac' AND _score IS NOT NULL"):
+            "WHERE run_tag='m41-testfrac' AND _score IS NOT NULL "
+            "AND superseded_by IS NULL"):
         a = arm.replace("testfrac-", "")
         cells.setdefault((model, a), {})[lang] = (score, tf_n.get((lang, round(score, 9))))
     out = [(m, a, d, [m]) for (m, a), d in sorted(cells.items()) if d]
@@ -2191,6 +2218,7 @@ def main():
          "<li>用途：回答“三元量化是错得更多，还是只是错得不一样”。它与主结论不冲突，只补一个视角。</li>"
          "<li>注意：该度量来自 m41 面板，复用了各面板已有的生成样本（同一协议 <code>mpl-raw-greedy-768</code>），"
          "因此与标准列同源，不引入新协议。</li>"
+         + testfrac_corpus_note() +
          "</ul>"),
     ]
     all_tables = []

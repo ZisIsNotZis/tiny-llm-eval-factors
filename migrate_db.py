@@ -1993,6 +1993,7 @@ def main():
     tally["a13-bfcl-rescore"] = ingest_bfcl_official_rescore(con)
     # 放在最后：它只改别的 ingest 已经落好的 py 行（写 `superseded_by`）并加新行。
     tally["a14-py-regrade"] = ingest_py_regrade(con)
+    tally["a14-py-testfrac"] = ingest_py_testfrac_regrade(con)
     restored = restore_preserved(con, preserved)
     if restored:
         print(f"  refresh-preserve: 补写回 {restored} 个被重插抹掉的修正值")
@@ -2135,23 +2136,27 @@ def models_of(rec):
 
 
 def _regrade_candidates(con, rec):
-    """清单的一行 → 活库里这条改分格的候选行，判据只用身份列，不用 rowid、不用分数。
+    """清单的一行 → 活库里这条改分格的候选行；判据只用身份列，不用 rowid、不用分数。
 
-    **不能用清单里的 `db_rowids`**：清单是某个时刻的快照，并发入库（以及本脚本自己插的行）
-    会把 rowid 漂走——实测 14083/14129 两个 rowid 在几十分钟内就消失了，而按 rowid 找会把
-    `m26-q38-27b-q2-py` 判成 `unique` 并对上另一族模型（Nemotron）。所以判据是
-    (model, bench, language, protocol_old, n_items)：模型名来自清单的 `db_models`，
-    `protocol_old` 只填到了 59/98 行，没填时退到 `db_protocols` 的候选集合。
+    **不能用清单里的 `db_rowids`**：清单是快照，并发入库（以及本脚本自己插的行）会把 rowid 漂走
+    ——实测 14083/14129 两个 rowid 在几十分钟内就消失了，按 rowid 找会把 `m26-q38-27b-q2-py`
+    判成 `unique` 并对上另一族模型（Nemotron）。判据是五元组
+    (model, bench, language, protocol_old, n_items)，再用 `source_file` 切分：
+
+      * 候选唯一 → 直接用；
+      * 候选多于一行 → 用清单的 `summary_file` 的文件名过滤一次（那是 a14 找到这批完成物的
+        summary，也就是 `a12` 的 `mpl_cell_audit.py` 第 [1] 段「逐格能不能追溯到一份产物」用的键）；
+      * 清单自己的 `summary_file` 与 `db_source_files` 指向不同文件时**不猜**：这种情况说明清单
+        两列互相矛盾（同一模型在两份 summary 里都出现过），交回调用方记进 skip ledger。
     """
     models = models_of(rec)
     n = int(rec["n"])
     if not models:
         return []
-    # `protocol_old` 是 summary 里的名字（50 格有、39 格没有），而库里那一行的协议串可能
-    # 退化成 DEFAULT_MPL_PROTOCOL（summary 没记 protocol 时）。所以先按 protocol_old 找，
-    # 找不到再用清单给的候选集合 `db_protocols` 找；每一步都要求**候选唯一**。
     tries = ([rec["protocol_old"]] if rec["protocol_old"] else []) + \
             [[p for p in (rec["db_protocols"] or "").split("|") if p]]
+    summary = os.path.basename((rec.get("summary_file") or "").strip())
+    declared = {x for x in (rec.get("db_source_files") or "").split(",") if x}
     saved_factory = con.row_factory
     con.row_factory = sqlite3.Row
     try:
@@ -2168,13 +2173,71 @@ def _regrade_candidates(con, rec):
                  "AND protocol NOT LIKE '%%;corpus=%%'"
                  % (",".join("?" * len(models)), ",".join("?" * len(prots))))
             rows = con.execute(q, [*models, *prots, n]).fetchall()
-            if len(rows) == 1:
-                return rows
-            if rows:
-                return rows          # 多于一个：交给调用方按「候选不唯一」跳过
+            if not rows:
+                continue
+            if summary:
+                rows = [r for r in rows if r["source_file"] == summary]
+                if not rows:
+                    continue
+            elif declared:
+                rows = [r for r in rows if r["source_file"] in declared]
+                if not rows:
+                    continue
+            return rows
         return []
     finally:
         con.row_factory = saved_factory
+
+
+PY_TESTFRAC_REGRADE = os.path.join(
+    "docs", "subprojects", "a14-部分给分", "evidence", "py_testfrac_regrade.json")
+
+
+def ingest_py_testfrac_regrade(con):
+    """把 a14 用钉住语料重算的**每测试通过比例**按同一代次入一行（旧行标指针、不删）。
+
+    二元列（通过/不通过）与比例列（每题通过的测试比例均值）必须同代：a14 的 res22 说得很清楚，
+    比例的分母也是测试语料，语料换一代，两列就各说一代。所以这里与 `ingest_py_regrade` 用同一条
+    身份串后缀，把比例值也上一次新行。
+
+    认行判据：比例行的 `_score` 就是 `mean_frac`，所以按 (run_tag='m41-testfrac', _score=旧比例)
+    找，要求**唯一**；找不到或撞多行 → skip ledger，理由写清。不需要 model 名——比例行自带那个值。
+    """
+    tag = "a14-py-testfrac-regrade"
+    if not os.path.exists(PY_TESTFRAC_REGRADE):
+        note_skip(tag, "重算产物缺失", PY_TESTFRAC_REGRADE)
+        print(f"  {tag}: MISSING {PY_TESTFRAC_REGRADE} -- 不动任何行")
+        return 0
+    doc = json.load(open(PY_TESTFRAC_REGRADE, encoding="utf-8"))
+    saved_factory = con.row_factory
+    con.row_factory = sqlite3.Row
+    inserted = linked = 0
+    try:
+        for cell in doc.get("cells") or []:
+            old_score = cell["mean_frac_old"]
+            rows = con.execute(
+                "SELECT rowid, * FROM experiments WHERE run_tag='m41-testfrac' "
+                "AND abs(_score - ?) < 1e-6 AND protocol NOT LIKE '%%;corpus=%%'",
+                (old_score,)).fetchall()
+            if len(rows) != 1:
+                note_skip(tag, "比例行候选不唯一或找不到", f"{cell['tag']}（候选 {len(rows)}）")
+                continue
+            old = rows[0]
+            new_proto = f"{old['protocol']};{PY_REGRADE_SUFFIX}"
+            row = {c: old[c] for c in ROW_COLS}
+            row.update({"_score": float(cell["mean_frac_new"]), "protocol": new_proto})
+            if not measurement_present(con, row):
+                insert(con, row)
+                inserted += 1
+            linked += con.execute(
+                "UPDATE experiments SET superseded_by=? WHERE rowid=? AND "
+                "(superseded_by IS NULL OR superseded_by <> ?)",
+                (new_proto, old["rowid"], new_proto)).rowcount
+    finally:
+        con.row_factory = saved_factory
+    con.commit()
+    print(f"  {tag}: +{inserted} 行（比例列同代），旧行写指针 {linked} 行")
+    return inserted
 
 
 def ingest_py_regrade(con):
@@ -2200,8 +2263,11 @@ def ingest_py_regrade(con):
         n = int(rec["n"])
         cand = _regrade_candidates(con, rec)
         if len(cand) != 1:
-            note_skip(tag, "活库候选不唯一或模型不匹配" if cand else "活库里找不到该格",
-                      f"{cell}（候选 {len(cand)}）")
+            note_skip(tag,
+                      "两处映射都不可唯一（五元组 + source_file 后仍有多个候选）" if cand
+                      else "活库里找不到该格（模型/协议/题量/来源都对不上）",
+                      f"{cell}（候选 {len(cand)}；清单 summary_file={rec.get('summary_file')}，"
+                      f"db_source_files={rec.get('db_source_files')}）")
             continue
         chosen = cand[0]
         if chosen["_score"] is None or abs(chosen["_score"] - float(rec["score_old"])) > 1e-6:
