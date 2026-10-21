@@ -82,3 +82,11 @@
 - evidence: 干净 clone（HEAD 919215d）里 `./reproduce.sh` 退出 0、37 条 PASS、1 条 WARN，那一条就是本子项目引起的 `open_questions.json`；`git diff report.html` 的唯一差异是「未解问题」索引的页脚（跳过的子项目少一个）与列表（多了 a11 的四条）
 - producer: `python3 report_inputs/build_open_questions.py --check` → `FAIL: … is stale`；`./reproduce.sh` → `WARN open_questions.json 与 PLAN.md 不一致`
 - 交回 meta 的一句：下次重生成报告输入与 `report.html` 时带上 a11（它现在有「未解问题」一节），本子项目不越权改那两个文件。
+
+## res10 :: `plan1` 记下的 `GATE-FAIL`（扩散式解码因运行时缺失未测）此前没有产物；本目录的 `res1`–`res6` 就是它的产物，`plan1` 里那半句话现在由可复算的装置支撑，其余三句（长上下文 KV、31B、26B-A4B 原生档）不归本子项目。
+
+- kind: citation
+- status: current
+- from: result.res2
+- evidence: `docs/plan/plan.yaml::plan1` 的 `_text`（该文件已由 meta 迁移删除，原文见 `git show 021e6b8^:docs/plan/plan.yaml`，第 51 行）；本目录 `analysis/` 与 `fixtures/` 是新增的产物
+- producer: `git show 021e6b8^:docs/plan/plan.yaml | sed -n 51p`
