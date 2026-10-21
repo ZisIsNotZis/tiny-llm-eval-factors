@@ -43,9 +43,9 @@ experiments.sqlite.bak*
 !.wrapup/mres/m165-mechanism/props_*.json
 .wrapup/*.log
 # 运行日志与进程戳：暂存不是证据。
-# 例外（下面十四行）：被 `docs/` 里某个节点点名为 evidence 的 `.out`。判据是「被点名且小」，
-# 不是「体积小」——没被点名的 `.out` 不入库。`*.log` 这一类同样被点名（18 个、14 MB，其中
-# `m30_32.log` 一个就 9.9 MB），随仓库走的代价与声明方式还没定，登记在工作包 p-entry3。
+# 例外（下面十四行）：`docs/` 下被点名为 evidence 的 `.out`。判据是「被点名」，不是「体积小」；
+# 没被点名的 `.out` 不入库。`.log` 同类没有在同一次里定：`docs/subprojects/*/RESULT.md` 点名了 9 个
+# 未入库的 `.log`，共 9.3 MB（最大的一个 7.2 MB），它们的处置登记在工作包 p-entry3。
 .wrapup/*.out
 .wrapup/*.pid
 !.wrapup/a01_t4.out
