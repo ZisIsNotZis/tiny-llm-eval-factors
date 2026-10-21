@@ -228,6 +228,13 @@ else
 fi
 rm -f /tmp/reproduce_oq.$$
 
+if python3 checks/docs_dup_id_negative_control.py >/tmp/reproduce_dup.$$ 2>&1; then
+    record PASS "doc id 唯一性的负控（同文件重复 → FAIL 并点名；跨文件同名 → PASS）"
+else
+    record FAIL "doc id 唯一性的负控未通过：python3 checks/docs_dup_id_negative_control.py"
+fi
+rm -f /tmp/reproduce_dup.$$
+
 if python3 checks/docs_schema_negative_control.py >/tmp/reproduce_negrun.$$ 2>&1; then
     record PASS "docs 检查的负控（缺必填字段 / 枚举外取值都以 1 退出并点名）"
 else
@@ -238,7 +245,7 @@ rm -f /tmp/reproduce_negrun.$$
 # 8) 文档检查：schema 标准缺失是外部阻断，不等同于通过，也不等同于失败
 out=$(python3 docs/check_docs.py 2>&1); rc=$?
 case "$rc" in
-    0) record PASS "docs/check_docs.py" ;;
+    0) record PASS "docs/check_docs.py（含 doc id 文件内唯一性 + from 可解析，非基线容忍）" ;;
     2) record BLOCKED "docs/check_docs.py：$(printf '%s' "$out" | grep -m1 '^BLOCKED:' | sed 's/^BLOCKED: //' || echo 'docs@1 标准缺失')" ;;
     *) record FAIL "docs/check_docs.py 退出 $rc：$(printf '%s' "$out" | grep -m3 '  - ' | tr '\n' ' ')" ;;
 esac

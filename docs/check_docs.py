@@ -102,12 +102,21 @@ def load_yaml(path: Path):
         return yaml.load(fh, Loader=DupKeyLoader)
 
 
+class DuplicateId(ValueError):
+    """同一个文件里重复声明了同一个事实 id。"""
+
+
 def md_facts(path: Path):
-    """`## <id> :: <text>` 标题 + `- key: value` 坐标；不带 ` :: ` 的标题是普通小节。"""
+    """`## <id> :: <text>` 标题 + `- key: value` 坐标；不带 ` :: ` 的标题是普通小节。
+
+    事实 id 的作用域是这个文件：同一文件里重复声明同一个 id 直接报错（等价于 YAML 的重复键）。
+    """
     facts, cur = {}, None
     for line in path.read_text(encoding="utf-8").split("\n"):
         m = MD_FACT_RE.match(line)
         if m:
+            if m.group(1) in facts:
+                raise DuplicateId(f"duplicate fact id: {m.group(1)!r}")
             cur = {"_text": m.group(2)}
             facts[m.group(1)] = cur
             continue
@@ -142,6 +151,11 @@ def resolve_standard(docs_root=DOCS):
     return None, tried
 
 
+def label_of(path) -> str:
+    """子项目文件的短标签（目录名），用于报告跨文件同名的事实 id。"""
+    return Path(path).parent.name
+
+
 def main(argv=()) -> int:
     docs_root = Path(argv[0]).resolve() if argv else DOCS
     LAYERS_ABS = [(layer, docs_root / yaml_rel, docs_root / schema_rel)
@@ -153,6 +167,7 @@ def main(argv=()) -> int:
     texts: dict[str, str] = {}
     counts: list[tuple[str, int]] = []
     shapeless: list[str] = []
+    cross_file_collisions: dict[str, set] = {}
     refs_checked = 0
 
     std_path, tried = resolve_standard(docs_root)
@@ -224,6 +239,9 @@ def main(argv=()) -> int:
             p = Path(path)
             try:
                 doc = (md_facts(p) if p.suffix == ".md" else load_yaml(p)) or {}
+            except DuplicateId as exc:
+                errors.append(f"{p.relative_to(docs_root)}: {exc} (同一个文件里重复声明)")
+                continue
             except yaml.YAMLError as exc:
                 errors.append(f"{p.relative_to(docs_root)}: unreadable YAML: {exc}")
                 continue
@@ -232,9 +250,12 @@ def main(argv=()) -> int:
                 # 事实（它们的节点因此不进报告），不因此判整个文档集失败。
                 shapeless.append(str(p.relative_to(docs_root)))
                 continue
+            # 事实 id 的作用域是**文件**，不是合并后的层：各子项目各自从 res1 编号（a01/a08/a13/
+            # a14 都这么写），这不是重复声明。真正要拒的是同一个文件里重复声明（YAML 重复键已在
+            # 加载器里被拒；Markdown 由 collect() 的 per-file 检查兜住），以及 `from` 指向不存在的节点。
             for fid in doc:
                 if fid in merged:
-                    errors.append(f"{layer}: fact id {fid!r} declared in two subprojects")
+                    cross_file_collisions.setdefault(fid, set()).add(label_of(p))
             merged.update(doc)
         collect(layer, merged)
 
@@ -256,7 +277,9 @@ def main(argv=()) -> int:
         print(f"  [ok] {label:<12} {n:>3} facts")
     print(f"  schema validation   : {'BLOCKED' if blocked else 'ran'} "
           f"(standard {STANDARD_ID} at {std_path if std_path else 'NOT FOUND'})")
-    print(f"  ids unique          : {'ok' if not errors else 'see errors'}")
+    dup_here = [e for e in errors if "declared twice" in e]
+    print(f"  ids unique in file  : {'ok' if not dup_here else 'see errors'} "
+          f"(身份是 path::id：每文件内唯一即可；跨文件同名 {len(cross_file_collisions)} 个 id 合法)")
     print(f"  from resolves       : {refs_checked} references checked")
     print(f"  _text unique        : {len(texts)} distinct texts")
     print(f"  _text present       : every node carries _text")

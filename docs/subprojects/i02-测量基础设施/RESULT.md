@@ -186,13 +186,6 @@
 - status: current
 - evidence: 新节由 `report_inputs/reproducibility.json` 渲染（`report_inputs/build_reproducibility.py` 从 `i01/RESULT.md` 的 `res32`（重复测量表 + 采样边界）与 `res29`（输入变更）抽取）：**一档**确定性解码 4 个族 `identical==n`、翻转 0、Jaccard 1.0；**二档**采样解码（temp=0.3，5 次重复）Jaccard 0.53–0.67、每对上翻 8–15 题 / 下翻 6–12 题、分数只在 37→43（6/164）摆动——**分数摆动系统性低估逐题不稳定**，并点名受影响的协议标签（`mpl-raw-t0.3-768` 与「采样 / 解码参数」一节）；**三档**输入变更 16 题双向翻转（11 上 / 5 下、净 +6）、±16/161≈0.10、76/161 文本不同、66 题 token 不同。三档不得相加或互相替代。
 - producer: `python3 report_inputs/build_reproducibility.py --check`；`python3 checks/reproducibility_negative_control.py`（四例：幅度改 0 → 正文改口；删适用条件 → 生成器拒绝；Jaccard 改 1.0 → 正文改说「与确定性解码同样稳定」、不再声称低估）
-## res46 :: 报告新增「测量可复现性边界」一节，数字与适用条件都由 i01 的事实生成；BFCL 一节说清 micro/macro 且不给总分。
-
-- kind: measured
-- status: current
-- evidence: 新节由 `report_inputs/reproducibility.json` 渲染（该索引由 `report_inputs/build_reproducibility.py` 从 `i01/RESULT.md` 的 `res32` / `res29` 抽取，2 条事实、2 族地板、1 个幅度）：地板是「同配置重复 161/161、164/164 逐题相同、翻转 0、Jaccard 1.0」，判读规则是「同一提示集哈希 + 同一后处理版本下任何非零跨 run 差异都不是噪声」；输入变更时是「16 题双向翻转（11 上 / 5 下、净 +6）、±16/161 ≈ 0.10、76/161 文本不同、66 题 token 不同」，并写明适用条件（只有提示集哈希 + 后处理版本都钉住才可比，两个数字不得相加）。BFCL 一节新增口径说明：没有唯一总分、本表不给汇总列、面板 micro 与类别列 macro 不可混用；两者在本仓最大差 `0.2028`（`gr3b-q2`：micro 0.3905 vs macro 0.1877，当场从 `m8_summary.jsonl` 算出），并说明多轮 21/123 行仍无题量、micro 不可从库复算。
-- producer: `python3 report_inputs/build_reproducibility.py --check`；`python3 checks/reproducibility_negative_control.py`（幅度改 0 → 正文改口；删适用条件 → 生成失败）
-
 ## res47 :: 报告第三节与 `FINDINGS.md` 不再出现已撤回的「换方案有可测差异 +0.056」，改由 `a03` 的归因脚本输出生成。
 
 - kind: measured
@@ -287,4 +280,11 @@
 - status: current
 - evidence: README 原先一边说 `.wrapup/mres/*_eval.json` 不入库、一边在 Ships 清单里列它们，且写死「337 files」（实际跟踪 341）。现在删掉「不入库」的说法、把文件数改成「以 `git ls-files '.wrapup/mres/*_eval.json' | wc -l` 计数为准」，并新增 `checks/readme_counts.py`：README 若再说这些产物不入库、或写的文件数与 `git ls-files` 不一致 → FAIL。已接进 `reproduce.sh`。
 - producer: `python3 checks/readme_counts.py`
+
+## res60 :: 事实 id 的作用域是文件，不是仓库；`docs/check_docs.py` 只要求同一文件内唯一。
+
+- kind: measured
+- status: current
+- evidence: `res1`–`res6` 在 `a01` 与 `a08` 各有自己的一套、`res13` 与 `population/multiplicity/unmeasured` 在 `a03` 与 `a10` 各自编号——引用方式一直是 `path::id`，所以跨文件同 id 合法。检查器此前按「合并后的层」判重，报了 6 条假失败；现在改为 per-file：同一文件里重复声明直接报错（与 YAML 重复键等价），跨文件同名只统计不报错，输出里写明「身份是 path::id」。修完 `python3 docs/check_docs.py` 退出 0（此前的 6 条失败来自我自己的 `RESULT.md` 里一处陈旧重复节点 `res46`，已删）。
+- producer: `python3 docs/check_docs.py`；`python3 checks/docs_dup_id_negative_control.py`（同文件重复 → 退出 1 并点名；跨文件同名 → 退出 0），已接进 `reproduce.sh` 成为门而不是基线容忍。
 
