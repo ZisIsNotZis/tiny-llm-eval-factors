@@ -15,7 +15,9 @@
 
 - 已完成：`WP1`（三层文档：`plan.yaml`/`result.yaml` 迁入本目录并删除）、`WP2`（`analysis/profiles.py` 与 `analysis/alloc_pairs.py`）、`WP3`（三策略分类 + 钉住对照总账：16 格全跨 0、最大半宽 0.135；架构上界 0.025–0.513 比特/参数）。
 - 已完成：`WP4`（第三臂 4.531 bpw 均匀，钉住 `Δbpw = −0.048` / `L1_pw = 0.176` vs `exq4`；六基准面板跑成、入库、`db_check` PASS）、`WP5`（Tier-1A 判定 = 有界 + 桶内未测，成本全实测）。
-- 在办：`WP7` 的收口（给 `report.html` 的建议文本 + 独立复核待 meta 派）。
+- 复核已回：**BLOCKED**，两项阻塞已修（库与逐题产物入库、资源数字），四项口径已改（斜率改用 a03 固定效应斜率、桶定义与代码对齐、结论加 n=1/病态对手的适用范围、逐题配对检验入库）。
+- 在办：`WP7` 的收口（给 `report.html` 的建议文本）+ 复核返修的独立复审待 meta 派。
+- **结项门（新）**：结项 = 干净 clone 里验收装置绿。实测：结项提交 `c13cab9` 的 clone 里 `run_all.py` **EXIT=0（14 条断言）**、`--selftest` EXIT=0、`docs/check_docs.py` EXIT=0、两份夹具 `--check` 均 `[ok]`。
 - 验收入口：`python3 "docs/subprojects/a04-MoE 各层比特分配/analysis/run_all.py"` **11 条断言全绿**（退出 0），`--selftest` 能把负控翻红。
 - 结论一句话：钉住总比特时**均匀 > 专家优先**（代码 +0.34…+0.48、MMLU +0.195、GSM8K +0.240，预算项 ≤0.010），**均匀 vs 非专家优先 不可分辨**（16/16 跨 0，可见性下限 0.135）；`专家优先` 的可推广性被上界钉死（18/22 对不可等总比特）。
 - 下一个派给谁：**本层编排者自己做 `WP2`**，因为运行时不提供 subagent 接口（见下条）；`WP6` 的独立复核由 **meta 派 fresh-context reviewer**。
@@ -30,7 +32,7 @@
 | `WP4` 三臂面板：`m164-a04-uni45` 的 lm-eval 五基准 + EvalPlus code | 显存：该臂 4.5 GB 权重 + KV（8192 ctx×1 slot）；开跑时 18.3 GB 空闲（另一仓库占 5.2 GB），持 `/tmp/llama_gpu.lock`，端口 8901，server 自报 `n_slots = 1` 已校对 | lm-eval 面板**在跑**（`.wrapup/m164_lmeval2.out`，标签 `m164-a04-uni45`；第一次因 venv 入口脚本 shebang 失效而死，见 `RESULT.md::harness-env`，已修并重跑）；code 面板未开始 | `.wrapup/mres/m164-a04-uni45/lmeval_panel.json` 出现（五任务齐全）后立即接 `bash .wrapup/codepanel.sh /home/z/hf/LFM2.5-8B-A1B-a04-uni45.gguf m164-a04-uni45` | lm-eval ≤14 + code ≤16 ≈ ≤30（预估，错于 `m134` 的实测锚点） |
 | 入库入库 | `migrate_db.py`（唯一入库路径）+ 先做编号备份 | 等两个面板都出完 | `.wrapup/mres/m164-a04-uni45/evalplus.json` 存在且 `code.DONE` 写出 | 0（CPU，≤10 分钟） |
 
-队列现在是空的：`WP4` 的两个面板都已跑完（lm-eval 01:40–02:02、code 07:38–08:01），结果已入库。下一个要 GPU 的只有可选的「桶内结构」两臂（≈47 分钟，未排期、未获授权）。
+队列现在是空的：`WP4` 的两个面板都已跑完（lm-eval 01:40–02:02、code 07:38–08:01），结果已入库。下一个要 GPU 的只有可选的「桶内结构」两臂（**2 × 44.9 ≈ 89.7 分钟**，按产物合计的价格，未排期、未获授权）。
 
 ## 工作包
 

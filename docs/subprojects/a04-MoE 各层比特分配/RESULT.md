@@ -223,14 +223,14 @@
 - repro: `stat -Lc%s /home/z/hf/LFM2.5-8B-A1B-BF16.gguf`；`python3 -c "import json;d=json.load(open('.wrapup/mres/m164-a04-uni45/lmeval_panel.json'));print(sum(d['timings_s'].values()))"`；`python3 -c "import json;print(json.load(open('.wrapup/mres/m164-a04-uni45/evalplus.json'))['timings_s'])"`
 - 说明：可证伪形式——造出两臂「同一类别轮廓、不同的桶内结构、总比特钉住」，若六列出现可分辨差，则「Tier-1A 在类别级没价值、只在桶内」这一判定要被改写成「桶内也有价值」；成本已实测，所以这一步的报价是 **2 臂 × 44.9 ≈ 89.7 GPU 分钟（≈1.5 小时）+ 7 分钟 CPU**。（上一版写「两臂 ≈47 分钟」是把 code 段 1,362 s 误记成 519 s 得出的，低估约 1.9 倍；本版按产物合计。）
 
-### harness-env :: 在本仓库当前路径下跑面板时，`gsm8k`/`ifeval` 两个生成任务曾直接失败：venv 的入口脚本 shebang 写的是仓库搬家前的旧根 `/home/z/hf/research/.wrapup/lmenv/bin/python3.12`，那个路径已不存在，`subprocess` 报 `FileNotFoundError`（实跑：`.wrapup/mres/m164-a04-uni45` 的第一次面板在 mmlu 0.4825 / arc 0.4600 之后、truthfulqa 之后死于这一行）。两个入口脚本的 shebang 已改指当前根，`lm_eval --help` 正常；但 `.wrapup/lmenv/` 被 `.gitignore` 排除，所以**干净 clone 里这一条会重新出现**，需要重装 venv 或同样修 shebang。
+### harness-env :: 在本仓库当前路径下跑面板时，`gsm8k`/`ifeval` 与整个 EvalPlus code 阶段曾直接失败：五个 venv（`lmenv` / `evalpy` / `mplenv` / `msenv` / `bfclenv`）里**187 个** Python 入口脚本的第一行 shebang 写的是仓库搬家前的旧根 `/home/z/hf/research/.wrapup/<venv>/bin/python…`，那个路径已不存在，`subprocess` 报 `FileNotFoundError`、`timeout` 报 rc=127（实跑：`.wrapup/mres/m164-a04-uni45` 的第一次面板死于 `gsm8k`，第一次 code 面板死于 `evalplus.codegen`）。187 个入口点已全部改指当前根，另 24 个 `activate*` 脚本里的 `VIRTUAL_ENV=` 也一并改掉，现在 `*/bin/` 下 0 个旧根 shebang、0 个旧根引用（唯一残留是一个编译缓存 `__pycache__/jp.cpython-312.pyc` 里的字符串，无影响）。
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
-- evidence: `.wrapup/m164_lmeval.out` 的 `FileNotFoundError: … .wrapup/lmenv/bin/lm_eval`；修复后 `.wrapup/m164_lmeval2.out` 正常进入 mmlu
-- repro: `grep -c FileNotFoundError .wrapup/m164_lmeval.out`；`head -1 .wrapup/lmenv/bin/lm_eval`
-- 说明：这是测量基础设施的缺陷，归 `i02`；本层只记录它曾把一次面板弄死，并说明为何 `m164` 的面板重跑了一次。
+- evidence: `.wrapup/m164_lmeval.out` 的 `FileNotFoundError: … .wrapup/lmenv/bin/lm_eval`、`.wrapup/m164_code.out` 的 `codegen rc=127`；修复后 `.wrapup/m164_lmeval2.out` 与 `.wrapup/m164_code2.out` 正常
+- repro: `for f in $(find .wrapup -maxdepth 3 -path "*/bin/*" -type f); do head -1 "$f" | grep -q '^#!.*python' && echo x; done | wc -l`（实跑 187）；`for f in $(find .wrapup -maxdepth 3 -path "*/bin/*" -type f); do head -1 "$f" | grep -q '^#!/home/z/hf/research/' && echo x; done | wc -l`（实跑 0）
+- 说明：计数口径写在这里，因为「修了几个」只有在口径下才是一个事实——**入口点 = `*/bin/` 下第一行是 `#!…python` 的普通文件**；按这个口径是 187（上一版写 185，是两次 sweep 用了不同 glob 漏掉 2 个）。`.wrapup/` 被 `.gitignore` 排除，所以**干净 clone 里这一条会重现**，需要重装 venv 或同样修 shebang。
 
 ### unmeasured-items :: `experiments.sqlite` 只存聚合分（`i01::res26`：lm-eval 未开 `--log_samples`），所以表驱动的区间都是**非配对**的（两比例差的 Newcombe method 10），跨 0 只能写「不可分辨」并附半宽；**例外**是 EvalPlus 的两个代码基准：两臂的逐题判定已在盘上，已作为 `_eval.json` 入库，配对检验见 `paired-he-plus` / `paired-mbpp-plus`（lm-eval 那五列仍然只有聚合分，不能配对）。同一格在相同协议下重跑是否复现入库值**未测**（复现负控未跑）。
 - author: agent
