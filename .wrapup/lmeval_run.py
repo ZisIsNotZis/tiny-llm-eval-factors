@@ -20,8 +20,13 @@ Two transports are used (protocol is recorded per task in cmd.txt):
 The shim is exact: for every continuation token it asks llama-server for the
 next-token distribution (`/v1/completions`, max_tokens=1, logprobs=N, temperature 0)
 and reads the token's own logprob out of `top_logprobs`.  If the token is not in the
-returned top-N it escalates N once and then raises a hard error -- it never returns
-0.0 and never guesses.  A task that produces no number is written as null and listed
+returned top-N it escalates to a wider N and returns the model's own value; it does
+not return 0.0 and does not guess.  (Measured 2026-10-21 by
+docs/subprojects/i01-判分与基准有效性/audits/lmeval_shim_probe.py: the argmax and
+rank-2 tokens match llama-server bit for bit, and a token outside a top-2000 dump came
+back as -17.451372 rather than 0.0 -- so the earlier wording "escalates N once and then
+raises a hard error" was wrong: it escalates and succeeds.  The exactness of that tail
+value is not independently confirmed.)  A task that produces no number is written as null and listed
 under "errors" with the raw stderr tail.
 
 Usage:
