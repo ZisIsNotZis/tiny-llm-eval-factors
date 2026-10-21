@@ -120,19 +120,20 @@
 
 ## 五、厂商推荐采样（`plan3`）
 
-## res-vendor-gap :: 厂商推荐采样这一档的取值现在取不到：本机 `curl` 到 `huggingface.co` 12 秒超时（`curl: (28) Connection timed out`），且 unsloth 的本地缓存 `models--unsloth--Qwen3.5-2B-GGUF/snapshots/f6d5376…/` 里只有 4 个 `.gguf` 软链、没有模型卡；按 `@absent`，这一档记「不可得」，不填任何猜的默认值。
+## res-vendor-value :: 厂商（unsloth）给 Qwen3.5-2B 的推荐采样参数拿到了：非思考文本任务是 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0, repetition_penalty=1.0`；它落在本研究测过的每一个设置**之外**——温度只有 1.0 一档与已测的 0/0.3/0.6/0.7 都不同，`top_p` 1.00 对已钉住的 0.95，`min_p` 0.0 对 0.05，并且多一个已测协议里恒为 0 的 `presence_penalty=2.0`。
 
 - kind: measured
-- evidence: `docs/subprojects/a06-采样与解码参数/evidence/` 之外的外部检查：`timeout 15 curl -sS -m 12 -o /tmp/card.md -w "http=%{http_code}" "https://huggingface.co/unsloth/Qwen3.5-2B-GGUF/raw/main/README.md"` → `curl: (28) Connection timed out after 12001 milliseconds`，退出 28；`ls /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/f6d5376be1edb4d416d56da11e5397a961aca8ae/` 只有 `Qwen3.5-2B-UD-Q3_K_XL.gguf`、`Q3_K_XL`、`Q4_K_XL`、`Q5_K_XL`、`mmproj-BF16.gguf` 五个软链。
-- repro: `timeout 15 curl -sS -m 12 -o /dev/null "https://huggingface.co/unsloth/Qwen3.5-2B-GGUF/raw/main/README.md"; echo "exit=$?"`（预期 exit=28）与 `ls /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/*/`。
-- 解除条件：任一可用的外网出口，或把模型卡的推荐采样段落落盘进仓库；解除后 `WP3` 只需在 `.wrapup/mres/*/variant_panel.json` 的 sampling 轴里加一档 `vendor`，参数逐字取自模型卡并把 URL 与抓取日期写进本条。
+- evidence: `evidence/vendor-card-excerpt-3b868dc.md`（模型卡原文摘录 + 抓取时间 + 64059 字节 + sha256 `d6507c92…`）；原件 URL `https://hf-mirror.com/unsloth/Qwen3.5-2B-GGUF/raw/main/README.md`。
+- repro: `curl -sS -m 15 "https://hf-mirror.com/unsloth/Qwen3.5-2B-GGUF/raw/main/README.md" | grep -A 6 'We recommend using the following set'`。
+- 限制：**二手证据**。`huggingface.co` 在本机只解析到 IPv6（`2a03:2880:f12c:183:face:b00c:0:25de`）而到达不了（`curl` 15 秒超时，exit 28），所以读的是公共镜像，没与正库逐字节比对；卡片正文是上传者原文，但镜像的时效性未验证。用途不受影响：本条只用它取参数值，不用它证明别的。
+- 模型范围的限制：本条只针对 Qwen3.5-2B。其他模型的卡可能给不同的值；在把结论推到全库前，要么逐模型取卡，要么把结论写成「在 Qwen3.5-2B 上」。
 
-## res-vendor-partial :: 厂商推荐臂要回答的问题，已被已测的温度臂回答了一半：厂商推荐的采样值属于「temp>0 的采样」这一类，而这一类在 MMLU 上**结构性地**不动（0/456，对数似然不采样），在代码列上把分数压低 10/164，在 GSM8K/IFEval 上抬高 1–4/50；因此「换成厂商推荐采样会不会颠覆量化结论」的答案不取决于厂商的具体取值，而取决于它的温度落在哪一档——已测的 0.3 与 0.7 在 HumanEval 上给出**同一**分数（0.5122），说明 0.3–0.7 这一段对代码列是一个平台，不是斜坡。
+## res-vendor-partial :: 「换成厂商推荐采样会不会颠覆量化结论」现在可以给一个有限答案：厂商值是温度 1.0，而温度那一轴在已测的 0.3 与 0.7 之间给出**同一个** HumanEval 分数（0.5122），所以如果 0.3–1.0 是一个平台，则厂商值的代码分也在 −10/164 附近，与量化档之间 11–15 道题的差距同量级，会让 cpp 上 Q3-vs-Q4 的反转得更不可依赖；但这只是**推断**：温度 1.0 本身**没测**，`top_p` 1.00 / `min_p` 0.0 / `presence_penalty` 2.0 三个维度本研究从未变过，它们同时变时行为未知。
 
 - kind: measured
-- evidence: 本节 `score-moves-m131`；`m131` 的 `temp0.3` 与 `temp0.7` 两行 `humaneval` 逐字相同（0.5121951219512195）。
-- repro: `python3 -c "import json;p=json.load(open('.wrapup/mres/m131-sampling/variant_panel.json'));print([ (k,v['humaneval']) for k,v in p['rows'].items()])"`。
-- 限制：这是**推断**，不是厂商推荐臂的测量：它只说「若厂商推荐值落在 0.3–0.7 且不改 `top_p`，则分数已在已测范围内」，不改 `top_p` 这一前提未测（`top_p` 在所有已测协议里都钉在 0.95）。`plan3` 因此保持 provisional，不结项。
+- evidence: 本节 `res-vendor-value`、`score-moves-m131`、`peritem-separable`；`m131` 的 `temp0.3` 与 `temp0.7` 两行 `humaneval` 逐字相同（0.5121951219512195）。
+- repro: `python3 -c "import json;p=json.load(open('.wrapup/mres/m131-sampling/variant_panel.json'));print([(k,v['humaneval']) for k,v in p['rows'].items()])"`。
+- 限制：这是一个从已测点外推的**推断**，不是厂商推荐臂的测量；它只说「若温度落在 0.3–1.0 这段且其余维度不变」，而厂商值恰好改了那三个其余维度。因此 `plan3` 保持 provisional，直到 `PLAN.md` 的 `WP3` 真跑一档。
 
 ## 六、限制
 

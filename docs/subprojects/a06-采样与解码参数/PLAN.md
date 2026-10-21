@@ -20,11 +20,13 @@
 - 已完成：`WP1`（文档归位 + 协议普查）与 `WP2`（逐题判决移动）。
   两个只读脚本都退出 0，捕获在 `evidence/`：`census-6fc5b0c.txt`（267 行）、`peritem-2552615.txt`（36 对），
   各自带一份负控（空临时树里跑同一脚本 → 输入全缺、exit 2）。
-- 在办：`WP3`（厂商推荐臂）**外部阻塞**：本机无外网，模型卡也不在本地缓存，见 `RESULT.md` 的 `res-vendor-gap`。
-- 下一步派给谁：`WP4`（规模次序）需要一个 GPU 槽，先看 `nvidia-smi` 的 `memory.free` 再决定能否起服；
-  `WP5`（独立复核）由 meta 派 fresh-context reviewer——复核可先针对 `WP1`/`WP2` 的产物做，不必等 `WP3`/`WP4`。
-- 真正未做的只剩两件：`WP3` 的厂商推荐值（等外网）+ `WP4` 的规模次序（等显存）。
-  AC 的「温度/top-k 结论可复算」那一半已经完成；「厂商推荐采样 vs 固定协议受控检查完成」那一半在两个轴上都不成立于当前环境。
+- 在办：`WP3`（厂商推荐臂）**已从「外网阻塞」转为「等 GPU + 等 i02 加一档」**：厂商推荐值已取到并存成 `RESULT.md` 的 `res-vendor-value`，
+  但那个值落在已测的每一个设置之外（温度 1.0、`top_p` 1.00、`min_p` 0.0、`presence_penalty` 2.0），所以不能用已有的格代理它，必须真跑。
+- 下一步派给谁：`WP3` 需要两步：(a) i02 在 `.wrapup/variant_panel.py` 的 `AXES['sampling']` 里加一档，参数逐字取 `res-vendor-value`；
+  (b) 一个 GPU worker 在 `bash .wrapup/gpu_locked.sh` 下跑两个面板（标准列 + MultiPL-E cpp/py 三档），估 30–50 GPU 分钟。
+  `WP4`（规模次序）同样等 GPU 槽；`WP5`（独立复核）由 meta 派 fresh-context reviewer，可先针对 `WP1`/`WP2` 的产物做。
+- 真正未做的只剩两件：`WP3` 的厂商档测量 + `WP4` 的规模次序。
+  AC 的「温度/top-k 结论可复算」那一半已经完成；「厂商推荐采样 vs 固定协议受控检查完成」那一半的**输入**已就位、**测量**未跑。
 
 ## 工作包
 
@@ -32,7 +34,7 @@
 |---|---|---|---|---|---|
 | WP1 文档归位 + 协议普查 | a06 编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 与 `result.yaml` 已删除且 `plan3`/`res10` 以 `## <id> :: <text>` 事实存活；`sampling_census.py` 退出 0，缺任一输入（库 / `m27_summary.jsonl` / `m31_summary.jsonl` / `variant_panel.json`）时退出 2；`python3 docs/check_docs.py` 退出 0 | — | 1 会话 | 完成 |
 | WP2 逐题判决在协议改变时移动多少 | a06 worker（CPU 槽） | 对 `.wrapup/mres/m27-*_eval.json` 与 `m31-*_eval.json` 逐题比 greedy 锚点与每个 temp>0 / top_k 设置，给出每 (模型, 语言, 设置) 的 up/down 翻转数与 Jaccard，并回答「净分数移动 vs 逐题翻转」是否与 i01 的 temp=0.3 五跑地板同量级；缺产物时 exit 2 | WP1 | 0.2 CPU 时 | 完成：`peritem_moves.py` 比完 36 对（3 档 × 2 语言 × 6 设置）退出 0；Jaccard 0.40–0.69，23/36 对净移动 ≤ 6 道题（与 i01 五跑地板不可分），最极端一格净 +1 而 15 上/14 下；负控在空临时树里 exit 2 |
-| WP3 厂商推荐采样臂（`plan3` 的受控检查） | a06 编排者（需要外网取值）+ GPU worker | 在 `.wrapup/mres/*/variant_panel.json` 的 sampling 轴里加入名为 `vendor` 的一档，其采样参数逐字取自模型卡（记录 URL + 抓取日期到 `RESULT.md`），与 `greedy` 同模型同 bench 同 n_items 对照；若模型卡不可达，则本条 AC 记为「不可得 + 原因 + 已有什么」，不得用猜的值填 | 模型卡可达（本机当前无外网，见下） | 约 10 GPU 分钟/模型/档（m131 实测 5 档 4 个基准共约 45 分钟） | 阻塞（外网） |
+| WP3 厂商推荐采样臂（`plan3` 的受控检查） | i02 加档 + GPU worker 跑 | `.wrapup/mres/*/variant_panel.json` 的 sampling 轴里多一档 `vendor`，参数**逐字**为 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0, repetition_penalty=1.0`（来源 `RESULT.md::res-vendor-value`），与 `greedy` 同模型同 bench 同 `n_items` 对照；另在 MultiPL-E 上对 Q2/Q3/Q4 × cpp/py 跑同一档，以回答「厂商档下 Q3-vs-Q4 在 cpp 上的反转是否仍在」 | 厂商值已就位（`res-vendor-value`）；需一个 GPU 槽 | 标准列 1 档 ≈ 9–10 分钟（m131 实测）+ MultiPL-E 6 格 | 待派（值已就位，等 GPU 与 i02 加档） |
 | WP4 规模次序在采样下是否存活 | GPU worker | 同族 ≥3 个规模（例如 Qwen3.5-0.8B/2B/4B）在同一 bench、同一 ctx 下各有 greedy 与一档 temp>0 的格；给出规模对的 win/loss 与次序反转数，且与 WP1 的量化档结论分开报告 | 一个 GPU 槽 + `variant_panel.py` 的 sampling 轴（已在盘上） | ≤40 GPU 分钟（2 个模型 × 2 档 × 4 基准，按 m131 的 9–10 分钟/档估） | 待派（等显存） |
 | WP5 独立复核 | fresh-context reviewer（meta 派） | 对本目录三份文档与 `sampling_census.py` 的输出给裁决，指出证据缺口；reviewer 的结论取代本人的自评 | WP1–WP4 | 一次复核 | 待派 |
 
@@ -42,12 +44,14 @@
 - scope: general
 - status: provisional
 - domain: kind: hypothesis
-- 当前判定：**未测**。厂商推荐值是一个外部事实，必须逐字取自模型卡；本机实测 `curl` 到 `huggingface.co` 12 秒超时（`curl: (28) Connection timed out`），
-  且 `/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/…/` 里只有 `.gguf` 软链、没有 `README.md`，所以本机拿不到这个输入。
-  按 `@absent`，缺的值记「不可得」，不填默认值——填一个「厂商推荐 = temp 0.7 / top_p 0.8」就是把推断冒充成事实。
-- 已有部分答案：厂商推荐值与本研究实测过的温度臂同类，所以 `RESULT.md` 的温度/top_k 结论已经把「采样能不能改变量化结论」这一半回答了；
-  剩余的不确定性只有「厂商那一档的具体取值是否落在已测取值之外」，见 `RESULT.md` 的 `res-vendor-gap`。
-- 解除条件：任一可用的外网出口，或把模型卡的推荐段落落盘进仓库。解除后 `WP3` 直接可跑，不需要重新设计。
+- 当前判定：**输入已就位，测量未跑**。厂商推荐值已逐字取得并存成 `RESULT.md::res-vendor-value`：
+  非思考文本任务 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0, repetition_penalty=1.0`。
+  它落在本研究测过的**每一个**设置之外（温度 1.0 不在 0/0.3/0.6/0.7 里；`top_p` 1.00 对钉住的 0.95；`min_p` 0.0 对 0.05；`presence_penalty=2.0` 对恒为 0），
+  所以已有的五档采样格**代理不了**它——这正是本假设必须真跑一档的理由。
+- 取值过程与限制：`huggingface.co` 在本机只解析到 IPv6 且到达不了（`curl` 15 秒超时，exit 28），值是从公共镜像 `hf-mirror.com` 读的，
+  原件摘录、字节数与 sha256 存在 `evidence/vendor-card-excerpt-*.md`；因此这是二手证据，只用它取参数值，不拿它证明别的。
+- 预期方向（推断，不是结论）：若温度 0.3–1.0 在代码列是一个平台（已测 0.3 与 0.7 在 HumanEval 上给出同一分数 0.5122），
+  则厂商档的代码分也在 −10/164 附近；但同一档还改了 `top_p`/`min_p`/`presence_penalty` 三个从未变过的维度，所以这个外推未经验证。
 
 ## 判据（写死，避免事后挑解释）
 
