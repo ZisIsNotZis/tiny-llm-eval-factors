@@ -264,9 +264,17 @@ def main(argv):
                if r17 else "type142_probe.json 里没有 1.7B Q2_0 那一条")
         if r17:
             expect("加载并生成" in r17["verdict"], "q20-loads", f"{r17['verdict']}（{r17['elapsed_s']}s、峰值 {r17['peak_vram_mib']} MiB）")
-        pq = [k for k in res if "PQ2_0" in k]
-        expect(not pq, "q20-loads",
-               "PQ2_0（type 142）只在 27B 文件上存在，按并发例外排不进 4 GB/3 分钟，登记为**未测**（不是「不支持」）")
+        pq = next((v for k, v in res.items() if "PQ2_0" in k), None)
+        expect(bool(pq), "pq2-type142", "27B 的 PQ2_0 探针结果在 type142_probe.json 里"
+               if pq else "type142_probe.json 里没有 PQ2_0 那一条")
+        if pq:
+            txt = " ".join(pq.get("stderr_tail") or [])
+            expect("ggml type 142" in txt, "pq2-type142",
+                   "错误原文含「ggml type 142」（记录里存了 stderr 尾部原文）")
+            expect(bool(pq.get("binary")), "pq2-type142", f"二进制版本已记录：{pq.get('binary')}")
+            expect(pq.get("peak_vram_mib") == 0, "pq2-type142",
+                   f"失败在分配前（峰值 {pq.get('peak_vram_mib')} MiB，空闲显存前后 "
+                   f"{pq.get('free_mib_before')}→{pq.get('free_mib_after')}）")
     except (OSError, ValueError) as exc:
         expect(False, "q20-loads", f"读不到 type142_probe.json：{exc}")
 

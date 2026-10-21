@@ -6,7 +6,8 @@
 
 ## 证据绑定（读这一层之前先看这里）
 
-本层的全部数字在 `experiments.sqlite` 的多个快照上都复核通过（`run_all.py` 38/38 条预期成立），最近两次抽取的 sha256 前缀是 `8ddc213c…` 与 `52192032…`；库被 `a04`/`a06` 等子项目并发改写，所以**哈希只作快照，判定一律以 `run_all.py` 为准**。
+本层的全部数字在 `experiments.sqlite` 的多个快照上都复核通过（`run_all.py` 38/38 条预期成立），最近两次抽取的 sha256 前缀是 `8ddc213c…` 与 `52192032…`；库被 `a04`/`a06` 等子项目并发改写、现在又叠加 `i02` 的 py 取代与 `n_items` 回填，所以**哈希只作快照，判定一律以 `run_all.py` 为准**；
+本层凡是引用库里分数的行（`qw2b-panel`、`b1-heplus-only`、`q2kxl-iq3-4b`、`gemma12b-mmlu-jump`、`adjacent-majority`、`ternary-offcurve`、`lowbit-spread`、`m55-exq-inversion`）都是**当次抽取的快照值**：行数与分数可能随别人的回填而变，变了 `run_all.py` 会先红，红了就重取。
 `experiments.sqlite` 由多个子项目并发写入，所以**任何一条事实是否仍然成立，用 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"` 判定**：38 条预期全成立时上面的事实全部复核通过；某条不成立时先看 `n_items` 有没有变（`n_items` 变了区间就会变），再判是不是真的变了。
 
 复算装置：`analysis/curves.py`（曲线 + 拐点 + 区间）与 `analysis/run_all.py`（全部检查，退出码即结论）。本层只读 `experiments.sqlite`，不写库、不改 `report.html`。
@@ -216,17 +217,28 @@
 - kind: measured
 - evidence: `analysis/wp5_result.json`（两次的 `score/n_items/elapsed_s/peak_proc_mib=8220`、`peak_total_mib=14053`、`deviations=[0.0,0.0]`）；每次运行的 `panel.log` 与 `lmeval_panel.json` 在 `.wrapup/mres/a01-wp5-r{1,2}/`（本地产物，不入库）；入库快照 `analysis/fixtures/mres_snapshot.json::wp5_mmlu_retest` 带两份来源文件的 sha256
 - repro: `bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a01-量化位宽/analysis/wp5_run.py"`（自己记空闲显存、用 `.wrapup/lmeval_run.py` 各起一次服、每次跑完就落盘再跑第二次）
-- 结论边界：值稳定 ⇒ **那 22.6 pp 不是单次测量噪声**，这一格可以当「这个文件在这个指标上的实测值」引用。但「MMLU 这条似然通道在两个文件上是否同条件」仍未判定——那需要生成式对照（同一批题用 chat 协议取答案字母），已登记为未测、排在锁后（见 `PLAN.md` 的 GPU 队列）。
+- 结论：**那 +22.6 pp 在本机同 shim、同协议（`--tasks mmlu --limit 16`，912 题）下逐位可复现，因此它是文件/协议性质，不是单次测量噪声**——这一格可以当实测值引用。
+- 边界：仍未判定的是「MMLU 这条似然通道在这两个文件上是否同条件」（模板/分词/似然归一）。生成式对照（同一批题用 chat 协议取答案字母）标为**可选未测**：它不改本条结论，只决定报告里该把 22.6 pp 讲成「文件更好」还是「通道不同条件」。
 - 会推翻它：同配置再跑出现与 0.6436 不同（±0.05 以外）的值；或发现这两次与历史那次不是同一 `--limit` / 同一 shim（那样"复现"可能是样本集写死的证据而不是稳定性的证据）。
 
-### q20-loads :: `Ternary-Bonsai-1.7B-Q2_0_g64.gguf`（490 MB）在当前 llama.cpp 上**能加载并生成**（2.1 s 起来、峰值 1004 MiB、8 token 补全成功）——`plan2` 里「`Q2_0` 加载失败」这一说法在这个文件上不成立；`PQ2_0`（ggml type 142）只以 27B 文件存在（≈7–9 GB），按并发例外（≤4 GB/≤3 分钟）排不进去，登记为**未测**而不是「不支持」。
+### q20-loads :: `Ternary-Bonsai-1.7B-Q2_0_g64.gguf`（490 MB）在当前 llama.cpp 上**能加载并生成**：2.1 s 起服、`n_slots=1 / n_ctx=512`、峰值 1004 MiB、8 token 补全成功——`plan2` 里「`Q2_0` 加载失败」这一说法在这个文件上不成立。
 - author: measurement
 - scope: specific
 - status: current
 - kind: measured
-- evidence: `analysis/type142_probe.json`（含 server 旗标、耗时、峰值、stdout 原文尾部）；探针日志 `.wrapup/a01_type_probe_Ternary-Bonsai-1.7B-Q2_0_g64.gguf.log`（本地产物）
-- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/type142_probe.py"`（默认跑 1.7B 那份；换 27B 的 `PQ2_0` 就把路径传给它，但要等锁）
-- 会推翻它：同一个 1.7B 文件在干净构建的 llama.cpp 上报 type 错误；或 27B 的 `PQ2_0` 实测能加载（那说明 type 142 已被支持，「需更新 llama.cpp」作废）。
+- evidence: `analysis/type142_probe.json`（两条记录：server 旗标、binary 版本、`n_slots/n_ctx`、耗时、峰值、stdout 原文）；探针日志 `.wrapup/a01_type_probe_*.log`（本地产物）
+- repro: `python3 "docs/subprojects/a01-量化位宽/analysis/type142_probe.py"`（默认 1.7B；传 27B 路径就是下一条）
+- 会推翻它：同一个 1.7B 文件在干净构建的 llama.cpp 上报 type 错误。
+
+### pq2-type142 :: `PQ2_0`（ggml type 142）在本机运行时（`version: 0.4.1-dev (build 4399, commit 4bc272fd72)`）**加载不了**，原因是它要求的能力超出了这个构建支持的张量类型范围——原文 `tensor 'output.weight' has invalid ggml type 142. should be in [0, 43)`（`Ternary-Bonsai-27B-PQ2_0.gguf`，6.67 GiB，2.1 s 即失败、峰值 0 MiB、空闲显存前后不变 19150→19164）；这是**当前运行时版本不支持**，不是「模型不可用」。
+- author: measurement
+- from: result.q20-loads
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `analysis/type142_probe.json` 里 `Ternary-Bonsai-27B-PQ2_0.gguf` 那条（含 `binary`、`stderr_tail` 12 行原文）；`analysis/fixtures/mres_snapshot.json` 不收这条（产物本身入库）
+- repro: `bash .wrapup/gpu_locked.sh python3 "docs/subprojects/a01-量化位宽/analysis/type142_probe.py" /home/z/hf/Ternary-Bonsai-27B-PQ2_0.gguf`
+- 会推翻它：换成支持 type 142 的 llama.cpp 构建后同一文件能加载（那说明是「这个版本不支持」，事实本身仍然成立）；或另一个 27B `PQ2_0`（`Bonsai-2-27B-PQ2_0-CRACK.gguf`）能加载（那说明是文件级差异而不是类型级）。
 
 ## 五、migrated 与撤回
 

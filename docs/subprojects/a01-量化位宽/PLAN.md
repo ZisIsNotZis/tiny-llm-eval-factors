@@ -13,7 +13,7 @@
 
 - 已完成：`WP1`、`WP2`、`WP4`；`WP3` 的 T1/T2/T3 与 `WP5` 的 CPU 部分（见 `RESULT.md` 的 `b1-heplus-only`、`t2-channel-excluded`、`q2kxl-iq3-4b`、`ternary-offcurve`、`lowbit-spread`、`m55-exq-inversion`、`gemma12b-mmlu-uniform`）。
 - 在办：`WP6` 收口（`run_all.py` 已经 38 条预期全绿、`--selftest` 能失败；剩下把 PLAN/RESULT 的口径对齐）。
-- 卡住（等 GPU，见下面「GPU 队列」）：只剩两项可选/边界项——`PQ2_0`（type 142，只以 27B 文件存在）与可选的生成式 MMLU 对照；两者都超并发例外，登记为**未测**，不是 0、也不是「不支持」。
+- 卡住（等 GPU）：只剩可选的生成式 MMLU 对照（`PLAN.md` 队列表最后一条），登记为**未测**——它不改任何现有结论，只决定报告里 22.6 pp 的措辞是「文件更好」还是「通道不同条件」。
 - 下一个派给谁：本层编排者做 `WP6`（含干净 clone 门）；`WP5` 的 GPU 复测排在 a06 的 `m165` 之后独占锁；两包完成后请 meta 派 fresh-context reviewer 做 `WP7`。
 - 本层没有派孙工具（运行时不提供 subagent 接口），所以实现与测量由编排者自己执行；独立复核必须由 meta 派 fresh-context reviewer，不得自评通过。
 
@@ -63,7 +63,7 @@
 | WP3::T4 复现负控 | **已跑**：2B `UD-Q2_K_XL`，历史原旗标（`-c 8192 -np 1 -ngl 99 --jinja --reasoning off`），32 道争议题 + 8 道对照、两遍。实测峰值 **1548 MiB**、两遍共 **228.7 s（3.8 GPU 分钟）**，并行于 a06 的 `m165-vendor`（1752 MiB）与 i02 的 vendor 探针（3118 MiB），空闲显存全程 ≥17.4 GB | 两遍 40/40 逐字节相同，且 40/40 与 `m64` 的历史完成物逐字节相同 ⇒ 那 32 道（含 HumanEval+ 分差里的题）不是跑两次的随机噪声 | **完成**（时间超例外 0.8 分钟，见下） |
 | WP5 12B MMLU 复测 | 估计：`gemma-4-12B-it-UD-Q4_K_XL.gguf` 7.37 GB，峰值显存约 **8.5–9.5 GB**（权重 7.37 + ctx8192 的 KV/compute，按 2B 上实测 1548 MiB 的构成比例推）；912 题 × 4 选项 = 3648 次前向，按 2B 实测 126.4 s 的 6 倍参数推约 **13–15 分钟**（含加载）。两个数字都是**估计**，落地后以实测覆盖 | 同 shim 同协议复测 2 次；值稳定在 0.6436 附近 ⇒ 文件性质；明显偏离 ⇒ 该格作废、改报告。可选加一格生成式 MMLU 对照（判「似然通道 vs 模型差」） | **排队**（显存与分钟都超并发例外，等 `m165` 之后独占锁） |
 | WP4 的 `Q2_0` 加载 | **已跑**（1.7B）：`Ternary-Bonsai-1.7B-Q2_0_g64.gguf` 2.1 s 起来、峰值 1004 MiB、生成成功 | `Q2_0` 能不能被当前 llama.cpp 读 | **完成**（`RESULT.md::q20-loads`） |
-| `PQ2_0`（ggml type 142） | 估计：只以 27B 文件存在（`Ternary-Bonsai-27B-PQ2_0.gguf` 等，≈7–9 GB），加载 ~40 s，判定只需 8 token | 能不能加载；不能则把日志原文记下来，写「需更新的 llama.cpp」 | **排队**（超 4 GB/3 分钟例外，等大段落锁；**未测 ≠ 不支持**） |
+| `PQ2_0`（ggml type 142） | **已跑**：`Ternary-Bonsai-27B-PQ2_0.gguf` 6.67 GiB，2.1 s 失败、峰值 0 MiB（没进分配）、空闲显存前后不变 | 能不能加载；不能就记原文 | **完成**：本机 `0.4.1-dev (build 4399, commit 4bc272fd72)` 报 `tensor 'output.weight' has invalid ggml type 142. should be in [0, 43)` ⇒ 当前运行时版本不支持（`RESULT.md::pq2-type142`） |
 | WP5 的生成式 MMLU 对照（可选） | 估计：同 12B、chat 协议、取答案字母；200 题 ≈ 6–8 分钟、峰值约 8.5 GB | 若生成式给出与 Q3 相当（≈0.42–0.45）而似然给 0.6436 ⇒ 判「似然通道在两文件上不同条件」，报告的 22.6 pp 要改成通道效应 | **排队**（不是 plan7b 的必要条件，plan7b 已由复测关闭） |
 
 并发例外的三条硬条件我这次**踩了一条**：显存（1548 MiB ≤ 4 GB）与断言的 `n_slots=1 / n_ctx=8192` 都成立、`parallel_with` 与实测占用已写进 `analysis/t4_result.json`，但**时间 3.8 分钟超了 3 分钟上限** 0.8 分钟，原因是我按面板历史的 1.33 s/题估成本，实际这个 40 题的臂是 2.7 s/题（`-np 1`、每题重新 prefill 整个提示）。处置：这一条不再重跑（重跑也是 3.8 分钟，无收益），后续任何按例外并行的小臂一律按 **2.7 s/题 + 加载 10 s** 预算，并在起跑时用 `timeout` 硬钉 180 s——超时记为「未完成」而不是测量。
@@ -73,7 +73,7 @@
 下面这条是注册表登记、仍未答完的待办（`plan7b` 已由 `RESULT.md::gemma12b-mmlu-reproduced` 答完并移出本层）；它的工作包在上表，结论进 `RESULT.md`。
 
 
-### plan2 :: 假设 B1 的剩余部分：三元/极低位宽的点不在「更多比特→更高分」的曲线上这一说法，已在家族内判掉一例（GLM-4.7-Flash 的 TQ1_0 低 29.9 pp）、并把原生三元模型判成「不可判」（同族没有更高比特参照，`RESULT.md::lowbit-spread`）；`Q2_0` 在这个构建上能加载（`RESULT.md::q20-loads`）。仍开着的只有两件：`PQ2_0`（ggml type 142，只以 27B 文件存在，**未测**）能不能加载，以及「比特分配而不是总比特数」这一机制能否在同一 base 权重上受控分离（现有证据是 `m55-exq-inversion`，不是设计好的对照）。
+### plan2 :: 假设 B1 的剩余部分：三元/极低位宽的点不在「更多比特→更高分」的曲线上这一说法，已在家族内判掉一例（GLM-4.7-Flash 的 TQ1_0 低 29.9 pp）、并把原生三元模型判成「不可判」（同族没有更高比特参照，`RESULT.md::lowbit-spread`）；`Q2_0` 在这个构建上能加载（`RESULT.md::q20-loads`）。`PQ2_0`（ggml type 142）已判：本机运行时 `0.4.1-dev (build 4399)` 直接报 `invalid ggml type 142. should be in [0, 43)`（`RESULT.md::pq2-type142`）⇒ 是运行时版本不支持，要更新的 llama.cpp，不是模型不可用。仍开着的只剩一件：「比特分配而不是总比特数」这一机制能否在同一 base 权重上受控分离（现有证据是 `m55-exq-inversion`，不是设计好的对照）。
 - author: agent
 - scope: specific
 - status: provisional

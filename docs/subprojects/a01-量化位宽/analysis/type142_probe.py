@@ -50,18 +50,24 @@ def peak_vram(pid):
 
 def main(argv):
     gguf = argv[0] if argv else DEFAULT
+    need = NEED_MIB
+    if os.path.isfile(gguf):
+        need = max(NEED_MIB, int(os.path.getsize(gguf) / 2**20) + 512)   # 权重大小 + 余量
     rec = {"gguf": gguf, "exists": os.path.isfile(gguf),
            "size_bytes": os.path.getsize(gguf) if os.path.isfile(gguf) else None,
-           "free_mib_before": free_mib(), "need_mib": NEED_MIB}
+           "free_mib_before": free_mib(), "need_mib": need}
     if not rec["exists"]:
         rec.update(verdict="BLOCKED：文件不存在")
         return _save(rec, 4)
-    if rec["free_mib_before"] < NEED_MIB + 2048:
-        rec.update(verdict=f"BLOCKED：空闲显存 {rec['free_mib_before']} < 需求 {NEED_MIB}+2048")
+    if rec["free_mib_before"] < rec["need_mib"] + 1024:
+        rec.update(verdict=f"BLOCKED：空闲显存 {rec['free_mib_before']} < 需求 {rec['need_mib']}+1024，不是测量")
         return _save(rec, 4)
     s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
     flags = [SERVER, "-m", gguf, "--port", str(port), "--host", "127.0.0.1",
              "-c", "512", "-np", "1", "-ngl", "99"]
+    ver = subprocess.run([SERVER, "--version"], capture_output=True, text=True)
+    lines = [l for l in (ver.stdout + ver.stderr).split("\n") if l.strip()]
+    rec["binary"] = lines[0] if lines else "（llama-server --version 无输出）"
     rec["server_flags"] = " ".join(flags[1:])
     t0 = time.time()
     logp = os.path.join(REPO, ".wrapup", f"a01_type_probe_{os.path.basename(gguf)}.log")
@@ -79,6 +85,17 @@ def main(argv):
                 time.sleep(2)
         rec["elapsed_s"] = round(time.time() - t0, 1)
         rec["peak_vram_mib"] = peak_vram(proc.pid)
+        if ok:
+            try:
+                props = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/props", timeout=10).read())
+                rec["n_slots"] = props.get("total_slots")
+                rec["n_ctx"] = (props.get("default_generation_settings") or {}).get("n_ctx")
+                if rec["n_slots"] != 1 or rec["n_ctx"] != 512:
+                    ok = False
+                    rec["verdict"] = (f"配置不符（n_slots={rec['n_slots']}, n_ctx={rec['n_ctx']}），"
+                                      "这不是一次加载测量")
+            except Exception as exc:
+                rec["props_error"] = str(exc)
         if ok:
             try:
                 body = json.dumps({"prompt": "The number after 41 is", "max_tokens": 8, "temperature": 0}).encode()
@@ -118,7 +135,8 @@ def _save(rec, code):
                      "小文件按并发例外（≤4 GB / ≤3 分钟）跑，27B 的 PQ2_0 要等大段落锁。")
     json.dump(data, open(OUT, "w"), ensure_ascii=False, indent=1)
     print(json.dumps({k: rec.get(k) for k in ("gguf", "size_bytes", "elapsed_s", "peak_vram_mib",
-                                              "free_mib_before", "verdict")}, ensure_ascii=False, indent=1))
+                                              "free_mib_before", "n_slots", "n_ctx", "binary",
+                                              "verdict")}, ensure_ascii=False, indent=1))
     if rec.get("stderr_tail"):
         print("\n".join(rec["stderr_tail"]))
     return code
