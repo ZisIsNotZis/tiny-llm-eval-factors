@@ -15,12 +15,13 @@
 - 复现：`sqlite3 -readonly -header -column experiments.sqlite "SELECT bench_family, protocol, count(*) rows, count(n_items) n_notnull, count(DISTINCT model) models FROM experiments WHERE bench_family LIKE 'bfcl%' GROUP BY bench_family, protocol ORDER BY 1,2"`（实跑输出即上表四行）。
 - 状态：current。
 
-### res2 `n_items` 的 29 个 NULL 全都是多轮行加上 Bonsai 的单轮行
+### res2 `n_items` 的 15 个 NULL 全是多轮行（已回填 14 行：单轮 5 + 多轮 9）
 
-- 29 = 多轮 24 行（22 + 2 partial，全部 NULL）+ Bonsai 单轮 5 行；其余 94 行有值（i02 回填的派生值，不是测量）。
-- 因此「BFCL 这条线缺 n」这句话在多轮上是整列的缺失，不是零散缺格。
+- 回填前：`bfcl%` 共 29 个 NULL = 多轮 24 行 + Bonsai 单轮 5 行。回填后：**15 个，全部是多轮行**；单轮 NULL = 0。
+- 多轮那 9 行之所以能回填，是因为它们的 run 恰好是所在 (handler, 类别) 的**最后一次**（见 res4）；其余 15 行留 NULL 的原因写在 res4 里，不是「忘了填」。
+- 每次入库前都做了编号备份（`experiments.sqlite.bak41` 我手动、`bak20/21/22/23` 由 `migrations/backfill_n_items.py` 自建），跑完 `PRAGMA integrity_check` = `ok`，第二次 `--dry-run` 可解析 0 行（幂等）。
 - 证据：`experiments.sqlite`。
-- 复现：`sqlite3 -readonly experiments.sqlite "SELECT count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' AND n_items IS NULL"`（实跑输出 `29`）；逐行看：`sqlite3 -readonly -header -column experiments.sqlite "SELECT model,_bench,_score,n_items,source_file FROM experiments WHERE bench_family LIKE 'bfcl%' AND (n_items IS NULL OR _bench LIKE '%long_context%') ORDER BY model,_bench"`。
+- 复现：`python3 migrations/backfill_n_items.py --dry-run --family bfcl-multiturn`（实跑：`resolvable: 0  仍留 NULL: 15`）；`sqlite3 -readonly experiments.sqlite "SELECT bench_family, count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' AND n_items IS NULL GROUP BY 1"`（实跑：`bfcl-multiturn|15`）。
 - 状态：current。
 
 ## 多轮的题量与聚合
@@ -34,13 +35,14 @@
 - 复现：`cd .wrapup/bfclenv/lib/python3.11/site-packages/bfcl_eval/data && for c in multi_turn_base multi_turn_long_context multi_turn_miss_func multi_turn_miss_param; do printf "%-28s %s\n" "$c" "$(python3 -c "print(sum(1 for l in open('BFCL_v4_$c.json') if l.strip()))")"; done`（实跑输出四行 `200`）；台账：`cd .wrapup/bfclenv/lib/python3.11/site-packages && python3 -c "import json; rows=[json.loads(l) for l in open('score/Qwen_Qwen3-1.7B-FC/multi_turn/BFCL_v4_multi_turn_base_score.json') if l.strip()]; print(len(rows), rows[0])"`（实跑 `61 {...}`，第一行的 `total_count` 就是 200）。
 - 状态：current。
 
-### res4 多轮有官方运行级台账，逐次追记 —— i01「多轮题量推不出自任何运行产物」需要收窄
+### res4 多轮台账只保留每个 (handler, 类别) 的最后一次运行 —— 题量只能对最后一次溯源
 
-- `score/<handler>/multi_turn/BFCL_v4_<category>_score.json` 是**追加日志**：每次官方 `bfcl evaluate` 追加一行 `{accuracy, correct_count, total_count}`。实测 `multi_turn_base` 在 `Qwen_Qwen3-1.7B-FC` 下共 **61 行**，即这个 handler 上跑过 61 次该类别。
-- 这条台账在同一 handler 被多个模型复用时**不记模型名**，所以它只能证明「某个有 200 题的 run 发生过」，不能把某一行绑定到某个模型。i01 说「面板 summary 只记 `accuracy`、没有 `n`」对 `.wrapup/m*_summary.jsonl` 大体成立（例外：`m32_summary.jsonl` 与 `m36_summary.jsonl` 都带 `"n": 200`），但「推不出自任何运行产物」过强。
-- 方向：这让多轮 `n_items` 的缺失变成**可回填**（`WP7`），而不是永久缺失；回填要走 i02 的 `migrate_db.py`。
-- 证据：`score/*/multi_turn/*_score.json`、`.wrapup/m32_summary.jsonl`、`.wrapup/m36_summary.jsonl`。
-- 复现：`cd .wrapup/bfclenv/lib/python3.11/site-packages && wc -l score/*/multi_turn/*_score.json`；`grep -c '"n": 200' /home/z/vibe/local_lm_research/.wrapup/m32_summary.jsonl /home/z/vibe/local_lm_research/.wrapup/m36_summary.jsonl`。
+- `score/<handler>/multi_turn/BFCL_v4_<category>_score.json` 的结构是**一次运行一个文件**：首行 `{accuracy, correct_count, total_count}`，之后**每个判错题一行**逐题记录（`{id, model_name, test_category, valid, error, prompt, model_result, inference_log, possible_answer}`）。实测 `Qwen_Qwen3-1.7B-FC` 的 `multi_turn_base` 文件共 **61 行 = 1 行汇总 + 60 行判错题**，而该次 `accuracy=0.7, correct_count=140, total_count=200`，`200-140=60` 正好对上。
+- 所以同一 handler + 类别的下一次运行会**覆盖**上一次：这个目录不是追加日志，是「最后一次运行」的快照。同 handler 跨模型复用（2B 与 Bonsai 都用 `Qwen/Qwen3-1.7B-FC`）时，早先那次多轮的逐题与汇总都不在盘上了。
+- 后果（可回填的边界）：`n_items` 能溯源到 `total_count` 的只有「其 run 恰好是该 (handler, 类别) 最后一次」的行，实测 **9 行**（6 行靠台账、3 行靠 `m32`/`m36` 汇总自带的 `n`）；其余 **15 行**留 NULL，原因写定并逐行可查：台账里没有匹配该 (handler, 类别, accuracy) 的行。
+- 对 i01 的关系：i01 「多轮题量推不出自任何运行产物」对那 15 行仍然成立；但「推不出」的范围是**被覆盖过的 run**，不是所有多轮 run。
+- 证据：`score/*/multi_turn/*_score.json`、`.wrapup/m32_summary.jsonl`、`.wrapup/m36_summary.jsonl`、`migrations/backfill_n_items.py` 的 `multiturn_ledger_n()`。
+- 复现：`python3 -c "import json; rows=[json.loads(l) for l in open('.wrapup/bfclenv/lib/python3.11/site-packages/score/Qwen_Qwen3-1.7B-FC/multi_turn/BFCL_v4_multi_turn_base_score.json') if l.strip()]; print(len(rows), rows[0], sum(1 for r in rows if 'id' in r))"`（实跑 `61 {'accuracy': 0.7, ...} 60`）；溯源表：`python3 migrations/backfill_n_items.py --dry-run --family bfcl-multiturn --trace /tmp/n.tsv`。
 - 状态：current。
 
 ## 判分器：单轮预测文件其实还在（i01 的缺口可以补）
@@ -101,10 +103,59 @@
 - 复现：`cat .wrapup/bfclenv/lib/python3.11/site-packages/score/data_multi_turn.csv`。
 - 状态：current。
 
+## 单轮换官方 checker：60 个可比格全部上行，排序基本不变但距离全变
+
+### res11 单轮 8 个类别的已报数字全部是**偏低**的，中位差 +0.10 到 +0.33
+
+- 同一批预测（15 个 cell、22,644 条；其中 8 个有 `possible_answer` 的类别共 **16,404 条可对照**）分别判两次：自研 `.wrapup/bfcl_run.py` 的 `call_ok`/`arg_ok`（生产函数，import 不重写）与 bundled 官方 `ast_checker`。
+- 逐 (文件, 类别) 的 **60 个可比格**：官方 ≥ 自研在**全部 60 格**；逐条翻转 **34 上行**（自研 PASS→官方 FAIL）对 **2788 下行**（自研 FAIL→官方 PASS）。
+- 按类别（11 或 4 个 cell 的极差 / 中位）：
+
+| 类别 | cell 数 | 中位差 | 最大差 |
+|---|---|---|---|
+| simple_python | 11 | +0.2775 | +0.3150 |
+| multiple | 11 | +0.3250 | +0.3500 |
+| parallel | 11 | +0.1050 | +0.1400 |
+| parallel_multiple | 11 | +0.1450 | +0.1900 |
+| live_simple | 4 | +0.1434 | +0.2752 |
+| live_multiple | 4 | +0.2251 | +0.3514 |
+| live_parallel | 4 | +0.0625 | +0.2500 |
+| live_parallel_multiple | 4 | +0.0417 | +0.2500 |
+
+- **机制（这才是要改的东西）**：2788 条下行里 **2534 条是 `missing_optional`**——`possible_answer` 把可选参数的接受列表写成 `["units", ""]`（`""` = 可省略，官方 checker 因此只检查 `required`），而自研 `call_ok` 对 gt 里**每个**键都要求预测里存在（`if k not in pargs: return False`），于是「正确但省略可选参数」被判错。剩下 **254 条是 `value_or_type`**（官方按函数声明做类型检查、自研用 `norm()` 做松比较）。**call_count 与 wrong_name 的贡献为 0**。
+- **方向修正 i01 的叙述**：i01 `res27` 实测的宽容通道（`arg_ok(10,["10"])`、`arg_ok(True,[1])`、多余参数不检查）真实存在，但它们的总量是 **34 条**；同一个匹配器的「可选参数必须出现」这条**严格**通道是 **2534 条**。所以净效应是自研**系统性低估**，不是高估。
+- **对排序的影响**：11 个单轮模型的四类别合并分（micro），自研→官方共 **4/55 对逆序**（gemma-E2B 与 gemma-E4B 各自跨过 Qwen3.5-4B 与 granite-4.1-3b-Q3），其余 51 对保序。结论：**排序大体可用，分数与邻近间距不可用**。
+- **三个类别不可能被这次替换影响**：`irrelevance` / `live_irrelevance` / `live_relevance` 在 bundled 数据里没有 `possible_answer`，官方路径（`eval_runner.py::_evaluate_single_relevance_entry`）对它们用的是「有没有解码出调用」的**存在性判据**，与自研的 `len(calls)==0` / `len(calls)>0` 同构，所以换判分器在这三类上动不了任何数字。
+- **prompt 协议 20 行不可重判**：那 4 个模型的 prompt 预测文件不存在（res5），所以「换成官方 checker」对它只能写未测。
+- 负控两侧都观测到（`correct_call` 两判对，`wrong_name` / `empty_calls` / `missing_required` 两判错），脚本 `exit=0`；每条测试文件绑定到一个 DB (model, protocol) 行靠的是「重算的自研分与库里 `_score` 逐位相同」这个检验（4 个文件不确定就会 exit 3，实跑 15/15 全部绑定成功）。
+- 证据：`audits/official_vs_homegrown.py`、`audits/official_vs_homegrown.json`（逐格明细 + 每个输入文件的 sha256 + 15 个绑定）。
+- 复现：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/official_vs_homegrown.py"`（实跑 `EXIT=0`，打 60 行逐格表、负控四行 `ok`、15 行绑定）。
+- 状态：current。
+
+## 多轮 handler 分组：这一列的「跨模型比较」实际比的是模型+模板
+
+### res12 可比性由 handler 分组决定，跨组比较需要 2×2 重跑
+
+| handler | 用它的模型（多轮） | 类别 | 组内可比？ |
+|---|---|---|---|
+| `Qwen/Qwen3-1.7B-FC` | Qwen3.5-2B(q2,q3)、Ternary-Bonsai-27B | base, long_context, miss_func, miss_param | **可比**（同模板）：2B-q2/q3 与 Bonsai 可两两比；这是库内唯一有「跨族同模板」对的组 |
+| `Qwen/Qwen3-4B-Instruct-2507-FC` | Qwen3.5-4B(q2,q3) | base, long_context | 组内可比（同族同尺寸，只差量化档） |
+| `Qwen/Qwen3-8B-FC` | Qwen3.5-9B(q2,q3) | base | 组内可比 |
+| `Qwen/Qwen3-30B-A3B-Instruct-2507-FC` | Qwen3.6-35B-A3B(q2,q3) | base | 组内可比 |
+| `ibm-granite/granite-4.0-350m` | granite-4.1-3b-Q3_K_M | base | 单独一组；与任何行都不可比（模板既非自家版本也不同尺寸） |
+
+- 因此：**跨 handler 的多轮分数差 = 族/尺寸差 + 模板差**，两者没有分开。库内可读的是上表四个组**组内**的比较；「Qwen 家族比 granite 强」「MoE 比稠密好」这类跨组结论目前**没有证据**。
+- 要分开它们需要一个 **2 模型 × 2 handler 的受控对**（同一对模型各跑两个模板），实测成本：每个 arm 200 题，参 m12 的 granite-8B 实测 `11:40` 生成 + ~10 s 判分，E2B/2B 量级 ≤ 12 分钟/arm；四臂加上模型加载 ≈ **50 GPU 分钟**。这是 `PLAN.md` 里 WP4 的设计，也是本轴唯一的未测大项。
+- 已有一个族全缺：**gemma-4 多轮 0 行**（单轮 20 行齐）。补 gemma 只能补「覆盖」，补不了「可比」，因为它的 handler 也只能是借来的。
+- 证据：`.wrapup/m{9,11,14,17,18,20,22,36}_summary.jsonl` 的 `handler` 字段；`run_m9_panel.sh`。
+- 复现：`grep -h '"handler"' .wrapup/m{9,11,14,17,18,20,22,36}_summary.jsonl | python3 -c "import sys,json; [print(json.loads(l)['model'], json.loads(l)['handler']) for l in sys.stdin]"`。
+- 状态：current。
+
 ## 未测（不得当成通过）
 
-1. **官方 AST checker 与自研匹配器在单轮上的一致率**：`WP2` 未开跑。res5 已证明输入齐备，所以这是「未测」而不是「不可测」。
+1. ~~官方 AST checker 与自研匹配器在单轮上的一致率~~ **已测（res11）**：60 格、34 上行 / 2788 下行。残留：prompt 协议 20 行仍不可重判（无预测文件）。
 2. **多轮的重复地板**：没有任何同配置两次的同格对照（res7 的 `0.095` vs `0.11` 只能算线索）。`WP4` 出数。
 3. **多轮判分器的可执行负控**：i01 只做了单轮的；`WP5` 未开跑。
 4. **prompt 协议的 4 个模型**：预测文件不存在（res5），协议效应只能从库里的 20 行读，重判不可能。
 5. **`multi_turn` 之外的多轮类别**（`web_search`、`memory`）与 `simple_java`/`simple_javascript`：库里 0 行，本轴不覆盖。
+6. **跨 handler 的族间比较**：未测且不可由库内数据补救，需要 res12 的 2×2 重跑（≈50 GPU 分钟）。

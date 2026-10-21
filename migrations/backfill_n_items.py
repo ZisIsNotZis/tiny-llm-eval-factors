@@ -10,7 +10,9 @@
   * `humaneval` / `mbpp`（EvalPlus）：题量是 harness 常量（164 / 378），只有当分数**恰好**等于
     `k/n`（k 为整数）时才认——这就是判据；被 `--limit` 截过的运行会不满足，因此留空。
   * `bfcl` / `bfcl-multiturn`：读该 run 的 `*_summary.jsonl` 的 `per_category[类别]`，类别与 `acc`
-    都要对上，取那一条的 `n`。BFCL 只有类别级数据，**micro 需要逐题结果，库里没有**。
+    都要对上，取那一条的 `n`。多轮 summary 多数不记 `n`，退到官方台账
+    `score/<handler>/multi_turn/BFCL_v4_<类别>_score.json` 的 `total_count`（按类别+accuracy 配对，
+    候选 `total_count` 必须唯一，否则留 NULL）。BFCL 只有类别级数据，**micro 需要逐题结果，库里没有**。
   * `testfrac`：读 `m41_summary.jsonl` 的 `(lang, mean_frac)`，与分数逐位相同才取它的 `n`。
   * 其余族：留 NULL，并在输出里按族列出原因。
 
@@ -39,6 +41,9 @@ import eval_status  # noqa: E402
 import migrate_db  # noqa: E402
 
 EVALPLUS_N = {"humaneval": 164, "mbpp": 378}
+
+# 官方 BFCL 台账与 bundled 数据同在 bfclenv 的 site-packages 下。
+LEDGER = os.path.join(REPO, ".wrapup", "bfclenv", "lib", "python3.11", "site-packages", "score")
 
 
 def is_exact_fraction(score, n):
@@ -73,6 +78,53 @@ def bfcl_n(records, bench, score):
     return None, ""
 
 
+def ledger_totals(handler, cat):
+    """官方台账 `score/<handler>/multi_turn/BFCL_v4_<cat>_score.json`。
+
+    文件是追加日志：官方 `bfcl evaluate` 每次 run 写一行 `{accuracy, correct_count, total_count}`。
+    多轮面板 summary 多数不记 `n`，但台账每行都记 `total_count`，所以题量可以从这里溯源。
+    同一个 handler 被多个模型复用时台账不记模型名，因此只能按 (类别, accuracy) 配对；
+    调用方负责要求所有候选行的 `total_count` 一致。
+    """
+    if not handler:
+        return []
+    path = os.path.join(LEDGER, handler.replace("/", "_"), "multi_turn",
+                        f"BFCL_v4_{cat}_score.json")
+    if not os.path.exists(path):
+        return []
+    out = []
+    for line in open(path, encoding="utf-8", errors="replace"):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            doc = json.loads(line)
+        except Exception:
+            continue
+        if doc.get("accuracy") is not None and doc.get("total_count"):
+            out.append((float(doc["accuracy"]), int(doc["total_count"])))
+    return out
+
+
+def multiturn_ledger_n(records, cat, score):
+    """从官方台账取该行的题量：按 (handler, 类别, accuracy) 配对，要求候选 total_count 唯一。"""
+    handlers = {r.get("handler") for r in records
+                if r.get("category") == cat and r.get("accuracy") is not None
+                and abs(r["accuracy"] - score) < 1e-9 and r.get("handler")}
+    totals = {}
+    for handler in handlers:
+        for acc, total in ledger_totals(handler, cat):
+            if abs(acc - score) < 1e-9:
+                totals.setdefault(total, []).append(handler)
+    if len(totals) == 1:
+        total, who = next(iter(totals.items()))
+        return total, (f"官方台账 score/{who[0].replace('/', '_')}/multi_turn/"
+                       f"BFCL_v4_{cat}_score.json:total_count")
+    if len(totals) > 1:
+        return None, f"台账里同一 (类别, accuracy) 有多个互斥 total_count {sorted(totals)}"
+    return None, "台账里没有匹配该 (handler, 类别, accuracy) 的行"
+
+
 def testfrac_n(records, language, score):
     for rec in records:
         if rec.get("lang") == language and rec.get("mean_frac") is not None \
@@ -99,7 +151,9 @@ def derive(row, summaries):
             if rec.get("category") == cat and rec.get("n") \
                     and rec.get("accuracy") is not None and abs(rec["accuracy"] - score) < 1e-9:
                 return int(rec["n"]), f"{source or '任意 summary'}:category={cat}.n"
-        return None, "多轮汇总里没有匹配该类别与分数的记录"
+        # 多数多轮 summary 不记 n；退到官方台账的 total_count（可溯源到行）。
+        n, how = multiturn_ledger_n(recs, cat, score)
+        return (n, how) if n else (None, f"{how}；多轮汇总里也没有匹配该类别与分数的记录")
     if family == "bfcl":
         recs = summaries.get(source or "", []) or [
             r for v in summaries.values() for r in v]
@@ -116,14 +170,19 @@ def main():
     ap.add_argument("--apply", action="store_true", help="写库（前后各一次备份）")
     ap.add_argument("--dry-run", action="store_true", help="只算并打印")
     ap.add_argument("--trace", help="把逐行溯源写成 TSV")
+    ap.add_argument("--family", help="只处理该 bench_family 的行（默认全部）")
     args = ap.parse_args()
     if not (args.apply or args.dry_run):
         ap.error("选择 --apply 或 --dry-run")
 
     con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
-    rows = con.execute(
-        "SELECT rowid, model, _bench, bench_family, _score, protocol, language, source_file "
-        "FROM experiments WHERE _score IS NOT NULL AND n_items IS NULL").fetchall()
+    sql = ("SELECT rowid, model, _bench, bench_family, _score, protocol, language, source_file "
+           "FROM experiments WHERE _score IS NOT NULL AND n_items IS NULL")
+    params = ()
+    if args.family:
+        sql += " AND bench_family = ?"
+        params = (args.family,)
+    rows = con.execute(sql, params).fetchall()
     families = dict(con.execute(
         "SELECT COALESCE(bench_family,'<空>'), COUNT(*) FROM experiments "
         "WHERE _score IS NOT NULL AND n_items IS NULL GROUP BY 1").fetchall())

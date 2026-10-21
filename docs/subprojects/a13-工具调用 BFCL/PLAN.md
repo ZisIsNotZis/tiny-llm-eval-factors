@@ -12,8 +12,8 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（文档归位）。
-- 在办：`WP2`（单轮官方 vs 自研判分器对照），接着 `WP3`。
+- 已完成：`WP1`（文档归位）、`WP2`（单轮判分器替换，res11）、`WP3`（覆盖/聚合/排序，res1/res3/res9/res11/res12）、`WP7`（n_items 回填，res2/res4）。
+- 在办：无。下一步是 `WP4`（多轮 2×2 受控对 + 重复地板），它要 GPU 且要等锁；`WP5`（多轮判分器负控）随后。
 - **派工形态**：本会话只有 read/grep/find/ls/bash/write/edit 工具，**没有派孙工具**，所以 `WP2`–`WP5` 由编排者自己执行（与 i01 同样的处境）。`WP6` 的独立复核因此必须由 meta 派 fresh-context reviewer，不得自评通过。
 - 下一个派给谁：`WP3` → `WP4`（多轮的 GPU 臂）→ meta 派 `WP6` 复核。
 - GPU：无本轴任务在跑。`WP4` 起跑前必须 `nvidia-smi` 记录空闲显存，并在 `.wrapup/gpu_locked.sh` 下运行。
@@ -23,12 +23,12 @@
 | 工作包 | owner | AC（可证伪） | 依赖 | 预算 | 状态 |
 |---|---|---|---|---|---|
 | WP1 文档归位 | a13 编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 的 `plan4` 已迁入并删除该 yaml；`git grep -n 'a13-工具调用 BFCL/plan.yaml'` 无输出；按路径提交在 main | — | 1 会话 | **完成** |
-| WP2 单轮：官方 AST checker vs 自研匹配器 | a13 编排者 | 用同一批落盘预测重判 15 个存活 cell，逐 (模型, 类别) 给出「自研准确率 / 官方准确率 / 向上翻 / 向下翻」，并给出每条已知会动的已报数字；负控两侧都观测到（正确调用判对、错名/缺参/多参/布尔数字混用各判错）；缺输入 exit≠0 | WP1 | ≤90 CPU 分钟 | 未开始 |
-| WP3 覆盖表 + 聚合口径 + 排序稳定性 | a13 编排者 | 出 `audits/coverage.md`：族×协议×类别矩阵 + 每格 n 的来源；micro/macro 两个口径在单轮面板上的复算值与面板 summary 的 `score` 对齐（或给出为何对不齐）；同一模型跨类别排序的逆序数；native vs prompt 协议下排序是否变；缺输入 exit≠0 | WP1 | ≤90 CPU 分钟 | 未开始 |
-| WP4 多轮跨家族（`plan4`） | a13 编排者 | 跨家族受控对成立：同一 handler、同一 ctx、同一 temp/max_tokens 下两个不同族的模型各跑一次 `multi_turn_base`，并给出该配置下多轮的重复地板（同配置第 2 次）；做不到就写有界结论 + 代价 | WP3（先知道缺哪族）、GPU | ≤60 GPU 分钟（2 臂 × ~12 分钟 + 起停） | 未开始 |
+| WP2 单轮：官方 AST checker vs 自研匹配器 | a13 编排者 | 用同一批落盘预测重判 15 个存活 cell，逐 (模型, 类别) 给出「自研准确率 / 官方准确率 / 向上翻 / 向下翻」，并给出每条已知会动的已报数字；负控两侧都观测到（正确调用判对、错名/缺参/多参/布尔数字混用各判错）；缺输入 exit≠0 | WP1 | ≤90 CPU 分钟 | **完成**（res11：60 可比格全上行，中位 +0.04~+0.33，34 上行 / 2788 下行，2534 条是 missing_optional；4/55 对逆序） |
+| WP3 覆盖表 + 聚合口径 + 排序稳定性 | a13 编排者 | 族×协议×类别矩阵 + 每格 n 的来源；micro/macro 复算值与面板 summary 对齐（或说明为何对不齐）；跨类别排序逆序数；native vs prompt 协议下排序是否变 | WP1 | ≤90 CPU 分钟 | **完成**（res1/res3/res9 覆盖与聚合、res11 排序 4/55 逆序、res12 按 handler 的可比性分组）；残留：native vs prompt 的排序对照只有库里 20 行、无预测可重判 |
+| WP4 多轮跨家族（`plan4`） | a13 编排者 | **2 模型 × 2 handler 的受控对**（分开「族」与「模板」）+ 同配置第二次给多轮重复地板：四臂各 200 题 `multi_turn_base`，报告给出族效应、模板效应与地板三者的分离；做不到就写有界结论 + 实测代价 | WP3、GPU | ≤50 GPU 分钟（4 臂 × ~12 分钟 + 起停） | 未开始 |
 | WP5 多轮判分器的可执行负控 | a13 编排者 | 用官方 `multi_turn_checker` 对构造的坏实例判错、对正确实例判对，两侧都观测到；`Failed to decode the model response` 通道的方向与幅度有实测 | WP2 | ≤60 CPU 分钟 | 未开始 |
 | WP6 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现 | 对应包完成 | ≤30 CPU 分钟/份 | 待派 |
-| WP7 `n_items` 回填交接 | a13 编排者 → i02 的 `migrate_db.py` | 多轮 24 行的 `n_items` 有可导出来源（200/类别）且来源被写成一行证据；回填本身走 i02 的摄入路径，动手前编号备份 | WP3 | ≤30 CPU 分钟 | 未开始 |
+| WP7 `n_items` 回填 | a13 编排者 → `migrations/backfill_n_items.py` | `bfcl%` 的 NULL 从 29 降到 15，剩下的每一行有写定的原因；编号备份 + integrity_check ok + 第二次 dry-run 幂等 0 行 | WP3 | ≤30 CPU 分钟 | **完成**（res2/res4：14 行回填，剩 15 行多轮因台账只留最后一次运行而不可溯源） |
 
 调度原则：`WP2`/`WP3` 全 CPU、无 GPU、互相独立，先并行；`WP4` 要 GPU 且要等锁，放在 `WP3` 之后；`WP5` 复用 `WP2` 的判分器加载装置。
 
@@ -38,22 +38,27 @@
 
 > 假设 B3（跨家族多轮）：BFCL 多轮只在一个锚点（Qwen3.5-2B）跑过；扩到 granite/gemma/MoE 锚点，及其它多轮类别（miss_func / miss_param / long_context）。
 
-实测后这个描述已不准确（`RESULT.md::res9`）：多轮已有 10 个模型、4 个族，granite 与 MoE 都跑过 `multi_turn_base`，`long_context` / `miss_func` / `miss_param` 也各有 3–4 个模型。**真正缺的是 gemma 族（0 行）**；而 `RESULT.md::res8` 又说不同族的行用了不同 handler，所以直接补一行 gemma 只会把「族」与「模板」再混一次。
+这个前提**已被数据否掉，不再保留**（`RESULT.md::res9`）：多轮已有 10 个模型、4 个族，`multi_turn_base` 9 个模型，`long_context` / `miss_func` / `miss_param` 各 3–4 个。真正的问题不是覆盖，而是**可比**（`RESULT.md::res12`）：每个族、甚至每个 Qwen 尺寸都跑在不同的官方 handler 下，handler 决定多轮 prompt 的模板与响应解析，所以这一列的跨族差 = 族差 + 模板差，分不开。
 
-所以 WP4 改成受控对加地板：
+所以 WP4 改成 2 模型 × 2 handler 的受控对，外加一次同配置重复：
 
 | 臂 | 模型 | handler | cats | ctx | 目的 |
 |---|---|---|---|---|---|
-| G | `gemma-4-E2B-it-UD-Q3_K_XL.gguf` | `Qwen/Qwen3-1.7B-FC`（与 Qwen 2B 锛点同一 handler） | `multi_turn_base` | 98304 | 跨族受控对：与 m9 的 Qwen3.5-2B-Q3 = 0.185 对照 |
-| Q | `Qwen3.5-2B-UD-Q3_K_XL.gguf` | 同上 | `multi_turn_base` | 98304 | 同配置第二次，给多轮重复地板（res7 的那个 0.095 vs 0.11 就在这里裁决） |
+| A1 | `Qwen3.5-2B-UD-Q3_K_XL.gguf` | `Qwen/Qwen3-1.7B-FC`（自家模板） | `multi_turn_base` | 98304 | 模板内基线，且是重复地板的第一跑 |
+| A2 | 同上 | `ibm-granite/granite-4.0-350m`（外来模板） | `multi_turn_base` | 98304 | 同模型换模板 → **模板效应** |
+| B1 | `gemma-4-E2B-it-UD-Q3_K_XL.gguf` | `Qwen/Qwen3-1.7B-FC` | `multi_turn_base` | 98304 | 补 gemma 覆盖 + 与 A1 同模板 → **族效应** |
+| B2 | 同上 | `ibm-granite/granite-4.0-350m` | `multi_turn_base` | 98304 | 同模型换模板 → 模板效应的第二点 |
+
+（A1 的对照是库里已有的 m9 = 0.185，同一 handler 同一 ctx；若 A1 重跑得 0.185，则多轮地板 = 0，res7 的 `0.095` vs `0.11` 只能归给未记录的输入差。）
 
 判定规则（先写死）：
 
-1. Q 臂的两次值不同 → 多轮在确定性解码下**不**逐题可复现，地板是实测的非零值；此后任何多轮跨模型差必须大于它才能读。
-2. Q 臂两次相同 → 多轮地板也是 0，`RESULT.md::res7` 的 0.095/0.11 只能归给未记录的输入差（不是噪声）。
-3. G 臂跑完（无论分数高低）→ gemma 族多轮覆盖成立；如果 G 臂整类 0 且日志出现模板/解析失败（`Failed to decode the model response`），那写「模板不兼容」而不是「gemma 不会工具调用」，并退回有界结论。
+1. A1 两次不同 → 多轮在确定性解码下**不**逐题可复现，地板是实测非零值；此后任何多轮跨模型差必须大于它才能读。
+2. A1 两次相同 → 地板也是 0，res7 的 0.095/0.11 归给未记录的输入差（不是噪声）。
+3. A1 与 A2 的差 = 模板效应；B1 与 A1 的差 = 族效应（同模板）；B1 与 B2 的差是模板效应的复现。三者同时给出才算「分开」，否则只报「差存在且未分离」。
+4. 任一臂整类 0 且日志出现 `Failed to decode the model response` → 写「模板不兼容」，不写「该模型不会工具调用」。
 
-AC：两个 `score/*/multi_turn/*_score.json` 台账新行 + 两份 `.wrapup/m*.log` + 一行结论回 `RESULT.md`；`plan4` 随之关闭。预算：每臂 200 题，参 m12 的 8B 实测 ~11:40 生成 + ~10 s 判分；E2B/2B 估 ≤12 分钟/臂。
+AC：`score/*/multi_turn/*_score.json` 出现 4 条新汇总行 + 4 份 `.wrapup/m*.log` + 一行三分量结论进 `RESULT.md`；`plan4` 随之关闭。预算：4 臂 × 200 题，参 m12 的 8B 实测 11:40 生成 + ~10 s 判分；E2B/2B 量级估 ≤12 分钟/臂，加四次加载 ≈ **50 GPU 分钟**，走 `gpu_locked.sh`。`WP5`（多轮判分器负控）复用这四臂的 `_score.json` 逐题记录，不必另跑。
 
 ## WP2 的形状（判分器替换的度量）
 

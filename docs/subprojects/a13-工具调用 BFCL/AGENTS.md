@@ -21,7 +21,14 @@
 1. 两套判分器吃**同一批** `{id, category, calls}` 记录，逐条给 verdict，然后报三种数：(a) 自研准确率、(b) 官方准确率、(c) 双向翻转条数（自研 PASS→官方 FAIL / 反向）。只报 (a)(b) 不报 (c) 等于没说方向。
 2. `arg_ok`/`call_ok` 必须**调用** `.wrapup/bfcl_run.py` 里的实现，不重抄一份；官方侧必须用 bundled `bfcl_eval.eval_checker.ast_eval.ast_checker`。两边都不是自己写的判据，才叫同预测对照。
 3. 负控两侧都要有：正确调用判 PASS、错函数名/缺必需参数/多一个乱参数/布尔与数字混用各判 FAIL。只测一侧就写「只证明了一半」。
-4. `irrelevance`/`live_irrelevance`/`live_relevance` 没有 `possible_answer`，官方侧无法判 → 写「不可对照」并写原因，不算通过也不算失败（`RESULT.md::res6`）。
+4. `irrelevance`/`live_irrelevance`/`live_relevance` 没有 `possible_answer`，官方侧走存在性判据（与自研同构）→ 写「换判分器动不了」并写原因，不算通过也不算失败（`RESULT.md::res6`、`res11`）。
+5. 产物里必须证明「重算的自研分与库里 `_score` 逐位相同」：这条检验同时给出文件↔DB 行的绑定，并证明你的重算还在镜像生产判分器。绑定不唯一就 exit≠0（`audits/official_vs_homegrown.py` 的 exit 3）。
+
+## 官方台账只保留最后一次运行（查数据时最先看这条）
+
+1. `score/<handler>/multi_turn/BFCL_v4_<cat>_score.json` 是**一次运行一个文件**：首行 `{accuracy, correct_count, total_count}`，之后每个判错题一行。同一 handler + 类别的下一次运行会覆盖它，所以同 handler 跨模型复用时早先那次的逐题与汇总都**不在盘上**（`RESULT.md::res4`）。
+2. 因此多轮题量只能对「其 run 恰好是该 (handler, 类别) 最后一次」的行溯源到 `total_count`；其余留 NULL 并写明原因，**不要用数据集行数（200）去填**——那是猜，不是溯源。
+3. 回填只走 `migrations/backfill_n_items.py --dry-run/--apply --family <族>`，它自己编号备份、幂等、可 `--trace`；改完 `PRAGMA integrity_check` 要 `ok`。
 
 ## 入参与退出码
 
