@@ -31,6 +31,9 @@ PROMPTS = os.path.join(WRAPUP, "prompts")
 DB = os.path.join(REPO, "experiments.sqlite")
 EVIDENCE = os.path.join(HERE, "evidence", "py_regrade.json")
 LANG = "py"
+CORPUS_ID = "corpus=ac14c3b0abfa"
+GEN_CORPUS_ID = "gen_corpus=pre-2026-10-14"
+MANIFEST = os.path.join(HERE, "evidence", "py_regrade_manifest.tsv")
 
 
 class Missing(Exception):
@@ -193,13 +196,113 @@ def analyse(doc):
             "report_cells": len(hits), "hits": hits}
 
 
+
+def manifest():
+    """写出 i02 入库用的机器可读清单（TSV，每格一行，98 格全列）。
+
+    身份串按**该格自己的旧协议**加两段：`<old_protocol>;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14`。
+    旧协议取自 `<run>_summary.jsonl` 里 (lang=py, score==旧分) 的唯一匹配；配不上就留空，
+    不编。`db_rowids` 给出库里所有 (language, pass/n) 与旧值相等的行（库里**没有** artefact 文件名列，
+    所以这组候选无法再收窄），配对键与 `make_report.py::_eval_status_index` 的口径一致。
+    """
+    doc = load_evidence()              # 旧/新通过数 + 语料 sha
+    corpus = verify_corpus()
+    if corpus != doc["corpus_sha256"]:
+        raise Missing(f"摘要记的语料 {doc['corpus_sha256']} 与当前 {corpus} 不符，先跑 --rescore")
+    import sqlite3
+    if not os.path.exists(DB):
+        raise Missing(f"缺库 {DB}")
+    con = sqlite3.connect(DB)
+    con.row_factory = sqlite3.Row
+    db = [dict(r) for r in con.execute(
+        "SELECT rowid, model, protocol, _score, source_file, run_tag, _bench FROM experiments "
+        "WHERE bench_family='humaneval-multipl-e' AND language=? AND _score IS NOT NULL", (LANG,))]
+
+    out = os.path.join("/tmp", "a14", "pyall")
+    cols = ["tag", "run", "bench", "language", "model", "protocol_old", "identity_new", "n",
+            "pass_old", "pass_new", "score_old", "score_new", "delta", "flips",
+            "corpus", "gen_corpus", "protocol_source", "db_rowids", "db_match", "db_models", "db_source_files", "db_protocols", "db_run_tags",
+            "summary_file"]
+    rows = []
+    for c in sorted(doc["cells"], key=lambda c: c["tag"]):
+        tag = c["tag"]
+        run = tag.split("-", 1)[0]
+        rescored = os.path.join(out, tag + ".json")
+        if not os.path.exists(rescored):
+            raise Missing(f"缺 {tag} 的重打分结果（先跑 --rescore）")
+        new = {r["name"]: r for r in json.load(open(rescored, encoding="utf-8"))["details"]}
+        old = {r["name"]: r for r in
+               json.load(open(os.path.join(MRES, tag + "_eval.json"), encoding="utf-8"))["details"]}
+        flips = [{"name": n, "old_status": old[n].get("status"), "new_status": new.get(n, {}).get("status"),
+                  "old_pass": bool(old[n]["pass"]), "new_pass": bool(new.get(n, {}).get("pass"))}
+                 for n in c["flipped"]]
+
+        # 旧协议：该 run 的汇总里 (lang=py, score==旧分) 的唯一匹配
+        summary = os.path.join(WRAPUP, f"{run}_summary.jsonl")
+        proto = ""
+        if os.path.exists(summary):
+            cand = [json.loads(l) for l in open(summary, encoding="utf-8")]
+            cand = [r for r in cand if r.get("lang") == LANG
+                    and abs(float(r.get("score", -1)) - c["pass_old"] / c["n"]) < 1e-9]
+            if len({r.get("protocol") for r in cand}) == 1 and cand:
+                proto = cand[0]["protocol"]
+        proto_source = "summary" if proto else ""
+
+        score_old = c["pass_old"] / c["n"]
+        dbhits = [r for r in db if abs(r["_score"] - score_old) < 1e-9]
+        match = "unique" if len(dbhits) == 1 else ("multi" if dbhits else "none")
+        # 旧协议优先取汇总文件；取不到时，如果所有同分候选行只共享一个协议，就用它（来源记 db）
+        if not proto and dbhits:
+            protos = {r["protocol"] for r in dbhits}
+            if len(protos) == 1:
+                proto, proto_source = protos.pop(), "db"
+        identity_new = (f"{proto};{CORPUS_ID};{GEN_CORPUS_ID}" if proto
+                        else f"{CORPUS_ID};{GEN_CORPUS_ID}")
+        rows.append({
+            "tag": tag, "run": run,
+            "bench": dbhits[0]["_bench"] if len(dbhits) == 1 and dbhits[0]["_bench"] else "humaneval-multipl-e",
+            "language": LANG,
+            "model": dbhits[0]["model"] if match == "unique" else "",
+            "protocol_old": proto, "protocol_source": proto_source,
+            "identity_new": identity_new, "n": c["n"],
+            "pass_old": c["pass_old"], "pass_new": c["pass_new"],
+            "score_old": round(score_old, 6), "score_new": round(c["pass_new"] / c["n"], 6),
+            "delta": c["pass_new"] - c["pass_old"],
+            "flips": json.dumps(flips, ensure_ascii=False) if flips else "",
+            "corpus": "ac14c3b0abfa", "gen_corpus": "pre-2026-10-14",
+            "db_rowids": ",".join(str(r["rowid"]) for r in sorted(dbhits, key=lambda r: r["rowid"])),
+            "db_match": match,
+            "db_models": json.dumps(sorted({r["model"] for r in dbhits}), ensure_ascii=False) if dbhits else "",
+            "db_source_files": ",".join(sorted({r["source_file"] or "" for r in dbhits})) if dbhits else "",
+            "db_protocols": "|".join(sorted({r["protocol"] for r in dbhits})) if dbhits else "",
+            "db_run_tags": ",".join(sorted({r["run_tag"] or "" for r in dbhits})) if dbhits else "",
+            "summary_file": os.path.relpath(summary, REPO) if os.path.exists(summary) else "",
+        })
+    os.makedirs(os.path.dirname(MANIFEST), exist_ok=True)
+    with open(MANIFEST, "w", encoding="utf-8") as f:
+        f.write("\t".join(cols) + "\n")
+        for r in rows:
+            f.write("\t".join(str(r.get(k, "")).replace("\t", " ") for k in cols) + "\n")
+    changed = [r for r in rows if r["delta"]]
+    print(f"写入 {os.path.relpath(MANIFEST, REPO)}：{len(rows)} 行"
+          f"（改分 {len(changed)}，未改 {len(rows) - len(changed)}，翻转 {sum(len(json.loads(r['flips'])) if r['flips'] else 0 for r in rows)} 题）")
+    print(f"db_match: " + ", ".join(f"{k}={sum(1 for r in rows if r['db_match'] == k)}"
+                                    for k in ("unique", "multi", "none")))
+    print(f"protocol_old 已知 {sum(1 for r in rows if r['protocol_old'])}/{len(rows)} 行")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rescore", action="store_true")
+    ap.add_argument("--manifest", action="store_true",
+                    help="写 i02 入库用的机器可读清单 evidence/py_regrade_manifest.tsv")
     args = ap.parse_args()
     try:
         if args.rescore:
             return rescore()
+        if args.manifest:
+            return manifest()
         doc = load_evidence()
         corpus = verify_corpus()
         if corpus != doc["corpus_sha256"]:

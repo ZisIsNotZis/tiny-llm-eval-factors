@@ -328,6 +328,45 @@
 - 证据：`docs/subprojects/a14-部分给分/evidence/py_testfrac_regrade.json`（27 格旧/新 pass 与 mean_frac + 语料 sha256）。
 - 复现：重算命令 `cd .wrapup && python3 testfrac.py --lang py --samples mres/<tag>.jsonl --out /tmp/tf/<tag>.jsonl`（每格 ~12 s）；对照组读 `.wrapup/testfrac_<tag>.jsonl`。
 
+## 取代执行包（meta 已授权；i02 照 res24 的清单入库）
+
+### res24 入库清单：`evidence/py_regrade_manifest.tsv`，98 格全列（改分 50 + 未改 48，151 题翻转）
+
+- 路径：`docs/subprojects/a14-部分给分/evidence/py_regrade_manifest.tsv`（TSV，一行一格，UTF-8，无时间戳，同样输入永远同样字节）。
+- 23 列：`tag, run, bench, language, model, protocol_old, protocol_source, identity_new, n, pass_old, pass_new, score_old, score_new, delta, flips, corpus, gen_corpus, db_rowids, db_match, db_models, db_source_files, db_protocols, db_run_tags, summary_file`。
+- 关键列怎么读：
+  - `flips` = JSON 数组，每题一条 `{name, old_status, new_status, old_pass, new_pass}`（例：`HumanEval_103_rounded_avg` 由 `Exception` → `OK`）。**这是 i02 唯一需要照抄的判定差异**，其余列只是给对账用。
+  - `identity_new` = `<该格旧协议>;corpus=ac14c3b0abfa;gen_corpus=pre-2026-10-14`。**59/98 行**填上了旧协议（`protocol_source=summary` 50 行、`db` 9 行）；余下 39 行只写两段（缺协议前缀），因为既没有该 run 的汇总文件、同分候选行又跨多个协议——**不猜**。
+  - `db_rowids`/`db_match`：库里 (language=py, `_score` == 旧分) 的所有候选行，`unique` 19 / `multi` 73 / `none` 6。库里**没有 artefact 文件名列**，所以这组候选无法再收窄；配对键与 `make_report.py::_eval_status_index` 同口径。`none` 的 6 格**不在库里**（没有可取代的行，例：`m26-q38-27b-q3-py`，这正是 `plan15` 那格，它从未入库）。
+  - `bench`：唯一配对时取库里的 `_bench`（如 `humaneval-py`），否则退成 `humaneval-multipl-e`。
+- **取代的是什么，写在清单里**：同一批落盘完成物 × 钉住语料的重评，**不是重新生成**。所以身份串两段缺一不可：`corpus=` 说明判定用的真值，`gen_corpus=` 说明完成物是在旧语料上生成的。
+- 状态：current。
+- 复现：`python3 "docs/subprojects/a14-部分给分/py_regrade.py" --manifest`（实跑输出：`写入 …py_regrade_manifest.tsv：98 行（改分 50，未改 48，翻转 151 题）` / `db_match: unique=19, multi=73, none=6`）。
+- **i02 入库时请注意三条**：① 别按 `score_old` 去改行——那会把同分的别的格一起改掉（73 格是 multi）；用 `source_file`/`db_protocols` 与 ingest ledger 定行。② 旧行不删、标 superseded，新行协议串用 `identity_new`。③ 同一提交里换掉 27 个 py `testfrac` 文件（res22/res23），否则二元列与比例列会是两代。
+
+### res25 7 对跨过结论边界的格子（报告 §13 与 `a06` 的输入）
+
+语料代次改掉的符号，全部落在 1–2 题的近差区：
+
+| 格对（同语言、tag 只差一个字段、同题数） | 旧 | 新 | 形状变化 |
+|---|---|---|---|
+| `m10-q38-27b-q2-py` vs `m10-q38-27b-q3-py` | −2 题（120 vs 118） | **0 题（122 vs 122）** | Q3 比 Q2 略低 → **打平** |
+| `m3-q4-py` vs `m3-q5-py` | +1 题 | **0 题** | 有差 → 打平 |
+| `m27-q4-t0.3-py` vs `m27-q4-t0.6-py` | 0 题 | **+1 题** | 打平 → 有差 |
+| `m31-q3-tk1-py` vs `m31-q3-tk20/40/64/200-py`（四对） | 0 题 | **+1 题** | 贪心地板与各 top-k 档由打平变有差 |
+
+- **对报告的影响（§13 逐语言表的 py 列）**：`m10-q38-27b` 那对会让「Q3 比 Q2 略低」这类 1–2 题形状变成打平；报告若仍按旧值画排序/写「略低」，就是错的。其余 6 对同理，都属于「1–2 题的形状不成立」这一类，不是分数大幅移动。
+- **给 `a06` 的输入**：`m31-q3-tk1` 是 top-k 扫描里的贪心地板（K=1），它与 K=20/40/64/200 的四个「打平」在补入语料代次后**变成每个档都高 1 题**。也就是说 a06 若曾用「K≥20 与贪心无差」这类 0 题差做结论，这条需要在钉住语料下重述；a14 不改 a06 的目录，这条作为输入交过去。
+- 状态：current。复现：`python3 "docs/subprojects/a14-部分给分/py_regrade.py"` 输出「语料代次改掉符号的 py 格对：7 对」。
+
+### res26 语料代次（钉住的那一代，以及为什么旧格反推不出代次）
+
+- 校验：`cd .wrapup/prompts && sha256sum -c SHA256SUMS` → **6/6 OK**。
+- `humaneval-py.jsonl` 的 sha256 = **`ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb`**；该文件 mtime `2026-10-14 20:51`，于 **`b57a71f`（2026-10-19）** 被钉进仓库（提交信息就叫 "pin the prompt set"）。
+- **该代次下 `HumanEval_79_decimal_to_binary` 的期望值**：`candidate(0) == "db0db"`、`candidate(32) == "db100000db"`、`candidate(103) == "db1100111db"`、`candidate(15) == "db1111db"`，外加一条 `assert True`（调试用填充）。那批完成物 4 条取值断言全过，所以今天判 pass（旧记录是 `Exception`）。
+- **旧格无法反推它当年用的是哪一代**：任何入库产物都没有语料哈希列；2026-10-14 之前的 `/tmp` 副本已不在盘上。唯一残留指纹是分母样式——用「排除 `assert True`」这条口径在**今天**的文本上重算，161 题里 **157** 题与入库分母吻合（今天的口径只吻合 121 题），**4** 题在任何口径下都推不出来（res16 表格）。所以只能说 **旧格 ≠ 这一代**，说不出它是哪一代。
+- 状态：current。复现：`sha256sum -c` 那行 + `python3 "docs/subprojects/a14-部分给分/py_regrade.py"` 的首行（打印语料 sha 与身份串）。
+
 ## 不可得清单与代价（WP6）
 
 ### res17 只能靠一条命令查：`testfrac_audit.py --matrix` 逐族给出「能不能推 / 缺什么 / 代价 / 拿到后怎么验」
