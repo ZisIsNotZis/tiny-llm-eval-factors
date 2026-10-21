@@ -1,0 +1,70 @@
+{
+  "tag": "m131-sampling",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263",
+  "axis": "sampling",
+  "rows": {
+    "greedy": {
+      "label": "greedy",
+      "llama_args": [],
+      "sampling": {
+        "temperature": 0
+      },
+      "mmlu": 0.6074561403508771,
+      "gsm8k": 0.6,
+      "ifeval": 0.62,
+      "humaneval": 0.573170731707317,
+      "humaneval_n": 164
+    },
+    "temp0.3": {
+      "label": "temp0.3",
+      "llama_args": [],
+      "sampling": {
+        "temperature": 0.3
+      },
+      "mmlu": 0.6074561403508771,
+      "gsm8k": 0.64,
+      "ifeval": 0.7,
+      "humaneval": 0.5121951219512195,
+      "humaneval_n": 164
+    },
+    "temp0.7": {
+      "label": "temp0.7",
+      "llama_args": [],
+      "sampling": {
+        "temperature": 0.7
+      },
+      "mmlu": 0.6074561403508771,
+      "gsm8k": 0.62,
+      "ifeval": 0.66,
+      "humaneval": 0.5121951219512195,
+      "humaneval_n": 164
+    },
+    "greedy-topk1": {
+      "label": "greedy-topk1",
+      "llama_args": [],
+      "sampling": {
+        "temperature": 0,
+        "top_k": 1
+      },
+      "mmlu": 0.6074561403508771,
+      "gsm8k": 0.6,
+      "ifeval": 0.62,
+      "humaneval": 0.573170731707317,
+      "humaneval_n": 164
+    },
+    "greedy-topk200": {
+      "label": "greedy-topk200",
+      "llama_args": [],
+      "sampling": {
+        "temperature": 0,
+        "top_k": 200
+      },
+      "mmlu": 0.6074561403508771,
+      "gsm8k": 0.6,
+      "ifeval": 0.62,
+      "humaneval": 0.573170731707317,
+      "humaneval_n": 164
+    }
+  },
+  "errors": []
+}

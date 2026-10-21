@@ -26,6 +26,15 @@ experiments.sqlite.bak*
 !.wrapup/mres/
 .wrapup/mres/*
 !.wrapup/mres/*_eval.json
+# 入库**来源**也要随仓库走：库里有行、证据不在，干净 clone 里任何「这行是从哪来的、n 是多少」
+# 的核对都做不了（a12 的审计因此 exit 1，a06 的 repro 命令也跑不动）。这几个文件是那几行的
+# 唯一来源，且都很小：m165 厂商臂的 R1 七行清单，以及 KV/采样面板的采样规格。
+# 子目录要先放行，否则里面的文件再写 `!` 也不生效（父目录被忽略时 git 不再下探）。
+!.wrapup/mres/*/
+.wrapup/mres/*/*
+!.wrapup/mres/*/*_eval.json
+!.wrapup/mres/*/vendor_r1_summary.jsonl
+!.wrapup/mres/*/variant_panel.json
 .wrapup/*.log
 .wrapup/jars/
 .wrapup/evalpy/

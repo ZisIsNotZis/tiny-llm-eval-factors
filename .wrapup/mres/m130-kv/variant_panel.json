@@ -1,0 +1,53 @@
+{
+  "tag": "m130-kv",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263",
+  "axis": "kv",
+  "rows": {
+    "f16/f16": {
+      "label": "f16/f16",
+      "llama_args": [
+        "--cache-type-k",
+        "f16",
+        "--cache-type-v",
+        "f16"
+      ],
+      "sampling": {},
+      "mmlu": 0.6096491228070176,
+      "gsm8k": 0.6,
+      "ifeval": 0.62,
+      "humaneval": 0.573170731707317,
+      "humaneval_n": 164
+    },
+    "q8_0/q8_0": {
+      "label": "q8_0/q8_0",
+      "llama_args": [
+        "--cache-type-k",
+        "q8_0",
+        "--cache-type-v",
+        "q8_0"
+      ],
+      "sampling": {},
+      "mmlu": 0.6074561403508771,
+      "gsm8k": 0.68,
+      "ifeval": 0.64,
+      "humaneval": 0.5487804878048781,
+      "humaneval_n": 164
+    },
+    "q4_0/q4_0": {
+      "label": "q4_0/q4_0",
+      "llama_args": [
+        "--cache-type-k",
+        "q4_0",
+        "--cache-type-v",
+        "q4_0"
+      ],
+      "sampling": {},
+      "mmlu": 0.6140350877192983,
+      "gsm8k": 0.6,
+      "ifeval": 0.68,
+      "humaneval": 0.5487804878048781,
+      "humaneval_n": 164
+    }
+  },
+  "errors": []
+}

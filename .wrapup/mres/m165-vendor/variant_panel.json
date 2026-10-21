@@ -1,0 +1,25 @@
+{
+  "tag": "m165-vendor",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/d34e1271b7ca784d739b2b7e804bac391d7b6471e695d88e8c79eae0df032263",
+  "axis": "sampling",
+  "rows": {
+    "vendor-recommended": {
+      "label": "vendor-recommended",
+      "llama_args": [],
+      "sampling": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 2.0
+      },
+      "sampling_spec": "sampling=temperature=1.0,top_p=1.0,top_k=20,min_p=0.0,presence_penalty=2.0",
+      "mmlu": 0.6074561403508771,
+      "gsm8k": 0.4,
+      "ifeval": 0.6,
+      "humaneval": null,
+      "codegen_skipped": "evalplus CLI \u53ea\u63a5\u53d7 --temperature\uff0ctop_p/top_k/min_p/presence_penalty \u4f20\u4e0d\u8fdb\u53bb"
+    }
+  },
+  "errors": []
+}
