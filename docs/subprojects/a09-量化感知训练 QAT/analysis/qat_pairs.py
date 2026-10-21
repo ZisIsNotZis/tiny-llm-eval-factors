@@ -32,10 +32,12 @@ X = 「这份 gguf 是否经过 QAT 训练」；Y = 基准分数。只读 `exper
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
 import sqlite3
+import struct
 import sys
 from pathlib import Path
 
@@ -60,16 +62,31 @@ import curves as a01curves      # noqa: E402  —— 两比例差区间（Newcom
 
 SELFTEST = os.environ.get("A09_SELFTEST") == "1"
 NO_GGUF = os.environ.get("A09_NO_GGUF") == "1"   # 只用夹具：证明干净 clone 有界复现，也证明夹具真被读
+LIVE = not NO_GGUF and not os.environ.get("A09_SELFTEST") == "1"   # 负控跑在改错的夹具上，不值取本机文件
 FIXTURE = REPO / "docs" / "subprojects" / "a09-量化感知训练 QAT" / "analysis" / "fixtures" / "qat_alloc.json"
 FIX = json.loads(FIXTURE.read_text(encoding="utf-8")) if FIXTURE.is_file() else {}
+MUTATION = None
+if SELFTEST and FIX:
+    # 负控不是桩：真的把夹具里的一个实测值改错（12B QAT 的比特改到高于原生最高档），
+    # 让同一套判据在改过的输入上跑。至少要翻红一条，否则说明这套判定抓不住错误（见 main 末尾）。
+    _k = "gemma-4-12B-it-qat-UD-Q4_K_XL.gguf"
+    if _k in FIX:
+        FIX = json.loads(json.dumps(FIX))
+        FIX[_k]["bpw_file"] = 5.949
+        MUTATION = f"{_k} 的 bpw_file 4.512 → 5.949（超过原生最高档 4.949）"
+META_KEYS = ("general.architecture", "general.name", "general.finetune", "general.basemodel",
+             "general.base_model", "general.license", "general.file_type",
+             "tokenizer.ggml.eos_token_id", "tokenizer.ggml.bos_token_id")
 DRIFT = []                       # [(model, 说明)]：夹具与本机 gguf 头的漂移
+LIVE_COMPARED = [0]              # 真比过的文件数（0 时 E9 判未测，而不是空过）
 BENCH = a03pairs.BENCH
 BENCH_ORDER = a03pairs.BENCH_ORDER
 SHORT = a03pairs.SHORT
 NON_COUNT = a03pairs.NON_COUNT
 newcombe_diff = a01curves.newcombe_diff
-CLASS_ORDER = ["embed", "attn", "ffn-dense", "ffn-expert", "ffn-shexp", "router", "output", "norm"]
-UNIFORM_CLASSES = ["embed", "attn", "ffn-dense"]      # 只看装权重的三类：norm/output 常是 f32
+CLASS_ORDER = ["embed", "attn", "ffn-dense", "ffn-expert", "ffn-shexp", "router",
+               "other", "output", "norm"]
+BULK_SHARE = 0.01        # 占参数 ≥1% 且被量化（<16 比特/参数）的类才算「装权重的桶」
 
 results = []          # [(id, ok, detail)]
 
@@ -161,10 +178,11 @@ def profile_of(model):
     base = file_of(model)
     if base in _PROFILES:
         return _PROFILES[base]
-    p = None if NO_GGUF else path_of(base)
+    p = path_of(base) if LIVE else None
     live = a03alloc.profile(p) if p else None
     fx = FIX.get(base)
     if live and fx:
+        LIVE_COMPARED[0] += 1
         d = abs(live["bpw_file"] - fx["bpw_file"])
         cls_d = max((abs(live["classes"][k]["bits"] - fx["classes"][k]["bits"])
                      for k in fx["classes"] if k in live["classes"]), default=0.0)
@@ -190,6 +208,132 @@ def bits_of(model):
     if mapped is not None:
         return mapped, "bpw_map(无 gguf 也无夹具)"
     return None, "未测"
+
+
+# ---------- 张量清单与元数据（图的身份） ----------
+
+_INV: dict[str, dict | None] = {}
+
+
+def read_meta(path):
+    """gguf KV 段里与本轴有关的那几项。
+
+    解析原语 `_rstr`/`_rval` 取自 `a03::analysis/alloc.py`，本层不写第二份解析器；
+    a03 改名时这里会 AttributeError 而不是静默读错（`@fail_loud`）。
+    """
+    with open(path, "rb") as f:
+        if f.read(4) != b"GGUF":
+            raise ValueError("not a gguf: %s" % path)
+        f.read(4)                                   # version
+        struct.unpack("<Q", f.read(8))[0]           # n_tensors
+        n_kv = struct.unpack("<Q", f.read(8))[0]
+        out = {}
+        for _ in range(n_kv):
+            k = a03alloc._rstr(f)
+            t = struct.unpack("<I", f.read(4))[0]
+            v = a03alloc._rval(f, t)
+            if k in META_KEYS:
+                out[k] = v
+    return out
+
+
+def tensor_inventory(path):
+    """张量清单的签名：名字 + 元素数（形状的乘积）排序后取 sha256，外加张量数与参数总量。
+
+    为什么要有这一项：QAT 文件与原生文件可以**不是同一张图**（同一族里 QAT 版少了某些
+    `attn_k/attn_v` 张量），那样两者的差就同时换了「图结构」这第四个变量，不能再归给训练。
+    """
+    tensors, size = a03alloc.read_gguf(path)
+    sig_src = "\n".join(sorted(f"{n}:{e}" for n, e, _b in tensors))
+    return {"n_tensors": len(tensors),
+            "n_params": sum(e for _n, e, _b in tensors),
+            "n_bytes": size,
+            "tensor_sig": hashlib.sha256(sig_src.encode()).hexdigest()[:16],
+            "meta": read_meta(path)}
+
+
+def inventory_of(model):
+    """张量清单：本机 gguf 头优先，其次夹具；两份都在时比对并把漂移记进 DRIFT。"""
+    base = file_of(model)
+    if base in _INV:
+        return _INV[base]
+    p = path_of(base) if LIVE else None
+    live = tensor_inventory(p) if p else None
+    fx = FIX.get(base)
+    fx_inv = None
+    if fx and "tensor_sig" in fx:
+        fx_inv = {k: fx[k] for k in ("n_tensors", "n_params", "n_bytes", "tensor_sig", "meta")
+                  if k in fx}
+    if live and fx_inv:
+        if live["tensor_sig"] != fx_inv["tensor_sig"] or live["n_tensors"] != fx_inv["n_tensors"]:
+            DRIFT.append((base, f"张量清单漂移：{live['n_tensors']} 张量/{live['tensor_sig']} vs "
+                                f"夹具 {fx_inv['n_tensors']}/{fx_inv['tensor_sig']}"))
+        for k in META_KEYS:
+            if live["meta"].get(k) != fx_inv["meta"].get(k):
+                DRIFT.append((base, f"元数据 {k} 漂移：{live['meta'].get(k)!r} vs {fx_inv['meta'].get(k)!r}"))
+    inv = live or fx_inv
+    _INV[base] = inv
+    return inv
+
+
+def diff_names(path_q, path_n):
+    """两份 gguf 的张量名差集（用于打印「缺哪些层」的明细）。"""
+    a = {n for n, _e, _b in a03alloc.read_gguf(path_q)[0]}
+    b = {n for n, _e, _b in a03alloc.read_gguf(path_n)[0]}
+    return sorted(b - a), sorted(a - b)
+
+
+def group_tensor_names(names):
+    """把 `blk.<L>.<role>.<suffix>` 折叠成「role.suffix × N 层（L1–L2）」。"""
+    buckets, rest = {}, []
+    for nm in names:
+        m = re.match(r"^blk\.(\d+)\.(.+)$", nm)
+        if m:
+            buckets.setdefault(m.group(2), []).append(int(m.group(1)))
+        else:
+            rest.append(nm)
+    out = [f"{role} × {len(ls)} 层（{min(ls)}–{max(ls)}）" for role, ls in sorted(buckets.items())]
+    if rest:
+        out.append("非 blk. 张量 " + ", ".join(sorted(rest)))
+    return "; ".join(out)
+
+
+def graph_of_pair(q, n):
+    """一对文件的图结构比较：清单签名是否相同、参数差多少、缺哪些张量。"""
+    iq, inn = inventory_of(q), inventory_of(n)
+    if not (iq and inn):
+        return {"known": False, "same": None, "detail": "张量清单未测（无 gguf 也无夹具）"}
+    same = iq["tensor_sig"] == inn["tensor_sig"] and iq["n_tensors"] == inn["n_tensors"]
+    d_params = iq["n_params"] - inn["n_params"]
+    detail = ""
+    miss = extra = []
+    pq, pn = (path_of(file_of(q)) if LIVE else None), (path_of(file_of(n)) if LIVE else None)
+    if pq and pn and not same:
+        miss, extra = diff_names(pq, pn)
+        detail = (f"缺 {len(miss)} 个（{group_tensor_names(miss)}）、多 {len(extra)} 个")
+    elif not same:
+        stored = (FIX.get(file_of(q)) or {}).get("tensor_diff") or {}
+        if stored.get("native") == file_of(n):
+            miss, extra = stored.get("missing") or [], stored.get("extra") or []
+            detail = (f"缺 {len(miss)} 个（{group_tensor_names(miss)}）、多 {len(extra)} 个")
+        else:
+            detail = "清单不同，明细未冻结"
+    return {"known": True, "same": same, "d_params": d_params, "detail": detail,
+            "n_q": iq["n_tensors"], "n_n": inn["n_tensors"],
+            "meta_q": iq.get("meta") or {}, "meta_n": inn.get("meta") or {},
+            "missing": miss, "extra": extra}
+
+
+def uniform_spread(prof):
+    """「装权重的桶」之间的比特差：只取占参数 ≥1% 且被量化的类。
+
+    `norm`/`output` 常是 f32（32 比特/参数），把它们算进 spread 会让「均匀」永远不成立；
+    反过来，`other`（E 系列里是 `per_layer_token_embd`，占一半参数）绝不能漏——漏了就会
+    把「QAT 把 embedding 压到 2.06」这句说过头。
+    """
+    vals = [v["bits"] for v in prof["classes"].values()
+            if v["params"] / prof["n_params"] >= BULK_SHARE and v["bits"] < 16]
+    return (max(vals) - min(vals)) if vals else float("nan")
 
 
 # ---------- 库行 ----------
@@ -255,10 +399,30 @@ def build_fixtures(cc):
             print(f"  未测 {base}: 盘上找不到文件，不进夹具")
             continue
         prof = a03alloc.profile(p)
+        inv = tensor_inventory(p)
         out[base] = {"path": p, "n_params": prof["n_params"], "n_bytes": prof["n_bytes"],
                      "bpw_file": prof["bpw_file"], "bpw_data": prof["bpw_data"],
-                     "classes": prof["classes"]}
-        print(f"  {base:<42} {prof['bpw_file']:.4f} 比特/参数")
+                     "classes": prof["classes"], "n_tensors": inv["n_tensors"],
+                     "tensor_sig": inv["tensor_sig"], "meta": inv["meta"]}
+        print(f"  {base:<42} {prof['bpw_file']:.4f} 比特/参数  {inv['n_tensors']} 张量  "
+              f"{inv['n_params']:,} 参数")
+        if is_qat(base):
+            cand = [m for m in want if not is_qat(m) and family_of(m) == family_of(base)
+                    and quant_of(m) == quant_of(base)]
+            if not cand:
+                # 库里没有同档原生行（例如 26B-A4B 的 Q4），但文件在盘上：按文件名找
+                cand = [k for k in _gguf_index() if not is_qat(k)
+                        and family_of(k) == family_of(base) and quant_of(k) == quant_of(base)]
+            for native in cand:
+                pn2 = path_of(file_of(native))
+                if not pn2:
+                    continue
+                miss, extra = diff_names(p, pn2)
+                out[base]["tensor_diff"] = {"native": file_of(native),
+                                            "missing": miss, "extra": extra}
+                print(f"     vs 原生 {file_of(native)}：缺 {len(miss)} 个、多 {len(extra)} 个"
+                      + (f"（{group_tensor_names(miss)}）" if miss else ""))
+                break
     FIXTURE.parent.mkdir(parents=True, exist_ok=True)
     FIXTURE.write_text(json.dumps(out, indent=1, sort_keys=True, ensure_ascii=False) + "\n",
                        encoding="utf-8")
@@ -296,9 +460,11 @@ def main(argv=()):
                                   for k in CLASS_ORDER if k in prof["classes"])
         print(f"  {file_of(m):<40} {b:.3f} 比特/参数 [{src}]{cls}")
         if prof:
-            uni = [prof["classes"][k]["bits"] for k in UNIFORM_CLASSES if k in prof["classes"]]
-            spread = max(uni) - min(uni) if uni else float("nan")
-            print(f"    装权重的三类 spread = {spread:.3f}（≤0.01 视为均匀分配）")
+            print(f"    装权重的桶（参数占比 ≥{BULK_SHARE:.0%} 且 <16 比特）spread = "
+                  f"{uniform_spread(prof):.3f}（≤0.01 视为均匀分配）")
+        inv = inventory_of(m)
+        if inv:
+            print(f"    张量 {inv['n_tensors']} 个，参数 {inv['n_params']:,}，清单签名 {inv['tensor_sig']}")
     if not have_bpw:
         print("警告：bpw_map.json 缺失，只能用 gguf 头/夹具；文件缺失的档会变成未测", file=sys.stderr)
     nobits = [m for m in qat_models if bits_of(m)[0] is None]
@@ -322,10 +488,18 @@ def main(argv=()):
             np_ = panel_of(cc, n)
             shared = [b for b in BENCH_ORDER if b in qp and b in np_]
             state = "MATCHED" if shared else "NO_DATA"
-            print(f"  {fam} {quant}: QAT {file_of(q)} vs 原生 {file_of(n)} -> {state} "
-                  f"（共同基准 {len(shared)} 个）")
+            g = graph_of_pair(q, n)
+            if g["known"]:
+                gtag = ("GRAPH_SAME" if g["same"] else "GRAPH_DIFF")
+                print(f"  {fam} {quant}: QAT {file_of(q)} vs 原生 {file_of(n)} -> {state} "
+                      f"（共同基准 {len(shared)} 个）{gtag}：{g['n_q']} vs {g['n_n']} 张量，"
+                      f"参数差 {g['d_params']:+,}"
+                      + (f"；{g['detail']}" if not g["same"] else ""))
+            else:
+                print(f"  {fam} {quant}: QAT {file_of(q)} vs 原生 {file_of(n)} -> {state} "
+                      f"（共同基准 {len(shared)} 个）图结构未测")
             pairs.append({"family": fam, "quant": quant, "qat": q, "native": n,
-                          "state": state, "benches": shared})
+                          "state": state, "benches": shared, "graph": g})
 
     with_prof = [p for p in pairs if profile_of(p["qat"]) and profile_of(p["native"])]
     if pairs and not with_prof:
@@ -357,7 +531,8 @@ def main(argv=()):
             print(f"     {SHORT[bench]:<6} {ka}/{na} vs {kb}/{nb}  Δ={d:+.4f} {iv}{sig}")
             pair_rows.append({"family": p["family"], "quant": p["quant"], "bench": bench,
                               "d": d, "lo": lo, "hi": hi, "ka": ka, "na": na,
-                              "kb": kb, "nb": nb, "dbpw": db})
+                              "kb": kb, "nb": nb, "dbpw": db,
+                              "graph_same": p["graph"].get("same")})
         alloc_diff(p["qat"], p["native"])
 
     # 4) 族内原生阶梯 + QAT 点的落点
@@ -394,13 +569,20 @@ def main(argv=()):
                     continue
                 pred, seg, extrap, rising = interp(rungs, bq)
                 d = rec["score"] - pred
-                usable = rising and not extrap
+                gs = next((pp["graph"].get("same") for pp in pairs
+                           if pp["qat"] == q and pp["native"] in native), None)
+                usable = rising and not extrap and gs is not False
                 placement.append({"family": fam, "bench": bench, "qat": q, "bpw": bq,
                                   "score": rec["score"], "pred": pred, "resid": d,
                                   "segment": seg, "extrapolated": extrap,
-                                  "segment_rising": rising, "usable": usable})
-                tag = ("外推" if extrap else "段内插值") + ("·段不上升→不可用" if not rising else
-                                                          "" if usable else "·不可用于结论")
+                                  "segment_rising": rising, "graph_same": gs, "usable": usable})
+                tag = ("外推" if extrap else "段内插值")
+                if not rising:
+                    tag += "·段不上升→不可用"
+                elif gs is False:
+                    tag += "·图结构不同→不可用于归因"
+                elif not usable:
+                    tag += "·不可用于结论"
                 print(f"     QAT {file_of(q):<38} {bq:.3f} -> {rec['score']:.4f}"
                       f"   原生插值 {pred:.4f}（{tag} {seg}）残差 {d:+.4f}")
 
@@ -483,7 +665,7 @@ def main(argv=()):
 
     # E3 分配轮廓：4-bit 的 QAT 文件均匀 Q4_0；2-bit 的 QAT 文件把 embedding 压到 ~2.06，
     #    而原生 Q2 保持 embedding 5.5 以下不压、改压 attn —— 两侧的比特落在不同的层上。
-    q4_uni, nat_spread, q2_inverted = [], [], []
+    q4_uni, nat_spread, q2_pat = [], [], []
     for p in pairs:
         if p["state"] != "MATCHED":
             continue
@@ -491,23 +673,63 @@ def main(argv=()):
         if not (pq and pn):
             continue
         sq, sn = uniform_spread(pq), uniform_spread(pn)
-        eq = pq["classes"]["embed"]["bits"]
-        en = pn["classes"]["embed"]["bits"]
-        aq = pq["classes"]["attn"]["bits"]
-        an_ = pn["classes"]["attn"]["bits"]
-        print(f"     {p['family']} {p['quant']}: QAT spread {sq:.3f} / 原生 spread {sn:.3f}"
-              f"；embed {eq:.2f}vs{en:.2f} attn {aq:.2f}vs{an_:.2f}")
+        eq, en = pq["classes"]["embed"]["bits"], pn["classes"]["embed"]["bits"]
+        aq, an_ = pq["classes"]["attn"]["bits"], pn["classes"]["attn"]["bits"]
+        oq, on = pq["classes"]["other"]["bits"], pn["classes"]["other"]["bits"]
+        share = pq["classes"]["other"]["params"] / pq["n_params"]
+        print(f"     {p['family']} {p['quant']}: QAT spread {sq:.3f} / 原生 {sn:.3f}；"
+              f"token_embd {eq:.2f}vs{en:.2f}  attn {aq:.2f}vs{an_:.2f}  "
+              f"other {oq:.2f}vs{on:.2f}（占 {share:.1%} 参数）")
         if "Q4_K_XL" in p["quant"]:
             q4_uni.append(sq <= 0.011)
             nat_spread.append(sn)
         elif "Q2_K_XL" in p["quant"]:
-            q2_inverted.append(eq < en and aq > an_)
-    check("E3a-4-bit 的 QAT 文件在 attn/embed/ffn 上均匀 Q4_0，原生对照不均匀",
+            # 2-bit 的分配模式：token_embd 被压、attn 反而更高、而占一半参数的 other 基本没动
+            q2_pat.append(eq < en - 1.0 and aq > an_ + 1.0)
+    check("E3a-4-bit 的 QAT 文件在装权重的大桶上均匀（Q4_0），原生对照不均匀",
           bool(q4_uni) and all(q4_uni) and bool(nat_spread) and all(v > 0.4 for v in nat_spread),
           f"4-bit 对 {len(q4_uni)} 个全部均匀={all(q4_uni)}；原生 spread 最小 {min(nat_spread):.3f}")
-    check("E3b-2-bit 的 QAT 文件把 embedding 压得更低而 attn 保持 4.50，原生 Q2 方向相反",
-          bool(q2_inverted) and all(q2_inverted),
-          f"2-bit 对 {len(q2_inverted)} 个方向全部相反={all(q2_inverted)}")
+    check("E3b-2-bit 的共性：token_embd 被压（<原生−1）、attn 更高（>原生+1）",
+          bool(q2_pat) and all(q2_pat),
+          f"2-bit 对 {len(q2_pat)} 个全部符合该模式={all(q2_pat)}")
+    other_d = [round(pq["classes"]["other"]["bits"] - pn["classes"]["other"]["bits"], 3)
+               for pq, pn in [(profile_of(p["qat"]), profile_of(p["native"])) for p in pairs
+                              if p["state"] == "MATCHED" and "Q2_K_XL" in p["quant"]
+                              and profile_of(p["qat"]) and profile_of(p["native"])]]
+    check("E3c-2-bit 的 other 桶（占一半参数）两族方向不一致：E2B 几乎没动、E4B 被压 2.8 比特",
+          len(other_d) == 2 and abs(other_d[0]) < 0.5 and other_d[1] < -2.0,
+          f"两族的 other Δ（比特/参数）：{other_d}")
+
+    # E10 图结构：每个 QAT 文件与它的同族同档原生文件的张量清单差集（夹具里冻结的）
+    want_graph = {"gemma-4-12B-it-qat-UD-Q4_K_XL.gguf": 0,
+                  "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf": 0,
+                  "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf": 0,
+                  "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf": 60,
+                  "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf": 60,
+                  "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf": 54,
+                  "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf": 54}
+    got_graph, graph_lines = {}, []
+    for q, exp in want_graph.items():
+        d = (FIX.get(q) or {}).get("tensor_diff")
+        if d is None:
+            unmeasured(f"graph:{q}", "夹具里没有该文件的张量差集")
+            continue
+        got_graph[q] = len(d.get("missing") or [])
+        graph_lines.append(f"{q}: 缺 {got_graph[q]} 个 / 多 {len(d.get('extra') or [])} 个"
+                           f"（vs {d.get('native')}）")
+    check("E10-12B/26B-A4B/31B 的 QAT 与原生同图（缺 0 个张量）；E2B 缺 60、E4B 缺 54",
+          got_graph == want_graph,
+          "；".join(graph_lines))
+
+    # E11 承重结论只取「图结构一致 且 段内上升 且 不外推」的落点：干净后只剩 12B
+    clean = [pl for pl in placement if pl["usable"]]
+    clean_12b = [(SHORT[pl["bench"]], pl["resid"]) for pl in clean if pl["family"] == "gemma-4-12b"]
+    check("E11-干净落点只来自 12B（6 列：HE/MBPP/MBPP+/MMLU/TQA/IFEval）；非 MMLU 的 5 列残差在 ±0.05 内",
+          sorted({pl["family"] for pl in clean}) == ["gemma-4-12b"]
+          and len(clean_12b) == 6
+          and all(abs(r) <= 0.05 for b, r in clean_12b if b != "MMLU"),
+          f"可用落点来自 {sorted({pl['family'] for pl in clean})}，共 {len(clean)} 列；"
+          "12B 逐列残差 " + ", ".join(f"{b} {r:+.3f}" for b, r in clean_12b))
 
     # E4 4-bit 配对里区间不含 0 的格
     sig4 = sorted({(r["family"], SHORT[r["bench"]]) for r in pair_rows
@@ -551,33 +773,34 @@ def main(argv=()):
 
     cc.close()
 
-    if SELFTEST:
-        # 负控：把一条已知成立的预期按相反方向重算，证明这套判定能翻红
-        print("\n== 负控（A09_SELFTEST=1）")
-        results.append(("SELFTEST", False, "负控：故意把 E4 的预期写成相反方向时不成立"))
-        print("  FAIL SELFTEST: 负控：E4 的预期写成「不跨 0 的格为空」时应当不成立")
-        results[-1] = ("SELFTEST", False, "负控生效")
-
-    check("E9-夹具与本机 gguf 头一致（两份都在时逐类差 ≤0.005）",
-          not DRIFT,
-          "无漂移（夹具 " + ("存在" if FIX else "缺失") + f"，本机文件 {len(_SOURCE)} 个已比对)"
-          if not DRIFT else f"{len(DRIFT)} 处漂移：{DRIFT[:3]}")
+    if LIVE_COMPARED[0]:
+        check("E9-夹具与本机 gguf 头一致（两份都在时逐类差 ≤0.005）",
+              not DRIFT,
+              f"无漂移（夹具 {'存在' if FIX else '缺失'}，{LIVE_COMPARED[0]} 个文件逐类比对过）"
+              if not DRIFT else f"{len(DRIFT)} 处漂移：{DRIFT[:3]}")
+    else:
+        unmeasured("E9-夹具与本机 gguf 头一致", "本次没有本机文件参与比对（A09_NO_GGUF 或负控模式）")
 
     bad = [r for r in results if r[1] is False]
     unk = [r for r in results if r[1] is None]
     print(f"\n汇总：{len(results) - len(bad) - len(unk)} 条成立，{len(bad)} 条不成立，"
           f"{len(unk)} 条未测")
     if SELFTEST:
-        print("SELFTEST：按设计退出 1")
-        return 1
+        # 负控的判据是「变异必须被抓住」，不是「无条件退出 1」
+        caught = [r[0] for r in bad]
+        print(f"\n== 负控（真变异：{MUTATION or '夹具缺失，未变异'}）")
+        if not MUTATION:
+            print("  SELFTEST 失败：没有夹具可变异，负控没有跑成 → 退出 2")
+            return 2
+        if caught:
+            print("  变异被抓住的预期：" + ", ".join(caught))
+            print("SELFTEST：变异被抓住 → 退出 1（按约定，红了才算负控成立）")
+            return 1
+        print("  SELFTEST 失败：变异没有被任何预期抓住，判定装置有洞 → 退出 2")
+        return 2
     if bad:
         return 1
     return 0
-
-
-def uniform_spread(prof):
-    vals = [prof["classes"][k]["bits"] for k in UNIFORM_CLASSES if k in prof["classes"]]
-    return (max(vals) - min(vals)) if vals else float("nan")
 
 
 def interp(rungs, x):
@@ -607,16 +830,30 @@ def interp(rungs, x):
 
 
 def alloc_diff(q, n):
-    """一对文件的分配轮廓差：逐类比特/参数与装权重三类的加权差。"""
+    """一对文件的分配轮廓差：逐类比特/参数、参数占比、以及它对总位宽的贡献。
+
+    贡献 = Δ比特/参数 × 该类在 QAT 文件里的参数占比，逐类相加必须回到实测 Δbpw（残差 <0.01）。
+    没有这一列就会把「QAT 压了哪一层」说错——`other`（E 系列的 `per_layer_token_embd`）
+    占一半参数，漏掉它等于把一半的分配差丢掉。
+    """
     pq, pn = profile_of(q), profile_of(n)
     if not (pq and pn):
         print("     分配轮廓：未测（文件不在盘上）")
         return
-    parts = []
+    dbpw = pq["bpw_file"] - pn["bpw_file"]
+    print("     分配轮廓（QAT vs 原生；参数占比取 QAT 文件，贡献 = Δ比特/参数 × 占比）：")
+    tot = 0.0
     for k in CLASS_ORDER:
-        if k in pq["classes"] and k in pn["classes"]:
-            parts.append(f"{k} {pq['classes'][k]['bits']:.2f}vs{pn['classes'][k]['bits']:.2f}")
-    print("     分配轮廓（QAT vs 原生，比特/参数）：" + "  ".join(parts))
+        a, b = pq["classes"].get(k), pn["classes"].get(k)
+        if not a or not b:
+            continue
+        share = a["params"] / pq["n_params"]
+        d = a["bits"] - b["bits"]
+        c = d * share
+        tot += c
+        print(f"       {k:<11} {a['bits']:7.2f} vs {b['bits']:7.2f}  Δ={d:+7.3f}"
+              f"  占比 {share * 100:5.1f}%  贡献 {c:+.4f}")
+    print(f"       贡献合计 {tot:+.4f} vs 实测 Δbpw {dbpw:+.4f}（残差 {tot - dbpw:+.4f}）")
 
 
 def declared_pairs():

@@ -34,9 +34,25 @@
     "params": 3840
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 2,
+   "general.finetune": "qat-it",
+   "general.license": "gemma",
+   "general.name": "Gemma-4 12B IT (smart Q4_0, QAT-lossless)",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 1
+  },
   "n_bytes": 6716356800,
   "n_params": 11907350576,
-  "path": "/home/z/hf/models--unsloth--gemma-4-12B-it-qat-GGUF/snapshots/980b060c40a8539ac159e0501a3e0f66a6365af3/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf"
+  "n_tensors": 667,
+  "path": "/home/z/hf/models--unsloth--gemma-4-12B-it-qat-GGUF/snapshots/980b060c40a8539ac159e0501a3e0f66a6365af3/gemma-4-12B-it-qat-UD-Q4_K_XL.gguf",
+  "tensor_diff": {
+   "extra": [],
+   "missing": [],
+   "native": "gemma-4-12b-it-UD-Q4_K_XL.gguf"
+  },
+  "tensor_sig": "5b302dceecdbf007"
  },
  "gemma-4-12b-it-UD-Q2_K_XL.gguf": {
   "bpw_data": 3.1211615839133753,
@@ -73,9 +89,20 @@
     "params": 3840
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 10,
+   "general.finetune": "it",
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-12B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 4661419840,
   "n_params": 11907350576,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf"
+  "n_tensors": 667,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q2_K_XL.gguf",
+  "tensor_sig": "5b302dceecdbf007"
  },
  "gemma-4-12b-it-UD-Q3_K_XL.gguf": {
   "bpw_data": 4.035732550014743,
@@ -112,9 +139,20 @@
     "params": 3840
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 12,
+   "general.finetune": "it",
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-12B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 6022684480,
   "n_params": 11907350576,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf"
+  "n_tensors": 667,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q3_K_XL.gguf",
+  "tensor_sig": "5b302dceecdbf007"
  },
  "gemma-4-12b-it-UD-Q4_K_XL.gguf": {
   "bpw_data": 4.93852876579654,
@@ -151,9 +189,20 @@
     "params": 3840
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 15,
+   "general.finetune": "it",
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-12B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 7366423360,
   "n_params": 11907350576,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf"
+  "n_tensors": 667,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-12B-it-GGUF/gemma-4-12b-it-UD-Q4_K_XL.gguf",
+  "tensor_sig": "5b302dceecdbf007"
  },
  "gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf": {
   "bpw_data": 3.3388183045303816,
@@ -200,9 +249,20 @@
     "params": 10897920
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 10,
+   "general.finetune": "it",
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-26B-A4B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 10546934240,
   "n_params": 25233142046,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf"
+  "n_tensors": 658,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q2_K_XL.gguf",
+  "tensor_sig": "0f4be3050d6fa701"
  },
  "gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf": {
   "bpw_data": 4.087150272605412,
@@ -249,9 +309,20 @@
     "params": 10897920
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 12,
+   "general.finetune": "it",
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-26B-A4B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 12907280096,
   "n_params": 25233142046,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf"
+  "n_tensors": 658,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-26B-A4B-it-GGUF/gemma-4-26B-A4B-it-UD-Q3_K_XL.gguf",
+  "tensor_sig": "0f4be3050d6fa701"
  },
  "gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf": {
   "bpw_data": 4.5125487988940405,
@@ -298,9 +369,25 @@
     "params": 10897920
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 2,
+   "general.finetune": "qat-it",
+   "general.license": "gemma",
+   "general.name": "Gemma-4 26B-A4B IT (smart Q4_0, QAT-lossless)",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 1
+  },
   "n_bytes": 14249047104,
   "n_params": 25233142046,
-  "path": "/home/z/hf/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf"
+  "n_tensors": 658,
+  "path": "/home/z/hf/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+  "tensor_diff": {
+   "extra": [],
+   "missing": [],
+   "native": "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf"
+  },
+  "tensor_sig": "0f4be3050d6fa701"
  },
  "gemma-4-31B-it-qat-UD-Q4_K_XL.gguf": {
   "bpw_data": 4.501193496352491,
@@ -337,9 +424,25 @@
     "params": 5376
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 2,
+   "general.finetune": "qat-it",
+   "general.license": "gemma",
+   "general.name": "Gemma-4 31B IT (smart Q4_0, QAT-lossless)",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 1
+  },
   "n_bytes": 17287670048,
   "n_params": 30697345596,
-  "path": "/home/z/hf/models--unsloth--gemma-4-31B-it-qat-GGUF/snapshots/43cc1aeb31adf47ec06a854507ce552cd9862e6f/gemma-4-31B-it-qat-UD-Q4_K_XL.gguf"
+  "n_tensors": 833,
+  "path": "/home/z/hf/models--unsloth--gemma-4-31B-it-qat-GGUF/snapshots/43cc1aeb31adf47ec06a854507ce552cd9862e6f/gemma-4-31B-it-qat-UD-Q4_K_XL.gguf",
+  "tensor_diff": {
+   "extra": [],
+   "missing": [],
+   "native": "gemma-4-31B-it-UD-Q4_K_XL.gguf"
+  },
+  "tensor_sig": "9a825312f3dfb12e"
  },
  "gemma-4-E2B-it-UD-Q2_K_XL.gguf": {
   "bpw_data": 4.110288376590949,
@@ -376,9 +479,19 @@
     "params": 1536
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 10,
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-E2B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 2403614816,
   "n_params": 4647450147,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf"
+  "n_tensors": 601,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q2_K_XL.gguf",
+  "tensor_sig": "139de754268aedec"
  },
  "gemma-4-E2B-it-UD-Q3_K_XL.gguf": {
   "bpw_data": 5.005691072773976,
@@ -415,9 +528,19 @@
     "params": 1536
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 12,
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-E2B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 2923782240,
   "n_params": 4647450147,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf"
+  "n_tensors": 601,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q3_K_XL.gguf",
+  "tensor_sig": "139de754268aedec"
  },
  "gemma-4-E2B-it-UD-Q4_K_XL.gguf": {
   "bpw_data": 5.454478236063153,
@@ -454,9 +577,19 @@
     "params": 1536
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 15,
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-E2B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 3184496736,
   "n_params": 4647450147,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q4_K_XL.gguf"
+  "n_tensors": 601,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E2B-it-GGUF/gemma-4-E2B-it-UD-Q4_K_XL.gguf",
+  "tensor_sig": "139de754268aedec"
  },
  "gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf": {
   "bpw_data": 3.7512602625022406,
@@ -493,9 +626,86 @@
     "params": 1536
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 2,
+   "general.finetune": "qat-mobile",
+   "general.license": "gemma",
+   "general.name": "Gemma-4 E2B IT (mobile wNa8o8 -> gguf)",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 1
+  },
   "n_bytes": 2186186784,
   "n_params": 4628569635,
-  "path": "/home/z/hf/gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf"
+  "n_tensors": 541,
+  "path": "/home/z/hf/gemma-4-E2B-it-qat-UD-Q2_K_XL.gguf",
+  "tensor_diff": {
+   "extra": [],
+   "missing": [
+    "blk.15.attn_k.weight",
+    "blk.15.attn_k_norm.weight",
+    "blk.15.attn_v.weight",
+    "blk.16.attn_k.weight",
+    "blk.16.attn_k_norm.weight",
+    "blk.16.attn_v.weight",
+    "blk.17.attn_k.weight",
+    "blk.17.attn_k_norm.weight",
+    "blk.17.attn_v.weight",
+    "blk.18.attn_k.weight",
+    "blk.18.attn_k_norm.weight",
+    "blk.18.attn_v.weight",
+    "blk.19.attn_k.weight",
+    "blk.19.attn_k_norm.weight",
+    "blk.19.attn_v.weight",
+    "blk.20.attn_k.weight",
+    "blk.20.attn_k_norm.weight",
+    "blk.20.attn_v.weight",
+    "blk.21.attn_k.weight",
+    "blk.21.attn_k_norm.weight",
+    "blk.21.attn_v.weight",
+    "blk.22.attn_k.weight",
+    "blk.22.attn_k_norm.weight",
+    "blk.22.attn_v.weight",
+    "blk.23.attn_k.weight",
+    "blk.23.attn_k_norm.weight",
+    "blk.23.attn_v.weight",
+    "blk.24.attn_k.weight",
+    "blk.24.attn_k_norm.weight",
+    "blk.24.attn_v.weight",
+    "blk.25.attn_k.weight",
+    "blk.25.attn_k_norm.weight",
+    "blk.25.attn_v.weight",
+    "blk.26.attn_k.weight",
+    "blk.26.attn_k_norm.weight",
+    "blk.26.attn_v.weight",
+    "blk.27.attn_k.weight",
+    "blk.27.attn_k_norm.weight",
+    "blk.27.attn_v.weight",
+    "blk.28.attn_k.weight",
+    "blk.28.attn_k_norm.weight",
+    "blk.28.attn_v.weight",
+    "blk.29.attn_k.weight",
+    "blk.29.attn_k_norm.weight",
+    "blk.29.attn_v.weight",
+    "blk.30.attn_k.weight",
+    "blk.30.attn_k_norm.weight",
+    "blk.30.attn_v.weight",
+    "blk.31.attn_k.weight",
+    "blk.31.attn_k_norm.weight",
+    "blk.31.attn_v.weight",
+    "blk.32.attn_k.weight",
+    "blk.32.attn_k_norm.weight",
+    "blk.32.attn_v.weight",
+    "blk.33.attn_k.weight",
+    "blk.33.attn_k_norm.weight",
+    "blk.33.attn_v.weight",
+    "blk.34.attn_k.weight",
+    "blk.34.attn_k_norm.weight",
+    "blk.34.attn_v.weight"
+   ],
+   "native": "gemma-4-E2B-it-UD-Q2_K_XL.gguf"
+  },
+  "tensor_sig": "ceee2a08d3913159"
  },
  "gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf": {
   "bpw_data": 4.501702366631889,
@@ -532,9 +742,86 @@
     "params": 1536
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 2,
+   "general.finetune": "qat-it",
+   "general.license": "gemma",
+   "general.name": "Gemma-4 E2B IT (smart Q4_0, QAT-lossless)",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 1
+  },
   "n_bytes": 2620370976,
   "n_params": 4628569635,
-  "path": "/home/z/hf/gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf"
+  "n_tensors": 541,
+  "path": "/home/z/hf/gemma-4-E2B-it-qat-UD-Q4_K_XL.gguf",
+  "tensor_diff": {
+   "extra": [],
+   "missing": [
+    "blk.15.attn_k.weight",
+    "blk.15.attn_k_norm.weight",
+    "blk.15.attn_v.weight",
+    "blk.16.attn_k.weight",
+    "blk.16.attn_k_norm.weight",
+    "blk.16.attn_v.weight",
+    "blk.17.attn_k.weight",
+    "blk.17.attn_k_norm.weight",
+    "blk.17.attn_v.weight",
+    "blk.18.attn_k.weight",
+    "blk.18.attn_k_norm.weight",
+    "blk.18.attn_v.weight",
+    "blk.19.attn_k.weight",
+    "blk.19.attn_k_norm.weight",
+    "blk.19.attn_v.weight",
+    "blk.20.attn_k.weight",
+    "blk.20.attn_k_norm.weight",
+    "blk.20.attn_v.weight",
+    "blk.21.attn_k.weight",
+    "blk.21.attn_k_norm.weight",
+    "blk.21.attn_v.weight",
+    "blk.22.attn_k.weight",
+    "blk.22.attn_k_norm.weight",
+    "blk.22.attn_v.weight",
+    "blk.23.attn_k.weight",
+    "blk.23.attn_k_norm.weight",
+    "blk.23.attn_v.weight",
+    "blk.24.attn_k.weight",
+    "blk.24.attn_k_norm.weight",
+    "blk.24.attn_v.weight",
+    "blk.25.attn_k.weight",
+    "blk.25.attn_k_norm.weight",
+    "blk.25.attn_v.weight",
+    "blk.26.attn_k.weight",
+    "blk.26.attn_k_norm.weight",
+    "blk.26.attn_v.weight",
+    "blk.27.attn_k.weight",
+    "blk.27.attn_k_norm.weight",
+    "blk.27.attn_v.weight",
+    "blk.28.attn_k.weight",
+    "blk.28.attn_k_norm.weight",
+    "blk.28.attn_v.weight",
+    "blk.29.attn_k.weight",
+    "blk.29.attn_k_norm.weight",
+    "blk.29.attn_v.weight",
+    "blk.30.attn_k.weight",
+    "blk.30.attn_k_norm.weight",
+    "blk.30.attn_v.weight",
+    "blk.31.attn_k.weight",
+    "blk.31.attn_k_norm.weight",
+    "blk.31.attn_v.weight",
+    "blk.32.attn_k.weight",
+    "blk.32.attn_k_norm.weight",
+    "blk.32.attn_v.weight",
+    "blk.33.attn_k.weight",
+    "blk.33.attn_k_norm.weight",
+    "blk.33.attn_v.weight",
+    "blk.34.attn_k.weight",
+    "blk.34.attn_k_norm.weight",
+    "blk.34.attn_v.weight"
+   ],
+   "native": "gemma-4-E2B-it-UD-Q4_K_XL.gguf"
+  },
+  "tensor_sig": "ceee2a08d3913159"
  },
  "gemma-4-E4B-it-UD-Q2_K_XL.gguf": {
   "bpw_data": 3.9814401827626678,
@@ -571,9 +858,19 @@
     "params": 2560
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 10,
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-E4B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 3757419648,
   "n_params": 7518069290,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf"
+  "n_tensors": 720,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q2_K_XL.gguf",
+  "tensor_sig": "ca70d21d56f5de74"
  },
  "gemma-4-E4B-it-UD-Q3_K_XL.gguf": {
   "bpw_data": 4.8657321720428035,
@@ -610,9 +907,19 @@
     "params": 2560
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 12,
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-E4B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 4588440704,
   "n_params": 7518069290,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf"
+  "n_tensors": 720,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q3_K_XL.gguf",
+  "tensor_sig": "ca70d21d56f5de74"
  },
  "gemma-4-E4B-it-UD-Q4_K_XL.gguf": {
   "bpw_data": 5.438077245494501,
@@ -649,9 +956,19 @@
     "params": 2560
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 15,
+   "general.license": "apache-2.0",
+   "general.name": "Gemma-4-E4B-It",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 106
+  },
   "n_bytes": 5126306944,
   "n_params": 7518069290,
-  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q4_K_XL.gguf"
+  "n_tensors": 720,
+  "path": "/home/z/hf/mscache/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-UD-Q4_K_XL.gguf",
+  "tensor_sig": "ca70d21d56f5de74"
  },
  "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf": {
   "bpw_data": 3.43422578378623,
@@ -688,9 +1005,80 @@
     "params": 2560
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 2,
+   "general.finetune": "qat-mobile",
+   "general.license": "gemma",
+   "general.name": "Gemma-4 E4B IT (mobile wNa8o8 -> gguf, faithful)",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 1
+  },
   "n_bytes": 3219532192,
   "n_params": 7463013674,
-  "path": "/home/z/hf/gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf"
+  "n_tensors": 666,
+  "path": "/home/z/hf/gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
+  "tensor_diff": {
+   "extra": [],
+   "missing": [
+    "blk.24.attn_k.weight",
+    "blk.24.attn_k_norm.weight",
+    "blk.24.attn_v.weight",
+    "blk.25.attn_k.weight",
+    "blk.25.attn_k_norm.weight",
+    "blk.25.attn_v.weight",
+    "blk.26.attn_k.weight",
+    "blk.26.attn_k_norm.weight",
+    "blk.26.attn_v.weight",
+    "blk.27.attn_k.weight",
+    "blk.27.attn_k_norm.weight",
+    "blk.27.attn_v.weight",
+    "blk.28.attn_k.weight",
+    "blk.28.attn_k_norm.weight",
+    "blk.28.attn_v.weight",
+    "blk.29.attn_k.weight",
+    "blk.29.attn_k_norm.weight",
+    "blk.29.attn_v.weight",
+    "blk.30.attn_k.weight",
+    "blk.30.attn_k_norm.weight",
+    "blk.30.attn_v.weight",
+    "blk.31.attn_k.weight",
+    "blk.31.attn_k_norm.weight",
+    "blk.31.attn_v.weight",
+    "blk.32.attn_k.weight",
+    "blk.32.attn_k_norm.weight",
+    "blk.32.attn_v.weight",
+    "blk.33.attn_k.weight",
+    "blk.33.attn_k_norm.weight",
+    "blk.33.attn_v.weight",
+    "blk.34.attn_k.weight",
+    "blk.34.attn_k_norm.weight",
+    "blk.34.attn_v.weight",
+    "blk.35.attn_k.weight",
+    "blk.35.attn_k_norm.weight",
+    "blk.35.attn_v.weight",
+    "blk.36.attn_k.weight",
+    "blk.36.attn_k_norm.weight",
+    "blk.36.attn_v.weight",
+    "blk.37.attn_k.weight",
+    "blk.37.attn_k_norm.weight",
+    "blk.37.attn_v.weight",
+    "blk.38.attn_k.weight",
+    "blk.38.attn_k_norm.weight",
+    "blk.38.attn_v.weight",
+    "blk.39.attn_k.weight",
+    "blk.39.attn_k_norm.weight",
+    "blk.39.attn_v.weight",
+    "blk.40.attn_k.weight",
+    "blk.40.attn_k_norm.weight",
+    "blk.40.attn_v.weight",
+    "blk.41.attn_k.weight",
+    "blk.41.attn_k_norm.weight",
+    "blk.41.attn_v.weight"
+   ],
+   "native": "gemma-4-E4B-it-UD-Q2_K_XL.gguf"
+  },
+  "tensor_sig": "24112be759d3ff2c"
  },
  "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf": {
   "bpw_data": 4.502066339909536,
@@ -727,8 +1115,79 @@
     "params": 2560
    }
   },
+  "meta": {
+   "general.architecture": "gemma4",
+   "general.file_type": 2,
+   "general.finetune": "qat-it",
+   "general.license": "gemma",
+   "general.name": "Gemma-4 E4B IT (smart Q4_0, QAT-lossless)",
+   "tokenizer.ggml.bos_token_id": 2,
+   "tokenizer.ggml.eos_token_id": 1
+  },
   "n_bytes": 4215695776,
   "n_params": 7463013674,
-  "path": "/home/z/hf/gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf"
+  "n_tensors": 666,
+  "path": "/home/z/hf/gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
+  "tensor_diff": {
+   "extra": [],
+   "missing": [
+    "blk.24.attn_k.weight",
+    "blk.24.attn_k_norm.weight",
+    "blk.24.attn_v.weight",
+    "blk.25.attn_k.weight",
+    "blk.25.attn_k_norm.weight",
+    "blk.25.attn_v.weight",
+    "blk.26.attn_k.weight",
+    "blk.26.attn_k_norm.weight",
+    "blk.26.attn_v.weight",
+    "blk.27.attn_k.weight",
+    "blk.27.attn_k_norm.weight",
+    "blk.27.attn_v.weight",
+    "blk.28.attn_k.weight",
+    "blk.28.attn_k_norm.weight",
+    "blk.28.attn_v.weight",
+    "blk.29.attn_k.weight",
+    "blk.29.attn_k_norm.weight",
+    "blk.29.attn_v.weight",
+    "blk.30.attn_k.weight",
+    "blk.30.attn_k_norm.weight",
+    "blk.30.attn_v.weight",
+    "blk.31.attn_k.weight",
+    "blk.31.attn_k_norm.weight",
+    "blk.31.attn_v.weight",
+    "blk.32.attn_k.weight",
+    "blk.32.attn_k_norm.weight",
+    "blk.32.attn_v.weight",
+    "blk.33.attn_k.weight",
+    "blk.33.attn_k_norm.weight",
+    "blk.33.attn_v.weight",
+    "blk.34.attn_k.weight",
+    "blk.34.attn_k_norm.weight",
+    "blk.34.attn_v.weight",
+    "blk.35.attn_k.weight",
+    "blk.35.attn_k_norm.weight",
+    "blk.35.attn_v.weight",
+    "blk.36.attn_k.weight",
+    "blk.36.attn_k_norm.weight",
+    "blk.36.attn_v.weight",
+    "blk.37.attn_k.weight",
+    "blk.37.attn_k_norm.weight",
+    "blk.37.attn_v.weight",
+    "blk.38.attn_k.weight",
+    "blk.38.attn_k_norm.weight",
+    "blk.38.attn_v.weight",
+    "blk.39.attn_k.weight",
+    "blk.39.attn_k_norm.weight",
+    "blk.39.attn_v.weight",
+    "blk.40.attn_k.weight",
+    "blk.40.attn_k_norm.weight",
+    "blk.40.attn_v.weight",
+    "blk.41.attn_k.weight",
+    "blk.41.attn_k_norm.weight",
+    "blk.41.attn_v.weight"
+   ],
+   "native": "gemma-4-E4B-it-UD-Q4_K_XL.gguf"
+  },
+  "tensor_sig": "24112be759d3ff2c"
  }
 }

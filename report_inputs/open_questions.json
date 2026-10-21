@@ -75,6 +75,36 @@
    "text": "**KV 效应到底靠 K 还是靠 V 分不开。** 现有两个可用证据都不指向同一边：m30 的 16k 格把 K、V 分开看，f16/f16 与 f16/q8_0 同哈希、q8_0/f16 与 q8_0/q8_0 同哈希（像 K 在起作用，但那一轮是填充伪像、不可用）；针检索的可用一轮只跑了 `f16/f16` 与 `q4_0/q4_0`。要分开就得在可用设计下补 `q8_0/f16` 与 `f16/q8_0` 两格（每格 ~1 分钟）。"
   },
   {
+   "subproject": "a07-投机解码",
+   "path": "docs/subprojects/a07-投机解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "投机解码 + 采样（`temp>0`）没有任何一格：全部投机格都是贪心。温度与投机是否交互（采样接受/拒绝路径不同）未测。"
+  },
+  {
+   "subproject": "a07-投机解码",
+   "path": "docs/subprojects/a07-投机解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "`-np>1`（多槽）与投机解码同时使用的行为未测；全部投机格都是 `-np 1`。"
+  },
+  {
+   "subproject": "a07-投机解码",
+   "path": "docs/subprojects/a07-投机解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "gsm8k / ifeval 的逐题完成物没有落盘（`lm_eval` 未带 `--log_samples`），所以「字节同一性」只在 humanEval 上可判，"
+  },
+  {
+   "subproject": "a07-投机解码",
+   "path": "docs/subprojects/a07-投机解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "9B 与 35B 的 MTP 头**权重**开销 UNKNOWN：普通（非 MTP）仓库不在本机磁盘上，文件字节差算不出来。"
+  },
+  {
+   "subproject": "a07-投机解码",
+   "path": "docs/subprojects/a07-投机解码/PLAN.md",
+   "heading": "未解问题",
+   "text": "各投机格的 tok/s 只存了 3 次重复的均值，逐次值未落盘；同卡竞争负载没有记录 → 速度结论没有 CI。"
+  },
+  {
    "subproject": "a09-量化感知训练 QAT",
    "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
    "heading": "未解问题",
@@ -96,7 +126,25 @@
    "subproject": "a09-量化感知训练 QAT",
    "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
    "heading": "未解问题",
-   "text": "**26B-A4B Q4_K_XL 的原生对手没跑**（`m145` 从未产生），所以那一对只有 QAT 一侧——报告第十节里它是「未测」，不是 0 分（`RESULT.md::qat-empty-bar-is-unmeasured`）。补测已定价 **50–60 GPU 分钟**，**meta 决定不买**；将来谁需要谁买。"
+   "text": "**E2B/E4B 的 QAT 文件与原生不是同一张图，所以那四对的 QAT 效应不可识别。** 缺 60/54 个 KV 投影张量（参数少 18.88 M/55.06 M），差里同时含「图结构」。要判定，需要一份**同图**的 QAT 文件（或同图的原生文件），本库没有；在这之前它们的同比特读数只作观察。"
+  },
+  {
+   "subproject": "a09-量化感知训练 QAT",
+   "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
+   "heading": "未解问题",
+   "text": "**26B-A4B Q4_K_XL 的原生对手没跑**（`m145` 从未产生），所以那一对只有 QAT 一侧——报告第十节里它是「未测」，不是 0 分（`RESULT.md::qat-empty-bar-is-unmeasured`）。补测已定价 **≈74 GPU 分钟**（`timings_s` + mtime 两条独立估计），**meta 决定不买**；将来谁需要谁买。"
+  },
+  {
+   "subproject": "a10-第三方量化方案",
+   "path": "docs/subprojects/a10-第三方量化方案/PLAN.md",
+   "heading": "未解问题",
+   "text": "**「方案」标签能否在钉住比特后存活，取决于是否存在同分配对照臂。** 本库没有（`WP4` 会打印计数），唯一的补法是要 GPU 的受控臂（见 GPU 队列，未买）。"
+  },
+  {
+   "subproject": "a10-第三方量化方案",
+   "path": "docs/subprojects/a10-第三方量化方案/PLAN.md",
+   "heading": "未解问题",
+   "text": "**`-mtp` 后缀是否意味着结构性差异**：待 `WP3` 用张量集合证明（初步读数：五个文件张量数、张量名、元素数逐项相同，且库内 `spec_type = none`、`spec_draft_n_max = 0`，所以解码时没有草稿模型参与）。若证明不成立，`WP2` 的所有差都要降级。"
   },
   {
    "subproject": "i02-测量基础设施",
@@ -149,10 +197,22 @@
    "count": 4
   },
   {
+   "subproject": "a07-投机解码",
+   "path": "docs/subprojects/a07-投机解码/PLAN.md",
+   "heading": "未解问题",
+   "count": 5
+  },
+  {
    "subproject": "a09-量化感知训练 QAT",
    "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
    "heading": "未解问题",
-   "count": 4
+   "count": 5
+  },
+  {
+   "subproject": "a10-第三方量化方案",
+   "path": "docs/subprojects/a10-第三方量化方案/PLAN.md",
+   "heading": "未解问题",
+   "count": 2
   },
   {
    "subproject": "i02-测量基础设施",
@@ -163,6 +223,7 @@
  ],
  "skipped": [
   "docs/subprojects/a06-采样与解码参数/PLAN.md",
+  "docs/subprojects/a08-思考开关/PLAN.md",
   "docs/subprojects/a12-多语言代码 MultiPL-E/PLAN.md",
   "docs/subprojects/a13-工具调用 BFCL/PLAN.md",
   "docs/subprojects/a14-部分给分/PLAN.md",
