@@ -96,7 +96,7 @@
    "subproject": "a09-量化感知训练 QAT",
    "path": "docs/subprojects/a09-量化感知训练 QAT/PLAN.md",
    "heading": "未解问题",
-   "text": "**26B-A4B Q4_K_XL 的原生对手没跑**（`m145` 从未产生），所以那一对只有 QAT 一侧；报告第十节现在会把它画成半空柱。"
+   "text": "**26B-A4B Q4_K_XL 的原生对手没跑**（`m145` 从未产生），所以那一对只有 QAT 一侧——报告第十节里它是「未测」，不是 0 分（`RESULT.md::qat-empty-bar-is-unmeasured`）。补测已定价 **50–60 GPU 分钟**，**meta 决定不买**；将来谁需要谁买。"
   },
   {
    "subproject": "i02-测量基础设施",

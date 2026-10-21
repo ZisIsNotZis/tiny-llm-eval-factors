@@ -26,6 +26,19 @@ QAT 文件与原生阶梯的实测位宽/分配轮廓由本机 gguf 头算一次
 - 状态：current（本层不改 `make_report.py`，建议文本见 `qat-claims` 第 6 条）。
 - 证据：`make_report.py:99-107`（`QAT_PAIRS`）；`.wrapup/mres/m142-qat-gemma31b-q4/`（无 `DONE`/`code.DONE`）；`.wrapup/mres/` 里没有 `m145-*` 目录。
 - 复现：同一条命令的第 6 段（逐对打印两侧行数 `9/9`、`0/0`、`8/0`、`10/10`…）。
+- 空柱怎么读，见 `qat-empty-bar-is-unmeasured`。
+
+### qat-empty-bar-is-unmeasured :: 报告第十节里 31B 与 26B-A4B 的空柱和空单元格是「未测」，不是 0 分
+
+受影响的只有两对，缺的方式不同——这是本节要读者带走的东西：
+
+- **31B（`m142` QAT vs `m143` 原生，标称 `UD-Q4_K_XL`）：整对未测。** QAT 侧起服即 OOM（`allocating 1200.00 MiB … cudaMalloc failed: out of memory` → `failed to initialize the context`），原生侧从未起跑。所以既不能说「QAT 0 分」，也不能说「原生 0 分」，更不能拿 0 去算差。
+- **26B-A4B（`m144` QAT vs `m145` 原生，标称 `UD-Q4_K_XL`）：一侧未测。** QAT 侧 8 个基准有分数，原生侧 0 行（`m145` 从未产生，原生文件在盘上 5.393 比特/参数）。所以差值表里这一对的原生列与 `QAT − 原生` 行是**未测**，不是 0；QAT 那一侧的绝对分数照常可读。
+- **画法上的后果**：`fig_QAT()` 对缺侧取 `np.nan`（柱子不落）、`qat_tables()` 对缺侧输出空串。在 0–1 的纵轴上「什么都不画」与「画到 0」几乎同义，读者最容易被骗的地方就在这里；报告应写「未测」而不是留空，并在图注里点名缺的是哪一侧。
+- **`m145` 已定价、未测**：补它约 **50–60 GPU 分钟**（同尺寸 `m144` 的 `evalplus.json` timings：164 + 378 题约 40 分钟，加 lmeval 面板约 15 分钟），收益只是把 26B-A4B 的落点从「向上外推、不可用」变成段内插值，AC 不依赖它。**meta 已决定不买**，登记为「已定价、未测」，将来谁需要谁买。31B 不是价格问题而是显存问题（24 GB 卡装不下，见 `qat-unmeasured`），换硬件前不重开。
+- 状态：current。
+- 证据：`.wrapup/mres/m142-qat-gemma31b-q4/code.log`（两行 OOM）；`.wrapup/mres/m144-qat-gemma26b-a4b-q4/lmeval_panel.json`（8 个基准）；`.wrapup/mres/` 下没有 `m145-*` 目录；`make_report.py:99-107`（`QAT_PAIRS`）、`fig_QAT()`、`qat_tables()`。
+- 复现：`python3 "docs/subprojects/a09-量化感知训练 QAT/analysis/qat_pairs.py"` 第 6 段（`m142/m143` = `0/0 行`、`m144/m145` = `8/0 行`、其余 `9/9`、`10/10`）。
 
 ## 标称配方不是比特预算
 
