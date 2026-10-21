@@ -1,8 +1,0 @@
-plan4:
-  _text: 假设 B3（跨家族多轮）：BFCL 多轮只在一个锚点（Qwen3.5-2B）跑过；扩到 granite/gemma/MoE 锚点，及其它多轮类别（miss_func / miss_param / long_context）。
-  author: agent
-  origin: .scratch/originals/BACKLOG.md 尚未跑的假设
-  scope: general
-  status: provisional
-  domain:
-    kind: hypothesis
