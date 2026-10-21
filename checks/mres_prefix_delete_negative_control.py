@@ -49,7 +49,9 @@ def run_migrate(db_path: Path):
     env = dict(os.environ, MIGRATE_DB=str(db_path))
     r = subprocess.run([sys.executable, "migrate_db.py"], cwd=str(REPO), env=env,
                        capture_output=True, text=True)
-    if r.returncode != 0:
+    # 退出码 2 = 有 ingester 读不到自己的输入（干净 clone 里 .wrapup/mres 不完整）。
+    # 那不是失败：正确语义正是「读不到就不删、保留现状」，本控制随后逐行核对有没有丢。
+    if r.returncode not in (0, 2):
         print(f"FAIL: migrate_db.py 退出 {r.returncode}：{(r.stdout + r.stderr).strip()[-500:]}")
         sys.exit(1)
     return r.stdout
