@@ -251,3 +251,11 @@
 - evidence: 第四节新增段落由 `report_inputs/build_moe_feasibility.py` 读 `a04` 的 `RESULT.md::third-arm-pinned` 与 `fixtures/pin_feasibility.json` 生成：`Δbpw = +0.048`、`L1_pw = 0.176`，HumanEval+ +0.4695 [+0.3720,+0.5535]、HumanEval +0.4817、MBPP+ +0.3439、MBPP +0.4339、MMLU +0.1952、GSM8K +0.2400 六列不含 0，ARC-c/IFEval +0.0900 跨 0；按本族斜率 `Δbpw` 只值 HumanEval+ 0.0086（全部预算项 +0.0064…+0.0097），远小于观测，方向是均匀更好。适用边界写明「同族 LFM2.5-8B-A1B、同 base、单一家族，不外推」，并记 Tier-1A 桶内结构未测（约 47 GPU 分钟）。库侧核对：`experiments` 3323 行、`a04-uni45` 的 humaneval / humaneval-plus 两格各 164 题、分数 0.6220 / 0.6037，`checks/db_check.py` PASS，备份 `bak18`/`bak19` 在位。
 - producer: `python3 report_inputs/build_moe_feasibility.py --check`；`python3 checks/moe_feasibility_negative_control.py`（第三例：把 +0.4695 改成预算项的 0.0086 → 正文改口成「这个差可由预算解释」）
 
+## res55 :: `.wrapup/variant_panel.py` 新增 `vendor-recommended` 采样臂：五个采样量写进协议串、直传请求体，codegen 显式跳过。
+
+- kind: measured
+- status: current
+- evidence: 臂名 `vendor-recommended`，采样 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0`；`sampling_spec()` 把它们写成协议串的一段 `sampling=temperature=1.0,top_p=1.0,top_k=20,min_p=0.0,presence_penalty=2.0`，面板把它记进 `variant_panel.json` 的 `sampling_spec`，`migrate_db.ingest_variant` 把它接在 `variant-sampling-<label>-{lmeval,evalplus}` 后面，于是五个量随行入库、并落在 23 列测量身份里（不会与 greedy 合并）。lm-eval 一侧走 `--gen_kwargs`（即请求体字段，客户端不重采样）。**evalplus 的 CLI 只接受 `--temperature`**，其余四个量传不进去，所以该臂的 codegen 显式跳过并记 `codegen_skipped`，不用默认值顶替。`mpl_protocol_label` 的白名单加入 `sampling=`，厂商臂与 greedy 的显示标签不同。
+- producer: `python3 checks/vendor_arm_negative_control.py`（协议串逐字含五个量、vendor ≠ greedy、top_k=1 ≠ top_k=200、标签不同）
+- 未验证（硬阻塞）: 服务端是否真按这五个量采样需要模型文件，本机已无 gguf；要跑的命令是 `python3 .wrapup/variant_panel.py --model <X.gguf> --tag a06-vendor-sampling --axis sampling`，证据取 `variant_panel.json` 的 `sampling_spec`、`server.log` 的采样回显与五列分数。`seed` 未固定，所以该臂的协议里不带 seed，重跑不保证逐字节一致——这一点必须随结果一起写。
+

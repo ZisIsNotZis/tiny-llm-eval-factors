@@ -977,8 +977,10 @@ def mpl_protocol_label(proto):
     t = re.search(r"-t([0-9.]+)-", head)
     if t:
         base += f"·temp={t.group(1)}"
+    # `sampling=` 是设置本身（厂商推荐采样这类臂靠它区分），和 ctx/kv/tmpl 一样保留；
+    # 其余附加段不参与区分，标签里省掉。
     extra = [part.strip() for seg in proto.split(";")[1:] for part in seg.split(",")
-             if part.strip().startswith(("ctx=", "kv=", "tmpl="))]
+             if part.strip().startswith(("ctx=", "kv=", "tmpl=", "sampling="))]
     return "·".join([base] + extra)
 
 

@@ -64,8 +64,30 @@ AXES = {
         ("temp0.7", [], {"temperature": 0.7}),
         ("greedy-topk1", [], {"temperature": 0, "top_k": 1}),
         ("greedy-topk200", [], {"temperature": 0, "top_k": 200}),
+        # 厂商推荐采样：五个量一个不少地写进协议串（`sampling=…`），否则它会被行标签吞掉
+        # （top_k 与 fa 都踩过这个坑）。请求体里也是这五个值，不在客户端重采样。
+        ("vendor-recommended", [],
+         {"temperature": 1.0, "top_p": 1.00, "top_k": 20, "min_p": 0.0,
+          "presence_penalty": 2.0}),
     ],
 }
+
+
+# 厂商推荐采样的规范串：五个量全部写进来，顺序固定，缺一不可。
+SAMPLING_KEYS = ("temperature", "top_p", "top_k", "min_p", "presence_penalty")
+# evalplus 的 CLI 只接受 --temperature，其余四个量传不进去：该臂的 codegen 一律显式跳过，
+# 记为「不支持」，绝不用默认值顶替（否则那些格会被当成按厂商推荐采样测出来的）。
+CODEGEN_UNSUPPORTED = {"vendor-recommended"}
+
+
+def sampling_spec(kws):
+    """把采样参数写成协议串的一段：`sampling=temp=1.0,top_p=1.0,top_k=20,min_p=0.0,presence_penalty=2.0`。
+
+    只写出现过的键；厂商推荐臂的五个键都出现，所以它一段不缺。
+    """
+    parts = [f"{k}={kws[k]}" for k in SAMPLING_KEYS if k in kws]
+    extra = [f"{k}={v}" for k, v in kws.items() if k not in SAMPLING_KEYS]
+    return "sampling=" + ",".join(parts + extra) if (parts or extra) else "sampling=default"
 
 
 def log(m, f=None):
@@ -162,7 +184,8 @@ def main():
     log(f"=== variant panel tag={args.tag} axis={args.axis}", plog)
 
     for label, extra, kws in AXES[args.axis]:
-        row = {"label": label, "llama_args": extra, "sampling": kws}
+        row = {"label": label, "llama_args": extra, "sampling": kws,
+               "sampling_spec": sampling_spec(kws)}
         proc = start_server(model, port, extra, str(out / "server.log"))
         try:
             kstr = ",".join(f"{k}={v}" for k, v in kws.items()) or "temperature=0"
@@ -195,6 +218,14 @@ def main():
                 row[task] = val
                 log(f"{label}: {task}={val}", plog)
 
+            if label in CODEGEN_UNSUPPORTED:
+                row["humaneval"] = None
+                row["codegen_skipped"] = ("evalplus CLI 只接受 --temperature，"
+                                          "top_p/top_k/min_p/presence_penalty 传不进去")
+                log(f"{label}: codegen skipped（{row['codegen_skipped']}）", plog)
+                panel["rows"][label] = row
+                stop(proc)
+                continue
             cg = out / "codegen" / label.replace("/", "_")
             cg.mkdir(parents=True, exist_ok=True)
             temp = str(kws.get("temperature", 0.0))

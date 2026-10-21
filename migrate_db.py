@@ -1675,7 +1675,11 @@ def ingest_variant(con):
                     "_wall_time": None, "_tok_s": None, "_file_size": None,
                     "run_tag": tag, "rep": 1, "ctx_size": 8192, "parallel_slots": 1,
                     "seed": None,
-                    "protocol": f"variant-{axis}-{label}-{'evalplus' if bench == 'humaneval' else 'lmeval'}",
+                    # 采样参数写进协议串：只写标签名会让「厂商推荐」「greedy」在报告行里合并
+                    # （top_k 与 fa 都踩过这个坑）。`sampling=` 段来自面板的 variant_panel.json。
+                    "protocol": (f"variant-{axis}-{label}-"
+                                 f"{'evalplus' if bench == 'humaneval' else 'lmeval'}"
+                                 f";{row.get('sampling_spec') or 'sampling=default'}"),
                     "language": ("python" if bench == "humaneval" else None),
                     "bench_family": ("humaneval" if bench == "humaneval" else bench),
                     "max_tokens": (None if bench == "humaneval" else 1024),
