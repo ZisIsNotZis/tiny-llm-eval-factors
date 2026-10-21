@@ -43,5 +43,8 @@
 
 ## 数据库
 
-1. `experiments.sqlite` 只读用 `sqlite3 -readonly`；要写先编号备份 `experiments.sqlite.bakN`，且只走 i02 的 `migrate_db.py`（它是唯一入径，跑完看它的 skip ledger）。
+1. `experiments.sqlite` 只读用 `sqlite3 -readonly`；要写先编号备份 `experiments.sqlite.bakN`，且只走 `migrate_db.py` / `migrations/backfill_n_items.py`（唯一入径，跑完看它的 skip ledger）。
 2. `n_items` NULL 是声明的缺失：可以给出来源（`RESULT.md::res3`/`res4`），不得在结论里当 0 用。
+3. **判分器身份写在 `protocol` 里，不合并**：`...-official-ast-checker` 是官方 checker 的值，`...-homegrown-matcher` 是自研匹配器的值。改分数必须同时改协议串，否则一行会用旧身份报新值。
+4. **按身份去重只能在同一族协议串内做**：第一版清理按 `(model, _bench)` 找重复，把 prompt 协议的 20 行当重复删了——那是另一个测量。规则：删除前先证明候选行与本行**同一 `protocol` 族**，且改库前后 `SELECT count(*) FROM experiments` 必须相等（本次 3323 → 3323）。
+5. 改完必跑 `python3 checks/db_check.py`（要求 PASS：0 重复格、0 外键问题）与 `PRAGMA integrity_check`；`ingest_*` 之后再跑一次要求「改动 0 行」，幂等才算完。

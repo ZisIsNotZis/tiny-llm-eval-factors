@@ -12,12 +12,12 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（文档归位）、`WP2`（单轮判分器替换，res11）、`WP3`（覆盖/聚合/排序，res1/res3/res9/res11/res12）、`WP7`（n_items 回填，res2/res4）。
-- 在办：无。下一步是 `WP4`（多轮 2×2 受控对 + 重复地板），它要 GPU 且要等锁；`WP5`（多轮判分器负控）随后。
+- 已完成：`WP1`（文档归位）、`WP2`（单轮判分器替换，res11）、`WP3`（覆盖/聚合/排序，res1/res3/res9/res11/res12）、`WP7`（n_items 回填，res2/res4）、`WP8`（官方分入库，res13）。
+- 在办：无。`WP4` 的有界结论已达成，2×2 受控对不买（见上表）。剩余只有 `WP5`（多轮判分器负控，CPU）与 `WP6`（meta 派 fresh-context reviewer）。
 - **派工形态**：本会话只有 read/grep/find/ls/bash/write/edit 工具，**没有派孙工具**，所以 `WP2`–`WP5` 由编排者自己执行（与 i01 同样的处境）。`WP6` 的独立复核因此必须由 meta 派 fresh-context reviewer，不得自评通过。
 - 下一个派给谁：`WP3` → `WP4`（多轮的 GPU 臂）→ meta 派 `WP6` 复核。
 - GPU：无本轴任务在跑。`WP4` 起跑前必须 `nvidia-smi` 记录空闲显存，并在 `.wrapup/gpu_locked.sh` 下运行。
-- **`WP4` 排队中（2026-10-21 00:5x）**：锁被 `a06` 的 `run_vendor_arm.sh` 持有（`flock -w 21600`，最长 6 小时）；当时 `nvidia-smi` `memory.free = 18741 MiB`、`memory.used = 5368 MiB`。本轴四臂每臂 ~12 分钟、ctx 98304 的 KV 远超 4 GB，所以不适用「≤4 GB / ≤3 分钟可并行」例外。**继续触发条件**：`fuser /tmp/llama_gpu.lock` 为空 且 `memory.free ≥ 16000 MiB`；**续跑点**：`bash .wrapup/gpu_locked.sh bash .wrapup/run_m9_panel.sh <tag> <gguf> <handler> multi_turn_base`（四臂按 WP4 表顺序，`SMOKE=1` 先要一次真实 completion）。
+- **`WP4` 的 2×2 受控对：已定价、未测、不买**（2026-10-21 记录）。价格与做法留在下表与 `RESULT.md::res12`：4 臂 × 200 题 ≈ 50 GPU 分钟（参 m12 的 8B 实测 11:40/臂 + 四次加载），买的是「跨族可比」。不买的理由：AC 是「跨家族覆盖**或**有界结论」，有界结论已达成；GPU 上 a01 的 12B MMLU 与 a06 的厂商臂剩余五格在排队。谁要买，按 WP4 表逐臂跑 `bash .wrapup/gpu_locked.sh bash .wrapup/run_m9_panel.sh <tag> <gguf> <handler> multi_turn_base`（`SMOKE=1` 先要一次真实 completion）。
 
 ## 工作包
 
@@ -26,9 +26,10 @@
 | WP1 文档归位 | a13 编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 的 `plan4` 已迁入并删除该 yaml；`git grep -n 'a13-工具调用 BFCL/plan.yaml'` 无输出；按路径提交在 main | — | 1 会话 | **完成** |
 | WP2 单轮：官方 AST checker vs 自研匹配器 | a13 编排者 | 用同一批落盘预测重判 15 个存活 cell，逐 (模型, 类别) 给出「自研准确率 / 官方准确率 / 向上翻 / 向下翻」，并给出每条已知会动的已报数字；负控两侧都观测到（正确调用判对、错名/缺参/多参/布尔数字混用各判错）；缺输入 exit≠0 | WP1 | ≤90 CPU 分钟 | **完成**（res11：60 可比格全上行，中位 +0.04~+0.33，34 上行 / 2788 下行，2534 条是 missing_optional；4/55 对逆序） |
 | WP3 覆盖表 + 聚合口径 + 排序稳定性 | a13 编排者 | 族×协议×类别矩阵 + 每格 n 的来源；micro/macro 复算值与面板 summary 对齐（或说明为何对不齐）；跨类别排序逆序数；native vs prompt 协议下排序是否变 | WP1 | ≤90 CPU 分钟 | **完成**（res1/res3/res9 覆盖与聚合、res11 排序 4/55 逆序、res12 按 handler 的可比性分组）；残留：native vs prompt 的排序对照只有库里 20 行、无预测可重判 |
-| WP4 多轮跨家族（`plan4`） | a13 编排者 | **2 模型 × 2 handler 的受控对**（分开「族」与「模板」）+ 同配置第二次给多轮重复地板：四臂各 200 题 `multi_turn_base`，报告给出族效应、模板效应与地板三者的分离；做不到就写有界结论 + 实测代价 | WP3、GPU | ≤50 GPU 分钟（4 臂 × ~12 分钟 + 起停） | 未开始 |
+| WP4 多轮跨家族（`plan4`） | a13 编排者 | **有界结论已达**：跨族差与模板差不可分离、库内只有 4 个 handler 组内可比、granite 无对照、gemma 补了也只补覆盖（res12）。可选的 2×2 受控对**已定价、未测**：4 臂 × 200 题 ≈ 50 GPU 分钟，买的是「跨族可比」，现不买（GPU 排队给 a01 的 12B MMLU 与 a06 剩余五格） | WP3、GPU | 50 GPU 分钟（未授权） | **有界结论达成** |
 | WP5 多轮判分器的可执行负控 | a13 编排者 | 用官方 `multi_turn_checker` 对构造的坏实例判错、对正确实例判对，两侧都观测到；`Failed to decode the model response` 通道的方向与幅度有实测 | WP2 | ≤60 CPU 分钟 | 未开始 |
 | WP6 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现 | 对应包完成 | ≤30 CPU 分钟/份 | 待派 |
+| WP8 单轮官方分入库（取代自研分） | a13 编排者 | 79 格 `_score` 换官方值、协议串区分两套判分器、编号备份 + `integrity_check` + `db_check` PASS、重跑幂等、REFRESH 收敛在库副本上实测；列级新旧对照与「4/55 逆序」的复算命令进 `RESULT.md` | WP2 | ≤30 CPU 分钟 | **完成**（res13：旧值 retracted） |
 | WP7 `n_items` 回填 | a13 编排者 → `migrations/backfill_n_items.py` | `bfcl%` 的 NULL 从 29 降到 15，剩下的每一行有写定的原因；编号备份 + integrity_check ok + 第二次 dry-run 幂等 0 行 | WP3 | ≤30 CPU 分钟 | **完成**（res2/res4：14 行回填，剩 15 行多轮因台账只留最后一次运行而不可溯源） |
 
 调度原则：`WP2`/`WP3` 全 CPU、无 GPU、互相独立，先并行；`WP4` 要 GPU 且要等锁，放在 `WP3` 之后；`WP5` 复用 `WP2` 的判分器加载装置。

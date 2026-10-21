@@ -1826,6 +1826,9 @@ def main():
         tally[label] = once(tag, fn)
     for label, fn in REFRESH:
         tally[label] = fn(con)
+    # 放在 REFRESH 之后：REFRESH 的 ingest 会用历史协议串重新插入行，这一步每次都把
+    # 单轮 BFCL 收敛到官方判分身份，所以重复跑是幂等的。
+    tally["a13-bfcl-rescore"] = ingest_bfcl_official_rescore(con)
     con.commit()
     after = con.execute("SELECT COUNT(*) FROM experiments").fetchone()[0]
     print_ingest_skips()
@@ -1852,6 +1855,79 @@ def ingest_m21(con):
     con.execute("DELETE FROM experiments WHERE run_tag = ?", ("m21-bonsai-ternary",))
     return ingest_mpl(con, ".wrapup/m21_summary.jsonl", "m21-bonsai-ternary",
                       "m21_summary.jsonl", model_map=BONSAI_MODELS)
+
+
+# ---------------------------------------------------------------------------
+# BFCL 单轮：官方 AST checker 的重打分取代自研匹配器的分数
+#
+# 为什么必须改：`possible_answer` 用 `["units", ""]` 表示「该参数可省略」，而仓库自研的
+# `.wrapup/bfcl_run.py::call_ok` 要求标准答案里的**每个**键都出现在预测里，于是「正确但省略
+# 可选参数」被判错。实测：同一批 15 个格、16,404 条可对照题里 2,788 条自研判错而官方判对，
+# 其中 2,534 条是这个原因；反向只有 34 条。净效应是历史单轮 BFCL 数字系统性偏低。
+#
+# 两条身份不许合并：`_score` 存的是**哪套判分器**给出的值，由 `protocol` 说明。
+#   * ...-official-ast-checker   = bundled bfcl_eval 的 ast_checker（含存在性判据的那三类）
+#   * ...-homegrown-matcher      = 本仓自研匹配器（prompt 协议 20 行没有预测文件，无法重判）
+# 重打分只在**同一批落盘预测**上换判分器，不重跑模型，所以差异可归给判分而不是生成。
+#
+# 幂等：先把该格上仍带自研协议串的行（REFRESH 类 ingest 会重新插入）删掉，再把剩下那一行
+# 改成官方身份与官方分数；重复跑改动 0 行。
+BFCL_RESCORE_ARTIFACT = os.path.join(
+    "docs", "subprojects", "a13-工具调用 BFCL", "audits", "official_vs_homegrown.json")
+BFCL_HOMEGROWN_PROTOCOL = "bfcl-native-tools-nothink-greedy"
+BFCL_OFFICIAL_PROTOCOL = "bfcl-native-tools-nothink-greedy-official-ast-checker"
+BFCL_PROMPT_HOMEGROWN_PROTOCOL = "bfcl-prompt-nothink-greedy-homegrown-matcher"
+BFCL_PROMPT_OLD_PROTOCOL = "bfcl-prompt-nothink-greedy"
+
+
+def ingest_bfcl_official_rescore(con):
+    """把单轮 BFCL 的 `_score` 换成官方 checker 的值，并让协议串说明判分器身份。"""
+    tag = "a13-bfcl-official-rescore"
+    if not os.path.exists(BFCL_RESCORE_ARTIFACT):
+        note_skip(tag, "重打分产物缺失", BFCL_RESCORE_ARTIFACT)
+        print(f"  {tag}: MISSING {BFCL_RESCORE_ARTIFACT} -- 不动任何行")
+        return 0
+    doc = json.load(open(BFCL_RESCORE_ARTIFACT, encoding="utf-8"))
+    changed = renamed = 0
+    for fname, cats in doc["per_file"].items():
+        model = doc["binding"][fname]["model"]
+        for cat, rec in cats.items():
+            if not rec.get("comparable", True):
+                note_skip(tag, "该类无官方判据（无 possible_answer）", f"{fname}:{cat}")
+                continue
+            bench = f"bfcl-{cat}"
+            # 只在这一对协议串内找重复：prompt 协议是**另一个测量**（同一模型、
+            # 另一套工具呈现方式），把它当重复删掉就是数据丢失。本条是有代价学到的。
+            rows = con.execute(
+                "SELECT rowid,_score,protocol FROM experiments WHERE model=? AND _bench=? "
+                "AND bench_family='bfcl' AND protocol IN (?,?)",
+                (model, bench, BFCL_HOMEGROWN_PROTOCOL, BFCL_OFFICIAL_PROTOCOL)).fetchall()
+            if not rows:
+                note_skip(tag, "库里没有该格", f"{model}:{bench}")
+                continue
+            target = [r for r in rows if r[2] == BFCL_OFFICIAL_PROTOCOL] or rows
+            for rowid, _score, proto in rows:
+                if rowid != target[0][0] and proto != BFCL_OFFICIAL_PROTOCOL:
+                    con.execute("DELETE FROM experiments WHERE rowid=?", (rowid,))
+            rowid, old_score, old_proto = target[0]
+            new_score = rec["official_acc"]
+            if old_proto == BFCL_OFFICIAL_PROTOCOL and old_score == new_score:
+                continue
+            con.execute(
+                "UPDATE experiments SET _score=?, protocol=?, "
+                "__score_fix=CASE WHEN __score_fix IS NULL THEN NULL ELSE ? END, "
+                "source_file=? WHERE rowid=?",
+                (new_score, BFCL_OFFICIAL_PROTOCOL, new_score,
+                 f"a13/official_vs_homegrown.json#{fname}:{cat}", rowid))
+            changed += 1
+    # prompt 协议：没有预测文件可重判，值不动，但身份必须写明是自研匹配器。
+    renamed = con.execute(
+        "UPDATE experiments SET protocol=? WHERE bench_family='bfcl' AND protocol=?",
+        (BFCL_PROMPT_HOMEGROWN_PROTOCOL, BFCL_PROMPT_OLD_PROTOCOL)).rowcount
+    con.commit()
+    print(f"  {tag}: rescored {changed} row(s), relabelled {renamed} prompt row(s) "
+          f"as {BFCL_PROMPT_HOMEGROWN_PROTOCOL}")
+    return changed + renamed
 
 
 if __name__ == "__main__":

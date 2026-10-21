@@ -30,6 +30,7 @@ Exit codes: 0 ok, 2 missing input, 3 homegrown no longer matches the recorded DB
 """
 import glob
 import hashlib
+import itertools
 import json
 import os
 import sqlite3
@@ -92,11 +93,15 @@ def home_verdict(cat, calls, gt):
 
 
 def official_verdict(cat, calls, gt, func_desc):
-    if "irrelevance" in cat or "relevance" in cat:
-        # eval_runner.py::_evaluate_single_relevance_entry: decode must succeed and be non-empty;
-        # our calls are already decoded native tool calls, so presence is the whole test.
-        decodable = [c for c in calls if isinstance(c.get("arguments"), dict)]
-        return (len(decodable) > 0) if "relevance" in cat else (len(calls) == 0)
+    # Substring order matters and is copied from bfcl_run.py::evaluate: "irrelevance"
+    # CONTAINS "relevance", so testing "relevance" first would invert every
+    # irrelevance item (measured: -0.83 on m4-2bq3 before this order was fixed).
+    if "irrelevance" in cat:
+        return len(calls) == 0
+    if "relevance" in cat:
+        # eval_runner.py::_evaluate_single_relevance_entry: decode must succeed and be
+        # non-empty; our calls are already decoded native tool calls, so presence is the test.
+        return any(isinstance(c.get("arguments"), dict) for c in calls)
     if not calls:
         return False
     if any(not isinstance(c.get("arguments"), dict) for c in calls):
@@ -144,9 +149,32 @@ def evaluate_file(path):
     out = {}
     for cat, items in sorted(by_cat.items()):
         gt_map = ground_truth(cat)
-        if gt_map is None:
+        presence_only = gt_map is None and ("irrelevance" in cat or "relevance" in cat)
+        if gt_map is None and not presence_only:
             out[cat] = {"n": len(items), "comparable": False,
                         "reason": "no possible_answer in bundled dataset"}
+            continue
+        if presence_only:
+            # These categories need no possible_answer on the official path either:
+            # eval_runner.py::_evaluate_single_relevance_entry scores only "did a call
+            # decode". Both verdicts are therefore computable here, so whether the swap
+            # moves anything becomes a measurement instead of an argument.
+            h = sum(home_verdict(cat, it.get("calls") or [], []) for it in items)
+            o = sum(official_verdict(cat, it.get("calls") or [], [], []) for it in items)
+            up = sum(1 for it in items
+                     if home_verdict(cat, it.get("calls") or [], [])
+                     and not official_verdict(cat, it.get("calls") or [], [], []))
+            dn = sum(1 for it in items
+                     if official_verdict(cat, it.get("calls") or [], [], [])
+                     and not home_verdict(cat, it.get("calls") or [], []))
+            out[cat] = {"n": len(items), "comparable": True, "presence_rule": True,
+                        "home_correct": h, "official_correct": o,
+                        "home_acc": h / len(items), "official_acc": o / len(items),
+                        "delta": (o - h) / len(items),
+                        "home_pass_official_fail": up, "official_pass_home_fail": dn,
+                        "up_reasons": {"presence_rule": up} if up else {},
+                        "down_reasons": {"presence_rule": dn} if dn else {},
+                        "up_ids": [], "down_ids": []}
             continue
         prompts = {r["id"]: r for r in load_jsonl(DATA / f"BFCL_v4_{cat}.json")}
         home = off = 0
@@ -280,6 +308,27 @@ def main():
         print(f"  {os.path.basename(path):22s} -> {bound[path][0]:34s} {bound[path][1]}")
     for name, cands in unbound:
         print(f"  {name:22s} -> UNBOUND/AMBIGUOUS {cands}")
+    print("\n== ranking effect on the 11 single-turn models (4 comparable non-live categories, item-weighted) ==")
+    agg = []
+    for path, cats in results.items():
+        if os.path.basename(path).startswith("m8-"):
+            continue
+        comp = {c: r for c, r in cats.items() if r.get("comparable", True)}
+        if len(comp) < 4:
+            continue
+        h = sum(r["home_correct"] for r in comp.values()) / sum(r["n"] for r in comp.values())
+        o = sum(r["official_correct"] for r in comp.values()) / sum(r["n"] for r in comp.values())
+        agg.append((bound[path][0], h, o))
+    inv = []
+    for a, b in itertools.combinations(agg, 2):
+        if (a[1] - b[1]) * (a[2] - b[2]) < 0:
+            inv.append((a[0], b[0]))
+    pairs = len(agg) * (len(agg) - 1) // 2
+    for m, h, o in sorted(agg, key=lambda x: -x[1]):
+        print(f"  {m:34s} home={h:.4f} official={o:.4f} delta={o - h:+.4f}")
+    print(f"  pairwise inversions homegrown -> official: {len(inv)}/{pairs}")
+    for a, b in inv:
+        print(f"    inverted: {a} vs {b}")
     print(f"\nwrote {out.relative_to(REPO)}")
 
     if unbound:

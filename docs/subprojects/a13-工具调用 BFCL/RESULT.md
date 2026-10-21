@@ -107,8 +107,8 @@
 
 ### res11 单轮 8 个类别的已报数字全部是**偏低**的，中位差 +0.10 到 +0.33
 
-- 同一批预测（15 个 cell、22,644 条；其中 8 个有 `possible_answer` 的类别共 **16,404 条可对照**）分别判两次：自研 `.wrapup/bfcl_run.py` 的 `call_ok`/`arg_ok`（生产函数，import 不重写）与 bundled 官方 `ast_checker`。
-- 逐 (文件, 类别) 的 **60 个可比格**：官方 ≥ 自研在**全部 60 格**；逐条翻转 **34 上行**（自研 PASS→官方 FAIL）对 **2788 下行**（自研 FAIL→官方 PASS）。
+- 同一批预测（15 个 cell、22,644 条）分别判两次：自研 `.wrapup/bfcl_run.py` 的 `call_ok`/`arg_ok`（生产函数，import 不重写）与 bundled 官方 `ast_checker`；`irrelevance` 三类走 `eval_runner.py::_evaluate_single_relevance_entry` 的存在性判据（不需要 `possible_answer`），所以 **79 个 (文件, 类别) 格全部可判**。
+- 逐条翻转 **35 上行**（自研 PASS→官方 FAIL）对 **2788 下行**（自研 FAIL→官方 PASS）。上行 35 条的构成：`type_error:nested` 25、`parallel_function_checker_no_order:cannot_find_match` 5、`simple_function_checker:unexpected_param` 4、存在性判据 1 —— 这就是 i01 说的「多余参数不检查」通道的真实体量：**4 条**。
 - 按类别（11 或 4 个 cell 的极差 / 中位）：
 
 | 类别 | cell 数 | 中位差 | 最大差 |
@@ -124,13 +124,48 @@
 
 - **机制（这才是要改的东西）**：2788 条下行里 **2534 条是 `missing_optional`**——`possible_answer` 把可选参数的接受列表写成 `["units", ""]`（`""` = 可省略，官方 checker 因此只检查 `required`），而自研 `call_ok` 对 gt 里**每个**键都要求预测里存在（`if k not in pargs: return False`），于是「正确但省略可选参数」被判错。剩下 **254 条是 `value_or_type`**（官方按函数声明做类型检查、自研用 `norm()` 做松比较）。**call_count 与 wrong_name 的贡献为 0**。
 - **方向修正 i01 的叙述**：i01 `res27` 实测的宽容通道（`arg_ok(10,["10"])`、`arg_ok(True,[1])`、多余参数不检查）真实存在，但它们的总量是 **34 条**；同一个匹配器的「可选参数必须出现」这条**严格**通道是 **2534 条**。所以净效应是自研**系统性低估**，不是高估。
-- **对排序的影响**：11 个单轮模型的四类别合并分（micro），自研→官方共 **4/55 对逆序**（gemma-E2B 与 gemma-E4B 各自跨过 Qwen3.5-4B 与 granite-4.1-3b-Q3），其余 51 对保序。结论：**排序大体可用，分数与邻近间距不可用**。
-- **三个类别不可能被这次替换影响**：`irrelevance` / `live_irrelevance` / `live_relevance` 在 bundled 数据里没有 `possible_answer`，官方路径（`eval_runner.py::_evaluate_single_relevance_entry`）对它们用的是「有没有解码出调用」的**存在性判据**，与自研的 `len(calls)==0` / `len(calls)>0` 同构，所以换判分器在这三类上动不了任何数字。
+- **对排序的影响**：11 个单轮模型的 5 个 non-live 类别合并分（micro，22,644 题里非 live 的 13,640 题），自研→官方共 **4/55 对逆序**：gemma-E2B-Q3 跨过 Qwen3.5-4B-Q3、gemma-E4B-Q2 跨过 Qwen3.5-4B-Q3、gemma-E4B-Q3 跨过 Bonsai、granite-4.1-3b-Q3 跨过 Qwen3.5-4B-Q2。其余 51 对保序。结论：**排序大体可用，分数与邻近间距不可用**。复算命令见 res13。
+- **三个存在性类别是实测出来的 0，不是推断的 0**：`irrelevance`（11 格 / 2,640 题）与 `live_irrelevance`（4 格 / 3,536 题）新旧完全一致、翻转 0；`live_relevance`（4 格 / 64 题）差 1 题（`-0.0625`）——自研把 `arguments` 不是 dict 的调用也算「有调用」，官方解码失败即不算。这条差 1 题同时说明了「同构」的边界。
 - **prompt 协议 20 行不可重判**：那 4 个模型的 prompt 预测文件不存在（res5），所以「换成官方 checker」对它只能写未测。
 - 负控两侧都观测到（`correct_call` 两判对，`wrong_name` / `empty_calls` / `missing_required` 两判错），脚本 `exit=0`；每条测试文件绑定到一个 DB (model, protocol) 行靠的是「重算的自研分与库里 `_score` 逐位相同」这个检验（4 个文件不确定就会 exit 3，实跑 15/15 全部绑定成功）。
 - 证据：`audits/official_vs_homegrown.py`、`audits/official_vs_homegrown.json`（逐格明细 + 每个输入文件的 sha256 + 15 个绑定）。
 - 复现：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/official_vs_homegrown.py"`（实跑 `EXIT=0`，打 60 行逐格表、负控四行 `ok`、15 行绑定）。
 - 状态：current。
+
+## 入库：单轮 BFCL 的分数量级是错的，已按官方判分器替换（撤回旧值）
+
+### res13 撤回：以前的单轮 BFCL 数字系统性偏低，绝对值不可沿用；排序大体保留
+
+- **撤回什么**：`experiments.sqlite` 里 79 个单轮 native-tools 格的旧 `_score`（自研匹配器的值）不再是当前事实。它们偏低，每一列都偏低，其中位幅度见下表；旧值仍可从 git 历史、`.wrapup/m*_summary.jsonl` 与 `audits/official_vs_homegrown.json` 的 `home_acc` 取回，但**不得再当当前值引用**。
+- **为什么**：`possible_answer` 用 `["units", ""]` 表示「该参数可省略」，官方 checker 只校验函数声明里的 `required`；自研 `call_ok` 要求标准答案里**每个**键都出现在预测里。2,788 条「自研判错、官方判对」里 **2,534 条**是这个原因，254 条是类型/取值宽容度（官方按声明做类型检查）。
+- **替换后的入库形状**：79 格 `_score` ← 官方值，`protocol` ← `bfcl-native-tools-nothink-greedy-official-ast-checker`；prompt 协议 20 行没有预测文件可重判，值不动，`protocol` ← `bfcl-prompt-nothink-greedy-homegrown-matcher`（身份写明是自研匹配器）。**两条身份不合并**：任何一行存的分数，其 `protocol` 都说明了是哪套判分器给的。
+- **逐列旧 → 新**（每列 11 或 4 个 cell 的中位数；`d_min/d_max` 是该列各 cell 的极差）：
+
+| 报告列 | cell | 题数 | 旧中位 | 新中位 | 中位 Δ | Δ 最小 | Δ 最大 | 上行 | 下行 |
+|---|---|---|---|---|---|---|---|---|---|
+| simple_python | 11 | 4,400 | 0.5975 | 0.8900 | +0.2775 | +0.0050 | +0.3150 | 24 | 943 |
+| multiple | 11 | 2,200 | 0.5800 | 0.9150 | +0.3250 | +0.0050 | +0.3500 | 0 | 572 |
+| parallel | 11 | 2,200 | 0.7000 | 0.7900 | +0.1050 | 0.0000 | +0.1400 | 0 | 171 |
+| parallel_multiple | 11 | 2,200 | 0.6350 | 0.7800 | +0.1450 | +0.0100 | +0.1900 | 5 | 267 |
+| irrelevance | 11 | 2,640 | 0.8458 | 0.8458 | 0 | 0 | 0 | 0 | 0 |
+| live_simple | 4 | 1,032 | 0.3023 | 0.4070 | +0.1047 | 0.0000 | +0.2752 | 1 | 126 |
+| live_multiple | 4 | 4,212 | 0.2707 | 0.4492 | +0.1481 | +0.0104 | +0.3514 | 4 | 697 |
+| live_parallel | 4 | 64 | 0.2812 | 0.3125 | +0.0312 | 0.0000 | +0.2500 | 0 | 5 |
+| live_parallel_multiple | 4 | 96 | 0.2083 | 0.2917 | +0.0208 | 0.0000 | +0.2500 | 0 | 7 |
+| live_irrelevance | 4 | 3,536 | 0.8756 | 0.8756 | 0 | 0 | 0 | 0 | 0 |
+| live_relevance | 4 | 64 | 0.3438 | 0.3125 | 0 | −0.0625 | 0 | 1 | 0 |
+| **合计** | **79** | **22,644** | — | — | — | — | — | **35** | **2,788** |
+
+- **排序结论保留、绝对值不保留**：11 个模型按 5 个 non-live 类别合并（13,640 题）的新旧两套排序只有 **4/55 对逆序**（题名见 res11），但同一个模型的分数普遍上移 +0.004 到 +0.204，`multiple` 一列整体上移 0.325 —— 所以「谁比谁强」大体还站得住，「分数是多少、差距多大」全部作废。跨模型的相邻差距（例如 gemma-E2B-Q3 与 Qwen3.5-4B-Q3 相差 0.0146）小于这次替换的幅度，单独引用没有意义。
+- **入库的三条硬保证**：编号备份（`bak28`/`bak29`，另有 `migrations/backfill_n_items.py` 自建 `bak25`/`bak27`）；`PRAGMA integrity_check=ok`、`checks/db_check.py` PASS（3323 行、0 重复格、0 外键问题）；重跑幂等（第二次 `ingest_bfcl_official_rescore` 改动 **0** 行）。**并且在库副本上实测过收敛**：REFRESH 类 ingest（`ingest_m22`）会把 Bonsai 的 5 行按历史协议串重插，随后 `ingest_bfcl_official_rescore` 把这 5 行改回官方身份，`integrity=ok`。
+- **skip ledger**：这次入库只在两类情况下跳过并记账——重打分产物缺失（致命，打印 MISSING 且不动任何行）与库里没有该格；`n_items` 回填那一侧跳过 15 行多轮，原因见 res4。`migrate_db.py` 的 `print_ingest_skips()` 会把它们逐条打出。
+- **一次差点造成数据丢失的错误（已修，记录以防复发）**：第一版清理逻辑按 `(model, _bench)` 找重复行，把 prompt 协议的 20 行当成重复删掉了（那是**另一个测量**，不是重复）。库从 `bak28` 恢复后，清理条件收紧到「同一对协议串内」，并把「改前后行数必须一致」写进检查。这一类错误的名字是「身份去重时把另一个测量当重复」。
+- 证据：`experiments.sqlite`、`audits/official_vs_homegrown.json`、`migrate_db.py::ingest_bfcl_official_rescore`。
+- 复现：
+  1. 重打分与逐格表：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/official_vs_homegrown.py"`（实跑 `EXIT=0`，末尾打印 11 行排序表与 `pairwise inversions homegrown -> official: 4/55`）。
+  2. 入库值对照：`sqlite3 -readonly -header -column experiments.sqlite "SELECT protocol,count(*),round(avg(_score),4) FROM experiments WHERE bench_family LIKE 'bfcl%' GROUP BY 1"`（实跑：官方 79 行均值 0.62、prompt 自研 20 行 0.5732、多轮 22 + 2）。
+  3. 幂等：`python3 -c "import sqlite3,migrate_db as m; con=sqlite3.connect(m.DB); print(m.ingest_bfcl_official_rescore(con))"`（实跑 `rescored 0`）。
+- 状态：current（旧值状态：retracted，死因是 `missing_optional` 等判据差异）。
 
 ## 多轮 handler 分组：这一列的「跨模型比较」实际比的是模型+模板
 

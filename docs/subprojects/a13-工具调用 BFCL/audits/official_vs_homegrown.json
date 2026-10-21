@@ -159,8 +159,19 @@
   "m4-2bq2.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 203,
+    "official_correct": 203,
+    "home_acc": 0.8458333333333333,
+    "official_acc": 0.8458333333333333,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -266,8 +277,19 @@
   "m4-2bq3.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 220,
+    "official_correct": 220,
+    "home_acc": 0.9166666666666666,
+    "official_acc": 0.9166666666666666,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -384,8 +406,19 @@
   "m4-e2b-q2.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 179,
+    "official_correct": 179,
+    "home_acc": 0.7458333333333333,
+    "official_acc": 0.7458333333333333,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -512,8 +545,19 @@
   "m4-e2b-q3.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 196,
+    "official_correct": 196,
+    "home_acc": 0.8166666666666667,
+    "official_acc": 0.8166666666666667,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -644,8 +688,19 @@
   "m4-e4b-q2.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 204,
+    "official_correct": 204,
+    "home_acc": 0.85,
+    "official_acc": 0.85,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -776,8 +831,19 @@
   "m4-e4b-q3.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 211,
+    "official_correct": 211,
+    "home_acc": 0.8791666666666667,
+    "official_acc": 0.8791666666666667,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -905,8 +971,19 @@
   "m4-gr3b-q2.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 237,
+    "official_correct": 237,
+    "home_acc": 0.9875,
+    "official_acc": 0.9875,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -986,8 +1063,19 @@
   "m4-gr3b-q3.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 83,
+    "official_correct": 83,
+    "home_acc": 0.3458333333333333,
+    "official_acc": 0.3458333333333333,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -1115,8 +1203,19 @@
   "m4-q2.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 218,
+    "official_correct": 218,
+    "home_acc": 0.9083333333333333,
+    "official_acc": 0.9083333333333333,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -1239,8 +1338,19 @@
   "m4-q3.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 187,
+    "official_correct": 187,
+    "home_acc": 0.7791666666666667,
+    "official_acc": 0.7791666666666667,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
@@ -1372,8 +1482,19 @@
   "m8-gr3b-q2.jsonl": {
    "live_irrelevance": {
     "n": 884,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 863,
+    "official_correct": 863,
+    "home_acc": 0.9762443438914027,
+    "official_acc": 0.9762443438914027,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_multiple": {
     "n": 1053,
@@ -1435,8 +1556,19 @@
    },
    "live_relevance": {
     "n": 16,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 2,
+    "official_correct": 2,
+    "home_acc": 0.125,
+    "official_acc": 0.125,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_simple": {
     "n": 258,
@@ -1457,8 +1589,19 @@
   "m8-gr3b-q3.jsonl": {
    "live_irrelevance": {
     "n": 884,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 220,
+    "official_correct": 220,
+    "home_acc": 0.248868778280543,
+    "official_acc": 0.248868778280543,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_multiple": {
     "n": 1053,
@@ -1537,8 +1680,19 @@
    },
    "live_relevance": {
     "n": 16,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 16,
+    "official_correct": 16,
+    "home_acc": 1.0,
+    "official_acc": 1.0,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_simple": {
     "n": 258,
@@ -1577,8 +1731,19 @@
   "m8-qwen2b-q2.jsonl": {
    "live_irrelevance": {
     "n": 884,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 804,
+    "official_correct": 804,
+    "home_acc": 0.9095022624434389,
+    "official_acc": 0.9095022624434389,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_multiple": {
     "n": 1053,
@@ -1651,8 +1816,21 @@
    },
    "live_relevance": {
     "n": 16,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 4,
+    "official_correct": 3,
+    "home_acc": 0.25,
+    "official_acc": 0.1875,
+    "delta": -0.0625,
+    "home_pass_official_fail": 1,
+    "official_pass_home_fail": 0,
+    "up_reasons": {
+     "presence_rule": 1
+    },
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_simple": {
     "n": 258,
@@ -1687,8 +1865,19 @@
   "m8-qwen2b-q3.jsonl": {
    "live_irrelevance": {
     "n": 884,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 744,
+    "official_correct": 744,
+    "home_acc": 0.8416289592760181,
+    "official_acc": 0.8416289592760181,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_multiple": {
     "n": 1053,
@@ -1759,8 +1948,19 @@
    },
    "live_relevance": {
     "n": 16,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 7,
+    "official_correct": 7,
+    "home_acc": 0.4375,
+    "official_acc": 0.4375,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "live_simple": {
     "n": 258,
@@ -1795,8 +1995,19 @@
   "m22-bonsai.jsonl": {
    "irrelevance": {
     "n": 240,
-    "comparable": false,
-    "reason": "no possible_answer in bundled dataset"
+    "comparable": true,
+    "presence_rule": true,
+    "home_correct": 184,
+    "official_correct": 184,
+    "home_acc": 0.7666666666666667,
+    "official_acc": 0.7666666666666667,
+    "delta": 0.0,
+    "home_pass_official_fail": 0,
+    "official_pass_home_fail": 0,
+    "up_reasons": {},
+    "down_reasons": {},
+    "up_ids": [],
+    "down_ids": []
    },
    "multiple": {
     "n": 200,
