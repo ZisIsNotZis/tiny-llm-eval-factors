@@ -15,6 +15,7 @@
 - 已完成：`WP1`（文档归位）、`WP2`（单轮判分器替换，res11）、`WP3`（覆盖/聚合/排序，res1/res3/res9/res11/res12）、`WP7`（n_items 回填，res2/res4）、`WP8`（官方分入库，res13）。
 - 在办：无。`WP4` 的有界结论已达成，2×2 受控对不买（见上表）；`WP5` 已完成（res14）。剩余只有 `WP6`（meta 派 fresh-context reviewer）。
 - **判定入口**：`python3 "docs/subprojects/a13-工具调用 BFCL/audits/run_all.py"`（实跑 `EXIT=0`），它就是里程碑 done 判据；行数/哈希只作快照打印，判据是「库与证据一致」的关系。
+- **终审 ACCEPT WITH NOTES 的七处已改（待复审）**：①`official_vs_homegrown.py` 改成「先校验后写证据」（写 tmp + `os.replace`，绑定漂移时 exit 3 且证据字节不变）、`run_all.py` 把子检查崩溃记 FAIL 不抛异常；②`res14` 的边界按实测重写（类别被 entry id 覆盖、`long_context` 支路未触及、`miss_func`/`miss_param` 各有 203/934 空 GT 轮被 `continue`、`multi_turn_irrelevance_checker` 无调用点）；③`res12` 加 ctx/`-partial` 条件，跨族受控只剩 base@98304 三行；④`未测#3` 改为已测并写残留；⑤`res9` 计数改为 base 11 行/10 模型、long_context 7 行/4 模型，审计表头改「5 non-live」；⑥「不可分」补上 0.0125 摆动的推导并标明 macro/micro；⑦新增 `res15` 类别覆盖表，把 7/11 模型与 prompt 的 `live_*` 缺口明确写成「未测」而非「协议不产出」。
 - **结论层已就位**：`RESULT.md` 开头三句（单轮 / 多轮 / 换判分器后改变的具体判断），每条指回 res11–res13，供报告第十四节直接引用；其中两条是给报告文本的输入（§14 的「micro 不可从库复算」已过时；表内数值已是官方 checker 值、行标签带判分器身份）。
 - **AC 状态**：类别覆盖表（res1/res9）+ 多轮跨家族有界结论（res12）都成立；本轴四问分别落在 res11（换判分器动哪些列）、res12（协议与 handler 如何改变可比性）、res3（逐类别列支持什么、无唯一总分）、res13（入库后的当前值）。
 - **派工形态**：本会话只有 read/grep/find/ls/bash/write/edit 工具，**没有派孙工具**，所以 `WP2`–`WP5` 由编排者自己执行（与 i01 同样的处境）。`WP6` 的独立复核因此必须由 meta 派 fresh-context reviewer，不得自评通过。

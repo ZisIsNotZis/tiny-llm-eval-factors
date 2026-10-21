@@ -44,7 +44,7 @@ MRES = WRAPUP / "mres"
 SITE = WRAPUP / "bfclenv/lib/python3.11/site-packages"
 DATA = SITE / "bfcl_eval/data"
 ADIR = DATA / "possible_answer"
-DB = REPO / "experiments.sqlite"
+DB = Path(os.environ.get("A13_DB", REPO / "experiments.sqlite"))
 
 MISSING = [str(p) for p in (MRES, SITE, DATA, ADIR, DB) if not p.exists()]
 PRED_FILES = (sorted(glob.glob(str(MRES / "m4-*.jsonl"))) + sorted(glob.glob(str(MRES / "m8-*.jsonl")))
@@ -288,7 +288,10 @@ def main():
            "unbound_or_ambiguous": unbound,
            "per_file": {os.path.basename(k): v for k, v in results.items()}}
     out = Path(__file__).with_name("official_vs_homegrown.json")
-    out.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+    # The evidence file is only replaced after every check passed: a drifted binding must leave
+    # the tracked artifact untouched, otherwise a failing run destroys the thing it is meant to
+    # be measured against.
+    write_ok = not unbound and ctrl_ok
 
     # ---- report ----
     print("== negative control ==")
@@ -311,7 +314,7 @@ def main():
         print(f"  {os.path.basename(path):22s} -> {bound[path][0]:34s} {bound[path][1]}")
     for name, cands in unbound:
         print(f"  {name:22s} -> UNBOUND/AMBIGUOUS {cands}")
-    print("\n== ranking effect on the 11 single-turn models (4 comparable non-live categories, item-weighted) ==")
+    print("\n== ranking effect on the 11 single-turn models (5 non-live categories, item-weighted) ==")
     agg = []
     for path, cats in results.items():
         if os.path.basename(path).startswith("m8-"):
@@ -321,6 +324,8 @@ def main():
             continue
         h = sum(r["home_correct"] for r in comp.values()) / sum(r["n"] for r in comp.values())
         o = sum(r["official_correct"] for r in comp.values()) / sum(r["n"] for r in comp.values())
+        if path not in bound:
+            continue
         agg.append((bound[path][0], h, o))
     inv = []
     for a, b in itertools.combinations(agg, 2):
@@ -332,14 +337,18 @@ def main():
     print(f"  pairwise inversions homegrown -> official: {len(inv)}/{pairs}")
     for a, b in inv:
         print(f"    inverted: {a} vs {b}")
-    print(f"\nwrote {out.relative_to(REPO)}")
-
-    if unbound:
-        sys.stderr.write("UNBOUND: %d file(s) could not be bound to exactly one DB row set\n" % len(unbound))
-        return 3
-    if not ctrl_ok:
-        sys.stderr.write("NEGATIVE CONTROL FAILED\n")
+    if not write_ok:
+        if unbound:
+            print(f"\nFAIL: {len(unbound)} prediction file(s) could not be bound to exactly one "
+                  f"DB row set -- evidence file NOT rewritten ({out.name} unchanged)")
+            return 3
+        print(f"\nFAIL: negative control did not behave -- evidence file NOT rewritten "
+              f"({out.name} unchanged)")
         return 4
+    tmp = out.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n")
+    os.replace(tmp, out)
+    print(f"\nwrote {out.relative_to(REPO)}")
     return 0
 
 

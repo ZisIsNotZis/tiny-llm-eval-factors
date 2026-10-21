@@ -12,7 +12,7 @@
 **二、多轮（`bfcl-official-multiturn-temp0`）。** 库内 24 行多轮只支持**组内**比较，因为 handler 决定 prompt 模板与响应解析，而每个族、甚至每个 Qwen 尺寸都跑在不同 handler 下：只有 4 组组内可比（`Qwen3-1.7B-FC`：2B-q2/q3 + Bonsai；`Qwen3-4B-Instruct-2507-FC`：4B-q2/q3；`Qwen3-8B-FC`：9B-q2/q3；`Qwen3-30B-A3B-Instruct-2507-FC`：35B-A3B-q2/q3），granite-4.1-3b 用 `granite-4.0-350m` 的模板单独一组、**没有任何对照**；gemma 族多轮 0 行，补它**只能补覆盖、补不了可比**。跨族多轮结论（「谁的函数调用更强」）目前**没有证据**；要拿到证据必须做 2 模型 × 2 handler 的受控对，**已定价、未测：4 臂 × 200 题 ≈ 50 GPU 分钟**（`RESULT.md::res12`、`PLAN.md` 的 WP4）。
 
 **三、这次换判分器具体改变了哪些判断（读者层面，不只是数字）。**
-- **5 个 non-live 类别合并的第一名换人**：旧 Bonsai-q2g64 0.7053 vs gemma-4-E4B-Q3 0.7028（差 0.0025）；新 gemma-4-E4B-Q3 0.8908 vs Bonsai 0.8808（差 0.0100，反向）。所以「三值 Bonsai 是这批里最好的工具调用模型」这句话**不再成立**，改成「gemma-4-E4B-Q3 略高，与 Bonsai 差距 0.01，在判分器更换的噪声范围内不可分」。
+- **5 个 non-live 类别合并的第一名换人**：旧（自研）Bonsai-q2g64 macro 0.7053 vs gemma-4-E4B-Q3 macro 0.7028，差 **+0.0025** 给 Bonsai；新（官方）gemma-4-E4B-Q3 macro 0.8908 vs Bonsai macro 0.8808，差 **−0.0100**，反向。所以「三值 Bonsai 是这批里最好的工具调用模型」这句话**不再成立**，改成「gemma-4-E4B-Q3 略高」，而「不可分」的理由是量出来的：**这一对的差在换判分器时摆了 0.0125**（+0.0025 → −0.0100），比新差幅 0.0100 还大——一个比判分器差异还小的名次差不该当结论。口径注：这一段用 macro（类别等权）；同一对的 micro 是 0.8944 vs 0.8887（差 −0.0057），结论相同、量级更小，两种口径都**不可混用**。
 - **`parallel_multiple` 的第一名同样翻转**：Bonsai → gemma-4-E4B-Q3（旧 Δ +0.035 给 Bonsai，新 Δ −0.010 给 gemma）。
 - **`simple_python` 上「大模型更好」被推翻**：旧 Qwen3.5-4B-Q3 0.66 > gemma-4-E2B-Q3 0.5975、Qwen4B-Q3 0.66 > gemma-4-E4B-Q3 0.62；新 gemma-E2B-Q3 0.9125 > Qwen4B-Q3 0.89、gemma-E4B-Q3 0.915 > 0.89。**2B 级的 gemma 在这个类别上反超 4B 级的 Qwen**，差 0.022–0.11。
 - **不变的两条**（可以继续引用）：granite-4.1-3b 的 Q3 远远好于 Q2（旧 0.5798 vs 0.2024，新 0.7710 vs 0.2065）；`irrelevance` 上 granite-Q2 的异常高分 0.9875 判分器无关（0 翻转），所以它不是判分产物。
@@ -103,7 +103,7 @@
 
 - 多轮已有 10 个模型：Qwen3.5-2B(q2,q3)、4B(q2,q3)、9B(q2,q3)、Qwen3.6-35B-A3B(q2,q3)、Ternary-Bonsai-27B、granite-4.1-3b——即 5 个族里 4 个有数。
 - **gemma-4 族多轮 0 行**，而单轮 20 行齐全（E2B/E4B × q2/q3 × 5 类）。
-- 类别覆盖：`multi_turn_base` = 9 个模型；`multi_turn_long_context` = 3 个（2B q2/q3、4B q2/q3 计 4 个模型名）；`miss_func` / `miss_param` = 各 3 个（2B q2/q3、Bonsai）。没有任何模型同时有 4 类以外的完整覆盖。
+- 类别覆盖（实测行数 / 模型数）：`multi_turn_base` = **11 行 / 10 个模型**（Bonsai 两行：m22 与 m32）；`multi_turn_long_context` = **7 行 / 4 个模型**（2B-q2、2B-q3 四行、4B-q2、4B-q3）；`miss_func` = **3 行 / 3 个模型**（2B-q2、2B-q3、Bonsai）；`miss_param` = **3 行 / 3 个模型**。只有 `Qwen3.5-2B` 的 q2/q3 有全部 4 类。
 - 所以 `plan4` 可以不做「扩到 granite/MoE」（已有），只剩 gemma 一族；但 res8 说跨族比较已经被模板混杂，必须用**同 handler 的受控对**而不是再添一个不同 handler 的行。
 - 证据：`experiments.sqlite` 的多轮行清单。
 - 复现：`sqlite3 -readonly experiments.sqlite "SELECT model, count(*), group_concat(_bench,'|') FROM experiments WHERE bench_family LIKE 'bfcl-multiturn%' GROUP BY model"`（实跑输出 10 个模型，无 gemma）。
@@ -193,7 +193,11 @@
 | `Qwen/Qwen3-30B-A3B-Instruct-2507-FC` | Qwen3.6-35B-A3B(q2,q3) | base | 组内可比 |
 | `ibm-granite/granite-4.0-350m` | granite-4.1-3b-Q3_K_M | base | 单独一组；与任何行都不可比（模板既非自家版本也不同尺寸） |
 
-- 因此：**跨 handler 的多轮分数差 = 族/尺寸差 + 模板差**，两者没有分开。库内可读的是上表四个组**组内**的比较；「Qwen 家族比 granite 强」「MoE 比稠密好」这类跨组结论目前**没有证据**。
+- **但「组内可比」还要再叠条件**：handler 相同只统一了模板，`ctx_size`、完整/`-partial` 与类别还得同时一致。逐行核对后，唯一真正受控的跨族对照组是 `Qwen/Qwen3-1.7B-FC` 里的 **base @ ctx 98304** 三行：2B-q2 `0.025`、2B-q3 `0.185`、Bonsai `0.700`（m32，`n=200` 完整）。
+  - 同组里 Bonsai 还有一行 base @ **131072**（m22，0.695）：ctx 不同，**不能**与上面三行并列。
+  - 同组里 `miss_func`/`miss_param`：2B 两个量化档都是 @**131072** 完整协议，Bonsai 是 @**98304** 且协议为 `bfcl-official-multiturn-temp0-partial` —— ctx 与协议**双差**，不可比。
+  - `long_context`：Bonsai 没有这一行；2B-q3 自己在 98304/131072/196608（×2）四行上跑过，本身就不是同配置重复。
+- 因此：**跨 handler 的多轮分数差 = 族/尺寸差 + 模板差**，两者没有分开；**同 handler 组内也多数不可比**，因为 ctx 或 `-partial` 不同。库内可读的跨族对照只有上面那一组三行（base @98304）；「Qwen 家族比 granite 强」「MoE 比稠密好」这类跨组结论目前**没有证据**。
 - 要分开它们需要一个 **2 模型 × 2 handler 的受控对**（同一对模型各跑两个模板），实测成本：每个 arm 200 题，参 m12 的 granite-8B 实测 `11:40` 生成 + ~10 s 判分，E2B/2B 量级 ≤ 12 分钟/arm；四臂加上模型加载 ≈ **50 GPU 分钟**。这是 `PLAN.md` 里 WP4 的设计，也是本轴唯一的未测大项。
 - 已有一个族全缺：**gemma-4 多轮 0 行**（单轮 20 行齐）。补 gemma 只能补「覆盖」，补不了「可比」，因为它的 handler 也只能是借来的。
 - 证据：`.wrapup/m{9,11,14,17,18,20,22,36}_summary.jsonl` 的 `handler` 字段；`run_m9_panel.sh`。
@@ -216,7 +220,11 @@
 
 - **正控是这套控制的关键**：没有 P 就只能证明「它会失败」，不能证明「它判得对」。P 成立说明它不是恒假。
 - **一个要写进结论的判断**：A 与 B 的 `error_type` 是**同一个** `multi_turn:execution_response_mismatch`，也就是说判分器在错误类型上**不区分「答案错」与「格式坏」**，两者都落到「执行响应不一致」。所以拿历史多轮失败原因做归因（是模型不会调，还是格式没吐对）**不能靠 `error_type`**，只能逐题看 `inference_log` 里 handler 的 decode 记录。
-- 边界：只测了 `multi_turn_base` 一条真实题目；`long_context` / `miss_func` / `miss_param` 的判分路径相同（同一个 checker，差别只在数据集内容与 handler 的补全逻辑），但**未逐类构造控制**，写在这里当已知边界。
+- **边界（按实测写，不按「同一个 checker」推断）**：控制只在 `multi_turn_base_0` 上构造过，而四类的判分路径**并不相同**：
+  - `multi_turn_checker.py:23` **丢弃传入的 `test_category`**，用 `test_entry_id.rsplit("_",1)[0]` 自己重新推导；所以调用方给什么类别都不影响分支。
+  - `long_context` 走的是 `multi_turn_utils.py:45` 里把 `long_context=True` 传给函数类初始化实例的那条支路；我的控制（base）**从未触及**这条支路。
+  - `miss_func` / `miss_param` 各自 **203/934 个标准答案轮是空的（21.7%）**，checker 在 `multi_turn_checker.py:97-98` 直接 `continue` 跳过这些轮（连注释都说「irrelevance 由 `multi_turn_irrelevance_checker` 负责」），而 `multi_turn_irrelevance_checker` 在整个包里**只有定义与一处 import（`eval_runner.py:13`），没有调用点**——所以「模型在这一轮不该调用」这条规则在 `multi_turn_checker` 内没有专门判据，只能靠下一轮的状态比对间接抓到。（`multi_turn_base` 与 `long_context` 也各有 3/734 个空 GT 轮、涉及 2 个 entry，所以这条不只是 miss_* 的问题。）
+  - 结论：控制覆盖 **`multi_turn_base` 一条题目的四条控制**；`long_context` 分支、空 GT 轮跳过规则、以及「多轮 irrelevance 到底由谁判」**均未验证**，不得当作通过。
 - 证据：`audits/multiturn_checker_negative_control.py`。
 - 复现：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/multiturn_checker_negative_control.py"`（实跑 `EXIT=0`，四行控制表即上表）。
 - 状态：current。
@@ -225,13 +233,35 @@
 
 - **判据是脚本，不是本文件里的数**：`python3 "docs/subprojects/a13-工具调用 BFCL/audits/run_all.py"` 一条命令跑完三项——单轮换判分器的对照（必须 exit 0）、多轮判分器的四条负控（必须 exit 0）、以及**库与证据一致**（每个可比格的 `_score` 必须逐位等于 `audits/official_vs_homegrown.json` 的 `official_acc` 且 `protocol` 是官方身份；prompt 20 行必须是自研身份；不许出现未知协议串；`n_items` 为 NULL 的行必须全是多轮）。实跑 `EXIT=0`，末行 `PASS: 判分器对照、多轮负控、库与证据一致`。
 - **行数与哈希是快照**：`experiments.sqlite` 仍被 `a06`/`i02` 写，所以任何具体行数（123 行 bfcl、79/20/24、15 行缺题量）都只在指定 revision 上成立。`run_all.py` 因此**不把行数当判据**，只打印快照（含 `artifact sha256[:16]`），判据是上面那些**关系**：别的子项目加行不会把它弄红，本轴自己的值一旦漂移就会红。本文件里引用的库数字均取自 `b8cc7c1` 之后的库状态，重算以 `run_all.py` 的输出为准。
-- 这条脚本本身**能红**（实测过两次）：第一次因 `official_vs_homegrown.py` 的绑定把库里的官方值当不匹配而红（`exit 3`），第二次因断言只按 `(model, _bench)` 取行、取到了 prompt 行而红（`exit 1`）——两次都是它自己发现的真不一致，修完才绿。
+- **「先验证后写证据」的负控（实测）**：把库复制一份、给全部官方行加 0.01 制造绑定漂移，再跑两条路径——
+  1. `.wrapup/bfclenv/bin/python audits/official_vs_homegrown.py`（`A13_DB` 指向副本）：`EXIT=3`，只打印一行 `FAIL: 15 prediction file(s) could not be bound ... evidence file NOT rewritten`，**证据文件字节不变**（sha256 `90ea2050…` 前后相同）。旧版在这里会先覆盖证据（`binding` 15→14）再抛未捕获的 `KeyError` 退出 1，文档里写的 exit 3 根本到不了——现在写入改成「先写 `.json.tmp`、全部校验通过才 `os.replace`」。
+  2. `python3 audits/run_all.py`（同一副本）：`EXIT=1`，先打 `[FAIL] official_vs_homegrown.py: FAIL: 15 prediction file(s) ...` 再逐格列出 `db=… artifact=…`，**没有 traceback**（子检查崩溃只记 FAIL），证据文件同样不变。
+- 这条脚本本身**能红**（实测过三次）：第一次因 `official_vs_homegrown.py` 的绑定把库里的官方值当不匹配而红（`exit 3`），第二次因断言只按 `(model, _bench)` 取行、取到了 prompt 行而红（`exit 1`）——两次都是它自己发现的真不一致，修完才绿。
+
+## 类别覆盖表（AC 条目：哪格有数、哪格没有，以及没有的性质）
+
+### res15 11 个类别 × 3 个协议：79 + 20 + 24 = 123 行，缺的格分两类
+
+| 类别 | native-tools（11 模型） | prompt（4 模型） | multi-turn（10 模型） |
+|---|---|---|---|
+| simple_python / multiple / parallel / parallel_multiple / irrelevance | **11/11** | **4/4** | 不适用（该类只存在于单轮） |
+| live_simple / live_multiple / live_parallel / live_parallel_multiple / live_irrelevance / live_relevance | **4/11** | **0/4** | 不适用 |
+| multi_turn_base | 不适用 | 不适用 | **11 行 / 10 模型** |
+| multi_turn_long_context | 不适用 | 不适用 | **7 行 / 4 模型** |
+| multi_turn_miss_func / miss_param | 不适用 | 不适用 | 各 **3 行 / 3 模型** |
+
+- **两类缺口必须分开写**：
+  1. native 的 `live_*` 只有 4 个模型有（2B-q2/q3、granite-q2/q3），另外 **7 个模型（4B-q2/q3、gemma×4、Bonsai）是「未测」**——m8 面板只跑了 4 个 panel，不是这些模型的协议不支持 `live_*`。所以「这 7 个模型在 live 类别上没有数」不能读成「它们在 live 类别上差」。
+  2. prompt 协议的 20 行**全部落在 5 个 non-live 类别**，`live_*` 一个都没有：prompt 面板（`run_m4.sh`/`run_m7.sh` 的 `CATS=`）从定义上就只跑这 5 类，因此 prompt 侧的 `live_*` 是**未测**（面板从未尝试），不是「该协议不产出该类别」。
+- **有数的格也不是都能比**：多轮的 ctx / `-partial` 条件见 res12；单轮的 native 与 prompt 是两套工具呈现方式，跨协议不可比（res1）。
+- 证据与复现：`sqlite3 -readonly -header -column experiments.sqlite "SELECT model, sum(_bench LIKE 'bfcl-live%') live_rows, sum(_bench NOT LIKE 'bfcl-live%') nonlive_rows FROM experiments WHERE bench_family='bfcl' AND protocol LIKE '%official-ast-checker' GROUP BY model"`（实跑：4 个模型 `live_rows=6`，7 个模型 `live_rows=0`）；prompt 侧的类别集合：`sqlite3 -readonly experiments.sqlite "SELECT group_concat(DISTINCT _bench) FROM experiments WHERE protocol LIKE '%homegrown-matcher'"`（实跑只列出 5 个 non-live 类别）。
+- 状态：current。
 
 ## 未测（不得当成通过）
 
-1. ~~官方 AST checker 与自研匹配器在单轮上的一致率~~ **已测（res11）**：60 格、34 上行 / 2788 下行。残留：prompt 协议 20 行仍不可重判（无预测文件）。
+1. ~~官方 AST checker 与自研匹配器在单轮上的一致率~~ **已测（res11/res13）**：79 格、35 上行 / 2,788 下行。残留：prompt 协议 20 行仍不可重判（无预测文件）。
 2. **多轮的重复地板**：没有任何同配置两次的同格对照（res7 的 `0.095` vs `0.11` 只能算线索）。`WP4` 出数。
-3. **多轮判分器的可执行负控**：i01 只做了单轮的；`WP5` 未开跑。
+3. ~~多轮判分器的可执行负控~~ **已测（res14）**：正控 PASS、三条坏预测全 FAIL。残留边界：只在 `multi_turn_base` 上构造，`long_context` 分支、空 GT 轮跳过规则、多轮 irrelevance 的归属均未验证。
 4. **prompt 协议的 4 个模型**：预测文件不存在（res5），协议效应只能从库里的 20 行读，重判不可能。
 5. **`multi_turn` 之外的多轮类别**（`web_search`、`memory`）与 `simple_java`/`simple_javascript`：库里 0 行，本轴不覆盖。
 6. **跨 handler 的族间比较**：未测且不可由库内数据补救，需要 res12 的 2×2 重跑（≈50 GPU 分钟）。
