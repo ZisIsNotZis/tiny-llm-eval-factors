@@ -6,7 +6,7 @@
 
 ## 证据绑定（读这一层之前先看这里）
 
-本层的全部数字在 `experiments.sqlite` 的 sha256 = `8ddc213cd1863149b1ba550e9deba6fc150e1ca986bc084e69e93d0b62433421` 这个工作树状态上算出（同期 `HEAD` 里的库是 `cc1ae790aefeb20b8ed096f3884e5d553f5ebd62f693909abfbdf82792b22c2e`——两个不一致是因为别的子项目正在改库，本层是只读方）。
+本层的全部数字在 `experiments.sqlite` 的多个快照上都复核通过（`run_all.py` 38/38 条预期成立），最近两次抽取的 sha256 前缀是 `8ddc213c…` 与 `52192032…`；库被 `a04`/`a06` 等子项目并发改写，所以**哈希只作快照，判定一律以 `run_all.py` 为准**。
 `experiments.sqlite` 由多个子项目并发写入，所以**任何一条事实是否仍然成立，用 `python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"` 判定**：38 条预期全成立时上面的事实全部复核通过；某条不成立时先看 `n_items` 有没有变（`n_items` 变了区间就会变），再判是不是真的变了。
 
 复算装置：`analysis/curves.py`（曲线 + 拐点 + 区间）与 `analysis/run_all.py`（全部检查，退出码即结论）。本层只读 `experiments.sqlite`，不写库、不改 `report.html`。
