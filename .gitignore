@@ -35,6 +35,12 @@ experiments.sqlite.bak*
 !.wrapup/mres/*/*_eval.json
 !.wrapup/mres/*/vendor_r1_summary.jsonl
 !.wrapup/mres/*/variant_panel.json
+# a06 的机制探针（temp 1.0 的 161 题点与两个 40 题探针）没有 ingest 路径，事实只能从产物引用，
+# 所以它那三份逐题评测、三份 summary 与 props 回读随仓库走（`RESULT.md` 的 repro 命令直接读它们）；
+# 逐题原始 .jsonl、运行日志、codegen/props 落盘目录仍是可重建缓存，不入库。
+!.wrapup/mres/m165-mechanism/*_eval.json
+!.wrapup/mres/m165-mechanism/*_summary.jsonl
+!.wrapup/mres/m165-mechanism/props_*.json
 .wrapup/*.log
 # 运行日志与进程戳：与 *.log 同类，是暂存不是证据（谁产出的都算，规则在 README 的「Does not ship」）。
 # 逐题评测产物不在此列：`.wrapup/mres/**/*_eval.json` 由上面的 `!` 规则放行入库。
