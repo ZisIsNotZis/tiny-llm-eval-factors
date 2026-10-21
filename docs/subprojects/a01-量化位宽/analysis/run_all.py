@@ -97,7 +97,8 @@ def main(argv):
         expect(False, "fixture", f"读不到入库快照 {FIXTURE_PATH}：{exc}")
     live = make_fixtures.build()                    # 无 .wrapup/mres 时返回 None（干净 clone 的正常情形）
     if live is None:
-        print("  note  fixture             :: 本机无 .wrapup/mres：跳过与现算的交叉校验，判定只用入库快照")
+        print("  note  fixture             :: 本机没有 .wrapup/mres 的逐题产物（clone 里只有入库的 *_eval.json）："
+              "跳过与现算的交叉校验，判定只用入库快照")
     else:
         drift = make_fixtures.diff(snap, live)
         expect(not drift, "fixture-fresh",

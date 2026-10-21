@@ -198,6 +198,16 @@
 - 说明：均匀平移说明不是少数科目坏了，而是整体判分条件变了；且库里这个文件只有**一次**测量，没有重复可比。剩下的两个候选是「原生 Q4 档这个文件真的更好」与「MMLU 这一列的判分条件在两个文件上不同（模板/分词/似然归一）」——后者需要一次同 shim 的复测或一次生成式 MMLU 对照才能判，见 `PLAN.md` 的 GPU 队列。
 - 会推翻它：同 shim 复测得到与 0.6436 差 0.05 以上的值。
 
+### clean-clone-gate :: 干净 clone 里本层的验收装置是绿的：`git clone` 到 `/tmp/a01clone`（HEAD `b6b85a1`）后 `run_all.py` **exit 0、43 条预期全成立**，`docs/check_docs.py` PASS；`.wrapup/mres` 的逐题产物不入库，所以依赖它们的数字改从入库快照 `analysis/fixtures/mres_snapshot.json`（14 组通道数字 + 2 组 MMLU 科目表，`_provenance.sources` 里 44 个来源文件的 sha256）复算。
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- evidence: clone 输出 `SUMMARY: 43 条预期，0 条不成立`（工作树里是 44 条——多出的 `fixture-fresh` 是与 `.wrapup/mres` 现算的交叉校验，clone 里正确跳过并打印一行 note）；`make_fixtures.py --check` 在 clone 里 **exit 2 BLOCKED**（没有产物就无法校验漂移，这是有意不判通过）
+- repro: `git clone -q file://$PWD /tmp/a01clone && cd /tmp/a01clone && python3 "docs/subprojects/a01-量化位宽/analysis/run_all.py"; echo $?`
+- 负控（证明装置不是空转）：① 删掉快照里 `channel_audit["m64-qwen-2b-q2kxl/humaneval"]` 一条 → `run_all.py --fixture <副本>` 两条变红、**exit 1**；② 把 `m63…/syntax_err_san` 从 3 改成 0 → 值断言变红、exit 1；③ `make_fixtures.py --check --fixture <改坏的副本>` 报 DRIFT、exit 1；④ 同一命令对入库快照 OK、exit 0。
+- 会推翻它：clone 里 `run_all.py` 非 0；或上述任一条负控不再变红。
+
 ## 五、migrated 与撤回
 
 ### res1 :: 权重量化位宽：同一模型家族内，从较低比特档到下一档，多数情况下分数上升，但每一列都有反例——33 对相邻档里 HumanEval+ 有 9 对、MBPP+ 7 对、MMLU 4 对、ARC-c 8 对、GSM8K 5 对、IFEval 5 对是下降，「普遍上升」的原措辞已按 `adjacent-majority` 收窄。
