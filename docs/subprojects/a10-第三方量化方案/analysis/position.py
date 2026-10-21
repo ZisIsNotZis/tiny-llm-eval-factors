@@ -142,6 +142,24 @@ def report(cells, sl, bench_filter=None):
               f" {half(912):>9.3f} {half(100):>9.3f}")
     print("  （二项半宽在 p=0.5 处取最大；实际格按自己的 p 与 n 算。TruthfulQA 不套二项区间。）")
 
+    print("\n== 第三方方案自己的阶梯（同上传者、同一套分配策略，只变比特预算）")
+    tps = sorted(panel.THIRD_PARTY, key=lambda m: panel.BPW[m])
+    for lo, hi in zip(tps, tps[1:]):
+        b_lo, b_hi = panel.BPW[lo], panel.BPW[hi]
+        print(f"  {lo} {b_lo:.3f} → {hi} {b_hi:.3f}  Δbpw={b_hi - b_lo:+.3f}")
+        for bench in panel.BENCH:
+            c_lo, c_hi = cells[lo].get(bench), cells[hi].get(bench)
+            if c_lo is None or c_hi is None:
+                print(f"      {panel.SHORT[bench]:<7} 缺一侧的格（未测，不是 0）")
+                continue
+            d, ci = panel.diff_ci(panel.k_of(c_hi, bench), c_hi["n_items"],
+                                  panel.k_of(c_lo, bench), c_lo["n_items"], bench)
+            txt = "无区间（概率质量列）" if ci is None else f"[{ci[0]:+.4f},{ci[1]:+.4f}]"
+            flag = "不可分辨" if ci is None or not resolved(ci) else "该列分得开"
+            budget = sl[bench][0] * (b_hi - b_lo)
+            print(f"      {panel.SHORT[bench]:<7} Δ={d:+.4f} {txt} n={c_hi['n_items']}"
+                  f"  比特预算={budget:+.4f}  {flag}")
+
     out = {}
     for tp in panel.THIRD_PARTY:
         x = panel.BPW[tp]

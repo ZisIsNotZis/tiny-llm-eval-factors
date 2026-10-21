@@ -42,6 +42,15 @@ def resolved(ci):
     return ci is not None and ci[0] * ci[1] > 0 and abs(ci[0]) > 1e-12 and abs(ci[1]) > 1e-12
 
 
+def pos_diff(lo, hi, bench, cells):
+    """(hi − lo) 在该列上的差与区间；缺一侧就是「未测」，返回 (None, None)。"""
+    a, b = cells[lo].get(bench), cells[hi].get(bench)
+    if a is None or b is None:
+        return None, None
+    return panel.diff_ci(panel.k_of(b, bench), b["n_items"],
+                         panel.k_of(a, bench), a["n_items"], bench)
+
+
 def check(name, ok, detail=""):
     print(f"  [{'ok' if ok else 'FAIL'}] {name}" + (f" — {detail}" if detail else ""))
     return ok
@@ -135,6 +144,16 @@ def run(doc, db_path):
     n_res = len(near_res[tp[0]]) + len(near_res[tp[1]]) + len(inter_res[tp[0]]) + len(inter_res[tp[1]])
     A("multiplicity: 全部 36 个格里只有 32 个有区间，其中 1 格分得开（95% 名义水平下期望 1.6 格）",
       total == 36 and with_ci == 32 and n_res == 1, f"{n_res}/{with_ci}（共 {total} 格）")
+
+    # ---- 5b. 第三方方案自己的阶梯：同上传者、同分配策略，只变比特 ----
+    tps = sorted(tp, key=lambda m: panel.BPW[m])
+    own = {b: pos_diff(tps[0], tps[1], b, cells) for b in benches}
+    own_res = [b for b, (d, ci) in own.items() if resolved(ci)]
+    A("scheme-own-step: GSQ 自己的一步（+0.491 比特）9 列全部不可分辨", own_res == [],
+      f"分得开的列 = {own_res}")
+    A("scheme-own-step: 那一步的人均点估计远低于它值多少分（HE 与 HE+ 都是 +0.0488，而预算 +0.09）",
+      abs(own["humaneval"][0] - 0.0488) < 5e-4 and abs(own["humaneval-plus"][0] - 0.0488) < 5e-4,
+      f"HE {own['humaneval'][0]:+.4f} / HE+ {own['humaneval-plus'][0]:+.4f}")
 
     # ---- 6. 插值的分母：原生阶梯自己不单调 ----
     steps = pos.ladder_steps(cells)

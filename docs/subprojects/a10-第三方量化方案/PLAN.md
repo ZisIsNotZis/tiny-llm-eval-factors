@@ -15,7 +15,7 @@
 
 ## 当前状态（随时可读：还剩哪些 / 在办 / 下一个派给谁）
 
-- **已完成**：`WP1`（三层文档 + `result.yaml` 迁移并删除）、`WP2`（位置装置 + 分辨率块）、`WP3`（分配装置）、`WP4`（标签能否存活：`recipe-determinate`/`alloc-gap`/`no-held-arm`/`classifier-blind`/`label-verdict`）、`WP5`（无匹配对的读法：`resolution`/`reader-rule`）、`WP6`（夹具 + `run_all.py` 36 条 + `--selftest` 三扰全中 + 干净 clone）。
+- **已完成**：`WP1`（三层文档 + `result.yaml` 迁移并删除）、`WP2`（位置装置 + 分辨率块）、`WP3`（分配装置）、`WP4`（标签能否存活：`recipe-determinate`/`alloc-gap`/`no-held-arm`/`classifier-blind`/`label-verdict`）、`WP5`（无匹配对的读法：`resolution`/`reader-rule`）、`WP6`（夹具 + `run_all.py` 38 条 + `--selftest` 三扰全中 + 干净 clone）。
 - **在办**：无。
 - **剩余**：`WP7`（独立复核）。
 - **下一个派给谁**：**meta 派 fresh-context reviewer 复做 `WP7`**——本层运行时没有派孙工具（见下一条），不得自评通过。
@@ -27,11 +27,11 @@
 | 工作包 | owner | AC（可证伪） | 依赖 | 预算 | 状态 |
 |---|---|---|---|---|---|
 | WP1 文档归位 | 本层编排者 | `PLAN.md`/`AGENTS.md`/`RESULT.md` 存在；`result.yaml` 的 `res13` 已迁入 `RESULT.md` 并删除该文件；`python3 docs/check_docs.py` 的失败条目数不因本层增加（基线 6 条，全是别的层的 yaml 重复 id）；提交按路径点名 | — | 1 会话 | **完成** |
-| WP2 位置装置 | 本层编排者 | `analysis/position.py` 一条命令对每个第三方档打印：该档位宽、最近原生档位宽与 Δbpw、逐 9 列 Δ 分数 + Newcombe interval + 该格 `n_items`、插值档位宽与逐列 Δ + 区间；协议不一致的格判「不可比」并打印；缺格写「缺」不写 0；**另外打印原生阶梯自身的段差**（它是插值的分母，不打印就等于把非单调的阶梯当成直线） | WP1 | ≤30 CPU 分钟 | **完成**（`RESULT.md::ladder-own-step`/`position-nearest-*`/`position-interp`/`multiplicity-36`/`resolution`） |
+| WP2 位置装置 | 本层编排者 | `analysis/position.py` 一条命令对每个第三方档打印：该档位宽、最近原生档位宽与 Δbpw、逐 9 列 Δ 分数 + Newcombe interval + 该格 `n_items`、插值档位宽与逐列 Δ + 区间；协议不一致的格判「不可比」并打印；缺格写「缺」不写 0；**另外打印原生阶梯自身的段差**（它是插值的分母，不打印就等于把非单调的阶梯当成直线） | WP1 | ≤30 CPU 分钟 | **完成**（`RESULT.md::ladder-own-step`/`position-nearest-*`/`position-interp`/`scheme-own-step`/`multiplicity-36`/`resolution`） |
 | WP3 分配装置 | 本层编排者 | `analysis/alloc_a10.py` 从 gguf 头逐张量读比特（复用 `a03::alloc`，不复制分桶定义）：①每个文件的逐类比特轮廓与参数加权平均；②每个第三方档对最近原生档的加权 `|Δ|` 与逐类 Δ；③同一 tier 标签在多个上传者/多套 base 权重上是否给出**逐张量相同**的分配（打印不同的张量计数）；④张量集合是否相同（866 个名字、元素数逐项相等） | WP1 | ≤20 CPU 分钟 | **完成**（`tensor-set`/`recipe-determinate`/`alloc-gap`） |
 | WP4 标签能否存活 | 本层编排者 | 用 WP2+WP3 的机器读数判定「钉住比特之后剩下的标签还能不能与分配分开」，并给出**否证条件**；同时机械证明本库是否存在「同字节 + 同分配 + 不同方案」的配对（有/无都要有计数，无则写「不存在」并写它需要多少钱）；附带一条可复算事实：报告的分类器（`mktables.split_quant`/`family_of`/`scheme_class`）对这批文件名读出什么 | WP2, WP3 | ≤20 CPU 分钟 | **完成**（`no-held-arm`/`label-verdict`/`classifier-blind`） |
 | WP5 无匹配对的读法 | 本层编排者 | 给出「本库不存在同字节原生档」这一缺口的代价：把位宽缺口乘上位宽尺子（`a03::slopes` 的逐列斜率）得到「缺口值多少分」，与逐列二项半宽、与原生阶梯自身的非单调波动一起排成一张表；结论写成读者规则（能下的结论 / 不能下的结论 + 各自门槛），每条带数字 | WP2 | ≤20 CPU 分钟 | **完成**（`resolution`/`reader-rule`） |
-| WP6 收口 | 本层编排者 | `analysis/fixtures/a10_map.json` 入库并带 sha256 绑定（分数格 + 位宽 + 逐类分配 + 逐张量分配指纹）；`analysis/build_fixture.py --check` 做漂移检查、**缺源时退出 2 而不是 0**；`analysis/run_all.py` 全部断言成立（退出 0）；`--selftest` 三份已知错误的副本各自翻红在预期条目上（负控成立时退出 0）；干净 clone 里退出 0 | WP2–WP5 | ≤45 CPU 分钟 | **完成**（36 条成立；`--selftest` 三扰全中；干净 clone 退出 0） |
+| WP6 收口 | 本层编排者 | `analysis/fixtures/a10_map.json` 入库并带 sha256 绑定（分数格 + 位宽 + 逐类分配 + 逐张量分配指纹）；`analysis/build_fixture.py --check` 做漂移检查、**缺源时退出 2 而不是 0**；`analysis/run_all.py` 全部断言成立（退出 0）；`--selftest` 三份已知错误的副本各自翻红在预期条目上（负控成立时退出 0）；干净 clone 里退出 0 | WP2–WP5 | ≤45 CPU 分钟 | **完成**（38 条成立；`--selftest` 三扰全中；干净 clone 退出 0） |
 | WP7 独立复核 | fresh-context reviewer（**meta 派**） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现命令；复核者必须先跑命令再判 | WP2–WP6 | ≤30 CPU 分钟/份 | 待派 |
 
 调度原则：`WP2` 与 `WP3` 是 `WP4`/`WP5` 的公共装置，先做；两包都是 CPU 只读，重活并发 ≤2；GPU 全程不需要。

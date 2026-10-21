@@ -23,7 +23,7 @@
 
 复算装置：`analysis/panel.py`（面板、位宽、几何、区间）、`analysis/position.py`（位置与区间）、
 `analysis/alloc_a10.py`（gguf 头的逐类/逐张量分配）、`analysis/protocol_identity.py`（五个面板的命令行是否只在模型路径上不同）、
-`analysis/build_fixture.py`（重建/漂移检查夹具）、`analysis/run_all.py`（36 条断言，退出码即结论）。
+`analysis/build_fixture.py`（重建/漂移检查夹具）、`analysis/run_all.py`（38 条断言，退出码即结论）。
 本层**只读** `experiments.sqlite`，不写库、不改 `report.html`、不加载权重、不占 GPU。
 
 ## 一、装置与总体（`kind: measured`）
@@ -68,14 +68,14 @@
 - repro: `python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py"`（`no-spec` 打印 `[('none', '0')]`）
 - 说明：与 `tensor-set` 合起来，「-mtp 后缀意味着结构性差异」这个假设被两条独立读数否掉：张量集合相同，且解码时没有用投机草稿。
 
-### fixture-binding :: 本层两条证据的一半在仓库外——分数格在 `experiments.sqlite`（入库），但**有效位宽与逐张量分配来自 `*.gguf` 头**（不入库，单个文件 10–14 GB）——所以九个文件的测量结果冻结成入库夹具 `analysis/fixtures/a10_map.json`（`238d0228…`），每个条目自带推导证据（`n_bytes` / `n_params` / `n_tensors` / 逐类 bits / 逐张量比特指纹）。干净 clone 里 `run_all.py` 不读任何仓库外的文件，因此 36 条断言在那里同样成立。
+### fixture-binding :: 本层两条证据的一半在仓库外——分数格在 `experiments.sqlite`（入库），但**有效位宽与逐张量分配来自 `*.gguf` 头**（不入库，单个文件 10–14 GB）——所以九个文件的测量结果冻结成入库夹具 `analysis/fixtures/a10_map.json`（`238d0228…`），每个条目自带推导证据（`n_bytes` / `n_params` / `n_tensors` / 逐类 bits / 逐张量比特指纹）。干净 clone 里 `run_all.py` 不读任何仓库外的文件，因此 38 条断言在那里同样成立。
 
 - author: measurement
 - scope: general
 - status: current
 - kind: measured
 - evidence: 夹具 sha256 见本节开头的绑定表；`analysis/build_fixture.py --check` 在本机有源时逐项比对（输出「夹具与源一致」）
-- repro: 有源：`python3 "docs/subprojects/a10-第三方量化方案/analysis/build_fixture.py" --check`（退出 0）；**把仓库外的搜索面关掉**：`A10_NO_GGUF=1 python3 ".../build_fixture.py" --check`（退出 **2**，逐条打印「盘上找不到该 gguf」）；同一关断下 `A10_NO_GGUF=1 python3 ".../run_all.py"` 仍退出 **0**（36 条，只用夹具）。干净 clone：`git clone --depth 1 file://$PWD /tmp/a10clone && cd /tmp/a10clone && python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py"`（退出 0，36 条）；同一 clone 里 `python3 ".../protocol_identity.py"` 退出 **2**（`.wrapup/mres/*` 不入库）
+- repro: 有源：`python3 "docs/subprojects/a10-第三方量化方案/analysis/build_fixture.py" --check`（退出 0）；**把仓库外的搜索面关掉**：`A10_NO_GGUF=1 python3 ".../build_fixture.py" --check`（退出 **2**，逐条打印「盘上找不到该 gguf」）；同一关断下 `A10_NO_GGUF=1 python3 ".../run_all.py"` 仍退出 **0**（38 条，只用夹具）。干净 clone：`git clone --depth 1 file://$PWD /tmp/a10clone && cd /tmp/a10clone && python3 "docs/subprojects/a10-第三方量化方案/analysis/run_all.py"`（退出 0，38 条）；同一 clone 里 `python3 ".../protocol_identity.py"` 退出 **2**（`.wrapup/mres/*` 不入库）
 - 说明：这条是为「看不到输入的检查必须失败」而设的——干净 clone 若恰好跑在这台有 `/home/z/hf` 的机器上，`find_gguf` 会「恰好」成功，把「缺输入退出非 0」变成假绿；`A10_NO_GGUF=1` 就是用来打红它的开关。`--selftest` 的第三条（`A10_NO_GGUF` 之外的三份错误副本）证明断言本身会翻红，两者一起才算「检查有效」。
 
 ## 二、位置：第三方档相对原生阶梯（`kind: measured`）
@@ -122,7 +122,17 @@
 - repro: `python3 "docs/subprojects/a10-第三方量化方案/analysis/position.py" | sed -n '/插值档/,$p'`
 - 说明：插值只用两个点，残差零自由度，所以这里**不给**插值误差项，改用保守合成（比两比例差区间宽）；因此「跨 0」是保守结论——它跨 0，用更紧的方法也不会变成不跨 0。IQ3_S 的插值还落在**负**段斜率上（见 `ladder-own-step`），所以「插值 = 0.8889 而实测 = 0.9390」不能读成「第三方高于线性预期」。
 
-### multiplicity-36 :: 本层的比较一共 **36 个格**（两档 × {最近原生档, 插值档} × 九列），其中 32 个有区间（TruthfulQA 四格不套二项区间），区间不含 0 的只有 **1 个**（IQ3_S 的 HumanEval）；95% 名义水平下 32 个格期望偶然显著 **1.6** 个。
+### scheme-own-step :: 第三方方案**自己的阶梯**（同上传者、同一套分配策略，只变比特预算，Δbpw = **+0.491**，3.058 → 3.549）：九列点估计是 HE +0.0488 [−0.0129,+0.1121]、HE+ +0.0488 [−0.0244,+0.1222]、MBPP +0.0238 [−0.0225,+0.0702]、MBPP+ +0.0106 [−0.0503,+0.0714]、MMLU +0.0175 [−0.0178,+0.0529]、ARC-c −0.0100 [−0.1429,+0.1234]、TruthfulQA −0.0200（无区间）、GSM8K +0.0200 [−0.0467,+0.0892]、IFEval +0.0300 [−0.0741,+0.1337]，**全部不可分辨**；而这一步的比特预算按尺子值 HE +0.0930 / HE+ +0.0874 / GSM8K +0.0982。
+
+- author: measurement
+- scope: specific
+- status: current
+- kind: measured
+- evidence: `analysis/position.py` 的「第三方方案自己的阶梯」块；`analysis/run_all.py` 的 `scheme-own-step` 两条
+- repro: `python3 "docs/subprojects/a10-第三方量化方案/analysis/position.py" | sed -n '/第三方方案自己的阶梯/,/^$/p'`
+- 说明：这是本库**唯一一对「方案与分配策略都钉住、只变比特预算」的对照**（同一上传者、同一 tier 系列、embed 都钉在 2.562），所以它同时是两条事实的证据：①第三方方案自己的位宽—分数关系与原生阶梯一样平（把 `ladder-own-step` 的观察推进一步：不只是阶梯不单调，而是**0.49 比特换不出可读出来的分**）；②本层的分辨力瓶颈不在「换了方案」，而在这一族上「比特预算能不能换来分」本身就测不出。
+
+### multiplicity-36 :: 「第三方对原生」的比较一共 **36 个格**（两档 × {最近原生档, 插值档} × 九列），其中 32 个有区间（TruthfulQA 四格不套二项区间），区间不含 0 的只有 **1 个**（IQ3_S 的 HumanEval）；95% 名义水平下 32 个格期望偶然显著 **1.6** 个。另有 9 个格是第三方**自己的一步**（`scheme-own-step`），那 9 个格全部跨 0，不计入这里。
 
 - author: measurement
 - from: result.position-nearest-iq3s, result.position-nearest-xxs, result.position-interp
@@ -199,7 +209,7 @@
 - kind: measured
 - evidence: `analysis/position.py` 的「分辨率」块（三列数字在同一屏内）；`analysis/run_all.py` 的 `ladder-own-step` 两条
 - repro: `python3 "docs/subprojects/a10-第三方量化方案/analysis/position.py" | sed -n '/分辨率/,/^$/p'`
-- 说明：这三道门槛都不依赖第三方方案，它们是这份数据的分辨力上限。
+- 说明：这三道门槛都不依赖第三方方案，它们是这份数据的分辨力上限；`scheme-own-step` 给出的第四个读数（0.491 比特 = 0.087–0.098 预期分，实测 +0.0488 且跨 0）说明连「把别的东西都钉住、只加比特」也换不出可读出来的分。
 
 ### reader-rule :: 在没有同字节对照的情况下，读者可以下、与不可以下的结论（本层的答复）：
 
