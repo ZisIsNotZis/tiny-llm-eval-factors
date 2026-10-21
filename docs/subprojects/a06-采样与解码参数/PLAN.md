@@ -20,13 +20,11 @@
 - 已完成：`WP1`（文档归位 + 协议普查）与 `WP2`（逐题判决移动）。
   两个只读脚本都退出 0，捕获在 `evidence/`：`census-6fc5b0c.txt`（267 行）、`peritem-2552615.txt`（36 对），
   各自带一份负控（空临时树里跑同一脚本 → 输入全缺、exit 2）。
-- 在办：`WP3`（厂商推荐臂）**已从「外网阻塞」转为「等 GPU + 等 i02 加一档」**：厂商推荐值已取到并存成 `RESULT.md` 的 `res-vendor-value`，
-  但那个值落在已测的每一个设置之外（温度 1.0、`top_p` 1.00、`min_p` 0.0、`presence_penalty` 2.0），所以不能用已有的格代理它，必须真跑。
-- 下一步派给谁：`WP3` 需要两步：(a) i02 在 `.wrapup/variant_panel.py` 的 `AXES['sampling']` 里加一档，参数逐字取 `res-vendor-value`；
-  (b) 一个 GPU worker 在 `bash .wrapup/gpu_locked.sh` 下跑两个面板（标准列 + MultiPL-E cpp/py 三档），估 30–50 GPU 分钟。
-  `WP4`（规模次序）同样等 GPU 槽；`WP5`（独立复核）由 meta 派 fresh-context reviewer，可先针对 `WP1`/`WP2` 的产物做。
+- 在办：`WP3`（厂商推荐臂）**值已就位、测量未跑**，由 i02 加档（meta 已裁决：a06 不碰 `.wrapup/variant_panel.py`）。
+  i02 的加档尚未落 main（`.wrapup/variant_panel.py` 里还没有 `vendor` 串），所以 `WP3` 的触发条件是「i02 的提交落地 + 锁可用」，见下面的 GPU 队列。
+- 下一步派给谁：`WP3` 的测量派给一个 GPU worker（契约在下面的 GPU 队列，逐格可执行，不需要再设计）；
+  `WP4`（规模次序）同队列第二槽，可裁；`WP5`（独立复核）由 meta 派 fresh-context reviewer，**按 meta 的裁决等 `WP3` 落地后再派**。
 - 真正未做的只剩两件：`WP3` 的厂商档测量 + `WP4` 的规模次序。
-  AC 的「温度/top-k 结论可复算」那一半已经完成；「厂商推荐采样 vs 固定协议受控检查完成」那一半的**输入**已就位、**测量**未跑。
 
 ## 工作包
 
@@ -34,9 +32,10 @@
 |---|---|---|---|---|---|
 | WP1 文档归位 + 协议普查 | a06 编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 与 `result.yaml` 已删除且 `plan3`/`res10` 以 `## <id> :: <text>` 事实存活；`sampling_census.py` 退出 0，缺任一输入（库 / `m27_summary.jsonl` / `m31_summary.jsonl` / `variant_panel.json`）时退出 2；`python3 docs/check_docs.py` 退出 0 | — | 1 会话 | 完成 |
 | WP2 逐题判决在协议改变时移动多少 | a06 worker（CPU 槽） | 对 `.wrapup/mres/m27-*_eval.json` 与 `m31-*_eval.json` 逐题比 greedy 锚点与每个 temp>0 / top_k 设置，给出每 (模型, 语言, 设置) 的 up/down 翻转数与 Jaccard，并回答「净分数移动 vs 逐题翻转」是否与 i01 的 temp=0.3 五跑地板同量级；缺产物时 exit 2 | WP1 | 0.2 CPU 时 | 完成：`peritem_moves.py` 比完 36 对（3 档 × 2 语言 × 6 设置）退出 0；Jaccard 0.40–0.69，23/36 对净移动 ≤ 6 道题（与 i01 五跑地板不可分），最极端一格净 +1 而 15 上/14 下；负控在空临时树里 exit 2 |
-| WP3 厂商推荐采样臂（`plan3` 的受控检查） | i02 加档 + GPU worker 跑 | `.wrapup/mres/*/variant_panel.json` 的 sampling 轴里多一档 `vendor`，参数**逐字**为 `temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0, repetition_penalty=1.0`（来源 `RESULT.md::res-vendor-value`），与 `greedy` 同模型同 bench 同 `n_items` 对照；另在 MultiPL-E 上对 Q2/Q3/Q4 × cpp/py 跑同一档，以回答「厂商档下 Q3-vs-Q4 在 cpp 上的反转是否仍在」 | 厂商值已就位（`res-vendor-value`）；需一个 GPU 槽 | 标准列 1 档 ≈ 9–10 分钟（m131 实测）+ MultiPL-E 6 格 | 待派（值已就位，等 GPU 与 i02 加档） |
-| WP4 规模次序在采样下是否存活 | GPU worker | 同族 ≥3 个规模（例如 Qwen3.5-0.8B/2B/4B）在同一 bench、同一 ctx 下各有 greedy 与一档 temp>0 的格；给出规模对的 win/loss 与次序反转数，且与 WP1 的量化档结论分开报告 | 一个 GPU 槽 + `variant_panel.py` 的 sampling 轴（已在盘上） | ≤40 GPU 分钟（2 个模型 × 2 档 × 4 基准，按 m131 的 9–10 分钟/档估） | 待派（等显存） |
-| WP5 独立复核 | fresh-context reviewer（meta 派） | 对本目录三份文档与 `sampling_census.py` 的输出给裁决，指出证据缺口；reviewer 的结论取代本人的自评 | WP1–WP4 | 一次复核 | 待派 |
+| WP3 厂商推荐采样臂（`plan3` 的受控检查） | i02 加档 + GPU worker 跑 | 队列 A 的 10 个格全部入库并按 `rank_survival.py --check` 通过：MultiPL-E 上 Q2/Q3/Q4 × cpp/py 6 格 + 标准列 Q3 × 4 个基准；「厂商档下 cpp 的 Q3-vs-Q4 是否仍反转」由 `rank_survival.py` 的 `vendor` 行给出 survived/inverted，不靠散文 | 队列 A 的触发条件（见下） | 58 GPU 分钟（实测 40 + 8，含 25% 余量） | 待派（值已就位，等 i02 加档） |
+| WP4 规模次序在采样下是否存活 | GPU worker | 队列 B 落地后在 `rank_survival.py` 里多一条 `axis=size` 的 ladder（0.8B/2B/4B，Q2 与 Q3 各一条），`--check` 通过，并打印每个规模对的 survived/inverted——与量化档结论分开报告，不得合并成一个「排序结论」 | 队列 B 的触发条件；另需第二个模型家族的厂商值 | 34 GPU 分钟（4 格 × 6.7 × 1.25） | 待派（可裁：AC 不依赖它） |
+| WP5 独立复核 | fresh-context reviewer（meta 派） | 对本目录三份文档、`sampling_census.py`、`peritem_moves.py`、`rank_survival.py --check` 的输出给裁决，指出证据缺口；reviewer 的结论取代本人的自评 | meta 的裁决要求等 `WP3` 落地后再派 | 一次复核 | 待派（按 meta 裁决排在 WP3 之后） |
+| WP6 排序判据机械化 | a06 编排者 | `rank_survival.py --check` 退出 0；三个 fixture 入库；两处负控成立（篡改一个分值 → exit 1；缺库 → exit 2）；RESULT 的「py 45 个非平比较 0 反序 / cpp Q3-vs-Q4 5 个反序」由 fixture 一行一行吐出而非散文 | WP2 | 0.2 CPU 时 | 完成 |
 
 ## plan3 :: 假设 B2（厂商推荐采样）：unsloth 给每个模型发布推荐运行/采样参数，而我们固定协议；做一次受控检查，看厂商推荐采样会不会改变任何量化结论（即我们的协议是否是 confound）。
 
@@ -73,6 +72,48 @@
 - 不改其他子项目目录、不改 `docs/plan/subprojects.md`。
 - 不重生成提示集：`.wrapup/prompts` 是唯一来源。
 - 不修那 490 行采样列不可信的历史行的库值：修法是 i02 的库整洁范围，a06 只登记「这些行的采样设置 UNKNOWN」并保证自己的比较不依赖它们。
+
+## GPU 队列（触发条件 + 逐格预算）
+
+预算全部从实测吞吐算，不用圆整数：MultiPL-E 每格（161 题，gen+eval）按 **6.7 分钟**
+（`m27` 实测：14 格 93.9 分钟，含每档一次 server 启动；`m3` 的 16 格是 5.4 分钟/格，`m2` 的 9B 6 格也是 5.4，所以取较慢的那个）；
+标准列一档（MMLU 456 + GSM8K 50 + IFEval 50 + HumanEval 164）按 **6.3 分钟**（`m131` 实测 `panel.log`：01:57:03→02:28:44 五档 31.7 分钟）。
+两者都乘 **1.25** 的余量，因为厂商档是本研究没跑过的采样值，序列长度可能变，而 temp 1.0 的思考串更长。
+
+显存要求按实测：Qwen3.5-2B `UD-Q4_K_XL`（1.340 GB 权重）在 `-c 8192 -np 1 -ngl 99` 下让 `memory.free` 从 23088 降到 21198 MiB，**实测占用 1.89 GiB**；
+所以门槛写成「`memory.free ≥ 2 × 1.89 GiB = 3800 MiB`」（2 倍是给同卡上别的仓库任务的增长留头，不是圆整数偏好）。
+起服后必须断言 server 自报 `n_slots = 1`（`/tmp/a06_vram_probe.log` 里 `load_model: initializing, n_slots = 1, n_ctx_slot = 8192`）。
+
+**队列 A（`WP3`，AC 核心，必须先跑）**
+
+| 格 | cell | 题数 | 分钟 |
+|---|---|---|---|
+| A1–A6 | Qwen3.5-2B `UD-Q2_K_XL` / `UD-Q3_K_XL` / `UD-Q4_K_XL` × cpp / py，MultiPL-E raw，厂商档 | 161 × 6 | 40 |
+| A7–A10 | Qwen3.5-2B `UD-Q3_K_XL`，标准列 MMLU / GSM8K / IFEval / EvalPlus HumanEval，厂商档 | 456 / 50 / 50 / 164 | 8 |
+| 合计 | | | **≈48 分钟（预算 58）** |
+
+- 为什么是这三档两语言：反序出现在 **cpp 的 Q3-vs-Q4**，所以 cpp 是必须的；py 是「次序存活」那一侧的对照，缺了它就只能报一个语言。
+  Q2 不可省：它让 cpp 的三个档对（Q2Q3、Q2Q4、Q3Q4）全部可比，只报 Q3Q4 一个是单点结论。
+- 为什么标准列只跑 Q3：`m131` 用的就是 Q3，厂商档因此能直接插进已有的五档表当第六档，不需要新建面板。
+- 入库后的判据：`rank_survival.py` 的 `SELECTION` 里加一行 `("vendor", …, COUNTED)`
+  （`WHERE run_tag = '<i02 的 tag>'`），`--write` 后 `--check` 退出 0；`rank_summary.tsv` 的 cpp `Q3>Q4` 行由 `inverts` 或 `survives` 给出答案。
+- 触发条件（三条全满足才起服）：① `grep -c vendor-recommended .wrapup/variant_panel.py` ≥ 1 且该改动已在 main；
+  ② `bash .wrapup/gpu_locked.sh true` 能立刻拿到锁；③ `nvidia-smi --query-gpu=memory.free` ≥ 3800 MiB。
+  任一不满足就排队，不占用槽。
+
+**队列 B（`WP4`，可裁）**
+
+| 格 | cell | 题数 | 分钟 |
+|---|---|---|---|
+| B1–B4 | 另一家族的 ≥2 档 × cpp/py，厂商档 | 161 × 4 | 34 |
+
+- 首选 `Llama-3.2-3B-Instruct` 的 `Q2_K`（1.364 GB）+ `Q3_K_M`（1.687 GB）：它是唯一「跨家族 + 成本低 + cpp 与 py 两语言在贪心下都有两档」的组合；
+  门槛按 1.687 GB 权重折算出约 2.2 GiB，取 `memory.free ≥ 4500 MiB`。
+- 它需要**自己的**厂商值（Llama 的卡与 Qwen 的不同），所以 `SELECTION` 会多一行 setting，不共用 A 的值。
+- 规模阶梯（0.8B / 4B / 9B 各两档 × 两语言 = 12 格 ≈ 100 分钟）**显式不做**：AC 不依赖它，且要给三个尺寸各取一次厂商卡。
+  它记在这里是为了让人知道代价，而不是被忘掉。
+
+**已做但不占额的先行检查**：起服一次读 `/props` 与 `n_slots`（10 秒，已做，见 `RESULT.md::res-vram-and-props`）。
 
 ## 派工与资源
 

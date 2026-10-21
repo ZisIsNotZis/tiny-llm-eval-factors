@@ -41,13 +41,24 @@
   退出非 0（2）就先修输入，不得带着 `UNMEASURED` 交付。
 - 改了普查脚本就跑负控：在空目录里跑同一脚本必须打印四条 `missing …` 并退出 2；
   一条不会失败的检查等于没有检查。
+- **排序结论只能由 `rank_survival.py` 给，不能手打**：说「次序存活/反序」就得同时给 `fixtures/rank_summary.tsv` 的对应行；
+  手算的数字与 fixture 不一致时，fixture 赢，或者是你的选择表错了（`SELECTION`），两者都要修一个。
+- 往这道判据里加一条解码臂（例如厂商档）**只需在 `rank_survival.py` 的 `SELECTION` 加一行**（setting 名、说明、`WHERE` 子句、是否进账本），
+  然后 `--write` 再 `--check`。不要为一条新臂另写一份分析脚本，那样同一个问题就有两个家。
+- 两个设置若在每个 (档, 语言) 上数值相同（例如 `top_k=1` 与贪心），只能有一个进账本，另一个用 `counted_in_ledger=False` 做锚点对账；
+  两个都进账本等于把同一对比较数两遍，45 会变成 63 而看起来像「多了证据」。
+- 任何「参数真的生效」的负控**不能**写成「temp>0 跑两次应该不同」：llama.cpp 每请求按 `seed` 重置 RNG，
+  固定 seed 下 temp 1.0 两次也逐字相同（证据 `RESULT.md::res-effect-control`）。正确形状是「固定 seed 重复 → 全同；只改一个参数 → 必须不同」。
+  另外 `/props` 里是 server 的**默认**参数（`temperature=0.8`），lm-eval 走逐请求传参，所以 `/props` 变不变都证明不了面板的参数生效。
 
 ## 数据与测量
 
 - 任何改库前先做编号备份（`experiments.sqlite.bakN`，`numbered_backup` 自校验），改完跑完整性与洁净检查。
   `migrate_db.py` 是唯一入库路径，必须保持幂等；不进库的数字不算存在。
 - 普查与逐题分析只读打开库（`file:experiments.sqlite?mode=ro`），不要写。
-- 任何 GPU 任务必须在 `bash .wrapup/gpu_locked.sh` 下跑，一次一个；起服前看 `nvidia-smi` 的 `memory.free`
+- 任何 GPU 任务必须在 `bash .wrapup/gpu_locked.sh` 下跑，一次一个；`PLAN.md` 的 GPU 队列写了逐格预算与触发条件，
+  没到触发条件就排队，不要为了「不浪费这一轮」提前起服。
+- 起服前看 `nvidia-smi` 的 `memory.free`
   （同一张卡上还有别的仓库的任务，锁只管本仓库），起服后断言 server 自报的 `n_slots` 与 `-np` 相符，不符即作废该次测量。
 - 提示集只用 `.wrapup/prompts`，跑前跑后都不许重生成。
 

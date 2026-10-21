@@ -1,0 +1,41 @@
+# command : python3 docs/subprojects/a06-采样与解码参数/rank_survival.py --check
+# git HEAD: 954d2c86e32a963afb8c2f730fc5014f149995cb
+# fixtures: fixtures/rank_cells.tsv fixtures/rank_ledger.tsv fixtures/rank_summary.tsv
+# negative control: the same command against a fixture whose Q3/cpp/t0.3-k40 score was
+#   edited from 0.173913 to 0.242236 (a DB drift simulation); must exit 1; then restored.
+
+=== clean: --check ===
+ordering survival -- quantisation levels of Qwen3.5-2B, 161-item cells
+  lang level pair   conc  tie  inv  set  outcome
+  cpp  Q2>Q3          15    0    0    6  survives
+  py   Q2>Q3          15    0    0    6  survives
+  cpp  Q2>Q4          15    0    0    6  survives
+  py   Q2>Q4          15    0    0    6  survives
+  cpp  Q3>Q4          10    0    5    6  inverts
+  py   Q3>Q4          15    0    0    6  survives
+
+OK: cells, ledger and summary all reproduce from experiments.sqlite
+EXIT=0
+
+=== tampered: --check ===
+
+FAIL: the stored fixtures disagree with the database
+  docs/subprojects/a06-采样与解码参数/fixtures/rank_cells.tsv: 1 stored line(s) no longer in the DB, 1 DB line(s) not in the fixture
+ordering survival -- quantisation levels of Qwen3.5-2B, 161-item cells
+  lang level pair   conc  tie  inv  set  outcome
+  cpp  Q2>Q3          15    0    0    6  survives
+  py   Q2>Q3          15    0    0    6  survives
+  cpp  Q2>Q4          15    0    0    6  survives
+  py   Q2>Q4          15    0    0    6  survives
+  cpp  Q3>Q4          10    0    5    6  inverts
+  py   Q3>Q4          15    0    0    6  survives
+EXIT=1
+
+=== restored: --check ===
+OK: cells, ledger and summary all reproduce from experiments.sqlite
+EXIT=0
+
+=== negative control: no database (empty temp tree) ===
+UNMEASURED: cannot see the database:
+  database: /tmp/tmp.3Ux5lVYxWw/experiments.sqlite
+EXIT=2

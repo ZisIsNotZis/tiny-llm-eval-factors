@@ -99,16 +99,16 @@
 
 ## 四、次序存活
 
-## level-order-py-stable :: 在 python 上，量化档的次序在 7 个已测解码设置下**全部存活**：Q2 < Q3 < Q4 在 temp 0.3（top_k 1/20/40/64/200）与 temp 0.6 上都不变，21 个设置对 × 3 个档对 = 45 个非平比较，**0 个反转**；但这个存活是**聚合分层面**的——同一批格里逐题集合只重合 0.41–0.69（见 `peritem-reshuffle`），所以「次序存活」不许读成「判决相同」。
+## level-order-py-stable :: 在 python 上，量化档的次序在 6 个已测解码设置下**全部存活**：Q2 < Q3 < Q4 在贪心、temp 0.3（top_k 20/40/64/200）与 temp 0.6 上都不变，C(6,2)=15 个设置对 × 3 个档对 = 45 个非平比较，**0 个反转**；但这个存活是**聚合分层面**的——同一批格里逐题集合只重合 0.41–0.69（见 `peritem-reshuffle`），所以「次序存活」不许读成「判决相同」。
 
 - kind: measured
-- evidence: 普查 `[E2]` 段 `py level-pair order: concordant=45 discordant=0 over 7 settings`；逐档值见 `[E2]` 的 7 行（Q2 15–26 题、Q3 43–44 题、Q4 44–51 题）。
-- repro: 普查 `[E2]` 段。
+- evidence: `fixtures/rank_summary.tsv` 的 py 三行都是 `15 0 0 6 survives`；`fixtures/rank_ledger.tsv` 是整个 45 行的逐对账本。普查 `[E2]` 段是同一结论的早期、6 设置版本。
+- repro: `python3 "docs/subprojects/a06-采样与解码参数/rank_survival.py" --check`（退出 0 = fixture 与库一致）。
 
 ## level-order-cpp-inverts :: 在 cpp 上，Q3 与 Q4 的次序**不存活**：贪心（`top_k=1`）下 Q3 39/161 > Q4 37/161，而 temp 0.3 的 `top_k≥20` 下变成 Q3 28/161 < Q4 37/161，temp 0.6 下也是 Q3 24/161 < Q4 31/161——同 45 个非平比较里 5 个反转，全部落在 Q3-vs-Q4 这一对上（15 个设置对里 10 个一致、5 个反转）；Q2 与 Q3、Q2 与 Q4 这两对在 cpp 上 30 个比较全部一致。
 
 - kind: measured
-- evidence: 普查 `[E2]` 段 `cpp level-pair order: concordant=40 discordant=5 over 7 settings`，与逐档值（`('0.3','1') Q2=0.1118 Q3=0.2422 Q4=0.2298` 对 `('0.3','40') Q2=0.1118 Q3=0.1739 Q4=0.2298`）。
+- evidence: `fixtures/rank_summary.tsv` 的 cpp 行：`Q2>Q3` 与 `Q2>Q4` 都是 `15 0 0 6 survives`，`Q3>Q4` 是 `10 0 5 6 inverts`；逐对明细在 `fixtures/rank_ledger.tsv`（5 行 `discordant` 全部是 Q3>Q4）。普查 `[E2]` 段给出同一结论的早期版本 `cpp level-pair order: concordant=40 discordant=5 over 7 settings`，与逐档值（`('0.3','1') Q2=0.1118 Q3=0.2422 Q4=0.2298` 对 `('0.3','40') Q2=0.1118 Q3=0.1739 Q4=0.2298`）。
 - repro: 普查 `[E2]` 段；逐对计数见下面这条命令：`python3 -c "import itertools,collections;s={'k1':(18,39,37),'k20':(18,28,37),'k40':(18,28,37),'k64':(18,28,37),'k200':(18,28,37),'t0.6':(18,24,31)};print(collections.Counter((p,('conc' if (s[a][i]-s[a][j])*(s[b][i]-s[b][j])>0 else 'disc')) for a,b in itertools.combinations(s,2) for (p,(i,j)) in zip(itertools.combinations(('Q2','Q3','Q4'),2),((0,1),(0,2),(1,2)))))"`。
 - 限制：`m3` 的贪心锚点 `seed` 是 NULL，`m31` 的 `top_k=1` 行名义温度 0.3 但 top-1 截断等于 argmax 且与 `m3` 逐字相同，所以「贪心」这一侧有两个独立来源互证；「temp 0.6」这一侧只有一次运行，没有重复。−11 道题的净移动超过 i01 的 temp=0.3 五跑净分数摆动上限（6/164），所以它不是重复噪声；temp 0.6 的 −15 道题（Q3 cpp 39→24）同理超出，而 +1/−6/+7 这几档与 6/164 的地板同量级，只有拿到逐题产物才能定（见下一条与 `PLAN.md` 的 `WP2`）。
 
@@ -117,6 +117,27 @@
 - kind: measured
 - evidence: 普查 `[E3]` 段：`greedy cells: 54 over 54 models` / `families with a temp>0 twin: 1 ['Qwen3.5-2B']` / `greedy models with NO temp>0 twin: 47`。
 - repro: 普查 `[E3]` 段。
+
+## rank-ledger :: 「排序是否存活」已经变成可重算的判据而不是散文：`rank_survival.py --check` 从库里重建 21 个格（3 档 × 2 语言 × [贪心, t0.3-k20/40/64/200, t0.6-k40]）与 90 个 (档对 × 设置对) 比较，再与三份入库 fixture 逐行比对；当前结论是 cpp 的 `Q3>Q4` 为 `inverts`（10 一致 / 5 反序），其余 5 个 (语言, 档对) 全部 `survives`（各 15 一致 / 0 反序）。别人不必重跑任何模型就能复核这两句。
+
+- kind: measured
+- evidence: `fixtures/rank_cells.tsv`（21 格）、`fixtures/rank_ledger.tsv`（90 行逐对账本）、`fixtures/rank_summary.tsv`（6 行判定）；捕获 `evidence/rank-954d2c8.txt` 含干净运行 exit 0、篡改一个分值后 exit 1、缺库 exit 2 三段。
+- repro: `python3 "docs/subprojects/a06-采样与解码参数/rank_survival.py" --check`（0 = 一致，1 = fixture 与库漂移，2 = 看不到输入）。
+- 限制：`rank_cells.tsv` 里的「哪个库行使代表哪一档哪一设置」是**设计声明**（`rank_survival.py` 的 `SELECTION` 表），不是测量；判据能证明「给定这个选择，结论是什么」，不能证明「这个选择是唯一合理的选择」。`t0.3-k1` 作为第二个贪心锚点被排除在账本外（否则贪心那一对比会被数两遍），但它的等价性由同一个脚本检查：`m31` 的 `top_k=1` 必须在 6 个 (档, 语言) 上与 `m3` 的贪心格逐字相同，不同就 exit 2。
+
+## res-vram-and-props :: 厂商臂的显存与生效判据都已实测：Qwen3.5-2B `UD-Q4_K_XL`（1.340 GB 权重）在 `-c 8192 -np 1 -ngl 99` 下让 `memory.free` 从 23088 降到 21198 MiB，占用 1.89 GiB，且 server 自报 `n_slots = 1, n_ctx_slot = 8192`；同时 `/props` 显示这台 server 的**默认**生成参数是 `temperature=0.8, top_k=40, top_p=0.95, min_p=0.05, presence_penalty=0.0`——即固定协议的 `temp=0` 不是服务器的默认值，任何忘记传参的跑会得到 0.8，这个默认值本身就是一条现成的负控。
+
+- kind: measured
+- evidence: 探针日志 `/tmp/a06_vram_probe.log` 的 `load_model: initializing, n_slots = 1, n_ctx_slot = 8192`；`nvidia-smi --query-gpu=memory.free` 在起服前后分别是 23088 / 21198 MiB。
+- repro: `bash .wrapup/gpu_locked.sh bash -c 'nvidia-smi --query-gpu=memory.free --format=csv,noheader; /home/z/.local/bin/llama-server -m /home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/snapshots/f6d5376be1edb4d416d56da11e5397a961aca8ae/Qwen3.5-2B-UD-Q4_K_XL.gguf --port 8977 -c 8192 -np 1 -ngl 99 --jinja & sleep 20; nvidia-smi --query-gpu=memory.free --format=csv,noheader; curl -s http://127.0.0.1:8977/props | head -c 200; kill %1'`。
+- 限制：这是**空载**占用（无 prompt cache、无 batch），满负荷时 prompt cache 每条约 39.4–39.8 MiB（`server.log` 的 `alloc` 行），所以门槛取 2× 实测值而不是 1×。
+
+## res-effect-control :: 「采样参数真的生效」的正确负控是**同 seed 下改一个参数看输出变不变**，不是「temp>0 所以两次输出应该不同」：同一个 seed=1234 下，`temperature=0` 两次请求逐字相同（确定性），`temperature=1.0, top_p=1.00, top_k=20, min_p=0.0, presence_penalty=2.0` 两次请求也**逐字相同**（llama.cpp 每请求按 seed 重置 RNG），而把 `presence_penalty` 从 2.0 改成 0.0（其余不变）输出立刻改变。所以判据是：固定 seed 重复 → 全同；只改一个参数 → 必须不同；两者同时成立才证明参数进了采样器。
+
+- kind: measured
+- evidence: 探针输出：greedy 两次都是 `'The sea is a vast, endless expanse of turquoise…'`；vendor 两次都是 `'The sea is an infinite expanse of endless blue…'`；`presence_penalty=0.0` 变成 `'The vast, untamed sea is a living mirror…'`。
+- repro: 见 `res-vram-and-props` 的探针命令，把请求体换成相同的 `messages` 与 `seed`、只改采样字段，发四次。
+- 后果（对 i02 的实现与对 i01 的地板都成立）：① 一个「temp>0 两次输出不同」式的负控会**假红**，因为固定 seed 下它是确定的；② 反过来，采样面板的 `seed` 列是 NULL（`ingest_variant` 写 `"seed": None`），所以那些格**不**可复现——i01 的五跑 Jaccard 0.53–0.67 与「固定 seed 逐字相同」并不矛盾，它们说的是两种不同的测量装置。
 
 ## 五、厂商推荐采样（`plan3`）
 

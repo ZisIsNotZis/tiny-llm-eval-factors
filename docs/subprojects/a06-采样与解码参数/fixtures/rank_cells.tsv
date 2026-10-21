@@ -1,0 +1,43 @@
+# axis	ladder	level	model	bench	language	setting	score	n_items
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	cpp	greedy	0.111801	161
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k1	0.111801	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k20	0.111801	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k200	0.111801	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k40	0.111801	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k64	0.111801	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	cpp	t0.6-k40	0.111801	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	py	greedy	0.136646	161
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	py	t0.3-k1	0.136646	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	py	t0.3-k20	0.161491	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	py	t0.3-k200	0.161491	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	py	t0.3-k40	0.161491	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	py	t0.3-k64	0.161491	
+quant-level	Qwen3.5-2B	Q2	Qwen3.5-2B-UD-Q2_K_XL.gguf	humaneval-multipl-e	py	t0.6-k40	0.093168	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	cpp	greedy	0.242236	161
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k1	0.242236	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k20	0.173913	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k200	0.173913	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k40	0.173913	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k64	0.173913	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	cpp	t0.6-k40	0.149068	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	py	greedy	0.267081	161
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	py	t0.3-k1	0.267081	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	py	t0.3-k20	0.267081	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	py	t0.3-k200	0.267081	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	py	t0.3-k40	0.267081	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	py	t0.3-k64	0.267081	
+quant-level	Qwen3.5-2B	Q3	Qwen3.5-2B-UD-Q3_K_XL.gguf	humaneval-multipl-e	py	t0.6-k40	0.273292	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	cpp	greedy	0.229814	161
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k1	0.229814	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k20	0.229814	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k200	0.229814	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k40	0.229814	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	cpp	t0.3-k64	0.229814	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	cpp	t0.6-k40	0.192547	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	py	greedy	0.273292	161
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	py	t0.3-k1	0.273292	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	py	t0.3-k20	0.316770	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	py	t0.3-k200	0.316770	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	py	t0.3-k40	0.316770	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	py	t0.3-k64	0.316770	
+quant-level	Qwen3.5-2B	Q4	Qwen3.5-2B-UD-Q4_K_XL.gguf	humaneval-multipl-e	py	t0.6-k40	0.316770	

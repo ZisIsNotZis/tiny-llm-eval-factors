@@ -1,0 +1,7 @@
+# axis	ladder	bench	language	level_pair	concordant	tie	discordant	settings	outcome
+quant-level	Qwen3.5-2B	humaneval-multipl-e	cpp	Q2>Q3	15	0	0	6	survives
+quant-level	Qwen3.5-2B	humaneval-multipl-e	py	Q2>Q3	15	0	0	6	survives
+quant-level	Qwen3.5-2B	humaneval-multipl-e	cpp	Q2>Q4	15	0	0	6	survives
+quant-level	Qwen3.5-2B	humaneval-multipl-e	py	Q2>Q4	15	0	0	6	survives
+quant-level	Qwen3.5-2B	humaneval-multipl-e	cpp	Q3>Q4	10	0	5	6	inverts
+quant-level	Qwen3.5-2B	humaneval-multipl-e	py	Q3>Q4	15	0	0	6	survives
