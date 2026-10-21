@@ -36,8 +36,10 @@
 - `live_relevance` 的判分退化为「有没有调用」：bundled 数据集无该类的 `possible_answer`（实测 `exists=False`），代码因此写 `ok = len(calls) > 0`，一个不存在的函数名也判 PASS。
 - 匹配器单向宽容（实测 `arg_ok`）：`arg_ok(10,["10"])=True`、`arg_ok("10",[10])=False`、`arg_ok(True,[1])=True`、大小写与首尾空格折叠；且多余参数不检查（`call_ok` 只遍历标准答案的键）→ 这些方向都**向上**。
 - 聚合：summary 的 `score` 是按题加权（micro），库里每类别一行的自然聚合是按类别平均（macro），实测最大差 `m8` gr3b-q2 micro 0.3905 vs macro 0.1877（差 0.2028）；方向是 micro 偏高，因为 `live_irrelevance`（884/2251 题，奖励不调用）权重大。
-- 库里 BFCL 行的 `n_items` 正在被 i02 回填：本会话内实测从「123 行全 NULL」变成「29 行 NULL / 94 行有值」，所以**行级快照不是事实**，要带时间读。稳定的事实是文件级的：多轮面板 summary（如 `.wrapup/m9_summary.jsonl`）只记 `accuracy`、没有任何 `n`/`count` 字段，所以**多轮类别的题量推不出自任何运行产物**，只能从 bundled 数据集数——而数据集不说明那次 run 实际用了多少题。因此「混合多轮与单轮的 BFCL 汇总无法按题加权」这条结论不依赖回填进度。
-- 历史 BFCL 预测文件没有留存（`.wrapup/bfcl_out` 为空），所以自研匹配器与官方 checker 的一致率**未测**，历史分数无法重判。
+- 库里 BFCL 行的 `n_items` 正在被 i02 回填（本会话实测 123 行全 NULL → 29 NULL / 94 有值），所以**行级快照要带时间读**。
+- **多轮题量是可推导的**：官方 ledger `.wrapup/bfclenv/lib/python3.11/site-packages/score/<handler>/multi_turn/*_score.json` 每次 run 追加 `{accuracy, correct_count, total_count}`，实测四类的 `total_count` 都是 **200**。所以多轮 `n_items` 的缺口属入库侧（i02）可修，不是不可知。
+- **多轮列把模型与提示/调用模板混在一起**：每次多轮 run 记在不同官方 handler 下（实测 `Qwen/Qwen3-1.7B-FC`、`Qwen/Qwen3-8B-FC`、`Qwen/Qwen3-4B-Instruct-2507-FC`、`Qwen/Qwen3-30B-A3B-Instruct-2507-FC`；`m22` 的 summary 甚至没有 handler 字段）。**所以多轮那一列不能跨家族或跨尺寸直接比较**，比较前必须先固定 handler。
+- **逐题预测是保留的**（我先前「没有留存」那句搜索太窄）：单轮在 `.wrapup/mres/m4-*.jsonl`（**10 份 × 1240 条**）与 `m8-*.jsonl`（**4 份 × 2251 条**），每行含 `calls` 与 `raw`；多轮在官方 ledger 里也有逐条 `{id, test_category, model_result, possible_answer}`。所以「换官方 checker 后哪些单轮数字会变」**只需重打分即可回答，不需要 GPU**——这项从「未测」变成「可测、待做」。
 - 状态：current。
 - 证据：`audits/bfcl.md`；`audits/bfcl_audit.py`。
 - 复现：`python3 "docs/subprojects/i01-判分与基准有效性/audits/bfcl_audit.py"`（实跑 `exit=0`，14 条预期成立）。
@@ -73,7 +75,9 @@
 
 - 库侧：`experiments` 的 BFCL 行是**每类别一行**（`_bench = bfcl-<category>`），`n_items` **全为 NULL**（实测 123/123），所以库里没有任何字段能把类别重新按题量加权。
 - 报告侧：`make_report.py::table_bfcl` 渲染成「一行一个 (模型, 协议)、一列一个类别」，**没有汇总列**——报告本身不声明单一个 BFCL 数字。
-- 因此读者若把表里的类别列平均起来，得到的是**未加权平均（macro）**；而面板 summary 里那个 `score` 是**按题加权（micro）**。两者实测最大差 **0.2028**（`m8` gr3b-q2：micro 0.3905 / macro 0.1877），方向是 micro 偏高，因为 `live_irrelevance`（884/2251 题，奖励「不调用」）权重大。
+- **单轮族**：类别长度不等（simple_python 400、multiple/parallel/parallel_multiple 各 200、irrelevance 240、live_simple 258、live_multiple 1053、live_parallel 16、live_parallel_multiple 24、live_relevance 16、live_irrelevance 884），所以把类别平均得到的 macro ≠ 面板 summary 的 micro，实测最大差 **0.2028**（`m8` gr3b-q2：micro 0.3905 / macro 0.1877），方向是 micro 偏高，因为 `live_irrelevance`（884/2251 题，奖励「不调用」）权重大。
+- **多轮族**：四类各 **200** 题（官方 ledger 的 `total_count` 四份一致），所以**多轮 macro == micro**，不存在这个差。
+- 因此「micro 与 macro 最大差 0.2028」**只对单轮族成立**，不能推广到多轮；报告里这两族也必须分开讲。
 - 推论给读者：看 BFCL 那一节时，**逐类别比较是有意义的，跨模型的「BFCL 总分」没有唯一值**；要复现历史 micro 必须回到 `.wrapup/m*_summary.jsonl`，库里没有。
 - 状态：current。
 - 证据：`make_report.py::table_bfcl`（第 1040–1057 行）；`experiments.sqlite` 的 bfcl 行；`.wrapup/m8_summary.jsonl`。
