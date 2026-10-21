@@ -67,7 +67,7 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 | 包 | 内容 | 验收（命令） | 依赖 |
 |---|---|---|---|
-| `r-entry1` | `checks/router_refs.py` 与它的负控：三份根路由里每条 `docs/…::id` 与每个 `docs/…` 路径都必须在树上解析得到；看不到输入不算通过 | `python3 checks/router_refs_negative_control.py` exit 0（未改动副本绿、四种破坏各自红、缺路由文件 exit 2） | — |
+| `r-entry1` | `checks/router_refs.py` 与它的负控：三份根路由里每条 `docs/…::id` 与每个 `docs/…` 路径都必须在树上解析得到；看不到输入不算通过 | `python3 checks/router_refs_negative_control.py` exit 0（十六行期望：未改动副本绿；围栏里的标题不算 id、注释里的不算、跨行拆开的引用与 `:: id` 进分母并报 unparsed-citation、缺 id/缺文件/空扫描/缺路由文件各自红） | — |
 | `r-entry2` | `FINDINGS.md` 每行指到 HEAD 上真实存在的节点，状态取该节点自己的 `状态：` 行；已退役或被修掉的项进「撤回记录」并写死因 | `python3 checks/router_refs.py` exit 0，且 `grep -c 'docs/result/result.yaml\|docs/plan/plan.yaml' FINDINGS.md` 为 0 | r-entry1 |
 | `r-entry3` | `STATUS.md` 与 HEAD 对齐：只引用能解析的路径，当前状态与下一步按本文件写 | `python3 checks/router_refs.py` exit 0 | r-entry1 |
 | `r-entry4` | 根目录无未归类路径：运行日志按类忽略，逐题产物按 README 的判据入库 | `git status --porcelain` 无输出 | — |

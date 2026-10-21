@@ -18,6 +18,16 @@
     ATX 标题，取其第一个空白分隔的 token 恰好等于 id（`### res25 ...`、`## res3 :: ...`）；
     `.yaml` 看第 0 列的顶层键 `<id>:`；
   * 路径 token 只要求那个路径存在（文件或目录）。
+  * 围栏代码块（` ``` ` / `~~~`）与 HTML 注释（`<!-- … -->`）不算正文，判 id 与判引用都在把它们
+    遮蔽之后的文本上做：写在围栏或注释里的 `## id` 不是 id，写在那里的 `docs/…::id` 不是路由。
+    否则在 RESULT.md 末尾贴一段示例代码就能凭空造出一个「解析得到」的 id，或在路由器里贴一段
+    注释掉的引用就能让它自己绿。
+
+分母独立于抽取器，这是这条检查的第二半。`docs/…::` 形状按一条不看 id 的规则数：`::` 之前同一行内
+最近的 `docs/` 与它之间没有反引号（反引号是 token 边界），且 `::` 紧邻的前一个字符不是空白。于是
+id 换行写（`…/RESULT.md::` 换行接 id）或写成 `…:: resdead` 时，这条形状照样进分母；抽取器读不到
+它，就在那一行报一条 `unparsed-citation` 红行，自检行也跟着不等——不会出现 `seen == matched` 而
+某条引用已经悄悄掉出分母的自洽绿。
 
 不解析的两类，各自有理由：token 里带 `<` 或 `>` 的是模板（`docs/<layer>/<layer>.yaml`），它写的是
 形状不是文件，判它「不存在」等于判散文；`::` 前的路径不存在时只报 `missing-file`，不猜那个 id 本来
@@ -28,12 +38,16 @@
 `docs/subprojects/a09-量化感知训练` 而误报 `missing-file`，引用一侧更会整条消失、连分母都不算它。
 背面同样有代价，且同样可见：裸文本（没加反引号）里的带空格路径仍按空白截断，于是报成一条
 `missing-file` 红行——它不会静默消失，读的人看到的是「这条要么写错了边界，要么路径不存在」。
+同一条道理推到分母上：裸文本里把 `docs/…::` 拿来当例子写（不放进反引号）会报一条
+`unparsed-citation` 红行。这是有意的方向——宁可让一个示例红，也不让一条真引用绿；要举例就放进
+反引号 span 里或放进围栏/注释里（那两处不是路由，会被数出来）。
 引用 token 的 id 按上面那条 id 规则比较，所以把整行标题写进 `::` 后面的引用（id 里带空格）会报
 `missing-id`；这条判的是路由写没写出一个 id，不是散文。
 
 反引号边界还可能悄悄丢一条引用（span 抽取写错、span 未闭合等），所以每次运行都打一行自检
-`citation tokens seen: N, matched: M`：N 是原文里出现过的引用形状（独立于 token 抽取去数 `::<id>`），
-M 是 token 抽取真正拿到手的引用数，两者不等即 `MISMATCH` 并判失败。
+`citation tokens seen: N, matched: M`：N 是原文里出现过的引用形状（数 `docs/…::` 形状，与 token 抽取
+无关），M 是 token 抽取真正拿到手的引用数，两者不等即 `MISMATCH` 并判失败。被围栏/注释遮蔽掉的
+形状不计入 N 的比较（它们不是路由），但会单独印出来，读者知道有多少形状被当成非正文跳过了。
 
 空扫描不算通过：一个看不见自己输入的检查必须红，而不是绿。三个路由文件缺任何一个都是外部阻断
 （exit 2 + `BLOCKED:` 行），不是通过也不是失败。
@@ -41,8 +55,8 @@ M 是 token 抽取真正拿到手的引用数，两者不等即 `MISMATCH` 并�
     python3 checks/router_refs.py                  # 仓库根由脚本自身位置推出
     python3 checks/router_refs.py --root /tmp/x    # 负控用临时树，语义完全相同
 
-退出码：0 全部解析且扫描非空；1 有无法解析的引用/路径，或扫描为空，或自检不等（引用掉出分母）；
-2 路由文件缺失。
+退出码：0 全部解析且扫描非空；1 有无法解析的引用/路径、读不成引用的 `docs/…::` 形状、扫描为空，
+或自检不等（引用掉出分母）；2 路由文件缺失。
 """
 from __future__ import annotations
 
@@ -60,17 +74,75 @@ ROUTERS = ("STATUS.md", "FINDINGS.md", "README.md")
 _BARE_TAIL = r"[^\s`'\"()\[\]{}|*，。、；：！？【】（）「」“”]+"
 CITATION_RE = re.compile(r"docs/" + _BARE_TAIL + r"?::[A-Za-z0-9_.\-]+")
 PATH_RE = re.compile(r"docs/" + _BARE_TAIL)
-# 引用形状的独立计数（自检用）：`::<id>` 左侧同段文本含 `docs/` 就算一条，不看反引号也不看 token 边界。
-CITATION_MARK_RE = re.compile(r"::[^\s`]+")
+# 分母只看 `::` 这个形状，不看它后面有没有 id：id 缺失正是要被抓到的形态。
+MARK_RE = re.compile(r"::")
 TEMPLATE_MARKS = ("<", ">")
 
 HEADING_RE = re.compile(r"^(#{2,})[ \t]+(.+)$")
+# 围栏：行首最多 3 格缩进，3 个以上的 ` 或 ~，后面是 info string（闭合围栏的 info string 为空）。
+FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 
-# 检查「文件里有这个 id」的两条规则，各自只看自己那一种文件。
+
+def mask_non_route(text):
+    """把围栏代码块与 HTML 注释换成等长空白，换行留住（行号与列偏移不变）。
+
+    返回遮蔽后的文本。判 id 与判引用都用它：围栏里的是示例代码，注释里的是给人看的备注，两者
+    都不是路由正文。已知边角：围栏里出现未闭合的 `<!--`、或注释里出现围栏开标记时，遮蔽会延到
+    那个闭合标记或文件尾；遮蔽过头只会让 id / 引用少算（判红），不会让死引用变绿。
+    """
+    out = list(text)
+    n = len(text)
+
+    def blank(a, b):
+        for k in range(a, min(b, n)):
+            if out[k] != "\n":
+                out[k] = " "
+
+    fence = None                       # 打开围栏的 (字符, 长度)，例如 ("`", 3)
+    comment_open = False
+    i = 0
+    while i < n:
+        eol = text.find("\n", i)
+        eol = n if eol < 0 else eol
+        if fence is not None:
+            blank(i, eol)
+            m = FENCE_RE.match(text[i:eol])
+            if (m and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]
+                    and not m.group(2).strip()):
+                fence = None
+            i = eol + 1
+            continue
+        started_open = comment_open
+        j = i
+        while j < eol:
+            if comment_open:
+                c = text.find("-->", j, eol)
+                if c < 0:
+                    blank(j, eol)
+                    break
+                blank(j, c + 3)
+                comment_open = False
+                j = c + 3
+            else:
+                c = text.find("<!--", j, eol)
+                if c < 0:
+                    break
+                comment_open = True
+                blank(c, c + 4)
+                j = c + 4
+        if not started_open and not comment_open:
+            m = FENCE_RE.match(text[i:eol])
+            if m and (m.group(1)[0] != "`" or "`" not in m.group(2)):
+                fence = (m.group(1)[0], len(m.group(1)))
+                blank(i, eol)
+        i = eol + 1
+    return "".join(out)
+
+
 def ids_in_md(text):
-    """二级及更深 ATX 标题的第一个空白分隔 token。"""
+    """二级及更深 ATX 标题的第一个空白分隔 token；围栏与注释里的标题不算 id。"""
     ids = set()
-    for line in text.split("\n"):
+    for line in mask_non_route(text).split("\n"):
         m = HEADING_RE.match(line)
         if m:
             parts = m.group(2).split()
@@ -176,33 +248,87 @@ def tokens_in_line(line):
     return found
 
 
-def citation_marks(line):
-    """一行里引用形状的出现次数，独立于 token 抽取（自检的分母）。"""
-    count, prev = 0, 0
-    for m in CITATION_MARK_RE.finditer(line):
-        if "docs/" in line[prev:m.start()]:
-            count += 1
+def citation_mark_positions(line):
+    """这一行里 `docs/…::` 形状的列位置——自检的分母，独立于 token 抽取。
+
+    规则不看 `::` 后面的 id（那就和抽取器一起瞎了）：`::` 与同一行内它前面最近的 `docs/` 之间没有
+    反引号，且 `::` 紧邻的前一个字符不是空白，就算一条形状。于是 `…/RESULT.md::` 换行接 id、
+    `…/RESULT.md:: resdead` 这类写法都留在分母里，而散文里孤立的一个 `` `::` `` 不算。
+    """
+    positions = []
+    prev = 0
+    for m in MARK_RE.finditer(line):
+        pos = m.start()
+        if pos > prev and not line[pos - 1].isspace():
+            start = line.rfind("docs/", prev, pos)
+            if start >= 0 and "`" not in line[start:pos]:
+                positions.append(pos)
         prev = m.end()
-    return count
+    return positions
+
+
+def _mark_snippet(line, pos):
+    """把 `::` 前后黏着的那个 token 印出来，读的人一眼看到是哪一条没读成引用。"""
+    a = pos
+    while a > 0 and not line[a - 1].isspace() and line[a - 1] not in "`|":
+        a -= 1
+    b = pos + 2
+    while b < len(line) and not line[b].isspace() and line[b] not in "`|":
+        b += 1
+    return line[a:b]
 
 
 def scan(root):
-    """扫三个路由文件，返回 (citations, paths, skipped_templates, seen_marks, matched_citations)。"""
-    citations, paths, skipped = [], [], 0
-    seen_marks, matched = 0, 0
+    """扫三个路由文件。
+
+    返回 dict：citations / paths / skipped（模板）、marks_raw（原文里的 `docs/…::` 形状数）、
+    marks_route（遮蔽掉围栏与注释后仍在正文里的形状数）、matched（token 抽取拿到手的引用数）、
+    unparsed（留在正文里却没读成引用的形状，逐行一条）。
+    """
+    citations, paths, unparsed = [], [], []
+    skipped = 0
+    marks_raw = marks_route = matched = 0
     for name in ROUTERS:
         text = (root / name).read_text(encoding="utf-8")
-        for lineno, line in enumerate(text.split("\n"), 1):
-            seen_marks += citation_marks(line)
+        visible = mask_non_route(text)
+        for lineno, (raw, line) in enumerate(zip(text.split("\n"),
+                                                visible.split("\n")), 1):
+            marks = citation_mark_positions(line)
+            marks_raw += len(citation_mark_positions(raw))
+            marks_route += len(marks)
+            cites, covered = [], set()
+            cursor = 0
             for kind, token, path, node_id in tokens_in_line(line):
                 if kind == "citation":
                     matched += 1
+                    cites.append(token)
+                    at = line.find(token, cursor)
+                    if at >= 0:
+                        covered.update(range(at, at + len(token)))
+                        cursor = at + len(token)
+                    if not node_id:
+                        # `docs/…::` 后面没有 id：形状在，引用读不成，必须可见。
+                        inner = token.find("::")
+                        pos = at + inner if (at >= 0 and inner >= 0) else -1
+                        unparsed.append((name, lineno,
+                                         _mark_snippet(line, pos) if pos >= 0 else token))
+                        continue
                 if any(mark in token for mark in TEMPLATE_MARKS):
                     skipped += 1          # 模板写的是形状，不是文件
                     continue
                 (citations if kind == "citation" else paths).append(
                     (name, lineno, token, path, node_id))
-    return citations, paths, skipped, seen_marks, matched
+            if len(marks) > len(cites):
+                # 抽取器拿到的引用比正文里的形状少：逐条点名，而不是只留一行统计。
+                for pos in marks:
+                    if pos in covered or (pos + 1) in covered:
+                        continue
+                    unparsed.append((name, lineno, _mark_snippet(line, pos)))
+    return {
+        "citations": citations, "paths": paths, "skipped": skipped,
+        "marks_raw": marks_raw, "marks_route": marks_route, "matched": matched,
+        "unparsed": unparsed,
+    }
 
 
 class Resolver:
@@ -239,7 +365,8 @@ def main(argv):
         print("BLOCKED: 路由文件缺失 " + ", ".join(str(root / n) for n in missing_routers))
         return 2
 
-    citations, paths, skipped, seen_marks, matched = scan(root)
+    result = scan(root)
+    citations, paths = result["citations"], result["paths"]
     resolver = Resolver(root)
 
     problems = []
@@ -258,6 +385,9 @@ def main(argv):
             paths_ok += 1
         else:
             problems.append((name, lineno, token, "missing-file"))
+    problems.extend((name, lineno, token, "unparsed-citation")
+                    for name, lineno, token in result["unparsed"])
+    problems.sort(key=lambda p: (p[0], p[1]))
 
     for name, lineno, token, reason in problems:
         print(f"{name}:{lineno}  {token}  {reason}")
@@ -274,13 +404,16 @@ def main(argv):
         print("VACUOUS: 一条都没有扫到 —— " + "、".join(vacuous)
               + "；看不见输入的检查不判绿")
 
-    if skipped:
-        print(f"skipped {skipped} template token(s) containing '<'/'>' (shape, not a file)")
+    if result["skipped"]:
+        print(f"skipped {result['skipped']} template token(s) containing '<'/'>' (shape, not a file)")
 
-    # 自检：原文里的引用形状（N）必须被 token 抽取全部拿到（M 含模板引用）。不等就是又有一条引用
+    # 自检：正文里的引用形状（N）必须被 token 抽取全部拿到（M 含模板引用）。不等就是又有一条引用
     # 悄悄掉出分母，而那正是这个脚本要防的失败形态，所以判红而不是只打一行提示。
-    mismatch = seen_marks != matched
-    print(f"citation tokens seen: {seen_marks}, matched: {matched}"
+    raw, route, matched = result["marks_raw"], result["marks_route"], result["matched"]
+    ignored = raw - route
+    mismatch = route != matched
+    print(f"citation tokens seen: {route}, matched: {matched}"
+          + (f"; {ignored} more inside fenced code / HTML comments (not routes)" if ignored else "")
           + ("  MISMATCH: 有引用没进 token 抽取" if mismatch else ""))
     print(f"{cites_ok}/{len(citations)} citations resolved, "
           f"{paths_ok}/{len(paths)} path tokens resolved")
