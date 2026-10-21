@@ -224,6 +224,7 @@
  "skipped": [
   "docs/subprojects/a06-采样与解码参数/PLAN.md",
   "docs/subprojects/a08-思考开关/PLAN.md",
+  "docs/subprojects/a11-扩散式解码/PLAN.md",
   "docs/subprojects/a12-多语言代码 MultiPL-E/PLAN.md",
   "docs/subprojects/a13-工具调用 BFCL/PLAN.md",
   "docs/subprojects/a14-部分给分/PLAN.md",
