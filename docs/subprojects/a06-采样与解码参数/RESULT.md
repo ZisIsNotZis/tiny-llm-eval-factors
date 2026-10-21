@@ -184,6 +184,14 @@
 - repro: `python3 "docs/subprojects/a06-采样与解码参数/cell_histograms.py"`（退出 0 = 至少读到一个格；产物目录或 `*_eval.json` 全缺时退出 2）。
 - 后果：① 「厂商档让分数下降」这句话不够——cpp 上是**语法**塌陷、py 上是**运行期**塌陷，两者的可解释性不同；② 判定阶梯是否存活必须先看 `at_floor`，地板格之间比分数是没有意义的（规则预注册在 `PLAN.md`）。
 
+## vendor-loss-is-absolute :: 厂商档在代码列上的效应更像「**丢掉差不多同样多的题**」而不是「按比例塌陷」：MultiPL-E 上 q2-cpp 18→1（−17）、q2-py 22→3（−19）、q3-cpp 39→4（−35）、q3-py 43→7（−36）、q4-cpp 37→6（−31）、q4-py 44→12（−32），而同一模型在 EvalPlus HumanEval 上 94/164→**59/164**（−35）。基线越小，同样的绝对损失看起来越像「塌陷」：24%→2.5% 是 10 倍相对跌幅，57%→36% 只是 −37%。
+
+- kind: measured
+- evidence: `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl` 七行；`q3-humaneval` 行 `n=164, pass=59, score=0.3598`，直方图 `{'pass': 59, 'fail': 105}`；贪心对照 94/164 来自 `m131-sampling` 的同模型同基准格（0.5732）。
+- repro: `python3 -c "import json;[print(d['cell'],d['n'],d['pass']) for d in map(json.loads,open('.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl'))]"`。
+- 后果：① 「10 倍塌陷」这句话只在**相对**意义下成立，绝对量级与其他格同一档（−17 ~ −36 题），所以不应当被读成「模型在这个档位上坏掉了」；② 这解释了为什么 MultiPL-E 的四个格看起来全塌而 EvalPlus 只掉 21 个百分点——两者基线不同（39–44 vs 94）；③ 损失在档位之间**不是常数**（−17 ~ −36），所以「常数损失 ⇒ 次序不变」这条捷径不成立，次序判据仍必须逐格比。
+- 限制：EvalPlus 那一格走的是 `evalplus.codegen`（只有 `--temperature` 能传），其余四个量靠起服 flag；它的协议串带 `;bench=evalplus-humaneval`，与 MultiPL-E 的格不是同一个测量，不得池化。
+
 ## vendor-verdict-levels :: 厂商档下量化阶梯的结论：**cpp 与 py 两侧都不可分辨，但触发的原因不同，其中 py 那一侧落在预注册规则没有枚举到的一格**。cpp：Q3 4/161 与 Q4 6/161 都 `at_floor`，按规则直接判「该采样值下 cpp 阶梯不可分辨」。py：Q2 3/161、Q3 7/161 都 `at_floor`，而 **Q4 12/161 = 0.0745 在 0.05 之上**，所以既不属于「只有 Q2 塌」也不属于「三档都在地板之上」——规则里没有这一格。
 
 - kind: measured
