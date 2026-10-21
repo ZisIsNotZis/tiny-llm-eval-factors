@@ -1,0 +1,890 @@
+{
+ "generated_by": "docs/subprojects/a10-第三方量化方案/analysis/build_fixture.py",
+ "why": "gguf 头（有效位宽与逐张量比特分配）不入库；干净 clone 里没有 gguf，所以本层的位宽与分配证据冻结在这里，并由 --check 用本机源做漂移检查。",
+ "third_party": [
+  "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf",
+  "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf"
+ ],
+ "native": [
+  "Qwen3.8-27B-UD-Q2_K_XL.gguf",
+  "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+  "Qwen3.8-27B-UD-IQ4_XS.gguf"
+ ],
+ "siblings": {
+  "Dirk-Qwen3.8-27B-GSQ-RCO-IQ3_XXS.gguf": {
+   "vendor": "peculiar-ragdoll",
+   "tier": "IQ3_XXS"
+  },
+  "Dirk-Qwen3.8-27B-GSQ-RCO-IQ3_S.gguf": {
+   "vendor": "peculiar-ragdoll",
+   "tier": "IQ3_S"
+  },
+  "Huihui-Qwen3.8-27B-abliterated-GSQ-RCO-IQ3_XXS-mtp.gguf": {
+   "vendor": "huihui-ai",
+   "tier": "IQ3_XXS"
+  },
+  "Huihui-Qwen3.8-27B-abliterated-GSQ-RCO-IQ3_S-mtp.gguf": {
+   "vendor": "huihui-ai",
+   "tier": "IQ3_S"
+  }
+ },
+ "tier": {
+  "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf": "IQ3_XXS",
+  "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf": "IQ3_S"
+ },
+ "bench_order": [
+  "humaneval",
+  "humaneval-plus",
+  "mbpp",
+  "mbpp-plus",
+  "mmlu",
+  "arc_challenge",
+  "truthfulqa_mc2",
+  "gsm8k",
+  "ifeval"
+ ],
+ "cells": {
+  "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf": {
+   "humaneval": {
+    "score": 0.8902439024390244,
+    "n_items": 164,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "humaneval-plus": {
+    "score": 0.8475609756097561,
+    "n_items": 164,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp": {
+    "score": 0.8703703703703703,
+    "n_items": 378,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp-plus": {
+    "score": 0.753968253968254,
+    "n_items": 378,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mmlu": {
+    "score": 0.8103070175438597,
+    "n_items": 912,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "arc_challenge": {
+    "score": 0.61,
+    "n_items": 100,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "truthfulqa_mc2": {
+    "score": 0.573255275494311,
+    "n_items": 100,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "gsm8k": {
+    "score": 0.94,
+    "n_items": 100,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "ifeval": {
+    "score": 0.82,
+    "n_items": 100,
+    "run_tag": "m150-qwen38-gsqrco-iq3xxs",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   }
+  },
+  "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf": {
+   "humaneval": {
+    "score": 0.9390243902439024,
+    "n_items": 164,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "humaneval-plus": {
+    "score": 0.8963414634146342,
+    "n_items": 164,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp": {
+    "score": 0.8941798941798942,
+    "n_items": 378,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp-plus": {
+    "score": 0.7645502645502645,
+    "n_items": 378,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mmlu": {
+    "score": 0.8278508771929824,
+    "n_items": 912,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "arc_challenge": {
+    "score": 0.6,
+    "n_items": 100,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "truthfulqa_mc2": {
+    "score": 0.5499151541388432,
+    "n_items": 100,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "gsm8k": {
+    "score": 0.96,
+    "n_items": 100,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "ifeval": {
+    "score": 0.85,
+    "n_items": 100,
+    "run_tag": "m151-qwen38-gsqrco-iq3s",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   }
+  },
+  "Qwen3.8-27B-UD-Q2_K_XL.gguf": {
+   "humaneval": {
+    "score": 0.926829268292683,
+    "n_items": 164,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "humaneval-plus": {
+    "score": 0.8963414634146342,
+    "n_items": 164,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp": {
+    "score": 0.8888888888888888,
+    "n_items": 378,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp-plus": {
+    "score": 0.7619047619047619,
+    "n_items": 378,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mmlu": {
+    "score": 0.8037280701754386,
+    "n_items": 912,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "arc_challenge": {
+    "score": 0.61,
+    "n_items": 100,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "truthfulqa_mc2": {
+    "score": 0.5209770021752704,
+    "n_items": 100,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "gsm8k": {
+    "score": 0.98,
+    "n_items": 100,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "ifeval": {
+    "score": 0.83,
+    "n_items": 100,
+    "run_tag": "m91-qwen38-27b-q2kxl",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   }
+  },
+  "Qwen3.8-27B-UD-Q3_K_XL.gguf": {
+   "humaneval": {
+    "score": 0.8719512195121951,
+    "n_items": 164,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "humaneval-plus": {
+    "score": 0.8353658536585366,
+    "n_items": 164,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp": {
+    "score": 0.8703703703703703,
+    "n_items": 378,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp-plus": {
+    "score": 0.7380952380952381,
+    "n_items": 378,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mmlu": {
+    "score": 0.8366228070175439,
+    "n_items": 912,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "arc_challenge": {
+    "score": 0.59,
+    "n_items": 100,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "truthfulqa_mc2": {
+    "score": 0.5693323531361767,
+    "n_items": 100,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "gsm8k": {
+    "score": 0.96,
+    "n_items": 100,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "ifeval": {
+    "score": 0.75,
+    "n_items": 100,
+    "run_tag": "m100-qwen38-27b-q3kxl",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   }
+  },
+  "Qwen3.8-27B-UD-IQ4_XS.gguf": {
+   "humaneval": {
+    "score": 0.9024390243902439,
+    "n_items": 164,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "humaneval-plus": {
+    "score": 0.8719512195121951,
+    "n_items": 164,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp": {
+    "score": 0.8915343915343915,
+    "n_items": 378,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-base",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mbpp-plus": {
+    "score": 0.7592592592592593,
+    "n_items": 378,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "evalplus-0.3.1-openai-chat-greedy-plus",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "mmlu": {
+    "score": 0.8497807017543859,
+    "n_items": 912,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "arc_challenge": {
+    "score": 0.6,
+    "n_items": 100,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "truthfulqa_mc2": {
+    "score": 0.5684524646553374,
+    "n_items": 100,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "lmeval-0.4.13-gguf-shim-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "gsm8k": {
+    "score": 0.98,
+    "n_items": 100,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   },
+   "ifeval": {
+    "score": 0.77,
+    "n_items": 100,
+    "run_tag": "m152-qwen38-27b-iq4xs",
+    "protocol": "lmeval-0.4.13-chat-reasoning-off",
+    "ctx_size": 8192,
+    "parallel_slots": 1,
+    "temp": "0.0",
+    "reasoning": "off"
+   }
+  }
+ },
+ "files": {
+  "Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf": {
+   "path": "/home/z/hf/models--ISTA-DASLab--Qwen3.8-27B-GSQ-RCO-GGUF/snapshots/d562806dbafae37109975e970aae91b43e73b440/Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 10442827840,
+   "n_tensors": 866,
+   "bpw_file": 3.0578509802469376,
+   "bpw_data": 3.054631215932583,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2178211840,
+     "bits": 2.999717960288809
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 407244800,
+     "bits": 2.5625
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 6412410880,
+     "bits": 2.951602564102564
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 755730432,
+     "bits": 3.8073455342970335
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 675450880,
+     "bits": 4.250111750516469
+    }
+   },
+   "tensor_sha": "7784a48204af3b6cdca95db427cf9043e6bb22bb0ed777c5c937c7f1e369c167",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf": {
+   "path": "/home/z/hf/models--ISTA-DASLab--Qwen3.8-27B-GSQ-RCO-GGUF/snapshots/d562806dbafae37109975e970aae91b43e73b440/Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 12120016960,
+   "n_tensors": 866,
+   "bpw_file": 3.548962628665293,
+   "bpw_data": 3.545742864350939,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2549596160,
+     "bits": 3.511168772563177
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 407244800,
+     "bits": 2.5625
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 7617044480,
+     "bits": 3.506089743589744
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 817170432,
+     "bits": 4.116878272059286
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 715182080,
+     "bits": 4.500110743755059
+    }
+   },
+   "tensor_sha": "496d18ace0f3b5fce9a2af54aae5d94aa2b8c8c96368d603eba2dfc6999ffe85",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Qwen3.8-27B-UD-Q2_K_XL.gguf": {
+   "path": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q2_K_XL.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 9828981664,
+   "n_tensors": 866,
+   "bpw_file": 2.8781055932922066,
+   "bpw_data": 2.874885575982851,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2103418880,
+     "bits": 2.896717057761733
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 417177600,
+     "bits": 2.625
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 5900615680,
+     "bits": 2.716025641025641
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 678807552,
+     "bits": 3.4198105466186934
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 715182080,
+     "bits": 4.500110743755059
+    }
+   },
+   "tensor_sha": "1e5ae0b9cf8ce6c14c1238ca2033fc8816ac1ad69cffd6fd2b8f19a8bbb9abfb",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Qwen3.8-27B-UD-Q3_K_XL.gguf": {
+   "path": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 13146393504,
+   "n_tensors": 866,
+   "bpw_file": 3.849504452131078,
+   "bpw_data": 3.8462844348217224,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2828410880,
+     "bits": 3.8951376353790614
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 546304000,
+     "bits": 3.4375
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 8016732160,
+     "bits": 3.6900641025641026
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 867059712,
+     "bits": 4.368218855122235
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 874106880,
+     "bits": 5.50010671670942
+    }
+   },
+   "tensor_sha": "5e0558e8ebe7a9f2ec6195f01b4d186609f2b872507fdde3ac0e6699ad8c3531",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Qwen3.8-27B-UD-IQ4_XS.gguf": {
+   "path": "/home/z/hf/models--unsloth--Qwen3.8-27B-GGUF/snapshots/4ca720788d1e01f1bff70c033e0d0028fd02e502/Qwen3.8-27B-UD-IQ4_XS.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 14252845984,
+   "n_tensors": 866,
+   "bpw_file": 4.17349397416505,
+   "bpw_data": 4.170273956855694,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 3118858240,
+     "bits": 4.2951263537906135
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 546304000,
+     "bits": 3.4375
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 8775720960,
+     "bits": 4.039423076923077
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 924076032,
+     "bits": 4.655465235765605
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 874106880,
+     "bits": 5.50010671670942
+    }
+   },
+   "tensor_sha": "86427667941d458c183278b4e1472821f5deb415e45d834507856a7abb0dcba0",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Dirk-Qwen3.8-27B-GSQ-RCO-IQ3_XXS.gguf": {
+   "path": "/home/z/hf/models--peculiar-ragdoll--Dirk-Qwen3.8-27B-GGUF/snapshots/52cb3e759635ab4605e08790b6c47df8adcf0744/Dirk-Qwen3.8-27B-GSQ-RCO-IQ3_XXS.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 10442848576,
+   "n_tensors": 866,
+   "bpw_file": 3.0578570521269777,
+   "bpw_data": 3.054631215932583,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2178211840,
+     "bits": 2.999717960288809
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 407244800,
+     "bits": 2.5625
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 6412410880,
+     "bits": 2.951602564102564
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 755730432,
+     "bits": 3.8073455342970335
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 675450880,
+     "bits": 4.250111750516469
+    }
+   },
+   "tensor_sha": "7784a48204af3b6cdca95db427cf9043e6bb22bb0ed777c5c937c7f1e369c167",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Dirk-Qwen3.8-27B-GSQ-RCO-IQ3_S.gguf": {
+   "path": "/home/z/hf/models--peculiar-ragdoll--Dirk-Qwen3.8-27B-GGUF/snapshots/52cb3e759635ab4605e08790b6c47df8adcf0744/Dirk-Qwen3.8-27B-GSQ-RCO-IQ3_S.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 12120037696,
+   "n_tensors": 866,
+   "bpw_file": 3.5489687005453336,
+   "bpw_data": 3.545742864350939,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2549596160,
+     "bits": 3.511168772563177
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 407244800,
+     "bits": 2.5625
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 7617044480,
+     "bits": 3.506089743589744
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 817170432,
+     "bits": 4.116878272059286
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 715182080,
+     "bits": 4.500110743755059
+    }
+   },
+   "tensor_sha": "496d18ace0f3b5fce9a2af54aae5d94aa2b8c8c96368d603eba2dfc6999ffe85",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Huihui-Qwen3.8-27B-abliterated-GSQ-RCO-IQ3_XXS-mtp.gguf": {
+   "path": "/home/z/hf/models--huihui-ai--Huihui-Qwen3.8-27B-abliterated-GGUF/snapshots/8f1b52408a2f6e317535190c9386f776cacf0079/Huihui-Qwen3.8-27B-abliterated-GSQ-RCO-IQ3_XXS-mtp.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 10442827296,
+   "n_tensors": 866,
+   "bpw_file": 3.0578508209537882,
+   "bpw_data": 3.054631215932583,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2178211840,
+     "bits": 2.999717960288809
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 407244800,
+     "bits": 2.5625
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 6412410880,
+     "bits": 2.951602564102564
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 755730432,
+     "bits": 3.8073455342970335
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 675450880,
+     "bits": 4.250111750516469
+    }
+   },
+   "tensor_sha": "7784a48204af3b6cdca95db427cf9043e6bb22bb0ed777c5c937c7f1e369c167",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  },
+  "Huihui-Qwen3.8-27B-abliterated-GSQ-RCO-IQ3_S-mtp.gguf": {
+   "path": "/home/z/hf/models--huihui-ai--Huihui-Qwen3.8-27B-abliterated-GGUF/snapshots/8f1b52408a2f6e317535190c9386f776cacf0079/Huihui-Qwen3.8-27B-abliterated-GSQ-RCO-IQ3_S-mtp.gguf",
+   "n_params": 27320697856,
+   "n_bytes": 12120016416,
+   "n_tensors": 866,
+   "bpw_file": 3.548962469372144,
+   "bpw_data": 3.545742864350939,
+   "classes": {
+    "attn": {
+     "params": 5809111040,
+     "bytes": 2549596160,
+     "bits": 3.511168772563177
+    },
+    "embed": {
+     "params": 1271398400,
+     "bytes": 407244800,
+     "bits": 2.5625
+    },
+    "ffn-dense": {
+     "params": 17380147200,
+     "bytes": 7617044480,
+     "bits": 3.506089743589744
+    },
+    "norm": {
+     "params": 695808,
+     "bytes": 2783232,
+     "bits": 32.0
+    },
+    "other": {
+     "params": 1587941888,
+     "bytes": 817170432,
+     "bits": 4.116878272059286
+    },
+    "output": {
+     "params": 1271403520,
+     "bytes": 715182080,
+     "bits": 4.500110743755059
+    }
+   },
+   "tensor_sha": "496d18ace0f3b5fce9a2af54aae5d94aa2b8c8c96368d603eba2dfc6999ffe85",
+   "names_sha": "70d78ea595f91deb179d1f1d2eac10d3dd3f12040645dd1227c0b03fd80e3ba8"
+  }
+ },
+ "missing_on_disk": {},
+ "duplicate_cells": []
+}
