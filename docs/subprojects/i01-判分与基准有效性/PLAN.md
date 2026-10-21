@@ -6,7 +6,10 @@
 ## 里程碑：研究结束
 
 - 终点状态：注册表给的三条 AC 同时有可复算证据——(1) 每个 harness 一份判分审计且每份带负控；(2) chat 协议单次测量的噪声地板是一个实测数；(3) 同一格跨 run 的 6/161 量级差异有裁决（写明来自生成、判分还是未记录的输入差，或写明为什么测不出）。
-- done 判据：`python3 "docs/subprojects/i01-判分与基准有效性/audits/run_all.py"` 退出 0（四族审计各就位、每份带负控结果、地板与裁决两个数在 `RESULT.md` 里带复算命令）。
+- done 判据：`python3 "docs/subprojects/i01-判分与基准有效性/audits/run_all.py"` 退出 **0**，即「全部证据在场且都成立」。
+- **干净 clone 的语义（A/B 混合，选择理由在下面）**：clone 里 `run_all.py` 退出 **2** 并逐项打印 `UNMEASURED + 缺哪个文件`，不是 0、也不是 1。0 只表示「测过且成立」；2 表示「不可得」，与 README 里「clone 不能重建什么」同义。理由：缺输入时给 0 就是假绿（本组已因此被抓到四次），给 1 又会把「环境缺失」误报成「结论错」。
+  - **A（逻辑组，clone 里必须绿）**：`audits/scoring_logic_check.py`。它只依赖 clone 里已跟踪的文件（`.wrapup/mpl_run.py`、`.wrapup/bfcl_run.py`、gsm8k 的两条抽取正则）与系统编译器（g++ 用于 cpp 一例），输入全部内联构造，不读任何 gitignored 产物。覆盖：MultiPL-E「程序退出码 0」（含提前退出白拿）、围栏与后处理的先后、BFCL `arg_ok` 单向宽容与多余参数不检查、gsm8k strict/flexible 的「取最后一个数字」、EvalPlus 退化 oracle 的后果（这一条是**按记录值复算后果**，clone 里无法执行上游代码，注释与输出都写明了）。
+  - **B（真实数据组，clone 里必须 2）**：五份真实数据审计（bfcl / noise_floor / multipl_e / lmeval / evalplus）。它们读 `.wrapup/mres/*`、三个 venv 与 bundled BFCL 数据集，这些都在 `.gitignore` 里（有理由：venv 可重建、产物可重跑），所以 clone 里必然不可测。
 - 只有一个里程碑：它是用户同步点，之前不再切分。
 
 ## 当前状态

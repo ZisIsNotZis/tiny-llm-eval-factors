@@ -33,10 +33,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(
 OUT = os.path.join(ROOT, ".wrapup", "mres", "m165-vendor")
 DEST = os.path.join(OUT, "histograms.jsonl")
 
-# A cell is "at its floor" when fewer than this share of items pass.  The value is
-# not a taste: 0.05 is below every greedy cell on this ladder (Q2 cpp 0.1118 is the
-# lowest, 18/161) and above the collapsed cells measured so far (1/161, 3/161), so
-# the flag separates "collapsed" from "weak" without deciding the middle.
+# A cell is "at its floor" when fewer than this share of items pass.  0.05 is NOT a
+# universal threshold; it is derived from this ladder's own numbers: the lowest
+# greedy cell here is Q2 cpp 18/161 = 0.1118, and the collapsed cells measured so
+# far are 1/161 = 0.0062 and 3/161 = 0.0186, so 0.05 sits between them with more than
+# 2x margin to either side.  Another ladder or benchmark needs its own figure.
+# The flag is a coarse separator, not the verdict: when the score lands near it but
+# `status_histogram` shows a different failure mechanism (Timeout-dominated, or a
+# high OK share), the histogram wins and the cell is described by its mechanism.
 FLOOR_SHARE = 0.05
 
 

@@ -52,6 +52,7 @@ AUDITS = [
     ("evalplus_audit.py", os.path.join(REPO, ".wrapup", "evalpy", "bin", "python"), False, {}),
 ]
 FAILED = []
+UNMEASURED = []   # an absent interpreter is unmeasured, not a red verdict
 
 
 def run(script, interp, root, extra=None):
@@ -76,7 +77,8 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as empty:
         for script, interp, present, extra in AUDITS:
             if not os.path.exists(interp):
-                fail("%s: interpreter %s missing (the gate itself cannot run)" % (script, interp))
+                print("  UNMEASURED %-26s interpreter %s absent" % (script, interp))
+                UNMEASURED.append(script)
                 continue
             rc, out = run(script, interp, empty, extra)
             has_exit2 = "EXIT 2" in out
@@ -97,10 +99,18 @@ def main() -> int:
             if not ok2:
                 fail("%s: present mode rc=%d measured=%s (expected 0/True)" % (script, rc2, measured))
 
-    print("\nSUMMARY: %d gate failure(s)" % len(FAILED))
+    print("\nSUMMARY: %d gate failure(s); %d audit(s) not exercisable here"
+          % (len(FAILED), len(UNMEASURED)))
     for f in FAILED:
-        print("  " + f)
-    return 0 if not FAILED else 1
+        print("  failed: " + f)
+    for u in UNMEASURED:
+        print("  unmeasured: " + u)
+    if FAILED:
+        return 1
+    if UNMEASURED:
+        print("  EXIT 2: a gate that could not exercise an audit has not verified it")
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
