@@ -17,6 +17,7 @@
 - **派工形态**：本会话只有 read/grep/find/ls/bash/write/edit 工具，**没有派孙工具**，所以 `WP2`–`WP5` 由编排者自己执行（与 i01 同样的处境）。`WP6` 的独立复核因此必须由 meta 派 fresh-context reviewer，不得自评通过。
 - 下一个派给谁：`WP3` → `WP4`（多轮的 GPU 臂）→ meta 派 `WP6` 复核。
 - GPU：无本轴任务在跑。`WP4` 起跑前必须 `nvidia-smi` 记录空闲显存，并在 `.wrapup/gpu_locked.sh` 下运行。
+- **`WP4` 排队中（2026-10-21 00:5x）**：锁被 `a06` 的 `run_vendor_arm.sh` 持有（`flock -w 21600`，最长 6 小时）；当时 `nvidia-smi` `memory.free = 18741 MiB`、`memory.used = 5368 MiB`。本轴四臂每臂 ~12 分钟、ctx 98304 的 KV 远超 4 GB，所以不适用「≤4 GB / ≤3 分钟可并行」例外。**继续触发条件**：`fuser /tmp/llama_gpu.lock` 为空 且 `memory.free ≥ 16000 MiB`；**续跑点**：`bash .wrapup/gpu_locked.sh bash .wrapup/run_m9_panel.sh <tag> <gguf> <handler> multi_turn_base`（四臂按 WP4 表顺序，`SMOKE=1` 先要一次真实 completion）。
 
 ## 工作包
 
