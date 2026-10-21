@@ -259,11 +259,17 @@
 - producer: `python3 checks/vendor_arm_negative_control.py`（协议串逐字含五个量、vendor ≠ greedy、top_k=1 ≠ top_k=200、标签不同）
 - 未验证（硬阻塞）: 服务端是否真按这五个量采样需要模型文件，本机已无 gguf；要跑的命令是 `python3 .wrapup/variant_panel.py --model <X.gguf> --tag a06-vendor-sampling --axis sampling`，证据取 `variant_panel.json` 的 `sampling_spec`、`server.log` 的采样回显与五列分数。`seed` 未固定，所以该臂的协议里不带 seed，重跑不保证逐字节一致——这一点必须随结果一起写。
 
-## res56 :: `vendor-recommended` 臂有入库路径且不与 greedy 合并；但「五个参数真的进了采样」在本机、本 build 上**未验证**（服务端判据两试皆不成立）。
+## res56 :: 厂商推荐采样臂的五个量确实进了采样：服务端 `/props` 回显 `got == want`，且用「塌缩判据」证明——单点 A/B 两个方向都会骗人。
 
 - kind: measured
 - status: current
-- evidence: **入库**：`ingest_variant` 现在把面板行的五个采样量写进 DB 列（`temp`/`top_p`/`top_k`/`min_p`/`presence_penalty`，一行 `seed` 也取面板值），协议串为 `variant-<axis>-<label>-<harness>;<sampling_spec>`。负控：同一面板里两份只差 `presence_penalty`（2.0 vs 0.0）的记录，入库为 **4 行（2 臂 × 2 基准）**、两条协议串不同、`presence_penalty` 列分别为 `0.0`/`2.0`，再跑一次行数不变（`python3 checks/variant_ingest_negative_control.py` → PASS）。**服务端（未验证）**：`audits/vendor_arm_probe.py` 在 Qwen3.5-2B-UD-Q2_K_XL 上按 `-c 8192 -np 1` 起服，同 `seed=1234` 请求两次输出**逐字相同**（seed 生效），但把 `presence_penalty` 2.0→0.0 与把 `top_k` 20→1 都**没有改变输出**，`/props` 只回显 `n_ctx=8192`（不回显采样默认值）。第三次想加 `temperature 0 vs 1.0` 的判据时 GPU 锁被 a06 的作业占着、`flock -w 240` 超时，那一步没跑。因此「五个量真的生效」仍是**未验证**，不是通过。
-- producer: `python3 checks/variant_ingest_negative_control.py`；`bash .wrapup/gpu_locked.sh python3 "docs/subprojects/i02-测量基础设施/audits/vendor_arm_probe.py"`（证据 `audits/vendor_arm_probe.json`）
-- 待查（给 a06）: 这个 llama-server build 的 OpenAI 端点是否吞掉 `top_k`/`min_p`/`presence_penalty`（`/props` 不回显，可能是原因），或必须用服务端 flag/`/props` 设置；a06 观察到 presence_penalty 改变输出用的是哪条通道，需要对齐后重跑这个探针。
+- evidence: 服务端证据 `audits/vendor_arm_probe.json` 与 `a06` 面板的 `mres/m165-vendor/props/q2.json`：五个量 `got == want`、`mismatch: []`、`n_slots=1`，说明服务端持有的就是这五个值（不是默认 `temperature=0.8`）。参数**生效**的判据用结构性的那条（`a06` 的 32 项检查 31 PASS）：`top_k=1` 与 `top_p=0.1` 必须逐字重现 `temperature=0` 的输出，`/completion` 与 `/v1/chat/completions` 两端点都通过；同 seed 重复逐字相同、`temperature 0 vs 1.0` 逐字不同。唯一 FAIL 是短清单（8 token、无重复可罚）上的 `presence_penalty 0 vs 2.0`——**单点 A/B 两个方向都会骗人**：我先前用单点判据得「参数被吞」，`a06` 曾用单点得「改了变了」，两次都是巧合，所以判据要结构性。
+- producer: `docs/subprojects/i02-测量基础设施/audits/vendor_arm_probe.py`；`a06` 的 32 项检查（含 `mres/m165-vendor/props/*.json`）
+- 附带（塌陷而非扰动）: 厂商档在 `q2-cpp` 是 1/161（`SyntaxError 142 / Exception 18 / OK 1`）、贪心 18/161；塌陷来自 `top_p=1.0 / min_p=0.0 / presence_penalty=2.0` 那组而不是温度。报告第六节将来要按这个幅度写「固定协议比厂商档更宽容」。
 
+## res57 :: `ingest_m165` 让厂商档 R1 的格能入库：五参数 + seed + ctx 进身份列与协议串，skip ledger 可见。
+
+- kind: measured
+- status: current
+- evidence: `.wrapup/mres/m165-vendor/vendor_r1_summary.jsonl` 的每行自带 `protocol`（`mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,…`），`migrate_db.ingest_m165` 原样入库，并把 `temp/top_p/top_k/min_p/presence_penalty/seed/ctx_size` 写进各自的列（都在 23 列测量身份里，不与贪心格合并）；未知模型名与「用了默认协议」都进 `INGEST_SKIPS` 总账。短名映射 `q2/q3 → Qwen3.5-2B-UD-Q{2,3}_K_XL` 的依据是同一 cell 的贪心格与 m29 逐位相同（18/161、22/161）。
+- producer: `python3 checks/m165_ingest_negative_control.py`（真文件按行入库、只差 `presence_penalty` 的两行各成一格、未知模型进 ledger）；`python3 migrate_db.py` 末尾的 `== ingest skips ==`

@@ -611,6 +611,58 @@ def ingest_m29(con):
                       "m29_summary.jsonl")
 
 
+# a06 的厂商推荐采样 R1：summary 用短名 q2/q3。映射由同一 cell 的贪心格对上：m165 的 q2-cpp 贪心
+# 18/161、q2-py 22/161，与库里 `Qwen3.5-2B-UD-Q{2,3}_K_XL` 的 m29 格逐位相同；Q3 同理。
+M165_MODELS = {
+    "q2": "Qwen3.5-2B-UD-Q2_K_XL.gguf",
+    "q3": "Qwen3.5-2B-UD-Q3_K_XL.gguf",
+}
+
+
+def ingest_m165(con):
+    """厂商推荐采样臂的 R1 七格：五个采样量 + seed + ctx 全进身份列与协议串。
+
+    summary 每行自带 `protocol`（形如 `mpl-raw-t1.0-768;ctx=4096;sampling=temp=1.0,…`），
+    原样入库；同时把五个量写进各自的列——测量身份包含这些列，所以它不会与贪心格合并。
+    """
+    path = ".wrapup/mres/m165-vendor/vendor_r1_summary.jsonl"
+    tag = "m165-vendor-r1"
+    if not os.path.exists(path):
+        print("  (no m165-vendor/vendor_r1_summary.jsonl)")
+        return 0
+    n = 0
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if not line:
+            continue
+        r = json.loads(line)
+        if r.get("model") not in M165_MODELS:
+            note_skip(tag, "unknown_model", str(r.get("model")))
+            continue
+        proto = (r.get("protocol") or "").strip()
+        if not proto:
+            proto = DEFAULT_MPL_PROTOCOL
+            note_skip(tag, "default_protocol_used", proto)
+        row = base_row(M165_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0, r["score"], None)
+        row.update({
+            "run_tag": tag, "rep": 1, "ctx_size": r.get("ctx"), "parallel_slots": 1,
+            "seed": r.get("seed"),
+            "temp": str(r.get("temp")), "top_p": str(r.get("top_p")),
+            "top_k": str(r.get("top_k")), "min_p": str(r.get("min_p")),
+            "presence_penalty": str(r.get("presence_penalty")),
+            "protocol": proto, "language": r["lang"],
+            "bench_family": "humaneval-multipl-e", "max_tokens": 768,
+            "n_items": r.get("n"), "source_file": "mres/m165-vendor/vendor_r1_summary.jsonl",
+        })
+        if measurement_present(con, row):
+            note_skip(tag, "already_present")
+            continue
+        insert(con, row)
+        n += 1
+    print(f"  {tag}: inserted {n} cell(s)")
+    return n
+
+
 def ingest_m32(con):
     return _ingest_bfcl_mt(con, ".wrapup/m32_summary.jsonl", "m32-bonsai-ternary-mt",
                            "m32_summary.jsonl")
@@ -1814,7 +1866,7 @@ def main():
         ("m54", ingest_m54), ("m26", ingest_m26), ("m6b", ingest_m6b),
         ("m161", ingest_m161), ("m163", ingest_m163), ("m44", ingest_m44),
         ("m36", ingest_m36),
-        ("m33", ingest_m33), ("m35", ingest_m35),
+        ("m33", ingest_m33), ("m35", ingest_m35), ("m165", ingest_m165),
         ("m38", ingest_m38), ("m39", ingest_m39),
         ("campaign", ingest_campaign),
         ("axes", ingest_axes),
