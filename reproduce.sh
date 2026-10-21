@@ -7,6 +7,9 @@
 # 陈旧根路径 → 文档检查 → 从库重建 report.html 并与仓库里那份逐字节对比 →
 # 报告与产物一致。任何一步失败都以非零退出，缺输入的那一步不会被当成 0。
 set -u
+# 干净 clone 里没有 /home/z/hf 的 gguf。子项目里凡是「glob 到本机路径就算过」的检查，在这里会**假绿**；
+# 所以显式声明本次没有 gguf 源，让那些检查报「未核对」而不是通过（a10 的 build_fixture.py --check 就是这样）。
+export A10_NO_GGUF=1
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO_ROOT" || exit 1
 
@@ -63,7 +66,7 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/reproducibility.json report_inputs/scheme_effects.json \
          report_inputs/size_claims.json report_inputs/kv_evidence.json \
          report_inputs/bfcl_gap.json report_inputs/moe_feasibility.json \
-         report_inputs/bfcl_judge.json \
+         report_inputs/bfcl_judge.json report_inputs/gsq.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
@@ -81,6 +84,16 @@ if python3 report_inputs/build_bfcl_judge.py --check >/dev/null 2>&1; then
     record PASS "bfcl_judge.json 与 a13 的判分器事实一致"
 else
     record WARN "bfcl_judge.json 与 a13 的事实不一致：python3 report_inputs/build_bfcl_judge.py"
+fi
+if python3 report_inputs/build_gsq.py --check >/dev/null 2>&1; then
+    record PASS "gsq.json 与 a10 的事实一致"
+else
+    record WARN "gsq.json 与 a10 的事实不一致：python3 report_inputs/build_gsq.py"
+fi
+if python3 checks/gsq_negative_control.py >/dev/null 2>&1; then
+    record PASS "第十一节第三方方案口径的负控（1 格改 0 → 全部测不出）"
+else
+    record FAIL "第十一节第三方方案口径的负控未通过"
 fi
 if python3 checks/bfcl_judge_negative_control.py >/dev/null 2>&1; then
     record PASS "第十四节判分器口径的负控（改判计数改 0 → 与判分器无关）"

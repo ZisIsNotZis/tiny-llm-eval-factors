@@ -1,0 +1,28 @@
+{
+ "source": "docs/subprojects/a10-第三方量化方案/RESULT.md",
+ "p_two_sided": 0.0427,
+ "held_fixed": {
+  "native_matched_pairs": 0,
+  "same_allocation_pairs": 0
+ },
+ "significant": {
+  "benches_with_ci": 32,
+  "resolved": 1,
+  "bench": "HumanEval",
+  "delta": 0.0671,
+  "lo": 0.0031,
+  "hi": 0.1329,
+  "bpw_saved": 0.301
+ },
+ "expected_by_chance": null,
+ "independent_comparisons": 18,
+ "allocation_gap": [
+  0.209,
+  0.301
+ ],
+ "binomial_half_width": {
+  "n164": 0.076,
+  "n378": 0.05,
+  "n912": 0.032
+ }
+}

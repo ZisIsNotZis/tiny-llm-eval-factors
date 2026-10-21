@@ -288,3 +288,17 @@
 - evidence: `res1`–`res6` 在 `a01` 与 `a08` 各有自己的一套、`res13` 与 `population/multiplicity/unmeasured` 在 `a03` 与 `a10` 各自编号——引用方式一直是 `path::id`，所以跨文件同 id 合法。检查器此前按「合并后的层」判重，报了 6 条假失败；现在改为 per-file：同一文件里重复声明直接报错（与 YAML 重复键等价），跨文件同名只统计不报错，输出里写明「身份是 path::id」。修完 `python3 docs/check_docs.py` 退出 0（此前的 6 条失败来自我自己的 `RESULT.md` 里一处陈旧重复节点 `res46`，已删）。
 - producer: `python3 docs/check_docs.py`；`python3 checks/docs_dup_id_negative_control.py`（同文件重复 → 退出 1 并点名；跨文件同名 → 退出 0），已接进 `reproduce.sh` 成为门而不是基线容忍。
 
+## res61 :: 报告第十一节按 a10 的四条建议改：1/32 格分得开并按多重比较读，方案标签不是独立变量，「同字节+同分配」对照臂本库不存在。
+
+- kind: measured
+- status: current
+- evidence: 第十一节由 `report_inputs/gsq.json` 渲染（`build_gsq.py` 读 a10 的 `RESULT.md`）：9 列 32 个有区间的格里只有 1 个分得开（HumanEval +0.0671 [+0.0031,+0.1329]，且该档少花 0.301 比特/权重，方向与预算相反），**两侧 p = 0.043（由区间反推）**，同族可独立比较 ≤18，所以按多重比较读属偶然量级——是值得记下的信号、不是方案红利；同时写明「不能说没有红利」（那是把不可分辨读成相等），量出上限是二项半宽 0.032–0.076，并指出「同字节 ≠ 同分配」（两档差 0.209/0.301 比特/参数）与「同字节+同分配+不同方案」对照臂是 0/0（本库测不了），附否证条件。
+- producer: `python3 report_inputs/build_gsq.py --check`；`python3 checks/gsq_negative_control.py`（1 格改成 0 → 正文改口成「全部测不出」）
+
+## res62 :: 干净 clone 里 `A10_NO_GGUF=1` 写死，避免子项目「glob 到本机路径就假绿」。自查：我的七个子项目派生索引都只读随仓库分发的产物。
+
+- kind: measured
+- status: current
+- evidence: `reproduce.sh` 顶部 `export A10_NO_GGUF=1`，让 a10 的 `build_fixture.py --check` 在 clone 里报「未核对 gguf 源」而不是通过。自查同类风险：`build_size_claims`（读 a02 的 `analysis/*.json`）、`build_moe_feasibility`（读 a04 的 `fixtures/*.json`）、`build_bfcl_judge`/`build_gsq`（读子项目 `RESULT.md`）、`build_bfcl_gap`（读 tracked 的 `.wrapup/*_summary.jsonl`）、`build_paired_deltas`/`build_reproducibility`（读 i01 `RESULT.md`）都只依赖入库文件；唯一执行外部脚本的是 `build_kv_evidence`（跑 a05 的 `kv_evidence.py`）与 `build_scheme_effects`（跑 a03 的 `attrib.py`），两者只读库与 tracked fixture，且 `--check` 不一致会 WARN 而不是通过。
+- producer: `grep -n "A10_NO_GGUF" reproduce.sh`；`./reproduce.sh`
+

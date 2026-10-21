@@ -1447,6 +1447,47 @@ def kv_evidence_html():
 
 
 SIZE_CLAIMS = "report_inputs/size_claims.json"
+GSQ = "report_inputs/gsq.json"
+
+
+def gsq_html():
+    """第十一节：按 a10 的四条建议改——信号量级、不可分辨的上限、以及「同字节≠同分配」。"""
+    if not os.path.exists(GSQ):
+        raise SystemExit(f"报告输入缺失：{GSQ}（由 report_inputs/build_gsq.py 生成）。")
+    d = json.load(open(GSQ, encoding="utf-8"))
+    sig, hf, half = d["significant"], d["held_fixed"], d["binomial_half_width"]
+    alloc = d["allocation_gap"]
+    out = []
+    out.append("<li><b>两个第三方档的分数落在相邻两个原生档之间</b>；但原生折线在这一段本身是平的/波动的，"
+               "所以「落在折线上」不是一条强证据。</li>")
+    if sig["resolved"]:
+        out.append(f"<li><b>按 9 列算，{sig['benches_with_ci']} 个有区间的格里只有 "
+                   f"{sig['resolved']} 个分得开：</b>{sig['bench']} "
+                   f"{sig['delta']:+.4f} [{sig['lo']:+.4f},{sig['hi']:+.4f}]"
+                   f"（该档还少花 {sig['bpw_saved']:.3f} 比特/权重，方向与比特预算相反）；"
+                   f"两侧 <b>p = {d['p_two_sided']:.3f}</b>（由区间反推）。"
+                   f"但要按多重比较读：同族可独立比较的数 ≤{d['independent_comparisons']}，"
+                   f"在这个数量下出现一个 p≈{d['p_two_sided']:.2f} 的格属于偶然量级——"
+                   f"所以这是<b>值得记下的信号</b>，不是方案红利；其余格全部测不出。</li>")
+    else:
+        out.append(f"<li><b>{sig['benches_with_ci']} 个有区间的格全部测不出差异</b>——"
+                   f"第三方与原生在这份数据上不可分辨。</li>")
+    out.append(f"<li><b>不能说「没有红利」——那是把「不可分辨」读成「相等」。</b>"
+               f"能测出的上限是该列的二项半宽：n=164 时 ±{half['n164']:.3f}、"
+               f"n=378 时 ±{half['n378']:.3f}、n=912 时 ±{half['n912']:.3f}，"
+               f"而这一族原生阶梯自己的一步就值约 1 比特/权重，所以小于这个量级的红利不可能被这份数据看见。</li>")
+    if alloc:
+        gaps = "、".join(f"{x} 比特/参数" for x in alloc)
+        out.append(f"<li><b>「同字节」不等于「同分配」：</b>两个第三方档与最近原生档的逐张量分配差是 "
+                   f"{gaps}；而本库「同字节 + 同分配 + 不同方案」的对照臂是 "
+                   f"{hf['native_matched_pairs']}/{hf['same_allocation_pairs']}，"
+                   f"所以「钉住比特与分配之后方案标签还剩多少」<b>在本库里测不了</b>——"
+                   f"如果哪天补出这支对照臂且逐列差不跨 0，这条不可分辨的结论就被否证。</li>")
+    out.append("<li><b>分辨力所限是口径、不是附注：</b>上面第二条的分辨力数字（半宽 0.032–0.076）"
+               "同时解释了为什么「全部测不出」不能升级成「没有差异」。</li>")
+    return "".join(out)
+
+
 BFCL_JUDGE = "report_inputs/bfcl_judge.json"
 
 
@@ -2026,14 +2067,7 @@ def main():
         ("十一、第三方量化方案（GSQ-RCO）",
          "X = 量化方案（第三方 GSQ-RCO vs unsloth 原生阶梯），固定 Qwen3.8-27B；Y = 各基准分数。",
          gsq_tables(), fig_GSQ(),
-         "<ul>"
-         "<li>GSQ-RCO 的两个量化档（星标）落在原生阶梯（折线）上或附近。</li>"
-         "<li>与“最接近的原生档位”比、与“按有效位宽线性插值后的原生”比，两种比法在所有基准上都测不出差异。</li>"
-         "<li>结论：GSQ-RCO 是一个中性方案，没有方案级红利。（这与“同大小下 IQ 优于 K”并不矛盾——"
-         "说明方案红利不是普遍规律。）</li>"
-         "<li><b>看图要点：</b>GSQ 图中红星落在原生折线上下不超过一个误差棒；两个星点本身的误差棒很长，"
-         "所以“测不出”有一部分是数据分辨力所限。</li>"
-         "</ul>"),
+         "<ul>" + gsq_html() + "</ul>"),
         ("十二、扩散式解码（DiffusionGemma）",
          "X = 解码范式（扩散 vs 自回归），对照为同尺寸自回归 gemma-4-26B-A4B；Y = 各基准分数。",
          [], None,
