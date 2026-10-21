@@ -1,0 +1,995 @@
+{
+ "what": "历史 py 格用钉住语料重打分的旧值/新值",
+ "corpus_sha256": "ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb",
+ "scoring_identity": "mpl-raw-greedy-768;corpus=ac14c3b0abfa",
+ "scorer": ".wrapup/mpl_run.py eval",
+ "cells": [
+  {
+   "tag": "m1-qwen4b-q2-py",
+   "n": 161,
+   "pass_old": 57,
+   "pass_new": 58,
+   "flipped": [
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m1-qwen4b-q3-py",
+   "n": 161,
+   "pass_old": 81,
+   "pass_new": 80,
+   "flipped": [
+    "HumanEval_74_total_match",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m10-g26b-q2-py",
+   "n": 161,
+   "pass_old": 5,
+   "pass_new": 5,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m10-g26b-q3-py",
+   "n": 161,
+   "pass_old": 7,
+   "pass_new": 7,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m10-lfm25-8b-q2-py",
+   "n": 161,
+   "pass_old": 10,
+   "pass_new": 10,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m10-lfm25-8b-q3-py",
+   "n": 161,
+   "pass_old": 6,
+   "pass_new": 6,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m10-mcp5-2b-q2-py",
+   "n": 161,
+   "pass_old": 14,
+   "pass_new": 14,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m10-mcp5-2b-q3-py",
+   "n": 161,
+   "pass_old": 65,
+   "pass_new": 65,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_106_f",
+    "HumanEval_65_circular_shift",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m10-nem4b-q2-py",
+   "n": 161,
+   "pass_old": 104,
+   "pass_new": 105,
+   "flipped": [
+    "HumanEval_158_find_max",
+    "HumanEval_65_circular_shift",
+    "HumanEval_68_pluck"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m10-nem4b-q3-py",
+   "n": 161,
+   "pass_old": 106,
+   "pass_new": 107,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_158_find_max",
+    "HumanEval_68_pluck"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m10-orn9b-q4-py",
+   "n": 161,
+   "pass_old": 68,
+   "pass_new": 71,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_10_make_palindrome",
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m10-orn9b-q5-py",
+   "n": 161,
+   "pass_old": 76,
+   "pass_new": 78,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_10_make_palindrome"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m10-q38-27b-q2-py",
+   "n": 161,
+   "pass_old": 120,
+   "pass_new": 122,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m10-q38-27b-q3-py",
+   "n": 161,
+   "pass_old": 118,
+   "pass_new": 122,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_151_double_the_difference",
+    "HumanEval_158_find_max",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m2-qwen9b-q2-py",
+   "n": 161,
+   "pass_old": 56,
+   "pass_new": 58,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m2-qwen9b-q3-py",
+   "n": 161,
+   "pass_old": 84,
+   "pass_new": 87,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_10_make_palindrome",
+    "HumanEval_161_solve",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m21-bonsai-q2g64-py",
+   "n": 161,
+   "pass_old": 123,
+   "pass_new": 128,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_158_find_max",
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m26-g26b-q2-py",
+   "n": 161,
+   "pass_old": 0,
+   "pass_new": 0,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m26-g26b-q3-py",
+   "n": 161,
+   "pass_old": 0,
+   "pass_new": 0,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m26-q38-27b-q2-py",
+   "n": 161,
+   "pass_old": 105,
+   "pass_new": 112,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_127_intersection",
+    "HumanEval_140_fix_spaces",
+    "HumanEval_151_double_the_difference",
+    "HumanEval_158_find_max",
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m26-q38-27b-q3-py",
+   "n": 161,
+   "pass_old": 131,
+   "pass_new": 139,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_140_fix_spaces",
+    "HumanEval_151_double_the_difference",
+    "HumanEval_158_find_max",
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m27-q2-t0.0-py",
+   "n": 161,
+   "pass_old": 22,
+   "pass_new": 22,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m27-q2-t0.3-py",
+   "n": 161,
+   "pass_old": 26,
+   "pass_new": 26,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m27-q2-t0.6-py",
+   "n": 161,
+   "pass_old": 15,
+   "pass_new": 15,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m27-q3-t0.3-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 43,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m27-q3-t0.6-py",
+   "n": 161,
+   "pass_old": 44,
+   "pass_new": 45,
+   "flipped": [
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m27-q4-t0.3-py",
+   "n": 161,
+   "pass_old": 51,
+   "pass_new": 50,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m27-q4-t0.6-py",
+   "n": 161,
+   "pass_old": 51,
+   "pass_new": 51,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m29-q2-faoff_f16-py",
+   "n": 161,
+   "pass_old": 21,
+   "pass_new": 21,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m29-q2-faon_f16-py",
+   "n": 161,
+   "pass_old": 21,
+   "pass_new": 21,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m29-q2-faon_q8-py",
+   "n": 161,
+   "pass_old": 22,
+   "pass_new": 22,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m29-q3-faoff_f16-py",
+   "n": 161,
+   "pass_old": 44,
+   "pass_new": 43,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m29-q3-faon_f16-py",
+   "n": 161,
+   "pass_old": 44,
+   "pass_new": 43,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m29-q3-faon_q8-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 42,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-e2b-q2-py",
+   "n": 161,
+   "pass_old": 30,
+   "pass_new": 29,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-e2b-q3-py",
+   "n": 161,
+   "pass_old": 56,
+   "pass_new": 56,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-e4b-q2-py",
+   "n": 161,
+   "pass_old": 80,
+   "pass_new": 80,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-e4b-q3-py",
+   "n": 161,
+   "pass_old": 103,
+   "pass_new": 102,
+   "flipped": [
+    "HumanEval_151_double_the_difference",
+    "HumanEval_74_total_match",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-gr3b-q2-py",
+   "n": 161,
+   "pass_old": 9,
+   "pass_new": 9,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-gr3b-q3-py",
+   "n": 161,
+   "pass_old": 39,
+   "pass_new": 40,
+   "flipped": [
+    "HumanEval_161_solve"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-gr3b-q4-py",
+   "n": 161,
+   "pass_old": 49,
+   "pass_new": 50,
+   "flipped": [
+    "HumanEval_161_solve"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-iq2m-py",
+   "n": 161,
+   "pass_old": 26,
+   "pass_new": 26,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q08b-q2-py",
+   "n": 161,
+   "pass_old": 11,
+   "pass_new": 11,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q08b-q3-py",
+   "n": 161,
+   "pass_old": 21,
+   "pass_new": 21,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q2-py",
+   "n": 161,
+   "pass_old": 22,
+   "pass_new": 22,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q3-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 42,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q36-35b-q2-py",
+   "n": 161,
+   "pass_old": 112,
+   "pass_new": 113,
+   "flipped": [
+    "HumanEval_158_find_max",
+    "HumanEval_65_circular_shift",
+    "HumanEval_74_total_match",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q36-35b-q3-py",
+   "n": 161,
+   "pass_old": 122,
+   "pass_new": 124,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q4-py",
+   "n": 161,
+   "pass_old": 44,
+   "pass_new": 44,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m3-q5-py",
+   "n": 161,
+   "pass_old": 45,
+   "pass_new": 44,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q2-tk1-py",
+   "n": 161,
+   "pass_old": 22,
+   "pass_new": 22,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q2-tk20-py",
+   "n": 161,
+   "pass_old": 26,
+   "pass_new": 26,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q2-tk200-py",
+   "n": 161,
+   "pass_old": 26,
+   "pass_new": 26,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q2-tk40-py",
+   "n": 161,
+   "pass_old": 26,
+   "pass_new": 26,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q2-tk64-py",
+   "n": 161,
+   "pass_old": 26,
+   "pass_new": 26,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q3-tk1-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 42,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q3-tk20-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 43,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q3-tk200-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 43,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q3-tk40-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 43,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q3-tk64-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 43,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q4-tk1-py",
+   "n": 161,
+   "pass_old": 44,
+   "pass_new": 44,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q4-tk20-py",
+   "n": 161,
+   "pass_old": 51,
+   "pass_new": 50,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q4-tk200-py",
+   "n": 161,
+   "pass_old": 51,
+   "pass_new": 50,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q4-tk40-py",
+   "n": 161,
+   "pass_old": 51,
+   "pass_new": 50,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m31-q4-tk64-py",
+   "n": 161,
+   "pass_old": 51,
+   "pass_new": 50,
+   "flipped": [
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m6b-g12b-q2-py",
+   "n": 161,
+   "pass_old": 75,
+   "pass_new": 78,
+   "flipped": [
+    "HumanEval_127_intersection",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "m6b-g12b-q3-py",
+   "n": 161,
+   "pass_old": 5,
+   "pass_new": 5,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "m6b-probe-q3-py",
+   "n": 40,
+   "pass_old": 2,
+   "pass_new": 2,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "mt1-bonsai17b-g64-py",
+   "n": 161,
+   "pass_old": 67,
+   "pass_new": 67,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "mt1-bonsai8b-g64-py",
+   "n": 161,
+   "pass_old": 99,
+   "pass_new": 101,
+   "flipped": [
+    "HumanEval_140_fix_spaces",
+    "HumanEval_158_find_max",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "mt1-iq3-2b-py",
+   "n": 161,
+   "pass_old": 32,
+   "pass_new": 32,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "mt1-iq3-4b-py",
+   "n": 161,
+   "pass_old": 66,
+   "pass_new": 67,
+   "flipped": [
+    "HumanEval_123_get_odd_collatz",
+    "HumanEval_158_find_max",
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "mt1-q36-35b-bartq3-py",
+   "n": 161,
+   "pass_old": 119,
+   "pass_new": 121,
+   "flipped": [
+    "HumanEval_158_find_max",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-bonsai27b-1bit-py",
+   "n": 161,
+   "pass_old": 60,
+   "pass_new": 62,
+   "flipped": [
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-bonsai4b-ternary-py",
+   "n": 161,
+   "pass_old": 109,
+   "pass_new": 111,
+   "flipped": [
+    "HumanEval_151_double_the_difference",
+    "HumanEval_158_find_max",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-glm47flash-q2kxl-py",
+   "n": 161,
+   "pass_old": 56,
+   "pass_new": 57,
+   "flipped": [
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-glm47flash-q3-py",
+   "n": 161,
+   "pass_old": 79,
+   "pass_new": 84,
+   "flipped": [
+    "HumanEval_127_intersection",
+    "HumanEval_151_double_the_difference",
+    "HumanEval_161_solve",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-glm47flash-tq1-py",
+   "n": 161,
+   "pass_old": 19,
+   "pass_new": 17,
+   "flipped": [
+    "HumanEval_146_specialFilter",
+    "HumanEval_69_search"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-lfm25-8a1b-m55-exq2-py",
+   "n": 161,
+   "pass_old": 11,
+   "pass_new": 11,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-lfm25-8a1b-m55-exq4-py",
+   "n": 161,
+   "pass_old": 8,
+   "pass_new": 8,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-lfm25-8a1b-m55-q3base-py",
+   "n": 161,
+   "pass_old": 5,
+   "pass_new": 5,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-lfm25-8a1b-q2-py",
+   "n": 161,
+   "pass_old": 10,
+   "pass_new": 10,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-lfm25-8a1b-q3-py",
+   "n": 161,
+   "pass_old": 6,
+   "pass_new": 6,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-llama32-3b-q2-py",
+   "n": 161,
+   "pass_old": 48,
+   "pass_new": 45,
+   "flipped": [
+    "HumanEval_35_max_element",
+    "HumanEval_74_total_match",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-llama32-3b-q3-py",
+   "n": 161,
+   "pass_old": 80,
+   "pass_new": 78,
+   "flipped": [
+    "HumanEval_162_string_to_md5",
+    "HumanEval_94_skjkasdkd"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-minicpm5-2b-q3-py",
+   "n": 161,
+   "pass_old": 65,
+   "pass_new": 65,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_106_f",
+    "HumanEval_65_circular_shift",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-nemotron3-4b-q3-py",
+   "n": 161,
+   "pass_old": 106,
+   "pass_new": 107,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_158_find_max",
+    "HumanEval_68_pluck"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-ornith9b-q4-py",
+   "n": 161,
+   "pass_old": 68,
+   "pass_new": 71,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_10_make_palindrome",
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-phi4mini-q2-py",
+   "n": 161,
+   "pass_old": 4,
+   "pass_new": 4,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-phi4mini-q3-py",
+   "n": 161,
+   "pass_old": 75,
+   "pass_new": 76,
+   "flipped": [
+    "HumanEval_151_double_the_difference",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_87_get_row",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-qwen2b-iq3xxs-py",
+   "n": 161,
+   "pass_old": 32,
+   "pass_new": 32,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-qwen2b-q2kxl-py",
+   "n": 161,
+   "pass_old": 22,
+   "pass_new": 22,
+   "flipped": [],
+   "dropped": []
+  },
+  {
+   "tag": "pan-qwen35-35a3b-iq1m-py",
+   "n": 161,
+   "pass_old": 91,
+   "pass_new": 93,
+   "flipped": [
+    "HumanEval_127_intersection",
+    "HumanEval_151_double_the_difference",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-qwen36-35a3b-q3km-py",
+   "n": 161,
+   "pass_old": 119,
+   "pass_new": 121,
+   "flipped": [
+    "HumanEval_158_find_max",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-qwen36-35a3b-udq3kxl-py",
+   "n": 161,
+   "pass_old": 122,
+   "pass_new": 124,
+   "flipped": [
+    "HumanEval_103_rounded_avg",
+    "HumanEval_65_circular_shift",
+    "HumanEval_79_decimal_to_binary",
+    "HumanEval_95_check_dict_case"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-qwen4b-iq3xxs-py",
+   "n": 161,
+   "pass_old": 66,
+   "pass_new": 67,
+   "flipped": [
+    "HumanEval_123_get_odd_collatz",
+    "HumanEval_158_find_max",
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "pan-qwen4b-q2kxl-py",
+   "n": 161,
+   "pass_old": 57,
+   "pass_new": 58,
+   "flipped": [
+    "HumanEval_79_decimal_to_binary"
+   ],
+   "dropped": []
+  },
+  {
+   "tag": "sanity-py",
+   "n": 20,
+   "pass_old": 12,
+   "pass_new": 12,
+   "flipped": [],
+   "dropped": []
+  }
+ ]
+}

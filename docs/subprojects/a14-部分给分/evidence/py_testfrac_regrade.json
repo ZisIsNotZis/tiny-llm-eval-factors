@@ -1,0 +1,223 @@
+{
+ "what": "py 逐测试比例用钉住语料 + 今天口径重算的旧值/新值（27 格）",
+ "corpus_sha256": "ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb",
+ "instrument": ".wrapup/testfrac.py（今天版本，含 assert True）",
+ "cells": [
+  {
+   "tag": "m1-qwen4b-q2-py",
+   "n": 161,
+   "pass_old": 57,
+   "pass_new": 58,
+   "mean_frac_old": 0.543334,
+   "mean_frac_new": 0.569358
+  },
+  {
+   "tag": "m1-qwen4b-q3-py",
+   "n": 161,
+   "pass_old": 81,
+   "pass_new": 80,
+   "mean_frac_old": 0.614224,
+   "mean_frac_new": 0.629283
+  },
+  {
+   "tag": "m21-bonsai-q2g64-py",
+   "n": 161,
+   "pass_old": 123,
+   "pass_new": 128,
+   "mean_frac_old": 0.852969,
+   "mean_frac_new": 0.897552
+  },
+  {
+   "tag": "m3-e2b-q2-py",
+   "n": 161,
+   "pass_old": 30,
+   "pass_new": 29,
+   "mean_frac_old": 0.239074,
+   "mean_frac_new": 0.259341
+  },
+  {
+   "tag": "m3-e2b-q3-py",
+   "n": 161,
+   "pass_old": 56,
+   "pass_new": 57,
+   "mean_frac_old": 0.397876,
+   "mean_frac_new": 0.407253
+  },
+  {
+   "tag": "m3-e4b-q2-py",
+   "n": 161,
+   "pass_old": 80,
+   "pass_new": 80,
+   "mean_frac_old": 0.580448,
+   "mean_frac_new": 0.595029
+  },
+  {
+   "tag": "m3-e4b-q3-py",
+   "n": 161,
+   "pass_old": 103,
+   "pass_new": 102,
+   "mean_frac_old": 0.697587,
+   "mean_frac_new": 0.698282
+  },
+  {
+   "tag": "m3-g12b-q3-py",
+   "n": 161,
+   "pass_old": 0,
+   "pass_new": 0,
+   "mean_frac_old": 0.005768,
+   "mean_frac_new": 0.054556
+  },
+  {
+   "tag": "m3-gr3b-q2-py",
+   "n": 161,
+   "pass_old": 9,
+   "pass_new": 9,
+   "mean_frac_old": 0.149875,
+   "mean_frac_new": 0.17628
+  },
+  {
+   "tag": "m3-gr3b-q3-py",
+   "n": 161,
+   "pass_old": 39,
+   "pass_new": 40,
+   "mean_frac_old": 0.296786,
+   "mean_frac_new": 0.317539
+  },
+  {
+   "tag": "m3-iq2m-py",
+   "n": 161,
+   "pass_old": 26,
+   "pass_new": 26,
+   "mean_frac_old": 0.322447,
+   "mean_frac_new": 0.348928
+  },
+  {
+   "tag": "m3-q08b-q2-py",
+   "n": 161,
+   "pass_old": 11,
+   "pass_new": 11,
+   "mean_frac_old": 0.207451,
+   "mean_frac_new": 0.247922
+  },
+  {
+   "tag": "m3-q08b-q3-py",
+   "n": 161,
+   "pass_old": 21,
+   "pass_new": 21,
+   "mean_frac_old": 0.313091,
+   "mean_frac_new": 0.346767
+  },
+  {
+   "tag": "m3-q2-py",
+   "n": 161,
+   "pass_old": 22,
+   "pass_new": 22,
+   "mean_frac_old": 0.285481,
+   "mean_frac_new": 0.31013
+  },
+  {
+   "tag": "m3-q3-py",
+   "n": 161,
+   "pass_old": 43,
+   "pass_new": 42,
+   "mean_frac_old": 0.444449,
+   "mean_frac_new": 0.473212
+  },
+  {
+   "tag": "m3-q36-35b-q2-py",
+   "n": 161,
+   "pass_old": 112,
+   "pass_new": 113,
+   "mean_frac_old": 0.821584,
+   "mean_frac_new": 0.857732
+  },
+  {
+   "tag": "m3-q36-35b-q3-py",
+   "n": 161,
+   "pass_old": 122,
+   "pass_new": 124,
+   "mean_frac_old": 0.863516,
+   "mean_frac_new": 0.899402
+  },
+  {
+   "tag": "m3-q4-py",
+   "n": 161,
+   "pass_old": 44,
+   "pass_new": 44,
+   "mean_frac_old": 0.417788,
+   "mean_frac_new": 0.442825
+  },
+  {
+   "tag": "m3-q5-py",
+   "n": 161,
+   "pass_old": 45,
+   "pass_new": 44,
+   "mean_frac_old": 0.397543,
+   "mean_frac_new": 0.424593
+  },
+  {
+   "tag": "mt1-bonsai17b-g64-py",
+   "n": 161,
+   "pass_old": 67,
+   "pass_new": 67,
+   "mean_frac_old": 0.612042,
+   "mean_frac_new": 0.640065
+  },
+  {
+   "tag": "mt1-bonsai8b-g64-py",
+   "n": 161,
+   "pass_old": 99,
+   "pass_new": 101,
+   "mean_frac_old": 0.73299,
+   "mean_frac_new": 0.764237
+  },
+  {
+   "tag": "pan-bonsai27b-1bit-py",
+   "n": 161,
+   "pass_old": 60,
+   "pass_new": 62,
+   "mean_frac_old": 0.41276,
+   "mean_frac_new": 0.425182
+  },
+  {
+   "tag": "pan-bonsai4b-ternary-py",
+   "n": 161,
+   "pass_old": 109,
+   "pass_new": 111,
+   "mean_frac_old": 0.78681,
+   "mean_frac_new": 0.83685
+  },
+  {
+   "tag": "pan-glm47flash-q2kxl-py",
+   "n": 161,
+   "pass_old": 56,
+   "pass_new": 57,
+   "mean_frac_old": 0.410682,
+   "mean_frac_new": 0.448901
+  },
+  {
+   "tag": "pan-glm47flash-q3-py",
+   "n": 161,
+   "pass_old": 79,
+   "pass_new": 84,
+   "mean_frac_old": 0.584333,
+   "mean_frac_new": 0.634839
+  },
+  {
+   "tag": "pan-glm47flash-tq1-py",
+   "n": 161,
+   "pass_old": 19,
+   "pass_new": 17,
+   "mean_frac_old": 0.138309,
+   "mean_frac_new": 0.152432
+  },
+  {
+   "tag": "pan-qwen35-35a3b-iq1m-py",
+   "n": 161,
+   "pass_old": 91,
+   "pass_new": 93,
+   "mean_frac_old": 0.739068,
+   "mean_frac_new": 0.769009
+  }
+ ]
+}
