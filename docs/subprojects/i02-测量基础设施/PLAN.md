@@ -156,6 +156,9 @@ owner 列写「i02 主控」表示由本子项目自己执行（本子项目在�
      表注写明两代不可直接比。
   5. a12 的谱系审计把带 `corpus=` 的 8 行记成 untraced（`res67`，provisional）——重评分数不可能被旧 summary
      复现，证据物是 a14 的清单；要不要改它的 `[1]` 判据归 a12，i02 不动它的文件。
+- 本轮追加（`res68`）：**全 Exception 的格入库写 NULL**（`migrate_db.py::summary_score`，四处共用：
+  `ingest_mpl`/`ingest_m27`/`ingest_m165`/`_ingest_mpl_ctx`），负控在库副本上造三行 + 一条「旧写法必须写出 0.0」
+  的差分。库内那 4 行的数据修缮归 `a12`（`migrations/null_all_exception_cells.py`），i02 只保证不再写出来。
 - **未做（下一轮）**：
   1. 38 格 py 仍未取代：其中 8 格是**同一 summary 内多行**（同 model+协议+n），需要另一条能切开的键
      （例如该行 `completed_at`/`rep`，或 a14 补一份逐格 eval 文件指纹）；其余是清单两列互相矛盾或全无候选。

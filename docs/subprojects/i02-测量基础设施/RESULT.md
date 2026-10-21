@@ -363,3 +363,29 @@
   在报告重建后为 0，`[9] stored protocols that disagree ...: 0`。需 a12 决定是否在其 `[1]` 里把带 `corpus=` 的行算作
   「以清单为证据物」，i02 不改它的文件。
 - producer: `python3 docs/subprojects/a12-多语言代码 MultiPL-E/mpl_cell_audit.py`
+
+## res68 :: 全 Exception 的格在入库时写 NULL——这是**写侧保证**，不是事后修缮。
+
+- kind: measured
+- status: current
+- evidence: `m51`/`m54` 的 summary 给「一个都没被判分」的格写了 `pass=0, score=0.0`，而同一测量的
+  canonical 孪生行是 NULL：同一格在库里存了两份，一份 0.0 一份 NULL。0.0 会被读成「测了、一个都没通过」，
+  那是把「没有测量」写成「测量结果是 0」。
+  写侧规则现在在 `migrate_db.py::summary_score`，由 `ingest_mpl` / `ingest_m27` / `ingest_m165` /
+  `_ingest_mpl_ctx` 四处共用：
+  （1）summary 行没有 `score`（缺失或 None）→ 写 NULL；
+  （2）`score == 0` 且逐题产物**全是 Exception** → 写 NULL。证据先用 summary 自带的 `statuses`，
+  没有就退到随仓库分发的逐题产物索引 `report_inputs/eval_status.json`，按 (模型键, 语言, 题量) 找；
+  多个候选口径不一致就当作**分不出**，不猜（仍是 NULL 的判据不适用，按 summary 记的 0 入库并记 ledger）。
+  **只认「全 Exception」**：全 SyntaxError 是模型写不出能编译的代码，那是一次实测的 0——`a05` 的加长前缀
+  网格就靠它当楼层，规则不能把它一起抹成 NULL（实测：m51 gemma12b-q2 java `{'SyntaxError': 158}` 保持 0.0，
+  m54 q3 rs `{'Exception': 1, 'SyntaxError': 154}` 保持 0.0，只有 js/rb 四格 `{'Exception': 161}` 变 NULL）。
+  负控 `checks/all_exception_null_negative_control.py` 在**库副本**上造三行（全 Exception / 有通过 / 没记分数），
+  断言 NULL / 实测 0.8075 / NULL；外加一条**差分**：把 `summary_score` 换成旧写法再入一次，那三行必须是
+  `0.0`——两条结果不同才说明规则在承重。
+  已排查同类：从 summary 直接写分数的 ingester 只有 `ingest_mpl` 一族（m1/m2/m3/m5/m6/m10/m21/m25/
+  m33/m35/m50–m60 等）、`ingest_m27`、`ingest_m165`、`_ingest_mpl_ctx`，现在都走 `summary_score`；
+  `ingest_campaign`（lmeval）本来就不写缺失分数、`ingest_variant` 只在面板给了值时才写、
+  `ingest_m41`（比例）不写二元分数。库内那 4 行的数据修缮由 `a12` 的 `migrations/null_all_exception_cells.py` 做
+  （备份 + 完整性 + 行数不变 + 幂等），i02 只保证**不再写出来**。
+- producer: `python3 checks/all_exception_null_negative_control.py`；`python3 migrate_db.py`（幂等，第二次净改 0 行）

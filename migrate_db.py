@@ -262,6 +262,53 @@ MPL_MODELS = {
 }
 
 
+# 逐题产物（`mres/*_eval.json`）的状态直方图索引，随仓库分发（`build_eval_status.py` 生成）。
+# 用途：一条 summary 行写 `pass=0, score=0.0` 时，要分清「一个都没通过」和「一个都没被判分」——
+# 前者是测量，后者是没有测量。summary 自己常常不带 `statuses`，所以退到这份索引上按
+# (模型键, 语言, 题量) 找它的逐题产物。
+ARTEFACT_STATUS_INDEX = os.path.join("report_inputs", "eval_status.json")
+_ARTEFACT_CACHE = None
+
+
+def artefact_statuses(model_key, lang, n):
+    """同一模型键 + 语言 + 题量的逐题产物状态直方图；多个候选必须一致，否则当作分不出。"""
+    global _ARTEFACT_CACHE
+    if _ARTEFACT_CACHE is None:
+        try:
+            doc = json.load(open(ARTEFACT_STATUS_INDEX, encoding="utf-8"))
+            _ARTEFACT_CACHE = doc.get("files") or []
+        except (OSError, ValueError):
+            _ARTEFACT_CACHE = []
+    suffix = f"-{model_key}-{lang}_eval.json"
+    hits = [f["status"] for f in _ARTEFACT_CACHE
+            if (f.get("file") or "").endswith(suffix) and f.get("n") == n]
+    if not hits:
+        return None
+    if any(h != hits[0] for h in hits[1:]):
+        return None                  # 候选口径不一致 → 分不出，不猜
+    return hits[0]
+
+
+def summary_score(row, model_key):
+    """summary 行 → 入库的 `_score`；分不出分数时返回 None（写 NULL，不写 0.0）。
+
+    两条规则，都来自「`@absent`：未记录的输入不能补一个默认值充当事实」：
+      1. 行里没有 `score`（缺失或 None）→ NULL，并在 ledger 记「summary 没记分数」；
+      2. `score == 0` 且逐题产物**全是 Exception**（一个都没被判分）→ NULL。
+         注意只认「全 Exception」：全 SyntaxError 是模型写不出能编译的代码，那是一次实测的 0，
+         `a05` 的加长前缀网格就靠它当楼层，不能一起抹成 NULL。
+    """
+    score = row.get("score")
+    if score is None:
+        return None
+    if score != 0:
+        return score
+    statuses = row.get("statuses") or artefact_statuses(model_key, row["lang"], row.get("n"))
+    if statuses and set(statuses) == {"Exception"}:
+        return None
+    return score
+
+
 def ingest_mpl(con, path, run_tag, source, model_map=None):
     """Ingest a MultiPL-E summary, inserting only cells that are not in the DB yet.
 
@@ -295,7 +342,11 @@ def ingest_mpl(con, path, run_tag, source, model_map=None):
             proto = DEFAULT_MPL_PROTOCOL
             defaulted[proto] += 1
             note_skip(run_tag, "default_protocol_used", proto)
-        row = base_row(model_map[r["model"]], f"humaneval-{lang}", 0.0, r["score"], None)
+        score = summary_score(r, r["model"])
+        if score is None:
+            note_skip(run_tag, "全 Exception 或 summary 没记分数 → 写 NULL（不写 0.0）",
+                      f"{r['model']}:{lang}")
+        row = base_row(model_map[r["model"]], f"humaneval-{lang}", 0.0, score, None)
         row.update({"run_tag": run_tag, "rep": 1, "ctx_size": 4096,
                     "parallel_slots": 1, "protocol": proto,
                     "language": lang, "bench_family": "humaneval-multipl-e",
@@ -663,7 +714,8 @@ def ingest_m165(con):
         if not proto:
             proto = DEFAULT_MPL_PROTOCOL
             note_skip(tag, "default_protocol_used", proto)
-        row = base_row(M165_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0, r["score"], None)
+        row = base_row(M165_MODELS[r["model"]], f"humaneval-{r['lang']}", 0.0,
+                       summary_score(r, r["model"]), None)
         row.update({
             "run_tag": tag, "rep": 1, "ctx_size": r.get("ctx"), "parallel_slots": 1,
             "seed": r.get("seed"),
@@ -751,7 +803,8 @@ def _ingest_mpl_ctx(con, path, run_tag, source, model_map, extra_cols):
         if not m or r.get("score") is None:
             continue
         bench = f"humaneval-{r.get('lang', 'cpp')}"
-        row = base_row(m, bench, float(r.get("temp", 0.3) or 0.3), r["score"], None)
+        row = base_row(m, bench, float(r.get("temp", 0.3) or 0.3),
+                       summary_score(r, r.get("model")), None)
         row.update({"run_tag": run_tag, "rep": 1, "protocol": r.get("protocol", "mpl-raw"),
                     "language": r.get("lang", "cpp"), "bench_family": "humaneval-multipl-e",
                     "source_file": source})
@@ -1324,7 +1377,7 @@ def ingest_m27(con):
         if r["model"] not in M27_MODELS:
             continue
         row = base_row(M27_MODELS[r["model"]], f"humaneval-{r['lang']}",
-                       r["temp"], r["score"], None)
+                       r["temp"], summary_score(r, r["model"]), None)
         row.update({"run_tag": "m27-sampling", "rep": 1, "ctx_size": 4096,
                     "parallel_slots": 1, "seed": 1234,
                     "protocol": _mpl_protocol(r.get("protocol")),
