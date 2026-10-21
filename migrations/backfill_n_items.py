@@ -171,6 +171,7 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="只算并打印")
     ap.add_argument("--trace", help="把逐行溯源写成 TSV")
     ap.add_argument("--family", help="只处理该 bench_family 的行（默认全部）")
+    ap.add_argument("--protocol-like", help="只处理协议串匹配该 LIKE 模式的行（如 '%third-family-code%'）")
     args = ap.parse_args()
     if not (args.apply or args.dry_run):
         ap.error("选择 --apply 或 --dry-run")
@@ -181,7 +182,11 @@ def main():
     params = ()
     if args.family:
         sql += " AND bench_family = ?"
-        params = (args.family,)
+        params = params + (args.family,)
+    if args.protocol_like:
+        sql += " AND protocol LIKE ?"
+        params = params + (args.protocol_like,)
+        print(f"只处理 protocol LIKE {args.protocol_like}")
     rows = con.execute(sql, params).fetchall()
     families = dict(con.execute(
         "SELECT COALESCE(bench_family,'<空>'), COUNT(*) FROM experiments "
