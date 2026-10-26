@@ -134,17 +134,19 @@ else
     record FAIL "第十四节判分器口径的负控未通过"
 fi
 # 下一层的同一类错误（p-entry3）：`docs/subprojects/*/RESULT.md` 点名的每个 `.wrapup/…` 路径
-# 必须有处置——入库 / 压缩入库 / 按已声明的类忽略；三者都不是就是死引用。
-if out=$(python3 checks/evidence_logs.py 2>&1); then
-    record PASS "被点名的 .wrapup 路径都有处置（$(printf '%s' "$out" | head -1)）"
-else
-    record FAIL "$(printf '%s' "$out" | grep -m1 'FAIL' | cut -c1-200)"
-fi
-# 同一条检查的负控：干净 clone 基线必须与真树同结论（exit 0、失败 0）；换字节 → 点名 `.log`；
-# 聚合产物从索引里拿掉 / 落在未声明的类下 → 判「无处置」（exact 档的严格度不许被换掉）。
-# 没有这一条，上面那行只能证明「它今天打印了绿」。
+# 必须有处置——入库 / 压缩入库 / 按已声明的类忽略；三者都不是就是死引用。本机（盘上有未入库的
+# run 文件）逐条核到文件；干净 clone 里只能按声明/索引判 → exit 2（不可得），记 BLOCKED，不算通过。
+out=$(python3 checks/evidence_logs.py 2>&1); rc=$?
+case "$rc" in
+    0) record PASS "被点名的 .wrapup 路径都有处置（$(printf '%s' "$out" | head -1)）" ;;
+    2) record BLOCKED "证据处置：$(printf '%s' "$out" | grep -m1 '^BLOCKED:' | sed 's/^BLOCKED: //')" ;;
+    *) record FAIL "$(printf '%s' "$out" | grep -m1 'FAIL' | cut -c1-200)" ;;
+esac
+# 同一条检查的负控：真树基线必须绿；干净 clone 基线必须 exit 2（不可得，不是 0）；换字节 → 点名
+# `.log`；聚合产物从索引里拿掉 / 落在未声明的类下 / 被模式或目录点名却没入库 → 判「无处置」；空扫描
+# → exit 2。没有这一条，上面那行只能证明「它今天打印了绿」。
 if python3 checks/evidence_logs_negative_control.py >/tmp/reproduce_elnc.$$ 2>&1; then
-    record PASS "证据处置的负控（干净 clone 基线绿；换字节→点名 .log；聚合产物未入库/落未声明类→无处置）"
+    record PASS "证据处置的负控（真树绿；干净 clone→BLOCKED；换字节→点名 .log；聚合产物未入库/落未声明类、模式/目录点名→无处置；空扫描→exit 2）"
 else
     record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_elnc.$$ | cut -c1-200)"
 fi

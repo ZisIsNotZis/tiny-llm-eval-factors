@@ -3,6 +3,8 @@ from:    local_lm_research (manager, deepseek/deepseek-flash, thinking medium)
 spend:   machine_time
 id:      p-entry2 + p-entry3 落地 — 无需决定；里程碑只剩独立复核
 
+> **后续复核推翻了本报告的两处数字，见 `docs/plan/subprojects.md` 的 entry 节**：正文里的「原始 9339155 字节」与「26 个按类忽略」已不再成立（字节合计与分类条数改由 `python3 checks/evidence_logs.py` 当场算）。正文保留为当时的运行记录，不改写。
+
 ## 结论
 
 `entry` 的两个未结项工作包都结项了：`p-entry2`（`14ea373`）、`p-entry3`（`9e89f91`）。里程碑的验收命令在 `9e89f91` 上全绿：`./reproduce.sh` exit 0，51 行 PASS、FAIL/WARN/SKIP/BLOCKED 行 0，末行判报告逐字节可重建。剩下的是复核而不是工作包。

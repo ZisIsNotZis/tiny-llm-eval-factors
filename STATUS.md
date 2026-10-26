@@ -14,7 +14,7 @@
 
 1. 两份根路由不再指向已退役的按层 yaml 文件；`FINDINGS.md` 的每行指到它现在真正住在哪个子项目节点。
 2. 这件事不再靠人记得：`python3 checks/router_refs.py` 解析三份根路由里的每条节点引用与每个文档路径，`checks/router_refs_negative_control.py`（二十一条期望）证明它会红，`./reproduce.sh` 把这一对按 `PASS`/`FAIL` 接进来了。
-3. 根目录没有未归类路径：运行日志按类忽略，**被点名的**聚合产物与运行日志入库（`.log` 以 `.gz` 入库），`git status --porcelain` 无输出。判据是「被点名」而不是「体积小」或「被某条 ignore 规则命中」：`python3 checks/evidence_logs.py` 逐条判每条被点名的 `.wrapup/…` 路径有没有处置，`checks/evidence_logs_negative_control.py` 证明它会红（换字节数、从索引里拿掉、落在未声明的类下三种注入面），`./reproduce.sh` 把这一对也按 `PASS`/`FAIL` 接进来了。
+3. 根目录没有未归类路径：运行日志按类忽略，**被点名的**聚合产物与运行日志入库（`.log` 以 `.gz` 入库），`git status --porcelain` 无输出。判据是「被点名」而不是「体积小」或「被某条 ignore 规则命中」：`python3 checks/evidence_logs.py` 逐条判每条被点名的 `.wrapup/…` 路径有没有处置，`checks/evidence_logs_negative_control.py` 证明它会红（真树绿、干净 clone 报 BLOCKED；换字节数、从索引里拿掉、落在未声明的类下、被模式或目录点名却没入库、空扫描各自红），`./reproduce.sh` 把这一对也按 `PASS`/`FAIL` 接进来了。第二轮的教训是「被点名的证据都以能打开的形式随仓库走」这句当时为假：`STATUS.md` 与 `README.md` 现在只断言已被 `checks/evidence_logs.py` 逐条核到的那些，不再声称一份不缺。
 4. **输入漂移不再只记 WARN**（`p-entry2` 已结项，`14ea373`）：13 条判断收进 `checks/report_inputs_drift.py`，漂移=FAIL、缺席=SKIP，`python3 checks/report_inputs_drift_negative_control.py` exit 0 证明改坏一个输入会让 `./reproduce.sh` 非零退出并点名它。
 
 仍开放，均不得记为通过：
@@ -32,6 +32,6 @@
 
 ## 下一步
 
-`entry` 的工作包全部结项（`r-entry1`–`r-entry4`、`p-entry1`–`p-entry3`）；上一轮里程碑复核判「不接受」的缺陷已按报告修完，证据重绑在 `docs/plan/subprojects.md` 的 `entry` 节末（每条 AC 的命令、捕获输出与产物 sha256 由该节的表格点名到文件）。剩下的不是工作包而是复核：里程碑复核（从根目录读起的人不再踩到死路径、且这几件事由会自己变红的检查守着）+ 整合验证。未结项：无。
+`entry` 的工作包全部结项（`r-entry1`–`r-entry4`、`p-entry1`–`p-entry3`）；第二轮里程碑复核判「不接受」的 P1/P2/P3 已在本轮逐条修掉（第三轮的判词见 `docs/plan/subprojects.md` 的 `entry` 节末，未结项：里程碑的整合复核）。证据重绑在 `docs/plan/subprojects.md` 的 `entry` 节末（每条 AC 的命令、捕获输出与产物 sha256 由该节的表格点名到文件）。剩下的不是工作包而是复核：里程碑复核（从根目录读起的人不再踩到死路径、且这几件事由会自己变红的检查守着）+ 整合验证。未结项：无。
 
 未测项按 `docs/plan/subprojects.md` 的三类读法对待，不并入本文件的「当前状态」。

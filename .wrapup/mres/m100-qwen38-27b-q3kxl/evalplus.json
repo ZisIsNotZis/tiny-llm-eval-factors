@@ -1,0 +1,47 @@
+{
+  "tag": "m100-qwen38-27b-q3kxl",
+  "model": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+  "model_arg": "/home/z/hf/mscache/unsloth/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "np": 1,
+    "ngl": 99,
+    "jinja": true,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": 0.8719512195121951,
+      "plus": 0.8353658536585366,
+      "n": 164,
+      "base_pass": 143,
+      "plus_pass": 137,
+      "bad_rate": 0.0
+    },
+    "mbpp": {
+      "base": 0.8703703703703703,
+      "plus": 0.7380952380952381,
+      "n": 378,
+      "base_pass": 329,
+      "plus_pass": 279,
+      "bad_rate": 0.0
+    }
+  },
+  "errors": [],
+  "timings_s": {
+    "humaneval": 1382,
+    "mbpp": 2109,
+    "total": 3491.0
+  },
+  "server": {
+    "binary": "llama-server",
+    "port": 9200,
+    "base_url": "http://127.0.0.1:9200/v1"
+  },
+  "evalplus": "0.3.1",
+  "date": "2026-10-09T10:40:44"
+}

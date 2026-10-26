@@ -1,0 +1,47 @@
+{
+  "tag": "m101-qwen36-35b-a3b-q3km",
+  "model": "/home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf",
+  "model_arg": "/home/z/hf/mscache/bartowski/Qwen_Qwen3.6-35B-A3B-GGUF/Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "np": 1,
+    "ngl": 99,
+    "jinja": true,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": 0.926829268292683,
+      "plus": 0.8841463414634146,
+      "n": 164,
+      "base_pass": 152,
+      "plus_pass": 145,
+      "bad_rate": 0.0
+    },
+    "mbpp": {
+      "base": 0.9153439153439153,
+      "plus": 0.7777777777777778,
+      "n": 378,
+      "base_pass": 346,
+      "plus_pass": 294,
+      "bad_rate": 0.0
+    }
+  },
+  "errors": [],
+  "timings_s": {
+    "humaneval": 400,
+    "mbpp": 770,
+    "total": 1170.0
+  },
+  "server": {
+    "binary": "llama-server",
+    "port": 9200,
+    "base_url": "http://127.0.0.1:9200/v1"
+  },
+  "evalplus": "0.3.1",
+  "date": "2026-10-09T11:27:31"
+}

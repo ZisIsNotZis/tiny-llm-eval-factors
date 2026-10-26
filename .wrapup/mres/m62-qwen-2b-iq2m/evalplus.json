@@ -1,0 +1,47 @@
+{
+  "tag": "m62-qwen-2b-iq2m",
+  "model": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_M.gguf",
+  "model_arg": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-IQ2_M.gguf",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "np": 1,
+    "ngl": 99,
+    "jinja": true,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": 0.2682926829268293,
+      "plus": 0.23780487804878048,
+      "n": 164,
+      "base_pass": 44,
+      "plus_pass": 39,
+      "bad_rate": 0.0
+    },
+    "mbpp": {
+      "base": 0.2698412698412698,
+      "plus": 0.24074074074074073,
+      "n": 378,
+      "base_pass": 102,
+      "plus_pass": 91,
+      "bad_rate": 0.0
+    }
+  },
+  "errors": [],
+  "timings_s": {
+    "humaneval": 262,
+    "mbpp": 688,
+    "total": 950.0
+  },
+  "server": {
+    "binary": "llama-server",
+    "port": 9200,
+    "base_url": "http://127.0.0.1:9200/v1"
+  },
+  "evalplus": "0.3.1",
+  "date": "2026-10-08T10:37:55"
+}

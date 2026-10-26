@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""负控：证明 `checks/evidence_logs.py` 真的会红，而不是一个只会打印绿行的形状（p-entry3 的门 4）。
+r"""负控：证明 `checks/evidence_logs.py` 真的会红，而不是一个只会打印绿行的形状（p-entry3 的门 4）。
 
-基线跑两处：真树与**干净 clone**（`git clone --shared`，HEAD 只有入库文件，`.wrapup/` 里的运行期
-产物一个都不在）都必须 exit 0、失败 0 条——判据是「声明」而不是「盘上有没有」，所以两处结论相同。
-五个注入面（用例 2–6）各跑在本仓库的临时 clone 上（结束即删，真树一个字节都不动），每例的判据是差分的：注入
-之后多出来的失败行**恰好一条**，且点名被注入的那个路径。一行一条、末尾 `PASS` 才算过：
+基线跑两处，两处的退出码**不同且都正确**：
+
+  * 真树（`.wrapup` 在盘）exit 0；
+  * 干净 clone（`.wrapup` 不在场）**exit 2**（不可得，不是通过）——判据只能按声明/索引，看不到盘上
+    文件，所以脚本在结论行打出「本次 N 条只能按声明判」并以 2 退出。这一条是本包要修的正面证据：
+    修前 clone 基线是 exit 1、预存失败 13 条。
+
+注入面（用例 2 起）各跑在本仓库的临时 clone 上（结束即删，真树一个字节都不动），每例的判据是差分的：
+注入之后多出来的失败行**恰好一条**，且点名被注入的那个路径。一行一条、末尾 `PASS` 才算过：
 
   0. baseline（真树）        exit 0，结论行是「无处置 0」；
-  1. clone 基线              干净 clone 里 exit 0、预存失败 0 条（这一条是本包要修的那个缺陷的正面证据：
-                             修前 clone 基线是 exit 1、预存失败 13 条）；
+  1. clone 基线              干净 clone 里 exit 2、BLOCKED 条数 = 被点名 token 数、失败 0 条；
   2. 字节数不符             把登记表里 `.wrapup/axes_diffusion_gate.log.gz` 换成解压后字节数不同的
                             副本 → 多一条失败行，点名该 `.log`（`.gz` 里装的必须是登记的那一份）；
   3. 从索引里拿掉           把已入库、被点名的 `.wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json` 从索引
@@ -20,15 +24,22 @@
   5. 聚合产物落到未声明类   给一份精确点名的聚合产物 `.wrapup/mres/m164-a04-uni45/lmeval_panel.json`
                             加一条**未声明**的 ignore 规则 → 多一条失败行，判「无处置」并点名那条规则。
                             这是用例 4 的另一半：光「被忽略」不算处置，必须是被声明为可重建缓存的那一类。
-
   6. 逐题样本落到未声明类   给一份精确点名的逐题样本 `.wrapup/mres/m1-qwen4b-q2-py.jsonl`（它按
                             `.wrapup/mres/*` 的 `.jsonl` 形状算「按类忽略」）加一条**未声明**的
                             ignore 规则 → 多一条失败行，判「无处置」并点名那条规则。
-
   7. 逐题评测产物未入库     在一份 `RESULT.md` 里点名一个不在索引里、落在 `mres/` catch-all 下的
-                            `*_eval.json` → 多一条失败行，判「无处置」。README 的 Ships 一栏说逐题
-                            评测产物入库，所以它**不能**被「per-run 结果文件」那张形状表认领；这一例
-                            就是那条边界：把它放回形状表就等于让「本该入库的没入库」变绿。
+                            `*_eval.json` → 多一条失败行，判「无处置」。它测的是「被点名却没入库的
+                            逐题评测产物 → 无处置」——`README` 的 Ships 一栏说逐题评测产物入库。
+                            它**不**测形状表：`.gitignore` 的 `!.wrapup/mres/*/*_eval.json` 让该路径根本
+                            不被 ignore（`git check-ignore` 不给规则），形状表从未被问到；把
+                            `_eval\.json$` 加回形状表，这一例照样红。形状表那一面由用例 7b / 8 覆盖。
+  7b. 模式里的聚合产物     在一份 `RESULT.md` 里写 `.wrapup/mres/m58-*/evalplus.json`，盘上放好一份
+                            未入库的 `.wrapup/mres/m58-fake-run/evalplus.json` → 多一条并点名该文件。
+                            这就是「同一个未入库文件，写成 exact 红、写成模式绿」的那个洞。
+  8. 目录里的聚合产物      同上那份假运行目录，文档 token 写成 `.wrapup/mres/m58-fake-run/` → 走进目录，
+                            看见里面只有未入库的 `evalplus.json` → 多一条并点名该文件。
+  9. 空扫描                 临时 clone 里删掉所有 `RESULT.md` 正文里的 `.wrapup/…` token → exit 2
+                            （空扫描不是通过）。
 
 "聚合产物为什么必须入库"写在 `checks/evidence_logs.py` 的模块说明里：它们的断言无法从随仓库分发
 的东西重算，所以 `mres/` 的 catch-all 只按**形状**认领逐题样本 / codegen / props / per-run 结果，
@@ -45,6 +56,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import re
 import shutil
 import subprocess
 import sys
@@ -56,12 +68,16 @@ CHECKER = REPO / "checks" / "evidence_logs.py"
 
 # 各用例的注入面：都是 p-entry3 的承重文件（登记过的 `.log`、被点名的聚合产物、按类忽略的逐题样本）
 GZ_LOG = ".wrapup/axes_diffusion_gate.log.gz"
-TRACKED_AGGREGATE = ".wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json"
+TRACKED_AGGREGATE = ".wrapup/mres/m164-a04-uni45/evalplus.json"
 UNTRACKED_AGGREGATE = ".wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json"
 UNDECLARED_AGGREGATE = ".wrapup/mres/m164-a04-uni45/lmeval_panel.json"
 CLASS_IGNORED = ".wrapup/mres/m1-qwen4b-q2-py.jsonl"
 UNTRACKED_ITEM_EVAL = ".wrapup/mres/m63-qwen-2b-iq3xxs/code_eval.json"  # 不存在于索引、也不在盘上
 NAMED_IN = "docs/subprojects/a01-量化位宽/RESULT.md"
+
+# 假运行目录（用例 7b / 8）：盘上有一份未入库的聚合产物，文档 token 分别写成模式与目录
+FAKE_DIR = ".wrapup/mres/m58-fake-run"
+FAKE_FILE = FAKE_DIR + "/evalplus.json"
 
 # 本次新入库的证据文件：clone 是 HEAD，工作树里还没提交时它们不在 clone 里，要叠上去
 NEW_EVIDENCE = (
@@ -77,6 +93,26 @@ NEW_EVIDENCE = (
     ".wrapup/mres/m164-a04-uni45/lmeval_panel.json",
     ".wrapup/mres/m169-vram-08b-mtp/ident_control.json",
     ".wrapup/mres/m169-vram-9b/ident_control.json",
+    # 第二轮复核补入库的 19 份聚合产物
+    ".wrapup/mres/m61-qwen-2b-iq2xxs/evalplus.json",
+    ".wrapup/mres/m62-qwen-2b-iq2m/evalplus.json",
+    ".wrapup/mres/m65-qwen-2b-q3kxl/evalplus.json",
+    ".wrapup/mres/m66-qwen-2b-q4kxl/evalplus.json",
+    ".wrapup/mres/m67-qwen-2b-q5kxl/evalplus.json",
+    ".wrapup/mres/m91-qwen38-27b-q2kxl/cmd.txt",
+    ".wrapup/mres/m91-qwen38-27b-q2kxl/evalplus.json",
+    ".wrapup/mres/m100-qwen38-27b-q3kxl/cmd.txt",
+    ".wrapup/mres/m100-qwen38-27b-q3kxl/evalplus.json",
+    ".wrapup/mres/m150-qwen38-gsqrco-iq3xxs/cmd.txt",
+    ".wrapup/mres/m150-qwen38-gsqrco-iq3xxs/evalplus.json",
+    ".wrapup/mres/m151-qwen38-gsqrco-iq3s/cmd.txt",
+    ".wrapup/mres/m151-qwen38-gsqrco-iq3s/evalplus.json",
+    ".wrapup/mres/m152-qwen38-27b-iq4xs/cmd.txt",
+    ".wrapup/mres/m152-qwen38-27b-iq4xs/evalplus.json",
+    ".wrapup/mres/m101-qwen36-35b-a3b-q3km/cmd.txt",
+    ".wrapup/mres/m101-qwen36-35b-a3b-q3km/evalplus.json",
+    ".wrapup/mres/m103-qwen36-35b-a3b-q3kxl/cmd.txt",
+    ".wrapup/mres/m103-qwen36-35b-a3b-q3kxl/evalplus.json",
 )
 
 
@@ -92,6 +128,7 @@ def prepare(tmp: Path) -> Path:
         raise SystemExit(f"FAIL 无法建立临时 clone：{proc.stderr.strip()}")
     shutil.copyfile(REPO / ".gitignore", clone / ".gitignore")
     shutil.copytree(REPO / "docs", clone / "docs", dirs_exist_ok=True)
+    shutil.copytree(clone / "docs", tmp / "docs_pristine")
     for rel in NEW_EVIDENCE:
         src = REPO / rel
         if not src.exists():
@@ -123,6 +160,12 @@ def check(name: str, ok: bool, detail: str) -> bool:
     return ok
 
 
+def write_fake_dir(clone: Path) -> None:
+    dst = clone / FAKE_FILE
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text("{}\n", encoding="utf-8")  # 未入库：不 add
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--keep", action="store_true", help="留着临时 clone（默认结束即删）")
@@ -142,17 +185,22 @@ def main() -> int:
         pristine_index = (clone / ".git" / "index").read_bytes()
 
         def fresh() -> None:
-            """每个用例前把索引、`.gitignore` 与登记的 `.gz` 复原，让每次红的差分只有一条。"""
+            """每个用例前把索引、`.gitignore`、`docs/`、登记的 `.gz` 与假运行目录复原，让每次红的差分只有一条。"""
             (clone / ".git" / "index").write_bytes(pristine_index)
             shutil.copyfile(REPO / ".gitignore", clone / ".gitignore")
+            shutil.rmtree(clone / "docs", ignore_errors=True)
+            shutil.copytree(tmp / "docs_pristine", clone / "docs")
             shutil.copyfile(REPO / GZ_LOG, clone / GZ_LOG)
+            shutil.rmtree(clone / FAKE_DIR, ignore_errors=True)
 
-        # 1) clone 基线：干净 clone 里必须与真树同一结论（exit 0、失败 0 条）
+        # 1) clone 基线：干净 clone 里没有 `.wrapup` → exit 2（不可得），失败 0 条
         fresh()
         rc0, out0 = run_check(clone)
         base = failures(out0)
-        all_ok &= check("1 clone 基线", rc0 == 0 and not base and "无处置 0" in out0,
-                        f"exit {rc0}；预存失败行 {len(base)} 条；{summary_line(out0)}")
+        blocked = [l for l in out0.splitlines() if l.startswith("BLOCKED:")]
+        all_ok &= check("1 clone 基线（不可得）", rc0 == 2 and not base and bool(blocked),
+                        f"exit {rc0}；预存失败行 {len(base)} 条；{summary_line(out0)}；"
+                        f"{blocked[0] if blocked else '（没有 BLOCKED 行）'}")
 
         def each(name: str, want: str, describe: str, mutate) -> None:
             """复原 → 注入 → 跑检查：注入后多出来的失败行必须恰好一条，且点名 want。"""
@@ -202,12 +250,37 @@ def main() -> int:
 
         each("6 逐题样本落到未声明类", f"`{CLASS_IGNORED}`", "判「无处置」并点名那条规则", undeclared_rule)
 
-        # 7) 被点名却没入库的 `*_eval.json`：这张形状表不许认领它（README 说逐题评测产物入库）
+        # 7) 被点名却没入库的 `*_eval.json`（测「无处置」；形状表那一面由 7b/8 覆盖）
         def name_untracked_item_eval() -> None:
             with open(clone / NAMED_IN, "a", encoding="utf-8") as fh:
                 fh.write(f"\n- negative control：`{UNTRACKED_ITEM_EVAL}`\n")
 
         each("7 逐题评测产物未入库", UNTRACKED_ITEM_EVAL, "判「无处置」", name_untracked_item_eval)
+
+        # 7b) 模式点名的聚合产物：盘上有假运行目录里的未入库 evalplus.json
+        def name_fake_pattern() -> None:
+            write_fake_dir(clone)
+            with open(clone / NAMED_IN, "a", encoding="utf-8") as fh:
+                fh.write(f"\n- negative control：`.wrapup/mres/m58-*/evalplus.json`\n")
+
+        each("7b 模式里的聚合产物", FAKE_FILE, "判「无处置」并点名该文件", name_fake_pattern)
+
+        # 8) 目录点名的聚合产物：走进假运行目录，看见里面只有未入库的 evalplus.json
+        def name_fake_dir() -> None:
+            write_fake_dir(clone)
+            with open(clone / NAMED_IN, "a", encoding="utf-8") as fh:
+                fh.write(f"\n- negative control：`{FAKE_DIR}/`\n")
+
+        each("8 目录里的聚合产物", FAKE_FILE, "判「无处置」并点名该文件", name_fake_dir)
+
+        # 9) 空扫描：删掉所有 RESULT.md 正文里的 `.wrapup/…` token → exit 2
+        fresh()
+        for doc in (clone / "docs" / "subprojects").glob("*/RESULT.md"):
+            text = doc.read_text(encoding="utf-8")
+            doc.write_text(re.sub(r"\.wrapup/[^\s`）)]*", "", text), encoding="utf-8")
+        rc9, out9 = run_check(clone)
+        all_ok &= check("9 空扫描", rc9 == 2 and "BLOCKED:" in out9,
+                        f"exit {rc9}；{summary_line(out9)}")
     finally:
         if args.keep:
             print(f"--keep：临时 clone 留在 {tmp}")
@@ -221,8 +294,9 @@ def main() -> int:
     if not all_ok:
         print("FAIL 有期望没有成立（缺一条都不算证明过这条检查会红）")
         return 1
-    print("PASS 干净 clone 基线绿；换字节→点名 `.log`；两份聚合产物未入库/落未声明类→无处置；"
-          "逐题样本落未声明类→无处置；逐题评测产物未入库→无处置；真树前后相同")
+    print("PASS 真树绿、干净 clone 报 BLOCKED（不可得）；换字节→点名 `.log`；聚合产物未入库/落未声明类"
+          "→无处置；逐题样本落未声明类→无处置；逐题评测产物未入库→无处置；模式/目录点名的未入库 "
+          "evalplus.json→无处置并点名；空扫描→exit 2；真树前后相同")
     return 0
 
 

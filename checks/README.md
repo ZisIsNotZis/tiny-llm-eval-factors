@@ -15,8 +15,8 @@
 | `python3 checks/report_inputs_drift_negative_control.py` | 上一条真的会红：改坏 `open_questions.json` 一个字节 → `./reproduce.sh` 非零退出并点名；移走 `gsq.json` → 该行 SKIP 且整体仍绿 | `./reproduce.sh` |
 | `python3 checks/router_refs.py` | 三个路由文件（`STATUS.md`/`FINDINGS.md`/`README.md`）里印出的每条 `docs/…::id` 引用与每个 `docs/…` 路径都在树里解析得到；扫空不算通过 | `./reproduce.sh`（第 6b 步） |
 | `python3 checks/router_refs_negative_control.py` | 上一条真的会红：二十一条期望逐条列在脚本头部（缺 id、缺文件、围栏/注释里的假 id、跨行与带空格的 `::`、空扫描、缺路由文件、未闭合遮蔽） | `./reproduce.sh` |
-| `python3 checks/evidence_logs.py` | `docs/subprojects/*/RESULT.md` 点名的每个 `.wrapup/…` 路径都有处置（入库 / 压缩入库 / 目录 / 通配展开到已声明的类 / 按已声明的类忽略），并把「条数、原始字节合计、gz 字节合计」当场算在结论行上；**可重建缓存类的唯一清单**是它的 `REBUILDABLE_CLASSES` | `./reproduce.sh` 与 `evidence_logs_negative_control.py` |
-| `python3 checks/evidence_logs_negative_control.py` | 上一条真的会红：换个字节数不同的 `.gz` → 多一条并点名该 `.log`；把已入库的被点名路径从索引里拿掉 → 判「无处置」；把精确点名的路径移到一条未声明的 ignore 规则下 → 判「无处置」 | `./reproduce.sh` |
+| `python3 checks/evidence_logs.py` | `docs/subprojects/*/RESULT.md` 点名的每个 `.wrapup/…` 路径都有处置（入库 / 压缩入库 / 目录 / 模式 / 按已声明的类忽略），并把「条数、原始字节合计、gz 字节合计」当场算在结论行上；**可重建缓存类的唯一清单**是它的 `REBUILDABLE_CLASSES`。两端语义不同：本机（盘上有未入库的 run 文件）逐条核到文件，pattern 一档按形状表判、dir 一档走进目录看形状，exit 0；干净 clone 里只能按声明/索引判，报 `BLOCKED` 并 **exit 2**（不可得，不是绿） | `./reproduce.sh`（本机 PASS / 干净 clone BLOCKED）与 `evidence_logs_negative_control.py` |
+| `python3 checks/evidence_logs_negative_control.py` | 上一条真的会红：在临时 clone 里——干净 clone 基线 exit 2（不可得）；换个字节数不同的 `.gz` → 多一条并点名该 `.log`；把已入库的被点名路径从索引里拿掉 → 判「无处置」；把精确点名的路径移到一条未声明的 ignore 规则下 → 判「无处置」；把一份未入库的 `evalplus.json` 用**模式**（`.wrapup/mres/m58-*/evalplus.json`）或**目录**（`.wrapup/mres/m58-fake-run/`）点名 → 判「无处置」并点名该文件；空扫描 → exit 2 | `./reproduce.sh` |
 | `python3 checks/docs_schema_negative_control.py` | `docs/check_docs.py` 真的会失败：未改动副本 PASS，缺必填字段 / 枚举外取值都以 1 退出并点名（在临时目录里做） | `./reproduce.sh` |
 | `python3 checks/docs_dup_id_negative_control.py` | 事实 id 的唯一性是**文件作用域**：同文件重复 → FAIL 并点名，跨文件同名 → PASS | `./reproduce.sh` |
 | `python3 checks/venv_shebang.py` | venv 入口点的 shebang 都指向存在的解释器 | `./reproduce.sh` 与 `bootstrap_venv.sh` |

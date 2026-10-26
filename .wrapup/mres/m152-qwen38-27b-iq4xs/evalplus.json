@@ -1,0 +1,47 @@
+{
+  "tag": "m152-qwen38-27b-iq4xs",
+  "model": "/home/z/hf/models--unsloth--Qwen3.8-27B-GGUF/blobs/40fac4050e940397dbf13087afd50f4734a11805bf9d65ef8ddd7483470e6199",
+  "model_arg": "/home/z/hf/Qwen3.8-27B-UD-IQ4_XS.gguf",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "np": 1,
+    "ngl": 99,
+    "jinja": true,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": 0.9024390243902439,
+      "plus": 0.8719512195121951,
+      "n": 164,
+      "base_pass": 148,
+      "plus_pass": 143,
+      "bad_rate": 0.0
+    },
+    "mbpp": {
+      "base": 0.8915343915343915,
+      "plus": 0.7592592592592593,
+      "n": 378,
+      "base_pass": 337,
+      "plus_pass": 287,
+      "bad_rate": 0.0
+    }
+  },
+  "errors": [],
+  "timings_s": {
+    "humaneval": 1014,
+    "mbpp": 1532,
+    "total": 2546.0
+  },
+  "server": {
+    "binary": "llama-server",
+    "port": 9200,
+    "base_url": "http://127.0.0.1:9200/v1"
+  },
+  "evalplus": "0.3.1",
+  "date": "2026-10-13T22:24:28"
+}

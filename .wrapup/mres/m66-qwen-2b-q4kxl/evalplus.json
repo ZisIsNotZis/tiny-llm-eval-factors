@@ -1,0 +1,47 @@
+{
+  "tag": "m66-qwen-2b-q4kxl",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35",
+  "model_arg": "/home/z/hf/models--unsloth--Qwen3.5-2B-GGUF/blobs/0af96165ea615bea39a04118d63f0b6d35908aea850ee4a51aa6151d851b8b35",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "np": 1,
+    "ngl": 99,
+    "jinja": true,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": 0.5670731707317073,
+      "plus": 0.5060975609756098,
+      "n": 164,
+      "base_pass": 93,
+      "plus_pass": 83,
+      "bad_rate": 0.0
+    },
+    "mbpp": {
+      "base": 0.5317460317460317,
+      "plus": 0.42063492063492064,
+      "n": 378,
+      "base_pass": 201,
+      "plus_pass": 159,
+      "bad_rate": 0.0
+    }
+  },
+  "errors": [],
+  "timings_s": {
+    "humaneval": 204,
+    "mbpp": 531,
+    "total": 735.0
+  },
+  "server": {
+    "binary": "llama-server",
+    "port": 9200,
+    "base_url": "http://127.0.0.1:9200/v1"
+  },
+  "evalplus": "0.3.1",
+  "date": "2026-10-08T13:36:47"
+}

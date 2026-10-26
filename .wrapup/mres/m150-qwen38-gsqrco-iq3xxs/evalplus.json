@@ -1,0 +1,47 @@
+{
+  "tag": "m150-qwen38-gsqrco-iq3xxs",
+  "model": "/home/z/hf/models--ISTA-DASLab--Qwen3.8-27B-GSQ-RCO-GGUF/blobs/63f29a2189a6b4cc31f81e093d3856ad293a5583114439f41ae1ed7af4093262",
+  "model_arg": "/home/z/hf/Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp.gguf",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "np": 1,
+    "ngl": 99,
+    "jinja": true,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": 0.8902439024390244,
+      "plus": 0.8475609756097561,
+      "n": 164,
+      "base_pass": 146,
+      "plus_pass": 139,
+      "bad_rate": 0.0
+    },
+    "mbpp": {
+      "base": 0.8703703703703703,
+      "plus": 0.753968253968254,
+      "n": 378,
+      "base_pass": 329,
+      "plus_pass": 285,
+      "bad_rate": 0.0
+    }
+  },
+  "errors": [],
+  "timings_s": {
+    "humaneval": 874,
+    "mbpp": 1791,
+    "total": 2665.0
+  },
+  "server": {
+    "binary": "llama-server",
+    "port": 9200,
+    "base_url": "http://127.0.0.1:9200/v1"
+  },
+  "evalplus": "0.3.1",
+  "date": "2026-10-14T00:04:14"
+}
