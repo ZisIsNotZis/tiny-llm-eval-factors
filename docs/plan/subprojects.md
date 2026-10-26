@@ -73,7 +73,7 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 | `r-entry4` | 根目录无未归类路径：运行日志按类忽略，逐题产物按 README 的判据入库 | `git status --porcelain` 无输出 | — |
 | `p-entry1` | `report_inputs/size_claims.json` 与 a02 的产物不一致（`python3 report_inputs/build_size_claims.py --check` exit 1），而 `./reproduce.sh` 只记 WARN 就继续：报告第二节停在这个旧值上仍判绿 | 该命令 exit 0，且报告重建后逐字节相同（或第二节的改动经复核后重新入库） | — |
 | `p-entry2` | **已结项**：13 条「输入与其来源不一致」的判断收进 `checks/report_inputs_drift.py`，`./reproduce.sh` 只把它翻成核对表里的行——漂移=FAIL（整条命令非零退出），看不到来源=SKIP（rc=2 或来源不在场；缺席不是漂移）。判定比对上：只有三个 builder 自报 rc=2，其余十个由脚本先查来源在不在，查不到才 SKIP | `python3 checks/report_inputs_drift_negative_control.py` exit 0：未改动绿 → 改坏 `open_questions.json` 一个字节后 `./reproduce.sh` exit 1 并点名它 → 移走 `gsq.json` 仍 exit 0 且该行为 SKIP → 原字节写回、sha256 不变。负控走 `REPRODUCE_INPUTS_ONLY=1 ./reproduce.sh`（只跑这一节，约 2 秒）：整条链路两分钟且路径由脚本自身位置推出、不能在临时树上跑，故给它一个「只跑这一节」的开关，而不是复制一份判断逻辑 | p-entry1 |
-| `p-entry3` | **已结项**：处置选「入库」而不是清单——被点名的证据都以能打开的形式随仓库走：9 个 `.log` 以 gzip 存到原路径旁的 `.log.gz`（`gzip -dc | sha256sum` 与原文件逐个相同，原 `.log` 删除），`RESULT.md` 里作 `evidence:`/`repro:` 点名的聚合产物（`evalplus.json` / `lmeval_panel.json` / `ident_control.json` / 探针输出）原样入库，`.gitignore` 里每一份都有一行显式放行；面板的 per-task `lmeval_*.json` 邻居一起入库（`migrate_db.ingest_campaign` 从里面取 metric 名并重算分数，缺了它干净 clone 里会把面板那几行重写成 `… #None`，`checks/refresh_guard_differential_control.py` 会因此变红）；**没被点名**的运行目录产物才按已声明的可重建缓存类忽略（venv / `.jsonl` 逐题原始产物 / codegen 落盘目录 / `ppl_corpora` / 运行日志 / DB 备份 / `.tmp`）。类的唯一清单是 `checks/evidence_logs.py` 的 `REBUILDABLE_CLASSES`：判据是**声明**，不读 `.wrapup` 在不在场，所以本机与干净 clone 同一结论；token 按 exact / dir / pattern 三种形状判，exact 这一档只认那张表里的规则**加上**该类允许的形状，`mres/` 的 catch-all 不算处置——否则聚合产物又被它吞掉；dir 与 pattern 两档按已声明类判（运行目录、per-run 结果、`props` 回读与逐题样本各自成类，每条写清凭什么可重建）。条数与字节合计不写在这里，由验收命令的结论行当场算。清单只给一个本机路径，从 clone 读不到就打不开，而这几份日志载着无法重算的事实（`n_ctx_slot = 4096`、两行 OOM、`creating MTP draft context`、`CORRUPT` 与 `FileNotFoundError` 计数） | `python3 checks/evidence_logs.py` exit 0：逐条判每条被点名的 `.wrapup/…` 路径有没有处置，并在结论行给出「条数 / 原始字节合计 / gzip 字节合计」（9 个登记的 `.log` 逐个解开与登记值比字节）；负控 `python3 checks/evidence_logs_negative_control.py` exit 0（**干净 clone 基线 exit 0、失败 0 条**；换字节数→多一条并点名该 `.log`；两份聚合产物未入库 / 落到未声明的类下→「无处置」；逐题样本落到未声明的类下→「无处置」）；两条都由 `./reproduce.sh` 按 PASS/FAIL 调用；同一条检查在干净 clone 里也 exit 0（13→0 的正面证据见上） | — |
+| `p-entry3` | **已结项**：处置选「入库」而不是清单——被点名的证据都以能打开的形式随仓库走：9 个 `.log` 以 gzip 存到原路径旁的 `.log.gz`（`gzip -dc | sha256sum` 与原文件逐个相同，原 `.log` 删除），`RESULT.md` 里作 `evidence:`/`repro:` 点名的聚合产物（`evalplus.json` / `lmeval_panel.json` / `ident_control.json` / 探针输出）原样入库，`.gitignore` 里每一份都有一行显式放行；面板的 per-task `lmeval_*.json` 邻居一起入库（`migrate_db.ingest_campaign` 从里面取 metric 名并重算分数，缺了它干净 clone 里会把面板那几行重写成 `… #None`，`checks/refresh_guard_differential_control.py` 会因此变红）；**没被点名**的运行目录产物才按已声明的可重建缓存类忽略（venv / `.jsonl` 逐题原始产物 / codegen 落盘目录 / `ppl_corpora` / 运行日志 / DB 备份 / `.tmp`）。逐题评测产物不按类忽略：被点名却没入库的 `*_eval.json` 必须红（负控第 7 例）。类的唯一清单是 `checks/evidence_logs.py` 的 `REBUILDABLE_CLASSES`：判据是**声明**，不读 `.wrapup` 在不在场，所以本机与干净 clone 同一结论；token 按 exact / dir / pattern 三种形状判，exact 这一档只认那张表里的规则**加上**该类允许的形状，`mres/` 的 catch-all 不算处置——否则聚合产物又被它吞掉；dir 与 pattern 两档按已声明类判（运行目录、per-run 结果、`props` 回读与逐题样本各自成类，每条写清凭什么可重建）。条数与字节合计不写在这里，由验收命令的结论行当场算。清单只给一个本机路径，从 clone 读不到就打不开，而这几份日志载着无法重算的事实（`n_ctx_slot = 4096`、两行 OOM、`creating MTP draft context`、`CORRUPT` 与 `FileNotFoundError` 计数） | `python3 checks/evidence_logs.py` exit 0：逐条判每条被点名的 `.wrapup/…` 路径有没有处置，并在结论行给出「条数 / 原始字节合计 / gzip 字节合计」（9 个登记的 `.log` 逐个解开与登记值比字节）；负控 `python3 checks/evidence_logs_negative_control.py` exit 0（**干净 clone 基线 exit 0、失败 0 条**；换字节数→多一条并点名该 `.log`；两份聚合产物未入库 / 落到未声明的类下→「无处置」；逐题样本落到未声明的类下→「无处置」）；两条都由 `./reproduce.sh` 按 PASS/FAIL 调用；同一条检查在干净 clone 里也 exit 0（13→0 的正面证据见上） | — |
 
 `p-entry3` 的取证：下面这条打印「被 `RESULT.md` 点名、在盘上、但未入库」的文件清单——它现在只应剩下可重建缓存（被点名的 `.log` 早已以 `.gz` 入库，被点名的聚合产物已入库），行数由命令当场给出，本文件不抄。每条「有处置 / 无处置」的判定与 `.log` 的字节合计不走这条 shell，走 `python3 checks/evidence_logs.py`：它的结论行就是那两个数。
 
@@ -81,8 +81,8 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
-已结项：`r-entry1`–`r-entry4`、`p-entry1`、`p-entry2`、`p-entry3`。**结果 revision 是 `00be81d380601453f4a6b17f08aa01347ce2062c`**
-（`git rev-parse 6 位以上前缀` 就能验：`00be81d`；它之后的提交只动文档——本节这一段与
+已结项：`r-entry1`–`r-entry4`、`p-entry1`、`p-entry2`、`p-entry3`。**结果 revision 是 `5e6df2687a9599cee8983059ae764a99fc76e15e`**
+（`git rev-parse 6 位以上前缀` 就能验：`5e6df26`；它之后的提交只动文档——本节这一段与
 `docs/plan/evidence/entry/` 下的捕获——不动代码、数据与结论）。七个包与整条链各一份捕获，门 3 的四件齐全（被审 revision / 命令 /
 捕获的输出 / 产物 sha256）：
 
@@ -91,25 +91,25 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 本来就写成目录/通配的 token 被旧 `PATH_RE` 截断成正则认不出的形状），现在同一条命令在
 `git clone <结果 revision> /tmp/clone && cd /tmp/clone && python3 checks/evidence_logs.py` 下是
 **exit 0、0 条**：判据改成「声明」，不再依赖 `.wrapup` 在不在场。捕获见
-`docs/plan/evidence/entry/p-entry3-evidence-logs-00be81d.txt`。
+`docs/plan/evidence/entry/p-entry3-evidence-logs-5e6df26.txt`。
 
-| 包 | 命令（在 `00be81d` 上，rc=0） | 捕获 | 承重产物 sha256（前 12 位，全长在捕获尾部） |
+| 包 | 命令（在 `5e6df26` 上，rc=0） | 捕获 | 承重产物 sha256（前 12 位，全长在捕获尾部） |
 |---|---|---|---|
-| `r-entry1` | `python3 checks/router_refs_negative_control.py`（二十一条期望逐条 `ok`） | `docs/plan/evidence/entry/r-entry1-router-refs-nc-00be81d.txt` | `checks/router_refs.py` `23dd4bb73817`、负控脚本 `95b0215d0504` |
-| `r-entry2` | `python3 checks/router_refs.py`；`grep -c 'docs/result/result.yaml\|docs/plan/plan.yaml' FINDINGS.md` → 计数 0 | `docs/plan/evidence/entry/r-entry2-router-refs-00be81d.txt` | `FINDINGS.md` `689da1190a23` |
-| `r-entry3` | `python3 checks/router_refs.py` | `docs/plan/evidence/entry/r-entry3-router-refs-status-00be81d.txt` | `STATUS.md` `8b33aa74ed65` |
-| `r-entry4` | `git status --porcelain`——在该 revision 的干净 clone 里无输出（捕获文件本身不在那个 clone 里，见捕获里的说明） | `docs/plan/evidence/entry/r-entry4-git-status-00be81d.txt` | `STATUS.md` `8b33aa74ed65`、`FINDINGS.md` `689da1190a23`、`.gitignore` `506da9d9af1f`；tree `31bdd64ba6dc`（README 的引用由 `r-entry1`/`r-entry2`/`r-entry3` 的 `router_refs` 捕获覆盖） |
-| `p-entry1` | `python3 report_inputs/build_size_claims.py --check`；`./reproduce.sh` 末行判报告逐字节相同 | `docs/plan/evidence/entry/p-entry1-size-claims-00be81d.txt` + 整条链 `docs/plan/evidence/entry/reproduce-e338f4b.txt` | `report_inputs/size_claims.json` `c9c0a8cce1bb`、`report.html` `6288338f54b3` |
-| `p-entry2` | `python3 checks/report_inputs_drift_negative_control.py` | `docs/plan/evidence/entry/p-entry2-drift-nc-00be81d.txt` | `checks/report_inputs_drift.py` `57e947664d4c` |
-| `p-entry3` | `python3 checks/evidence_logs.py`；它的负控（含干净 clone 基线）；干净 clone 里再跑一次 `checks/evidence_logs.py`；`git ls-files '<三组 .log.gz 选择器>' -z \| xargs -0 gzip -dc \| wc -c` | `docs/plan/evidence/entry/p-entry3-evidence-logs-00be81d.txt` | `checks/evidence_logs.py` `b763f7fa8e4b`、负控脚本 `345d1ced66ea`、9 个入库 `.log.gz` 逐个 sha256 在该文件尾部 |
+| `r-entry1` | `python3 checks/router_refs_negative_control.py`（二十一条期望逐条 `ok`） | `docs/plan/evidence/entry/r-entry1-router-refs-nc-5e6df26.txt` | `checks/router_refs.py` `23dd4bb73817`、负控脚本 `95b0215d0504` |
+| `r-entry2` | `python3 checks/router_refs.py`；`grep -c 'docs/result/result.yaml\|docs/plan/plan.yaml' FINDINGS.md` → 计数 0 | `docs/plan/evidence/entry/r-entry2-router-refs-5e6df26.txt` | `FINDINGS.md` `689da1190a23` |
+| `r-entry3` | `python3 checks/router_refs.py` | `docs/plan/evidence/entry/r-entry3-router-refs-status-5e6df26.txt` | `STATUS.md` `8b33aa74ed65` |
+| `r-entry4` | `git status --porcelain`——在该 revision 的干净 clone 里无输出（捕获文件本身不在那个 clone 里，见捕获里的说明） | `docs/plan/evidence/entry/r-entry4-git-status-5e6df26.txt` | `STATUS.md` `8b33aa74ed65`、`FINDINGS.md` `689da1190a23`、`.gitignore` `506da9d9af1f`；tree `5eca518e9a45`（README 的引用由 `r-entry1`/`r-entry2`/`r-entry3` 的 `router_refs` 捕获覆盖） |
+| `p-entry1` | `python3 report_inputs/build_size_claims.py --check`；`./reproduce.sh` 末行判报告逐字节相同 | `docs/plan/evidence/entry/p-entry1-size-claims-5e6df26.txt` + 整条链 `docs/plan/evidence/entry/reproduce-5e6df26.txt` | `report_inputs/size_claims.json` `c9c0a8cce1bb`、`report.html` `6288338f54b3` |
+| `p-entry2` | `python3 checks/report_inputs_drift_negative_control.py` | `docs/plan/evidence/entry/p-entry2-drift-nc-5e6df26.txt` | `checks/report_inputs_drift.py` `57e947664d4c` |
+| `p-entry3` | `python3 checks/evidence_logs.py`；它的负控（含干净 clone 基线）；干净 clone 里再跑一次 `checks/evidence_logs.py`；`git ls-files '<三组 .log.gz 选择器>' -z \| xargs -0 gzip -dc \| wc -c` | `docs/plan/evidence/entry/p-entry3-evidence-logs-5e6df26.txt` | `checks/evidence_logs.py` `23f2488e3ea0`、负控脚本 `d7d0dc2f864e`、9 个入库 `.log.gz` 逐个 sha256 在该文件尾部 |
 
 `./reproduce.sh` 在同一 revision 上 exit 0；PASS 行数与非 PASS 行数不写在这里，由 `grep -c` 从
-`docs/plan/evidence/entry/reproduce-00be81d.txt`（那次运行的原始输出）当场数。同一 revision 的干净
+`docs/plan/evidence/entry/reproduce-5e6df26.txt`（那次运行的原始输出）当场数。同一 revision 的干净
 clone 里 `./reproduce.sh` 也能跑：exit 0，非 PASS 只有一条 SKIP（`.wrapup` 的 KV 证据来源不在 clone
 里，按设计报「来源不可得」而不是通过）——计数由那份 clone 的输出当场给出，本文件不抄。
 
-旧绑定 `ba817d7`（`p-entry1`）与 `9e89f91`（`p-entry2`、`p-entry3`）、`e338f4b`（七个包的上一次结果
-revision）作为历史保留：它们是那次推进当时的读数，在 HEAD 上已不是当前值——`p-entry3` 的那两个字节数
+旧绑定 `ba817d7`（`p-entry1`）与 `9e89f91`（`p-entry2`、`p-entry3`）、`00be81d`（七个包的上一次结果
+revision）、`e338f4b`（更早一次结果 revision）作为历史保留：它们是那次推进当时的读数，在 HEAD 上已不是当前值——`p-entry3` 的那两个字节数
 与「26 个按类忽略」正是里程碑复核判掉的两条假证据；`e338f4b` 的捕获在干净 clone 里红 13 条，正是本
 包修掉的那条复核门。
 

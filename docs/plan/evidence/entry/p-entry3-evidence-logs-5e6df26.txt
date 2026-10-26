@@ -1,0 +1,54 @@
+被审 revision: 5e6df2687a9599cee8983059ae764a99fc76e15e
+脚本 sha256: 23f2488e3ea0923fa62368608e1ea5e1a146876ce29b843093805b93abe77cc5  (checks/evidence_logs.py)
+命令: python3 checks/evidence_logs.py
+说明: 首行是处置计数，第二行是 9 个登记 .log 的原始/压缩字节合计（都由命令算，不手抄）
+点名的 `.wrapup/…` 路径 190 条：入库 117、压缩入库 0、目录 18、模式 45、按类忽略 10、无处置 0
+登记 9 个 `.log`：原始 9289155 字节 → gzip 后 1023126 字节（逐个解开核对，字节数与登记值相同）
+rc=0
+命令: python3 checks/evidence_logs_negative_control.py
+ok    0 baseline（真树）：exit 0；点名的 `.wrapup/…` 路径 190 条：入库 117、压缩入库 0、目录 18、模式 45、按类忽略 10、无处置 0
+ok    1 clone 基线：exit 0；预存失败行 0 条；点名的 `.wrapup/…` 路径 190 条：入库 117、压缩入库 0、目录 18、模式 45、按类忽略 10、无处置 0
+ok    2 字节数不符：exit 1；多出来的失败行 1 条；点名该 .log：FAIL .wrapup/axes_diffusion_gate.log.gz 解开是 43 字节，登记的是 263 字节
+ok    3 从索引里拿掉：exit 1；多出来的失败行 1 条；判「无处置」：FAIL 无处置（不在盘上/未入库/不在任何已声明的类里）：.wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json
+ok    4 聚合产物未入库：exit 1；多出来的失败行 1 条；判「无处置」：FAIL 无处置（不在盘上/未入库/不在任何已声明的类里）：.wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json
+ok    5 聚合产物落到未声明类：exit 1；多出来的失败行 1 条；判「无处置」并点名那条规则：FAIL 无处置（落在未声明的 ignore 规则 `.wrapup/mres/m164-a04-uni45/lmeval_panel.json` 下）：.wrapup/mres/m164-a04-uni45/lmeval_panel.json
+ok    6 逐题样本落到未声明类：exit 1；多出来的失败行 1 条；判「无处置」并点名那条规则：FAIL 无处置（落在未声明的 ignore 规则 `.wrapup/mres/m1-qwen4b-q2-py.jsonl` 下）：.wrapup/mres/m1-qwen4b-q2-py.jsonl
+ok    7 逐题评测产物未入库：exit 1；多出来的失败行 1 条；判「无处置」：FAIL 无处置（不在盘上/未入库/不在任何已声明的类里）：.wrapup/mres/m63-qwen-2b-iq3xxs/code_eval.json
+ok    真树未被本控制改动：git status --porcelain 前后相同
+PASS 干净 clone 基线绿；换字节→点名 `.log`；两份聚合产物未入库/落未声明类→无处置；逐题样本落未声明类→无处置；逐题评测产物未入库→无处置；真树前后相同
+rc=0
+命令: git clone <该 revision> /tmp/clone && cd /tmp/clone && python3 checks/evidence_logs.py
+说明: 干净 clone 里同样的结论——修复前这里 exit 1、13 条「无处置」；现在 exit 0、0 条（token 不再被截断，判类只看声明）
+点名的 `.wrapup/…` 路径 190 条：入库 117、压缩入库 0、目录 18、模式 45、按类忽略 10、无处置 0
+登记 9 个 `.log`：原始 9289155 字节 → gzip 后 1023126 字节（逐个解开核对，字节数与登记值相同）
+rc=0
+命令: git clone <该 revision> /tmp/clone && cd /tmp/clone && python3 checks/evidence_logs_negative_control.py
+说明: 负控在 clone 里也跑得动（它自己另建临时 clone）；克隆后未改动它
+ok    0 baseline（真树）：exit 0；点名的 `.wrapup/…` 路径 190 条：入库 117、压缩入库 0、目录 18、模式 45、按类忽略 10、无处置 0
+ok    1 clone 基线：exit 0；预存失败行 0 条；点名的 `.wrapup/…` 路径 190 条：入库 117、压缩入库 0、目录 18、模式 45、按类忽略 10、无处置 0
+ok    2 字节数不符：exit 1；多出来的失败行 1 条；点名该 .log：FAIL .wrapup/axes_diffusion_gate.log.gz 解开是 43 字节，登记的是 263 字节
+ok    3 从索引里拿掉：exit 1；多出来的失败行 1 条；判「无处置」：FAIL 无处置（不在盘上/未入库/不在任何已声明的类里）：.wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json
+ok    4 聚合产物未入库：exit 1；多出来的失败行 1 条；判「无处置」：FAIL 无处置（不在盘上/未入库/不在任何已声明的类里）：.wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json
+ok    5 聚合产物落到未声明类：exit 1；多出来的失败行 1 条；判「无处置」并点名那条规则：FAIL 无处置（落在未声明的 ignore 规则 `.wrapup/mres/m164-a04-uni45/lmeval_panel.json` 下）：.wrapup/mres/m164-a04-uni45/lmeval_panel.json
+ok    6 逐题样本落到未声明类：exit 1；多出来的失败行 1 条；判「无处置」并点名那条规则：FAIL 无处置（落在未声明的 ignore 规则 `.wrapup/mres/m1-qwen4b-q2-py.jsonl` 下）：.wrapup/mres/m1-qwen4b-q2-py.jsonl
+ok    7 逐题评测产物未入库：exit 1；多出来的失败行 1 条；判「无处置」：FAIL 无处置（不在盘上/未入库/不在任何已声明的类里）：.wrapup/mres/m63-qwen-2b-iq3xxs/code_eval.json
+ok    真树未被本控制改动：git status --porcelain 前后相同
+PASS 干净 clone 基线绿；换字节→点名 `.log`；两份聚合产物未入库/落未声明类→无处置；逐题样本落未声明类→无处置；逐题评测产物未入库→无处置；真树前后相同
+rc=0
+命令: git ls-files '.wrapup/*.log.gz' '.wrapup/mres/*.log.gz' '.wrapup/mres/*/*.log.gz' -z | xargs -0 gzip -dc | wc -c; git ls-files '.wrapup/*.log.gz' '.wrapup/mres/*.log.gz' '.wrapup/mres/*/*.log.gz' -z | xargs -0 ls -l | awk '{s+=$5} END {print s}'
+说明: 整批解开后的字节合计与压缩后合计，与上面第二行互相对照（两处相等才算数）
+9289155
+1023126
+rc=0
+产物 sha256:
+  23f2488e3ea0923fa62368608e1ea5e1a146876ce29b843093805b93abe77cc5  checks/evidence_logs.py
+  d7d0dc2f864e5b5cdc086264417111b58e9678f318c0a9003f1dfdca8e1a8ded  checks/evidence_logs_negative_control.py
+  02902952bbc62c44ad229ea88711965a2374a734c39b70933efc6f97b1a65616  .wrapup/axes_diffusion_gate.log.gz
+  0599c43cc672c28658d227148f9296faee0cbcb48e2000f66eab72abcb18aa2a  .wrapup/i01_noise_floor.log.gz
+  b6d184a91c150851bd684602c63d6a7de98edab227a3ecf651348ccf7c3a70d3  .wrapup/m160.log.gz
+  92a1b577c94cbd32c202236f40e1513646b2df0298a6aa140b637fd55d944375  .wrapup/m163.log.gz
+  e1330e338c3dc0d6e8f3dff89b8cadd3263ba7aa5e59cc54c0795ff7df90cba2  .wrapup/m30b.log.gz
+  76680658353ffa33e2df531a27a28b578a520739c55e35be6991666f8368204b  .wrapup/m6b.log.gz
+  b6ff98343ea21e6153d99550898a43019f0a552925abbac23a1ff5b1e53ebfc1  .wrapup/mres/i01-shim-probe/shim_probe.log.gz
+  4914e7846117978e806b60830145bf0ac9dc2f90e4a39881787d57b89b4a1dc7  .wrapup/mres/m128-spec-9b/server.log.gz
+  c38965c39bbf01af273206215aa6e34d19b5fddc7248c6d65763874978ffd784  .wrapup/mres/m142-qat-gemma31b-q4/code.log.gz

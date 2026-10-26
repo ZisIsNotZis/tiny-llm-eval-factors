@@ -1,0 +1,58 @@
+
+== 复现核对 ==
+  PASS     运行时依赖（numpy/matplotlib/yaml/jsonschema/referencing）
+  PASS     CJK 字体 /usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a（存在且 sha256 匹配）
+  PASS     提示集哈希（6 份文件）
+  PASS     报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）
+  PASS     README 的入库产物说法与 git ls-files 一致
+  PASS     bfcl_judge.json 与 a13 的判分器事实一致
+  PASS     sampling_collapse.json 与 a06 的事实一致
+  PASS     spec_decode.json 与 a07 的证据一致
+  PASS     gsq.json 与 a10 的事实一致
+  PASS     moe_feasibility.json 与 a04 的可行性 fixture 一致
+  PASS     bfcl_gap.json 与现有 BFCL 汇总一致
+  PASS     kv_evidence.json 与 a05 的证据脚本输出一致
+  PASS     size_claims.json 与 a02 的通道/曲线产物一致
+  PASS     scheme_effects.json 与 a03 归因脚本的输出一致
+  PASS     reproducibility.json 与 i01 的地板/幅度事实一致
+  PASS     paired_deltas.json 与 a01 的配对差事实一致
+  PASS     open_questions.json 与各子项目 PLAN.md 的「未解问题」一节一致
+  PASS     eval_status.json 与现有落盘产物一致
+  PASS     第七/八节的负控（差异改 0 → 正文改口；地板改有差异 → 构建失败）
+  PASS     第六节厂房档口径的负控（丢题数改 0 → 无差）
+  PASS     第十一节第三方方案口径的负控（1 格改 0 → 全部测不出）
+  PASS     第十四节判分器口径的负控（改判计数改 0 → 与判分器无关）
+  PASS     被点名的 .wrapup 路径都有处置（点名的 `.wrapup/…` 路径 190 条：入库 117、压缩入库 0、目录 18、模式 45、按类忽略 10、无处置 0）
+  PASS     证据处置的负控（干净 clone 基线绿；换字节→点名 .log；聚合产物未入库/落未声明类→无处置）
+  PASS     报告输入漂移判 FAIL 的负控（改坏一个输入 → 非零退出并点名；缺输入 → SKIP 不误判）
+  PASS     数据库完整性与清洁度（3364 rows）
+  PASS     没有可执行脚本硬编码已退役的绝对根路径
+  PASS     路由文件的引用都可解析（66/66 citations resolved, 20/20 path tokens resolved）
+  PASS     路由引用检查的负控（二十一条期望：缺 id / 缺文件 / 空扫描 / 未闭合遮蔽各自红）
+  PASS     第四节可行性的负控（超界计数改 0 则从「预算比较」变「分配比较」）
+  PASS     第五节 KV 说法的负控（丢/得改 0 则从「逐题在翻」变「无差异」）
+  PASS     第五节 KV 索引「不可得 ≠ 过期」的负控（缺 .wrapup/mres → exit 2 并点名路径）
+  PASS     第二节规模说法的负控（区间改重叠则从「反驳」变「分不出」）
+  PASS     方案/厂商结论句的负控（显著则改口、区间加宽则精度跟着变）
+  PASS     可复现性边界的负控（幅度改 0 正文改口、删条件后生成失败）
+  PASS     venv 入口点的 shebang 都指向存在的解释器
+  PASS     venv shebang 检查的负控（假入口点 → FAIL 并点名；env 入口不误报）
+  PASS     入库协议的负控（只有 fa 不同的两行各成一格、缺协议时明说用了默认值）
+  PASS     入库跳过报告的负控（未知名逐条报出、认得的名字跳过计数为 0）
+  PASS     配对差叙述的负控（区间全跨 0 时报告改口，不声称掉点）
+  PASS     未解问题索引的负控（工作包标题与围栏里的标题都不算一节）
+  PASS     「读不到输入就不删」的差分负控（干净 clone 里：带 guard 丢 0 行，去掉 guard 丢数百行）
+  PASS     全 Exception 写 NULL 的负控（全 Exception→NULL、有通过→实测、没记分数→NULL、旧写法→0.0）
+  PASS     refresh 只动自己的行的负控（三行探针跑两次逐字未变、第二次净改动 0 行）
+  PASS     py 语料取代行与 a14 清单逐条一致、旧行未被改写
+  PASS     REFRESH 删除范围的负控（探针行跑完两次 migrate 仍在、mres/% 行一条不丢、两次行数相同）
+  PASS     superseded 指针的负控（悬空指针 → db_check 变红并点名）
+  PASS     报告过滤被取代行的负控（去掉过滤 → 被取代的行以第二个分数回到表里）
+  PASS     doc id 唯一性的负控（同文件重复 → FAIL 并点名；跨文件同名 → PASS）
+  PASS     docs 检查的负控（缺必填字段 / 枚举外取值都以 1 退出并点名）
+  PASS     docs/check_docs.py（含 doc id 文件内唯一性 + from 可解析，非基线容忍）
+  PASS     report.html 从库重建后逐字节相同（10387839 字节，6288338f54b3)）
+  PASS     报告与产物一致（行标签唯一、题量取自产物、非测量登记册在场）
+
+OK：报告可从库重建，且与仓库里的 report.html 逐字节相同。
+    （BLOCKED/SKIP 行是未验证或外部阻断，不算通过。）

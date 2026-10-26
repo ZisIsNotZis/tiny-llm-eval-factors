@@ -1,0 +1,14 @@
+被审 revision: 5e6df2687a9599cee8983059ae764a99fc76e15e
+脚本 sha256: 23dd4bb7381715ac119aa5daed0176fc54f1e7b1eaddc9dba0aec1dbea25c020  (checks/router_refs.py)
+命令: python3 checks/router_refs.py
+skipped 3 template token(s) containing '<'/'>' (shape, not a file)
+citation tokens seen: 66, matched: 66
+66/66 citations resolved, 20/20 path tokens resolved
+rc=0
+命令: grep -c 'docs/result/result.yaml\|docs/plan/plan.yaml' FINDINGS.md
+说明: 判据是计数为 0；grep 在无命中时退 1，这里的 1 就是这个意思，不是失败
+0
+rc=1
+产物 sha256:
+  689da1190a23e368cd626f55f44db131f4aa505ee43a564a789071376950054e  FINDINGS.md
+  23dd4bb7381715ac119aa5daed0176fc54f1e7b1eaddc9dba0aec1dbea25c020  checks/router_refs.py
