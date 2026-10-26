@@ -59,6 +59,25 @@ experiments.sqlite.bak*
 !.wrapup/mres/m164-a04-uni45/lmeval_panel.json
 !.wrapup/mres/m169-vram-08b-mtp/ident_control.json
 !.wrapup/mres/m169-vram-9b/ident_control.json
+# 上面三份 `lmeval_panel.json` 的 per-task 邻居一起入库：`migrate_db.ingest_campaign` 从
+# `lmeval_<task>_*.json` 里取 metric 名并重算分数，缺了它就会把面板那几行重写成 `... #None`——干净
+# clone 里跑一次 `migrate_db.py` 就改行身份了（`checks/refresh_guard_differential_control.py` 会退 1
+# 并说「带 guard 还丢了 3 行」）。同一面板的两次运行分数相同，谁被当成「最新」都不改值。
+!.wrapup/mres/m140-qat-gemma12b-q4/lmeval_gsm8k_2026-10-13T10-34-03.607863.json
+!.wrapup/mres/m140-qat-gemma12b-q4/lmeval_ifeval_2026-10-13T10-43-20.279164.json
+!.wrapup/mres/m140-qat-gemma12b-q4/lmeval_mmlu_2026-10-13T10-11-04.060631.json
+!.wrapup/mres/m140-qat-gemma12b-q4/lmeval_truthfulqa_mc2_2026-10-13T10-27-45.649348.json
+!.wrapup/mres/m144-qat-gemma26b-a4b-q4/lmeval_gsm8k_2026-10-13T12-14-45.896758.json
+!.wrapup/mres/m144-qat-gemma26b-a4b-q4/lmeval_ifeval_2026-10-13T12-20-09.916619.json
+!.wrapup/mres/m144-qat-gemma26b-a4b-q4/lmeval_mmlu_2026-10-13T11-53-53.550284.json
+!.wrapup/mres/m164-a04-uni45/lmeval_arc_challenge_2026-10-21T01-36-39.954135.json
+!.wrapup/mres/m164-a04-uni45/lmeval_arc_challenge_2026-10-21T01-45-14.123543.json
+!.wrapup/mres/m164-a04-uni45/lmeval_gsm8k_2026-10-21T01-53-22.170670.json
+!.wrapup/mres/m164-a04-uni45/lmeval_ifeval_2026-10-21T02-02-16.270425.json
+!.wrapup/mres/m164-a04-uni45/lmeval_mmlu_2026-10-21T01-33-23.461102.json
+!.wrapup/mres/m164-a04-uni45/lmeval_mmlu_2026-10-21T01-42-34.055168.json
+!.wrapup/mres/m164-a04-uni45/lmeval_truthfulqa_mc2_2026-10-21T01-39-09.020982.json
+!.wrapup/mres/m164-a04-uni45/lmeval_truthfulqa_mc2_2026-10-21T01-48-15.728048.json
 # p-entry3：被 `docs/subprojects/*/RESULT.md` 点名的 9 个 `.log`，以 gzip 入库（逐条核验见 checks/evidence_logs.py）。
 # 子目录要先放行（`!.wrapup/mres/*/` 与 `.wrapup/mres/*/*` 已在上面），否则这两级的 `!` 不生效。
 !.wrapup/mres/i01-shim-probe/shim_probe.log.gz
