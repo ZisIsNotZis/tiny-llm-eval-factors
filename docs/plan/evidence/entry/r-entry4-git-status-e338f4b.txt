@@ -1,0 +1,18 @@
+被审 revision: e338f4b0f14fa5441412dc224da216362f147611
+命令: git status --porcelain（在该 revision 的干净 clone 里）
+说明: 无输出 = 根目录没有未归类路径；捕获文件本身不在这个 clone 里，所以它自己的 `??` 不算
+（无输出）
+rc=0
+命令: git status --ignored --porcelain | wc -l（真树）
+说明: 被忽略路径的条数：它们逐条落在 .gitignore 已声明的类里，判定见 p-entry3 的捕获
+1124
+rc=0
+命令: git rev-parse HEAD^{tree}; git ls-files | wc -l
+说明: 工作树状态没有字节可摘要，这里给 tree 与跟踪文件数
+fac424ff19f2bc718e95925e41e1e5d20b3e6e22
+1408
+rc=0
+产物 sha256:
+  8b33aa74ed65d8e83f0fde05d7dc3a0cb3aae1127427c59f7af575dbe007986f  STATUS.md
+  689da1190a23e368cd626f55f44db131f4aa505ee43a564a789071376950054e  FINDINGS.md
+  870eea3e8da758760c7d46dafd0c1301312e125167cb75221f322fd977626f40  .gitignore

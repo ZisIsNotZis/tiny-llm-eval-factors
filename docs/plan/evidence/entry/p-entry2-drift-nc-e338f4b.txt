@@ -1,0 +1,9 @@
+被审 revision: e338f4b0f14fa5441412dc224da216362f147611
+脚本 sha256: 810087454a5026355f0ac84cedbd9cf80fe35c0215456d6551df58399685c005  (checks/report_inputs_drift_negative_control.py)
+命令: python3 checks/report_inputs_drift_negative_control.py
+PASS 漂移→非零退出并点名；缺席→SKIP 仍绿；改动已按原字节写回
+rc=0
+产物 sha256:
+  57e947664d4c4c5ad08cd1718fe6d0901de78f988c32d9b9741a8acabc5a5908  checks/report_inputs_drift.py
+  810087454a5026355f0ac84cedbd9cf80fe35c0215456d6551df58399685c005  checks/report_inputs_drift_negative_control.py
+  982f8c1e2fcc4aeec605ca8f3d0c18b99853d7dd9fb592e13dc3328ba669ac07  report_inputs/open_questions.json

@@ -1,0 +1,19 @@
+被审 revision: e338f4b0f14fa5441412dc224da216362f147611
+脚本 sha256: 0b92181bd9261fd85a224f4e625c2581b2e2a6ee33a58c96658d0d6d0f13b234  (report_inputs/build_size_claims.py)
+命令: python3 report_inputs/build_size_claims.py --check
+size_claims.json: up to date (truth 77 files / 2101 rows; inversion -0.201)
+rc=0
+命令: grep -E 'report.html 从库重建后逐字节相同|^OK：' docs/plan/evidence/entry/reproduce-e338f4b.txt
+说明: 整条链的完整输出在同目录的 reproduce-e338f4b.txt（`./reproduce.sh` 在该 revision 上的原始输出）
+  PASS     report.html 从库重建后逐字节相同（10387839 字节，6288338f54b3)）
+OK：报告可从库重建，且与仓库里的 report.html 逐字节相同。
+rc=0
+命令: grep -c '^  PASS' docs/plan/evidence/entry/reproduce-e338f4b.txt; grep -cE '^  (FAIL|WARN|SKIP|BLOCKED)' docs/plan/evidence/entry/reproduce-e338f4b.txt
+说明: 两行分别是 PASS 条数与 FAIL/WARN/SKIP/BLOCKED 条数（第二行为 0）
+53
+0
+rc=0
+产物 sha256:
+  c9c0a8cce1bbeb03f21f924a1a0af109c27fc3ee89f2177f4e4fe18d44d76c92  report_inputs/size_claims.json
+  6288338f54b3ab5d3d2d8637b528627fe3f7ba59558a91268420e87f5d5ab8d6  report.html
+  b113354098cd3f2e8f325a954831df2bf6e855e9f7c602307761563ef4ba9f32  docs/plan/evidence/entry/reproduce-e338f4b.txt
