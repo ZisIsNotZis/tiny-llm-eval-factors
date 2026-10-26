@@ -1,0 +1,29 @@
+被审 revision: 00be81d380601453f4a6b17f08aa01347ce2062c
+脚本 sha256: 95b0215d0504f13d9e70eeac58d5722c8b49e81c61305ce97ecc3308385dc6b4  (checks/router_refs_negative_control.py)
+命令: python3 checks/router_refs_negative_control.py
+baseline (unmodified synthetic tree) exit 0               : ok
+citation to a path that does not exist -> 1 + missing-file: ok
+existing file, id not in it -> 1 + missing-id             : ok
+yaml citation to an id that only a .md heading has -> 1   : ok
+backticked spaced path, file+id exist -> 0                : ok
+backticked spaced path, id absent -> 1 + missing-id       : ok
+bare (not backticked) spaced path -> 1 + visible missing-file: ok
+id only inside a fenced code block -> 1 + missing-id      : ok
+same id as a real heading (control) -> 0                  : ok
+id only inside an HTML comment -> 1 + missing-id          : ok
+citation split across a line break -> 1 + unparsed-citation: ok
+bare `docs/...:: id` (space after ::) -> 1 + unparsed-citation: ok
+dead citation inside a fence in a router -> 0 + counted as not-a-route: ok
+dead citation inside an HTML comment in a router -> 0 + counted: ok
+degenerate routers (no citations) -> 1 + VACUOUS          : ok
+missing router file -> 2 + BLOCKED:                       : ok
+bare `docs/... ::id` (space before ::), id exists -> 0    : ok
+bare `docs/... ::ghost` (space before ::) -> 1 + missing-id: ok
+inline-code `<!--` in a router, dead citation after -> 1  : ok
+inline-code `<!--` in a router, live citation after -> 0  : ok
+unclosed `<!--` in a router -> 1 + unterminated-mask      : ok
+PASS: router_refs.py 在未改动的树上绿，在故意破坏的树上红：解析、反引号边界、围栏与注释里的假 id、换行劈开的引用、`::` 后带空格的引用、`::` 前带空格的引用、行内代码 `<!--` 后的死引用、未闭合注释（遮蔽跑到文件尾）、围栏/注释里的死引用（绿但计数可见）、空扫描、缺路由文件；仓库未被改动
+rc=0
+产物 sha256:
+  23dd4bb7381715ac119aa5daed0176fc54f1e7b1eaddc9dba0aec1dbea25c020  checks/router_refs.py
+  95b0215d0504f13d9e70eeac58d5722c8b49e81c61305ce97ecc3308385dc6b4  checks/router_refs_negative_control.py
