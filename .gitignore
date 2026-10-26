@@ -54,6 +54,15 @@ experiments.sqlite.bak*
 !.wrapup/mres/i01-slot-np1-meta.json
 !.wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json
 !.wrapup/mres/m64-qwen-2b-q2kxl/evalplus.json
+!.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_panel.json
+# m64 面板（a01 以目录 token 点名）的 per-task 邻居一起入库：同 m140/m144/m164，
+# `migrate_db.ingest_campaign` 从 `lmeval_<task>_*.json` 取 metric 名并重算分数；缺了它，干净 clone 里
+# 这 6 行会被重写成 `... #None` 并合并成 5 行（实测），`refresh_guard_differential_control.py` 退 1。
+!.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_arc_challenge_2026-10-08T11-21-19.201230.json
+!.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_gsm8k_2026-10-08T11-27-16.616073.json
+!.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_ifeval_2026-10-08T11-30-36.595281.json
+!.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_mmlu_2026-10-08T11-18-34.667384.json
+!.wrapup/mres/m64-qwen-2b-q2kxl/lmeval_truthfulqa_mc2_2026-10-08T11-24-19.365214.json
 !.wrapup/mres/m115-phi4mini-q2k/evalplus.json
 !.wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json
 !.wrapup/mres/m144-qat-gemma26b-a4b-q4/evalplus.json

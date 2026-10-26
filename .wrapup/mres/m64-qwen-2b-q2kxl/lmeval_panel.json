@@ -1,0 +1,50 @@
+{
+  "tag": "m64-qwen-2b-q2kxl",
+  "model": "/home/z/hf/mscache/unsloth/Qwen3.5-2B-GGUF/Qwen3.5-2B-UD-Q2_K_XL.gguf",
+  "tasks": {
+    "mmlu": 0.5504385964912281,
+    "arc_challenge": 0.43,
+    "truthfulqa_mc2": 0.42608555692913197,
+    "gsm8k": 0.36,
+    "ifeval": 0.4
+  },
+  "n": {
+    "mmlu": 912,
+    "arc_challenge": 100,
+    "truthfulqa_mc2": 100,
+    "gsm8k": 100,
+    "ifeval": 100
+  },
+  "errors": [],
+  "reasoning": "off",
+  "ctx_size": 8192,
+  "max_gen_toks": 1024,
+  "timings_s": {
+    "mmlu": 125.5,
+    "arc_challenge": 164.4,
+    "truthfulqa_mc2": 180.3,
+    "gsm8k": 177.1,
+    "ifeval": 200.3
+  },
+  "llama_server": {
+    "binary": "/home/z/.local/bin/llama-server",
+    "version": "version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64",
+    "port": 8900,
+    "args": [
+      "-c",
+      8192,
+      "-np",
+      1,
+      "-ngl",
+      99,
+      "--jinja"
+    ]
+  },
+  "shim": {
+    "port": 8902,
+    "top_n": 100,
+    "top_n_retry": 8000,
+    "llama_requests": 14516
+  },
+  "limit_per_task": 100
+}

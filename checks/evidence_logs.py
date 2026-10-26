@@ -19,14 +19,18 @@ token 先按形状分三档，各按各的规则判：
              类的规则下**且形状属于该类**（`class`），或是一个已入库文件的前缀 / 盘上真实目录（`dir`）。
              聚合产物（`evalplus.json`、`lmeval_panel.json`、`ident_control.json`、`probe-output.txt`）
              不在任何类的形状里，所以精确点名它们而没入库 → FAIL：这一档的严格度不许降。
-    pattern  含 `*` / `?` / `[` / `{`。花括号展开成若干候选，每个候选都要有处置：入库、有入库文件
-             命中这个模式、是前缀、或（候选指的是目录时）落在一条已声明规则下。候选**指名一个文件**
-             时，落在已声明规则下还不够——它必须同时通过那张形状表，否则就是「同一个未入库文件，
-             写成 exact 红、写成模式绿」的那个洞。单选项花括号（如 `{key}`）是代码模板占位，不展开。
+    pattern  含 `*` / `?` / `[` / `{`。花括号一律展开成若干候选（没有单选项例外），每个候选都要
+             有处置：入库、有入库文件命中这个模式、是前缀、或（候选指的是目录时）落在一条已声明规则
+             下。候选**指名一个文件**时，落在已声明规则下还不够——它必须同时通过那张形状表，否则就是
+             「同一个未入库文件，写成 exact 红、写成模式绿」的那个洞。
     dir      以 `/` 结尾、或末段没有扩展名（文档指的是目录，如 `.wrapup/mres/i01-floor`、`.wrapup/bfcl_out`）。
-             盘上是**目录**时走进它：里面若只有未入库、又不在任何已声明形状类里的文件，判「无处置」并
-             点名那个文件（`.wrapup/*/` 这类整目录放行不豁免形状）；盘上是**文件**（没有扩展名）时按
-             `exact` 档的形状表判，不得因为形状是 `None` 就放过。目录不在场时只按声明判。
+             判据是「目录里**有**入库证据，或该目录本身是已声明的可重建运行目录」：盘上是**目录**时走进
+             它，见到入库 / 压缩入库 / 按类可重建的文件就算有处置；整目录一份这样的文件都没有时判「无处置」
+             并点名第一份文件。**目录 token 不保证目录内每一份文件入库**——某个目录里哪些文件是「本地产物、
+             不入库」，要在使用点写明（`a01-量化位宽/RESULT.md` 的 `lmeval_panel.json` 那条就是样板）；
+             盘上是**文件**（没有扩展名）时按 `exact` 档的形状表判，不得因为形状是 `None` 就放过。目录
+             不在场时只按声明判。顶层 `.wrapup/<x>/` 是「运行目录」这一类，只对目录本身成立，走进去时
+             目录里的聚合产物照样过形状表（`bfcl_out` 这类空目录不受影响）。
 
 两个方向都是踩出来的：
 
@@ -243,10 +247,13 @@ def shape_of(token: str) -> str:
     return "exact"
 
 
-def is_template(token: str) -> bool:
-    """单选项花括号（无逗号、非 `a..b` 数字区间）是代码里的格式占位（如 `f'.wrapup/mres/{key}_eval.json'`），
-    不是路径，展开也指不到文件。"""
-    return any(not re.search(r",|\.\.", inner) for inner in re.findall(r"\{([^{}]*)\}", token))
+def _whole_dir_class(rule: str) -> bool:
+    """命中的规则是否是「整目录可重建」类：该类的形状是 `None` 且规则以 `/` 结尾（venv、ppl_corpora、
+    figures 等）。`.wrapup/*/` 是 DIR_ONLY（只对目录本身成立），里面仍要按形状表判，所以不算。"""
+    for _label, rules, shape in REBUILDABLE_CLASSES:
+        if rule in rules:
+            return shape is None and rule.endswith("/")
+    return False
 
 
 def expand_braces(pattern: str) -> list[str]:
@@ -347,14 +354,14 @@ def dir_disposition(path: str) -> tuple[str, str]:
             return "class", ""
         return "", p
     if os.path.isdir(abs_p):
-        # 目录本身就是一条**整目录**类（venv、顶层运行目录、ppl_corpora 等，规则以 `/` 结尾，或只对
-        # 目录成立的 DIR_ONLY 类）→ 直接算有处置。`.wrapup/mres/*` 这种 catch-all 不算：它会把聚合产物
-        # 一起吞掉，所以仍要走进目录看形状。
+        # 目录本身就是一条**整目录**类（venv、ppl_corpora 等：规则以 `/` 结尾，且该类的形状是 `None`）
+        # → 直接算有处置。`.wrapup/*/` 只是「顶层运行目录」这一类（DIR_ONLY）：目录本身可重建，目录里
+        # 的聚合产物仍要过形状表，所以照走。`.wrapup/mres/*` 这种 catch-all 不算，也要走进目录。
         rule = ignored_rule(p)
-        if declared_rule(rule) and (rule.endswith("/") or rule == ".wrapup/*/"):
+        if declared_rule(rule) and _whole_dir_class(rule):
             return "dir", ""
         # `.wrapup` 与 `.wrapup/mres` 只是容器，不对它们做内容判定（它们不是「一个运行目录」）。
-        if len(p.strip("/").split("/")) <= 2:
+        if p in (".wrapup", ".wrapup/mres"):
             return "dir", ""
         # 走进目录：只要里面**有**一份入库/压缩入库/按类可重建的文件，这个运行目录就有处置；
         # 反过来，一个目录里只有未入库、又不在任何已声明形状类里的东西（如一份没入库的
@@ -392,8 +399,6 @@ def disposition(token: str) -> tuple[str, str]:
         return "gz", ""
     shape = shape_of(token)
     if shape == "pattern":
-        if is_template(token):
-            return "pattern", ""  # 代码模板占位，指不到真实文件，按声明放过
         return pattern_disposition(token)
     if shape == "dir":
         return dir_disposition(token)
@@ -419,7 +424,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     named = named_paths()
     if not named:
-        print("BLOCKED: 文档里没有扫到任何 `.wrapup/…` token（空扫描不是通过）")
+        # 只有这条守卫会打这一行；负控第 9 例断言的是它，而不是「exit 2」（末尾还有别的守卫也给 2）。
+        print("BLOCKED 空扫描：docs/subprojects 的 RESULT.md 里没有扫到任何 `.wrapup/…` token")
         return 2
 
     counts = {"tracked": 0, "gz": 0, "dir": 0, "pattern": 0, "class": 0, "": 0}

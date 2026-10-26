@@ -95,7 +95,7 @@
   dis=[]
   for f in its:
       key=os.path.basename(f)[len('testfrac_'):-len('.jsonl')]
-      ev=f'.wrapup/mres/{key}_eval.json'
+      ev=f'.wrapup/mres/<run_tag>_eval.json'
       if not os.path.exists(ev): continue
       d=json.load(open(ev)); evp={x['name']:x['pass'] for x in d['details']}
       tf={json.loads(l)['name']:json.loads(l) for l in open(f)}

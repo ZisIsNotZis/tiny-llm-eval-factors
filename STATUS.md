@@ -32,6 +32,6 @@
 
 ## 下一步
 
-`entry` 的工作包全部结项（`r-entry1`–`r-entry4`、`p-entry1`–`p-entry3`）；第二轮里程碑复核判「不接受」的 P1/P2/P3 已在本轮逐条修掉（第三轮的判词见 `docs/plan/subprojects.md` 的 `entry` 节末，未结项：里程碑的整合复核）。证据重绑在 `docs/plan/subprojects.md` 的 `entry` 节末（每条 AC 的命令、捕获输出与产物 sha256 由该节的表格点名到文件）。剩下的不是工作包而是复核：里程碑复核（从根目录读起的人不再踩到死路径、且这几件事由会自己变红的检查守着）+ 整合验证。未结项：无。
+`entry` 的工作包全部结项（`r-entry1`–`r-entry4`、`p-entry1`–`p-entry3`）。第三轮里程碑复核（被审 revision `e53ba5a`）判「不接受」的 P1/P2/P3 已在本轮逐条修掉（判词与修法见 `docs/plan/subprojects.md` 的 `entry` 节末）。证据重绑在 `docs/plan/subprojects.md` 的 `entry` 节末（每条 AC 的命令、捕获输出与产物 sha256 由该节的表格点名到文件）。剩下的不是工作包而是复核：里程碑复核（从根目录读起的人不再踩到死路径、且这几件事由会自己变红的检查守着）+ 整合验证。未结项：无。
 
 未测项按 `docs/plan/subprojects.md` 的三类读法对待，不并入本文件的「当前状态」。

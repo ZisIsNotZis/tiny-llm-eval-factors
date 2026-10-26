@@ -73,11 +73,13 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 | `r-entry4` | 根目录无未归类路径：运行日志按类忽略，逐题产物按 README 的判据入库 | `git status --porcelain` 无输出 | — |
 | `p-entry1` | `report_inputs/size_claims.json` 与 a02 的产物不一致（`python3 report_inputs/build_size_claims.py --check` exit 1），而 `./reproduce.sh` 只记 WARN 就继续：报告第二节停在这个旧值上仍判绿 | 该命令 exit 0，且报告重建后逐字节相同（或第二节的改动经复核后重新入库） | — |
 | `p-entry2` | **已结项**：13 条「输入与其来源不一致」的判断收进 `checks/report_inputs_drift.py`，`./reproduce.sh` 只把它翻成核对表里的行——漂移=FAIL（整条命令非零退出），看不到来源=SKIP（rc=2 或来源不在场；缺席不是漂移）。判定比对上：只有三个 builder 自报 rc=2，其余十个由脚本先查来源在不在，查不到才 SKIP | `python3 checks/report_inputs_drift_negative_control.py` exit 0：未改动绿 → 改坏 `open_questions.json` 一个字节后 `./reproduce.sh` exit 1 并点名它 → 移走 `gsq.json` 仍 exit 0 且该行为 SKIP → 原字节写回、sha256 不变。负控走 `REPRODUCE_INPUTS_ONLY=1 ./reproduce.sh`（只跑这一节，约 2 秒）：整条链路两分钟且路径由脚本自身位置推出、不能在临时树上跑，故给它一个「只跑这一节」的开关，而不是复制一份判断逻辑 | p-entry1 |
-| `p-entry3` | **已结项**：处置选「入库」而不是清单——被点名的证据随仓库走：9 个 `.log` 以 gzip 存到原路径旁的 `.log.gz`（`gzip -dc | sha256sum` 与原文件逐个相同，原 `.log` 删除）；`RESULT.md` 里作 `evidence:`/`repro:` 点名的聚合产物（`evalplus.json` / `lmeval_panel.json` / `ident_control.json` / 探针输出）原样入库，`.gitignore` 里逐份 `!` 放行；面板的 per-task `lmeval_*.json` 邻居一起入库（`migrate_db.ingest_campaign` 从里面取 metric 名并重算分数，缺了它干净 clone 里会把面板那几行重写成 `… #None`，`checks/refresh_guard_differential_control.py` 会因此变红）；**没被点名**的运行目录产物才按已声明的可重建缓存类忽略。第二轮复核后补入库了 19 份被点名、却一直没入库的聚合产物（a01 七档面板里 m61/m62/m65/m66/m67 的 `evalplus.json`，a10 五个面板的 `{cmd.txt,evalplus.json}`，a03 跨上传者受控对 m101/m103 的两份 `evalplus.json` 与 `cmd.txt`）；同目录其余运行期产物不动。逐题评测产物不按类忽略：被点名却没入库的 `*_eval.json` 必须红。类的唯一清单是 `checks/evidence_logs.py` 的 `REBUILDABLE_CLASSES`；token 按 exact / dir / pattern 三种形状判，exact 这一档只认那张表里的规则**加上**该类允许的形状，`mres/` 的 catch-all 不算处置；pattern 一档把花括号展开成候选，指名一个文件的候选也过同一张形状表（否则同一个未入库文件写成 exact 红、写成模式绿）；dir 一档在本机会走进目录看形状（整目录放行不豁免聚合产物），盘上是无扩展名文件时按 exact 形状表判。**两端语义不同**：本机（盘上有未入库的 run 文件）逐条核到文件；干净 clone 里只能按声明/索引判，报 `BLOCKED` 并 exit 2（不可得），不是绿。条数与字节合计不写在这里，由验收命令的结论行当场算。这几份日志载着无法重算的事实（`n_ctx_slot = 4096`、两行 OOM、`creating MTP draft context`、`CORRUPT` 与 `FileNotFoundError` 计数） | `python3 checks/evidence_logs.py` exit 0：逐条判每条被点名的 `.wrapup/…` 路径有没有处置，并在结论行给出「条数 / 原始字节合计 / gzip 字节合计」（9 个登记的 `.log` 逐个解开与登记值比字节）；负控 `python3 checks/evidence_logs_negative_control.py` exit 0（**真树基线 exit 0；干净 clone 基线 exit 2 = 不可得**；换字节数→多一条并点名该 `.log`；聚合产物未入库 / 落到未声明的类下→「无处置」；逐题样本落到未声明的类下→「无处置」；模式或目录点名的未入库 `evalplus.json`→「无处置」并点名该文件；空扫描→exit 2）；两条都由 `./reproduce.sh` 按 PASS/BLOCKED/FAIL 调用 | — |
+| `p-entry3` | **已结项**：处置选「入库」而不是清单——被点名的证据随仓库走：9 个 `.log` 以 gzip 存到原路径旁的 `.log.gz`（`gzip -dc | sha256sum` 与原文件逐个相同，原 `.log` 删除）；`RESULT.md` 里作 `evidence:`/`repro:` 点名的聚合产物（`evalplus.json` / `lmeval_panel.json` / `ident_control.json` / 探针输出）原样入库，`.gitignore` 里逐份 `!` 放行；面板的 per-task `lmeval_*.json` 邻居一起入库（`migrate_db.ingest_campaign` 从里面取 metric 名并重算分数，缺了它干净 clone 里会把面板那几行重写成 `… #None`，`checks/refresh_guard_differential_control.py` 会因此变红）；**没被点名**的运行目录产物才按已声明的可重建缓存类忽略。第二轮复核后补入库了 19 份被点名、却一直没入库的聚合产物（a01 七档面板里 m61/m62/m65/m66/m67 的 `evalplus.json`，a10 五个面板的 `{cmd.txt,evalplus.json}`，a03 跨上传者受控对 m101/m103 的两份 `evalplus.json` 与 `cmd.txt`）；同目录其余运行期产物不动。第三轮复核后补入库：a01 以目录 token 点名的 m64 面板的 `lmeval_panel.json` 与它的 5 份 per-task 邻居（缺邻居时 `ingest_campaign` 在干净 clone 里会把 6 行重写成 `… #None` 并合并成 5 行）；a03 点名的 m101/m103 `evalplus.json` 与 `cmd.txt` 已在第二轮入库。逐题评测产物不按类忽略：被点名却没入库的 `*_eval.json` 必须红。类的唯一清单是 `checks/evidence_logs.py` 的 `REBUILDABLE_CLASSES`；token 按 exact / dir / pattern 三种形状判，exact 这一档只认那张表里的规则**加上**该类允许的形状，`mres/` 的 catch-all 不算处置；pattern 一档把花括号一律展开成候选（没有单选项例外），指名一个文件的候选也过同一张形状表（否则同一个未入库文件写成 exact 红、写成模式绿）；dir 一档的判据是「目录里有入库证据，或该目录本身是已声明的可重建运行目录」，本机会走进目录，盘上是无扩展名文件时按 exact 形状表判——**目录 token 不保证目录内每份文件入库**，哪些是本地产物、不入库要在使用点写明（`a01-量化位宽/RESULT.md` 的 `panel.log` / `lmeval_panel.json` 那条就是样板）。**两端语义不同**：本机（盘上有未入库的 run 文件）逐条核到文件；干净 clone 里只能按声明/索引判，报 `BLOCKED` 并 exit 2（不可得），不是绿。条数与字节合计不写在这里，由验收命令的结论行当场算。这几份日志载着无法重算的事实（`n_ctx_slot = 4096`、两行 OOM、`creating MTP draft context`、`CORRUPT` 与 `FileNotFoundError` 计数） | `python3 checks/evidence_logs.py` exit 0：逐条判每条被点名的 `.wrapup/…` 路径有没有处置，并在结论行给出「条数 / 原始字节合计 / gzip 字节合计」（9 个登记的 `.log` 逐个解开与登记值比字节）；负控 `python3 checks/evidence_logs_negative_control.py` exit 0（**真树基线 exit 0；干净 clone 基线 exit 2 = 不可得**；换字节数→多一条并点名该 `.log`；聚合产物未入库 / 落到未声明的类下→「无处置」；精确点名的未入库 `lmeval_panel.json`→过形状表判无处置；逐题样本落到未声明的类下→「无处置」；模式或目录点名的未入库 `evalplus.json`→「无处置」并点名该文件；空扫描→断言只有该守卫会打的 `BLOCKED 空扫描` 行；每一例「删掉它守着的那段代码→该例变红」的反证结果列在脚本头部）；两条都由 `./reproduce.sh` 按 PASS/BLOCKED/FAIL 调用 | — |
 
 `p-entry3` 的取证：下面这条打印「被 `RESULT.md` 点名、在盘上、但未入库」的文件清单——它现在只应剩下可重建缓存（被点名的 `.log` 早已以 `.gz` 入库，被点名的聚合产物已入库），行数由命令当场给出，本文件不抄。每条「有处置 / 无处置」的判定与 `.log` 的字节合计不走这条 shell，走 `python3 checks/evidence_logs.py`：它的结论行就是那两个数。
 
     grep -ho '\.wrapup/[A-Za-z0-9._/-]*' docs/subprojects/*/RESULT.md | sort -u | while read -r p; do if [ -f "$p" ] && ! git ls-files --error-unmatch "$p" >/dev/null 2>&1; then echo "$p"; fi; done
+
+**本包判据的边界**（三条，别读成比实际更强的断言）：① **目录 token 不保证目录内每份文件入库**——`dir` 一档只要目录里有入库/按类可重建的文件就算有处置，哪些是本地产物、不入库在使用点写明；② `pattern` 指目录时只按声明判，不走进候选目录看内容；③ 干净 clone 只按声明/索引判，报 `BLOCKED` 并 exit 2（不可得，不是绿）。
 
 里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
@@ -117,6 +119,15 @@ revision）、`5e6df26`（第二轮结果 revision）、`e338f4b`（更早一次
 那次推进当时的读数，在 HEAD 上已不是当前值——`p-entry3` 的那两个字节数与「26 个按类忽略」正是
 里程碑复核判掉的两条假证据；`5e6df26` 的捕获在干净 clone 里声称 `evidence_logs` exit 0，第二轮复核指出
 那只能按声明判、看不到盘上文件，本轮改成报 `BLOCKED`。
+
+**第三轮独立复核的判词与处置**：被审 revision `e53ba5a`，判「不接受」（P1×2、P2×3、P3×2）。已逐条修掉：
+① 单选项花括号白名单删除（`{…}` 一律按正常路径展开，唯一真模板改写为 `<run_tag>`）；
+② `dir` 档判据照实写明为「目录里有入库证据，或该目录本身是已声明的可重建运行目录」，并补入 m64 面板；
+③ 模块说明与代码对齐（顶层 `.wrapup/<x>/` 也走进目录按形状判）；
+④ 负控第 9 例改断言只有空扫描守卫会打的行，且每例都做了「删掉守卫→该例变红」的反证（表在
+`checks/evidence_logs_negative_control.py` 文件头）；
+⑤ `STATUS.md` 的前向引用落到本节；`checks/README.md` 随第一、二条同步。反证/命令/捕获均绑定本轮的
+结果 revision（见下）。
 
 未结项：无——里程碑只剩整合复核。
 
