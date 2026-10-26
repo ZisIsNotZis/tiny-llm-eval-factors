@@ -1,0 +1,9 @@
+被审 revision: 3287b76bc47e3164ab8d237febd54bceda66817c
+脚本 sha256: 23dd4bb7381715ac119aa5daed0176fc54f1e7b1eaddc9dba0aec1dbea25c020  (checks/router_refs.py)
+命令: python3 checks/router_refs.py
+skipped 3 template token(s) containing '<'/'>' (shape, not a file)
+citation tokens seen: 66, matched: 66
+66/66 citations resolved, 21/21 path tokens resolved
+rc=0
+产物 sha256:
+  17b604c615eaba5aabf1bd613997a4adb98e617bdecffcfc4ffb027d3072231c  STATUS.md

@@ -83,8 +83,8 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 
 里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
-已结项：`r-entry1`–`r-entry4`、`p-entry1`、`p-entry2`、`p-entry3`。**结果 revision 是 `b9102f09f0796cd59b74bf9037a197a8194923d0`**
-（`git rev-parse 6 位以上前缀` 就能验：`b9102f0`；它之后的提交只动文档——本节这一段与
+已结项：`r-entry1`–`r-entry4`、`p-entry1`、`p-entry2`、`p-entry3`。**结果 revision 是 `3287b76bc47e3164ab8d237febd54bceda66817c`**
+（`git rev-parse 6 位以上前缀` 就能验：`3287b76`；它之后的提交只动文档——本节这一段与
 `docs/plan/evidence/entry/` 下的捕获——不动代码、数据与结论）。七个包与整条链各一份捕获，门 3 的四件齐全（被审 revision / 命令 /
 捕获的输出 / 产物 sha256）：
 
@@ -92,24 +92,24 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 run 文件，`checks/evidence_logs.py` 走到文件、exit 0。干净 clone 里盘上一个未入库的 run 文件都没有，
 `pattern`/`dir`/`exact` 只能按声明/索引判：同一条命令在
 `git clone <结果 revision> /tmp/clone && cd /tmp/clone && python3 checks/evidence_logs.py` 下报
-**BLOCKED 并 exit 2（不可得）**，结论行给出「本次 190 条只能按声明/索引判，无法用盘上文件核」。
+**BLOCKED 并 exit 2（不可得）**，结论行给出「本次 189 条只能按声明/索引判，无法用盘上文件核」。
 上一包写的「干净 clone 里 exit 0、与真树同一结论」是本轮推翻的说法：它把「不可得」当成了绿。
 另外，`REBUILDABLE_CLASSES` 里那条 `mres 运行目录本身` 的形状 `(?:^|/)[^./]+$` 已删掉——它在
 `exact` 档不可达（`exact` token 必带扩展名），留着只会成为「无扩展名文件被当目录放过」的借口。
-捕获见 `docs/plan/evidence/entry/p-entry3-evidence-logs-b9102f0.txt`。
+捕获见 `docs/plan/evidence/entry/p-entry3-evidence-logs-3287b76.txt`。
 
-| 包 | 命令（在 `b9102f0` 上） | 捕获 | 承重产物 sha256（前 12 位，全长在捕获尾部） |
+| 包 | 命令（在 `3287b76` 上） | 捕获 | 承重产物 sha256（前 12 位，全长在捕获尾部） |
 |---|---|---|---|
-| `r-entry1` | `python3 checks/router_refs_negative_control.py`（二十一条期望逐条 `ok`），rc=0 | `docs/plan/evidence/entry/r-entry1-router-refs-nc-b9102f0.txt` | `checks/router_refs.py` `23dd4bb73817`、负控脚本 `95b0215d0504` |
-| `r-entry2` | `python3 checks/router_refs.py`；`grep -c 'docs/result/result.yaml\|docs/plan/plan.yaml' FINDINGS.md` → 计数 0，rc=0 | `docs/plan/evidence/entry/r-entry2-router-refs-b9102f0.txt` | `FINDINGS.md` `689da1190a23` |
-| `r-entry3` | `python3 checks/router_refs.py`，rc=0 | `docs/plan/evidence/entry/r-entry3-router-refs-status-b9102f0.txt` | `STATUS.md` `3a9c848aae80` |
-| `r-entry4` | `git status --porcelain`——在该 revision 的干净 clone 里无输出（捕获文件本身不在那个 clone 里，见捕获里的说明） | `docs/plan/evidence/entry/r-entry4-git-status-b9102f0.txt` | `STATUS.md` `3a9c848aae80`、`FINDINGS.md` `689da1190a23`、`.gitignore` `d4a023a03437`；tree `62c95471c4c0`（README 的引用由 `r-entry1`/`r-entry2`/`r-entry3` 的 `router_refs` 捕获覆盖） |
-| `p-entry1` | `python3 report_inputs/build_size_claims.py --check`；`./reproduce.sh` 末行判报告逐字节相同，rc=0 | `docs/plan/evidence/entry/p-entry1-size-claims-b9102f0.txt` + 整条链 `docs/plan/evidence/entry/reproduce-b9102f0.txt` | `report_inputs/size_claims.json` `c9c0a8cce1bb`、`report.html` `6288338f54b3` |
-| `p-entry2` | `python3 checks/report_inputs_drift_negative_control.py`，rc=0 | `docs/plan/evidence/entry/p-entry2-drift-nc-b9102f0.txt` | `checks/report_inputs_drift.py` `57e947664d4c` |
-| `p-entry3` | `python3 checks/evidence_logs.py`（本机 exit 0）；它的负控（含干净 clone 基线，exit 2）；干净 clone 里再跑一次 `checks/evidence_logs.py`（exit 2 = BLOCKED）；`git ls-files '<三组 .log.gz 选择器>' -z \| xargs -0 gzip -dc \| wc -c`；`git ls-files '<三组 .log.gz 选择器>' -z \| xargs -0 ls -l \| awk '{s+=$5} END {print s}'` | `docs/plan/evidence/entry/p-entry3-evidence-logs-b9102f0.txt` | `checks/evidence_logs.py` `5735e8543280`、负控脚本 `c7201ec9d405`、9 个入库 `.log.gz` 逐个 sha256 在该文件尾部 |
+| `r-entry1` | `python3 checks/router_refs_negative_control.py`（二十一条期望逐条 `ok`），rc=0 | `docs/plan/evidence/entry/r-entry1-router-refs-nc-3287b76.txt` | `checks/router_refs.py` `23dd4bb73817`、负控脚本 `95b0215d0504` |
+| `r-entry2` | `python3 checks/router_refs.py`；`grep -c 'docs/result/result.yaml\|docs/plan/plan.yaml' FINDINGS.md` → 计数 0，rc=0 | `docs/plan/evidence/entry/r-entry2-router-refs-3287b76.txt` | `FINDINGS.md` `689da1190a23` |
+| `r-entry3` | `python3 checks/router_refs.py`，rc=0 | `docs/plan/evidence/entry/r-entry3-router-refs-status-3287b76.txt` | `STATUS.md` `17b604c615ea` |
+| `r-entry4` | `git status --porcelain`——在该 revision 的干净 clone 里无输出（捕获文件本身不在那个 clone 里，见捕获里的说明） | `docs/plan/evidence/entry/r-entry4-git-status-3287b76.txt` | `STATUS.md` `17b604c615ea`、`FINDINGS.md` `689da1190a23`、`.gitignore` `e292e250527a`；tree `86b2db7c5ac2`（README 的引用由 `r-entry1`/`r-entry2`/`r-entry3` 的 `router_refs` 捕获覆盖） |
+| `p-entry1` | `python3 report_inputs/build_size_claims.py --check`；`./reproduce.sh` 末行判报告逐字节相同，rc=0 | `docs/plan/evidence/entry/p-entry1-size-claims-3287b76.txt` + 整条链 `docs/plan/evidence/entry/reproduce-3287b76.txt` | `report_inputs/size_claims.json` `c9c0a8cce1bb`、`report.html` `6288338f54b3` |
+| `p-entry2` | `python3 checks/report_inputs_drift_negative_control.py`，rc=0 | `docs/plan/evidence/entry/p-entry2-drift-nc-3287b76.txt` | `checks/report_inputs_drift.py` `57e947664d4c` |
+| `p-entry3` | `python3 checks/evidence_logs.py`（本机 exit 0）；它的负控（含干净 clone 基线，exit 2）；干净 clone 里再跑一次 `checks/evidence_logs.py`（exit 2 = BLOCKED）；`git ls-files '<三组 .log.gz 选择器>' -z \| xargs -0 gzip -dc \| wc -c`；`git ls-files '<三组 .log.gz 选择器>' -z \| xargs -0 ls -l \| awk '{s+=$5} END {print s}'` | `docs/plan/evidence/entry/p-entry3-evidence-logs-3287b76.txt` | `checks/evidence_logs.py` `b013f5cba7c3`、负控脚本 `33dc8ced6827`、9 个入库 `.log.gz` 逐个 sha256 在该文件尾部 |
 
 `./reproduce.sh` 在同一 revision 上 exit 0（本机：53 PASS、0 FAIL/WARN/SKIP/BLOCKED）；PASS 行数与非 PASS
-行数不写在这里，由 `grep -c` 从 `docs/plan/evidence/entry/reproduce-b9102f0.txt`（那次运行的原始输出）
+行数不写在这里，由 `grep -c` 从 `docs/plan/evidence/entry/reproduce-3287b76.txt`（那次运行的原始输出）
 当场数。同一 revision 的干净 clone 里 `./reproduce.sh` 也能跑：exit 0，非 PASS 是两条——设计内的
 一条 SKIP（`.wrapup` 的 KV 证据来源不在 clone 里，按设计报「来源不可得」）与一条 BLOCKED（`evidence_logs`
 在 clone 里只能按声明判，报不可得）——计数由那份 clone 的输出当场给出，本文件不抄。

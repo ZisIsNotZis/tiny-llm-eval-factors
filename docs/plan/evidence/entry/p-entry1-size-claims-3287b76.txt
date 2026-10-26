@@ -1,0 +1,12 @@
+被审 revision: 3287b76bc47e3164ab8d237febd54bceda66817c
+脚本 sha256: 0b92181bd9261fd85a224f4e625c2581b2e2a6ee33a58c96658d0d6d0f13b234  (report_inputs/build_size_claims.py)
+命令: python3 report_inputs/build_size_claims.py --check
+size_claims.json: up to date (truth 77 files / 2101 rows; inversion -0.201)
+rc=0
+命令: grep -E 'report.html 从库重建后逐字节相同|^OK：' docs/plan/evidence/entry/reproduce-3287b76.txt
+  PASS     report.html 从库重建后逐字节相同（10387839 字节，6288338f54b3)）
+OK：报告可从库重建，且与仓库里的 report.html 逐字节相同。
+命令: grep -c '^  PASS' docs/plan/evidence/entry/reproduce-3287b76.txt; grep -cE '^  (FAIL|WARN|SKIP|BLOCKED)' docs/plan/evidence/entry/reproduce-3287b76.txt
+51
+2
+说明: 两行分别是干净 clone 的 PASS 条数与 FAIL/WARN/SKIP/BLOCKED 条数（设计内非 PASS 是 1 SKIP + 1 BLOCKED）
