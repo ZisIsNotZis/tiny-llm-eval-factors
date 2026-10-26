@@ -174,9 +174,10 @@ def main() -> int:
     before = sh("git", "status", "--porcelain").stdout
     all_ok = True
 
-    # 0) baseline：真树未改动时必须绿
+    # 0) baseline：本次工作树未改动时必须无失败行。本机（有未入库 run 文件）exit 0；
+    #    在干净 clone 里跑本控制时，当前工作树也没有未入库文件 → exit 2（不可得），同样算无失败。
     rc, out = run_check(REPO)
-    all_ok &= check("0 baseline（真树）", rc == 0 and "无处置 0" in out,
+    all_ok &= check("0 baseline（本次工作树）", rc in (0, 2) and not failures(out) and "无处置 0" in out,
                     f"exit {rc}；{summary_line(out)}")
 
     tmp = Path(tempfile.mkdtemp(prefix="evidence-logs-nc."))
