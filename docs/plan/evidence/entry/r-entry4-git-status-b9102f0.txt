@@ -1,0 +1,8 @@
+被审 revision: b9102f09f0796cd59b74bf9037a197a8194923d0
+命令: git status --porcelain   （在该 revision 的干净 clone 里，克隆后未改动）
+rc=0（输出为空 = 无未归类路径）
+产物 sha256:
+  3a9c848aae80867e4787ee61b2128222b5c063b9e4cec24f3545ad1072e0496d  STATUS.md
+  689da1190a23e368cd626f55f44db131f4aa505ee43a564a789071376950054e  FINDINGS.md
+  d4a023a034373c78d309fa43cda6bf6544caec2216d5cb9d1ec4bcd4a6f66948  .gitignore
+  tree 62c95471c4c04cce2ed604252904abbbd641b6a0

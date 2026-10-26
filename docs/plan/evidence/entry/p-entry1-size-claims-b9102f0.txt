@@ -1,0 +1,19 @@
+被审 revision: b9102f09f0796cd59b74bf9037a197a8194923d0
+脚本 sha256: 0b92181bd9261fd85a224f4e625c2581b2e2a6ee33a58c96658d0d6d0f13b234  (report_inputs/build_size_claims.py)
+命令: python3 report_inputs/build_size_claims.py --check
+size_claims.json: up to date (truth 77 files / 2101 rows; inversion -0.201)
+rc=0
+命令: grep -E 'report.html 从库重建后逐字节相同|^OK：' docs/plan/evidence/entry/reproduce-b9102f0.txt
+说明: 整条链的完整输出在同目录的 reproduce-b9102f0.txt（`./reproduce.sh` 在该 revision 上的原始输出）
+  PASS     report.html 从库重建后逐字节相同（10387839 字节，6288338f54b3)）
+OK：报告可从库重建，且与仓库里的 report.html 逐字节相同。
+rc=0
+命令: grep -c '^  PASS' docs/plan/evidence/entry/reproduce-b9102f0.txt; grep -cE '^  (FAIL|WARN|SKIP|BLOCKED)' docs/plan/evidence/entry/reproduce-b9102f0.txt
+说明: 两行分别是 PASS 条数与 FAIL/WARN/SKIP/BLOCKED 条数（干净 clone 里设计内非 PASS 是 1 SKIP + 1 BLOCKED）
+51
+2
+rc=0
+产物 sha256:
+  c9c0a8cce1bbeb03f21f924a1a0af109c27fc3ee89f2177f4e4fe18d44d76c92  report_inputs/size_claims.json
+  6288338f54b3ab5d3d2d8637b528627fe3f7ba59558a91268420e87f5d5ab8d6  report.html
+  804d845782bbdb4531eb3b294d74b1f49b7d2a21715db17f52dd3fd817554208  docs/plan/evidence/entry/reproduce-b9102f0.txt
