@@ -26,9 +26,13 @@ token 先按形状分三档，各按各的规则判：
   * **`class` 这一档受控。** `.wrapup/mres/*` 与 `.wrapup/mres/*/*` 是「运行目录里的东西都可重建」的
     catch-all，它会把聚合产物一起吞掉——那几份是被 `evidence:`/`repro:` 点名的事实载体，其中的断言
     无法从随仓库分发的东西重算，所以它们必须入库；能被 catch-all 的**形状**认领的只有逐题原始样本
-    （`*.jsonl`）、codegen / props 落盘目录、运行目录本身、per-run 结果文件（`*_eval.json`、
-    `lmeval_<task>_<ts>.json`、`spec_panel.json` / `variant_panel.json` / `histograms.jsonl` / `cmd.txt`）。
+    （`*.jsonl`）、codegen / props 落盘目录、运行目录本身、per-run 结果文件（`lmeval_<task>_<ts>.json`、
+    `spec_panel.json` / `histograms.jsonl` / `cmd.txt`）。
     一条精确点名的路径落在**未声明**的 ignore 规则下时，结论是「无处置」。
+
+**`*_eval.json` 与 `*_panel.json` 不在这张表里**，即使它们被 ignore 规则命中：README 的 Ships 一栏
+说逐题评测产物入库（`.gitignore` 也逐类放行），所以一个被点名却没入库的 `*_eval.json` 是**缺证据**，
+不是「可重建缓存」。把它放进这张表等于让「本该入库的东西没入库」在检查里变绿。
 
 `.log` 另加一条：登记表里的 9 个文件必须 tracked 且 gunzip 后的字节数与登记值相同——`.gz` 里装的
 必须是那一份，不是别的。登记值是文件指纹，不是从别处可算出的数，所以写在这里；条数与字节合计
@@ -88,8 +92,8 @@ REBUILDABLE_CLASSES = (
      r"/props(?:/|$)"),
     ("per-run 结果文件（数字的载体是 `experiments.sqlite` 与入库的 panel 聚合，per-run 文件不入库）",
      _MRES_RULES,
-     r"(?:/lmeval_(?!panel\.json$).+\.json$|_eval\.json$"
-     r"|/(?:spec_panel|variant_panel)\.json$|/histograms\.jsonl$|/cmd\.txt$)"),
+     r"(?:/lmeval_(?!panel\.json$).+\.json$|/spec_panel\.json$"
+     r"|/histograms\.jsonl$|/cmd\.txt$)"),
     ("ppl_corpora（按上游命令重下）",
      (".wrapup/ppl_corpora/",),
      None),

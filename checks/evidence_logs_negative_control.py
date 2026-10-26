@@ -25,6 +25,11 @@
                             `.wrapup/mres/*` 的 `.jsonl` 形状算「按类忽略」）加一条**未声明**的
                             ignore 规则 → 多一条失败行，判「无处置」并点名那条规则。
 
+  7. 逐题评测产物未入库     在一份 `RESULT.md` 里点名一个不在索引里、落在 `mres/` catch-all 下的
+                            `*_eval.json` → 多一条失败行，判「无处置」。README 的 Ships 一栏说逐题
+                            评测产物入库，所以它**不能**被「per-run 结果文件」那张形状表认领；这一例
+                            就是那条边界：把它放回形状表就等于让「本该入库的没入库」变绿。
+
 "聚合产物为什么必须入库"写在 `checks/evidence_logs.py` 的模块说明里：它们的断言无法从随仓库分发
 的东西重算，所以 `mres/` 的 catch-all 只按**形状**认领逐题样本 / codegen / props / per-run 结果，
 不认领这四类聚合产物。
@@ -55,6 +60,8 @@ TRACKED_AGGREGATE = ".wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json"
 UNTRACKED_AGGREGATE = ".wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json"
 UNDECLARED_AGGREGATE = ".wrapup/mres/m164-a04-uni45/lmeval_panel.json"
 CLASS_IGNORED = ".wrapup/mres/m1-qwen4b-q2-py.jsonl"
+UNTRACKED_ITEM_EVAL = ".wrapup/mres/m63-qwen-2b-iq3xxs/code_eval.json"  # 不存在于索引、也不在盘上
+NAMED_IN = "docs/subprojects/a01-量化位宽/RESULT.md"
 
 # 本次新入库的证据文件：clone 是 HEAD，工作树里还没提交时它们不在 clone 里，要叠上去
 NEW_EVIDENCE = (
@@ -194,6 +201,13 @@ def main() -> int:
                 fh.write(f"\n# negative control: 未声明的类（不在 REBUILDABLE_CLASSES 里）\n{CLASS_IGNORED}\n")
 
         each("6 逐题样本落到未声明类", f"`{CLASS_IGNORED}`", "判「无处置」并点名那条规则", undeclared_rule)
+
+        # 7) 被点名却没入库的 `*_eval.json`：这张形状表不许认领它（README 说逐题评测产物入库）
+        def name_untracked_item_eval() -> None:
+            with open(clone / NAMED_IN, "a", encoding="utf-8") as fh:
+                fh.write(f"\n- negative control：`{UNTRACKED_ITEM_EVAL}`\n")
+
+        each("7 逐题评测产物未入库", UNTRACKED_ITEM_EVAL, "判「无处置」", name_untracked_item_eval)
     finally:
         if args.keep:
             print(f"--keep：临时 clone 留在 {tmp}")
@@ -208,7 +222,7 @@ def main() -> int:
         print("FAIL 有期望没有成立（缺一条都不算证明过这条检查会红）")
         return 1
     print("PASS 干净 clone 基线绿；换字节→点名 `.log`；两份聚合产物未入库/落未声明类→无处置；"
-          "逐题样本落未声明类→无处置；真树前后相同")
+          "逐题样本落未声明类→无处置；逐题评测产物未入库→无处置；真树前后相同")
     return 0
 
 
