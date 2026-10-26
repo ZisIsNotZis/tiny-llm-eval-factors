@@ -10,7 +10,7 @@
 
 **研究里程碑已达成**（`c19c168`：十六个单元全部结项，21 节 / 86 图）。判据是能跑的命令，不是这句话：`./reproduce.sh` 在 `c19c168` 上 exit 0、2 分 07 秒，`report.html`（sha256 `ce4e7cb0…`）从库重建后逐字节相同；逐行结论由该命令当场产生，本文件不复写那份计数。
 
-**正在推进的里程碑是 `entry`**，工作包与验收写在 `docs/plan/subprojects.md::entry`：研究交付物已经能被一条命令重建，但读者进入仓库的那两道门（本文件与 `FINDINGS.md`）没有跟着那次文档搬迁改建，42 条节点引用里只有 1 条解析得到。它在本次推进里被修掉的部分：
+**里程碑 `entry` 已在结果 revision `3287b76` 上达成**：四轮独立复核，前三轮判「不接受」、第四轮判**接受**（P1 = 0；判词与每轮的修法见 `docs/plan/subprojects.md` 的 `entry` 节末）。工作包与验收写在 `docs/plan/subprojects.md::entry`：研究交付物已经能被一条命令重建，但读者进入仓库的那两道门（本文件与 `FINDINGS.md`）没有跟着那次文档搬迁改建，42 条节点引用里只有 1 条解析得到。它在本次推进里被修掉的部分：
 
 1. 两份根路由不再指向已退役的按层 yaml 文件；`FINDINGS.md` 的每行指到它现在真正住在哪个子项目节点。
 2. 这件事不再靠人记得：`python3 checks/router_refs.py` 解析三份根路由里的每条节点引用与每个文档路径，`checks/router_refs_negative_control.py`（二十一条期望）证明它会红，`./reproduce.sh` 把这一对按 `PASS`/`FAIL` 接进来了。
@@ -32,6 +32,8 @@
 
 ## 下一步
 
-`entry` 的工作包全部结项（`r-entry1`–`r-entry4`、`p-entry1`–`p-entry3`）。第三轮里程碑复核（被审 revision `e53ba5a`）判「不接受」的 P1/P2/P3 已在本轮逐条修掉（判词与修法见 `docs/plan/subprojects.md` 的 `entry` 节末）。证据重绑在 `docs/plan/subprojects.md` 的 `entry` 节末（每条 AC 的命令、捕获输出与产物 sha256 由该节的表格点名到文件）。剩下的不是工作包而是复核：里程碑复核（从根目录读起的人不再踩到死路径、且这几件事由会自己变红的检查守着）+ 整合验证。未结项：无。
+`entry` 的七个工作包全部结项（`r-entry1`–`r-entry4`、`p-entry1`–`p-entry3`），里程碑复核已在 `3287b76` 上通过（第四轮判接受）。每条 AC 的命令、捕获输出与产物 sha256 由 `docs/plan/subprojects.md` 的 `entry` 节末表格点名到文件；本节不复写那份计数。
+
+**仓库里没有在跑的里程碑。** 剩下的是三类未测（见上「仍开放」）与研究工作本身的下一个方向——决定它需要用户判断，因为那是要买 VRAM 还是换题目的事，不在本文件里替它定。
 
 未测项按 `docs/plan/subprojects.md` 的三类读法对待，不并入本文件的「当前状态」。
