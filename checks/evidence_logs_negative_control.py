@@ -340,7 +340,7 @@ def main() -> int:
     after = sh("git", "status", "--porcelain").stdout
     all_ok &= check("真树未被本控制改动", after == before,
                     "git status --porcelain 前后相同" if after == before
-                    else f"前后不同：\n{after[:300]}")
+                    else f"前后不同：\n  before={before[:300]!r}\n  after={after[:300]!r}")
     if not all_ok:
         print("FAIL 有期望没有成立（缺一条都不算证明过这条检查会红）")
         return 1
