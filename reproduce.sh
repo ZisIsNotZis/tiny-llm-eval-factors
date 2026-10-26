@@ -140,10 +140,11 @@ if out=$(python3 checks/evidence_logs.py 2>&1); then
 else
     record FAIL "$(printf '%s' "$out" | grep -m1 'FAIL' | cut -c1-200)"
 fi
-# 同一条检查的负控：换字节 → 点名 `.log`；从索引里拿掉 / 落在未声明的类下 → 判「无处置」。
+# 同一条检查的负控：干净 clone 基线必须与真树同结论（exit 0、失败 0）；换字节 → 点名 `.log`；
+# 聚合产物从索引里拿掉 / 落在未声明的类下 → 判「无处置」（exact 档的严格度不许被换掉）。
 # 没有这一条，上面那行只能证明「它今天打印了绿」。
 if python3 checks/evidence_logs_negative_control.py >/tmp/reproduce_elnc.$$ 2>&1; then
-    record PASS "证据处置的负控（换字节→多一条并点名 .log；从索引拿掉→无处置；未声明类→无处置）"
+    record PASS "证据处置的负控（干净 clone 基线绿；换字节→点名 .log；聚合产物未入库/落未声明类→无处置）"
 else
     record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_elnc.$$ | cut -c1-200)"
 fi

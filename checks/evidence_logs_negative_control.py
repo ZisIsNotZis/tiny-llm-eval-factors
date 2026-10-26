@@ -2,25 +2,33 @@
 # -*- coding: utf-8 -*-
 """负控：证明 `checks/evidence_logs.py` 真的会红，而不是一个只会打印绿行的形状（p-entry3 的门 4）。
 
-基线在**真树**上跑（exit 0）；三个注入面各跑在**本仓库的临时 clone** 上（`git clone --shared`，
-结束即删，真树一个字节都不动），每例的判据是差分的：注入之后多出来的失败行**恰好一条**，且点名
-被注入的那个路径。一行一条、末尾 `PASS` 才算过：
+基线跑两处：真树与**干净 clone**（`git clone --shared`，HEAD 只有入库文件，`.wrapup/` 里的运行期
+产物一个都不在）都必须 exit 0、失败 0 条——判据是「声明」而不是「盘上有没有」，所以两处结论相同。
+五个注入面（用例 2–6）各跑在本仓库的临时 clone 上（结束即删，真树一个字节都不动），每例的判据是差分的：注入
+之后多出来的失败行**恰好一条**，且点名被注入的那个路径。一行一条、末尾 `PASS` 才算过：
 
-  0. baseline（真树）        exit 0，结论行是「无处置 0」（否则下面的红说明不了任何事）；
-  1. 字节数不符             把登记表里 `.wrapup/axes_diffusion_gate.log.gz` 换成解压后字节数不同的
+  0. baseline（真树）        exit 0，结论行是「无处置 0」；
+  1. clone 基线              干净 clone 里 exit 0、预存失败 0 条（这一条是本包要修的那个缺陷的正面证据：
+                             修前 clone 基线是 exit 1、预存失败 13 条）；
+  2. 字节数不符             把登记表里 `.wrapup/axes_diffusion_gate.log.gz` 换成解压后字节数不同的
                             副本 → 多一条失败行，点名该 `.log`（`.gz` 里装的必须是登记的那一份）；
-  2. 从索引里拿掉           把已入库、被点名的 `.wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json` 从索引
+  3. 从索引里拿掉           把已入库、被点名的 `.wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json` 从索引
                             里拿掉（文件仍在盘上、`.gitignore` 里那行 `!` 放行仍在）→ 多一条失败行，
-                            判「无处置」并点名该路径。旧版检查在这里是绿的：`glob(path+"*")` 把它
-                            匹配成它自己，于是「被 ignore」冒充「有处置」；
-  3. 未声明类               给一条精确点名的路径（`.wrapup/mres/m1-qwen4b-q2-py.jsonl`，clone 基线里
-                            它按 `.wrapup/mres/*` 的 `.jsonl` 形状算「按类忽略」）加一条**未声明**的
-                            ignore 规则 → 多一条失败行，判「无处置」并点名那条规则。这是用例 2 的
-                            另一半：光「被忽略」不算处置，必须是被声明为可重建缓存的那一类。
+                            判「无处置」并点名该路径；
+  4. 聚合产物未入库         同上，换成另一份聚合产物 `.wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json`：
+                            证明「exact 这一档的严格度没被本包换掉」——没有按类忽略、没有按模式放过；
+  5. 聚合产物落到未声明类   给一份精确点名的聚合产物 `.wrapup/mres/m164-a04-uni45/lmeval_panel.json`
+                            加一条**未声明**的 ignore 规则 → 多一条失败行，判「无处置」并点名那条规则。
+                            这是用例 4 的另一半：光「被忽略」不算处置，必须是被声明为可重建缓存的那一类。
 
-clone 为什么不能当基线：`dir` 与 `glob` 两档要读盘上真实存在的目录与展开结果，而 clone 里只有
-跟踪文件（818 个 `.wrapup/mres/` 运行目录、`.gz` 之外的落盘产物都不在），所以 clone 上本来就有一批
-「无处置」。因此 clone 只当**差分**用：预先记下它的失败行集合，再要求注入后恰好只多一条。
+  6. 逐题样本落到未声明类   给一份精确点名的逐题样本 `.wrapup/mres/m1-qwen4b-q2-py.jsonl`（它按
+                            `.wrapup/mres/*` 的 `.jsonl` 形状算「按类忽略」）加一条**未声明**的
+                            ignore 规则 → 多一条失败行，判「无处置」并点名那条规则。
+
+"聚合产物为什么必须入库"写在 `checks/evidence_logs.py` 的模块说明里：它们的断言无法从随仓库分发
+的东西重算，所以 `mres/` 的 catch-all 只按**形状**认领逐题样本 / codegen / props / per-run 结果，
+不认领这四类聚合产物。
+
 clone 之后把**工作树**的 `.gitignore`、`docs/` 与本次新入库的证据文件叠上去——本控制判的是本次
 改动，不是 HEAD（`refresh_guard_differential_control` 里记过同一条教训：跑 clone 自带的那份等于在测
 上一个人的代码）。
@@ -41,9 +49,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 CHECKER = REPO / "checks" / "evidence_logs.py"
 
-# 用例 1/2/3 的注入面：都是 p-entry3 的承重文件（登记过的 `.log`、被点名的聚合产物、按类忽略的逐题样本）
+# 各用例的注入面：都是 p-entry3 的承重文件（登记过的 `.log`、被点名的聚合产物、按类忽略的逐题样本）
 GZ_LOG = ".wrapup/axes_diffusion_gate.log.gz"
 TRACKED_AGGREGATE = ".wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json"
+UNTRACKED_AGGREGATE = ".wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json"
+UNDECLARED_AGGREGATE = ".wrapup/mres/m164-a04-uni45/lmeval_panel.json"
 CLASS_IGNORED = ".wrapup/mres/m1-qwen4b-q2-py.jsonl"
 
 # 本次新入库的证据文件：clone 是 HEAD，工作树里还没提交时它们不在 clone 里，要叠上去
@@ -130,11 +140,12 @@ def main() -> int:
             shutil.copyfile(REPO / ".gitignore", clone / ".gitignore")
             shutil.copyfile(REPO / GZ_LOG, clone / GZ_LOG)
 
-        # clone 基线：只记失败行集合，不当绿基线（理由见模块说明）
+        # 1) clone 基线：干净 clone 里必须与真树同一结论（exit 0、失败 0 条）
         fresh()
         rc0, out0 = run_check(clone)
         base = failures(out0)
-        all_ok &= check("  clone 基线", rc0 in (0, 1), f"exit {rc0}；预存失败行 {len(base)} 条")
+        all_ok &= check("1 clone 基线", rc0 == 0 and not base and "无处置 0" in out0,
+                        f"exit {rc0}；预存失败行 {len(base)} 条；{summary_line(out0)}")
 
         def each(name: str, want: str, describe: str, mutate) -> None:
             """复原 → 注入 → 跑检查：注入后多出来的失败行必须恰好一条，且点名 want。"""
@@ -148,25 +159,41 @@ def main() -> int:
             all_ok &= check(name, ok, f"exit {rc1}；多出来的失败行 {len(delta)} 条"
                                       f"；{describe}：{hit[0] if hit else '（没有）'}")
 
-        # 1) 登记的 `.gz` 换成解压字节数不同的副本
+        # 2) 登记的 `.gz` 换成解压字节数不同的副本
         def swap_gz() -> None:
             gz_path = clone / GZ_LOG
             gz_path.write_bytes(gzip.compress(b"negative-control: not the registered bytes\n"))
 
-        each("1 字节数不符", GZ_LOG[: -len(".gz")], "点名该 .log", swap_gz)
+        each("2 字节数不符", GZ_LOG[: -len(".gz")], "点名该 .log", swap_gz)
 
-        # 2) 已入库的被点名路径从索引里拿掉（文件仍在盘上、`!` 放行仍在）
+        # 3) 已入库的被点名路径从索引里拿掉（文件仍在盘上、`!` 放行仍在）
         def untrack() -> None:
             sh("git", "rm", "--cached", "--quiet", "--", TRACKED_AGGREGATE, cwd=clone)
 
-        each("2 从索引里拿掉", TRACKED_AGGREGATE, "判「无处置」", untrack)
+        each("3 从索引里拿掉", TRACKED_AGGREGATE, "判「无处置」", untrack)
 
-        # 3) 精确点名的路径落在一条**未声明**的 ignore 规则下
+        # 4) 另一份聚合产物从索引里拿掉：exact 档的严格度不许被本包换掉
+        def untrack_aggregate() -> None:
+            sh("git", "rm", "--cached", "--quiet", "--", UNTRACKED_AGGREGATE, cwd=clone)
+
+        each("4 聚合产物未入库", UNTRACKED_AGGREGATE, "判「无处置」", untrack_aggregate)
+
+        # 5) 聚合产物落在一条**未声明**的 ignore 规则下（拿掉索引，否则 tracked 文件不被 check-ignore 问）
+        def undeclared_aggregate_rule() -> None:
+            sh("git", "rm", "--cached", "--quiet", "--", UNDECLARED_AGGREGATE, cwd=clone)
+            with open(clone / ".gitignore", "a", encoding="utf-8") as fh:
+                fh.write(f"\n# negative control: 未声明的类（不在 REBUILDABLE_CLASSES 里）\n"
+                         f"{UNDECLARED_AGGREGATE}\n")
+
+        each("5 聚合产物落到未声明类", f"`{UNDECLARED_AGGREGATE}`", "判「无处置」并点名那条规则",
+             undeclared_aggregate_rule)
+
+        # 6) 精确点名的逐题样本落在一条**未声明**的 ignore 规则下（既有用例）
         def undeclared_rule() -> None:
             with open(clone / ".gitignore", "a", encoding="utf-8") as fh:
                 fh.write(f"\n# negative control: 未声明的类（不在 REBUILDABLE_CLASSES 里）\n{CLASS_IGNORED}\n")
 
-        each("3 未声明的类", f"`{CLASS_IGNORED}`", "判「无处置」并点名那条规则", undeclared_rule)
+        each("6 逐题样本落到未声明类", f"`{CLASS_IGNORED}`", "判「无处置」并点名那条规则", undeclared_rule)
     finally:
         if args.keep:
             print(f"--keep：临时 clone 留在 {tmp}")
@@ -180,7 +207,8 @@ def main() -> int:
     if not all_ok:
         print("FAIL 有期望没有成立（缺一条都不算证明过这条检查会红）")
         return 1
-    print("PASS 换字节→多一条并点名 `.log`；从索引拿掉→无处置；未声明类→无处置；真树前后相同")
+    print("PASS 干净 clone 基线绿；换字节→点名 `.log`；两份聚合产物未入库/落未声明类→无处置；"
+          "逐题样本落未声明类→无处置；真树前后相同")
     return 0
 
 

@@ -2,28 +2,33 @@
 # -*- coding: utf-8 -*-
 """`docs/subprojects/*/RESULT.md` 点名的每个 `.wrapup/…` 路径，在 clone 里必须有处置（p-entry3）。
 
-判据五条，缺一即红：
+判据是**声明**，不是「盘上有没有」：同一个 token 在本机与干净 clone 里得到同一个结论，因为判类只看
+`.gitignore` 的规则、`git ls-files` 的索引与 `REBUILDABLE_CLASSES` 那张表，不读 `.wrapup` 里有没有文件。
 
-    tracked    路径本身入库
-    gz         路径本身不在，但 `<path>.gz` 入库（`.log` 的处置：被点名的才入库，且压缩入库）
-    dir        文档指的是一个目录 / 前缀（`…/a01-wp5-r{1,2}/`、`.wrapup/mres/m14*/`）——目录本身
-               不是一条能打开的证据行，只要求它指的是盘上真实存在的目录或入库文件的前缀
-    glob       文档写的是通配/花括号模式（token 后面紧跟 `*`、`?`、`[` 或 `{`）：展开到的**每一个**
-               命中都必须在已声明的类里（或已入库，或是一个目录）
-    class      路径落在 `.gitignore` 的一条**已声明可重建缓存类**的规则下，且路径的形状属于那一类
-               （见下面的 `REBUILDABLE_CLASSES`，全库只有这一份清单；README 引用它，不另写一份）
-    其余（不在盘上、没入库、落在别的 ignore 规则下）→ FAIL 并逐条点名，同时点名那条规则
+token 先按形状分三档，各按各的规则判：
+
+    exact    没有通配/花括号：路径本身入库（`tracked`），或其 `.gz` 入库（`gz`），或落在一条已声明
+             类的规则下**且形状属于该类**（`class`），或是一个已入库文件的前缀 / 盘上真实目录（`dir`）。
+             聚合产物（`evalplus.json`、`lmeval_panel.json`、`ident_control.json`、`probe-output.txt`）
+             不在任何类的形状里，所以精确点名它们而没入库 → FAIL：这一档的严格度不许降。
+    dir      以 `/` 结尾、或末段没有扩展名（文档指的是目录，如 `.wrapup/mres/i01-floor`、`.wrapup/bfcl_out`）：
+             该目录本身（或其内容的代表路径）落在一条**已声明类**的规则下才算有处置。
+    pattern  含 `*` / `?` / `[` / `{`（含 `/*.log`、`*.jsonl`、`{a,b}/`）：花括号展开成若干候选，
+             每个候选（通配符换成占位符后）落进一条已声明类，或至少命中一个**入库文件**，才算有处置。
+             「文档用模式指一群运行期产物」是合法处置，因为它声明的是「这一批运行目录里的产物」，
+             而不是某一份必须入库的聚合产物。
 
 两个方向都是踩出来的：
 
-  * **精确点名的路径不做 glob 推断。** 旧写法用 `glob(path + "*")` 判所有 token，于是一个精确点名、
-    在盘上、被 ignore 的文件被判成「通配」——它匹配的是它自己，绿的是「被忽略」，不是「有处置」。
-    现在只有文档里真的写了通配符（token 紧跟 `*`/`?`/`[`/`{`）才展开。
+  * **token 不许被截断。** 旧 `PATH_RE` 在通配符/花括号/尾斜杠处截断，于是 `.wrapup/a01_type_probe_*.log`
+    被取成 `.wrapup/a01_type_probe_`——正则认不出的形状只好全判「无处置」，干净 clone 里红 13 条。
+    现在通配、花括号、尾斜杠都留在 token 里，形状由 token 自己说。
   * **`class` 这一档受控。** `.wrapup/mres/*` 与 `.wrapup/mres/*/*` 是「运行目录里的东西都可重建」的
-    catch-all，它会把聚合产物（`evalplus.json`、`lmeval_panel.json`、`ident_control.json`、
-    `probe-output.txt`）一起吞掉——那几份是被 `evidence:`/`repro:` 点名的事实载体，其中的断言无法从
-    随仓库分发的东西重算，所以它们必须入库；能被 catch-all 认领的只有逐题原始样本（`*.jsonl`）与
-    codegen 落盘目录。一条精确点名的路径落在**未声明**的 ignore 规则下时，结论是「无处置」。
+    catch-all，它会把聚合产物一起吞掉——那几份是被 `evidence:`/`repro:` 点名的事实载体，其中的断言
+    无法从随仓库分发的东西重算，所以它们必须入库；能被 catch-all 的**形状**认领的只有逐题原始样本
+    （`*.jsonl`）、codegen / props 落盘目录、运行目录本身、per-run 结果文件（`*_eval.json`、
+    `lmeval_<task>_<ts>.json`、`spec_panel.json` / `variant_panel.json` / `histograms.jsonl` / `cmd.txt`）。
+    一条精确点名的路径落在**未声明**的 ignore 规则下时，结论是「无处置」。
 
 `.log` 另加一条：登记表里的 9 个文件必须 tracked 且 gunzip 后的字节数与登记值相同——`.gz` 里装的
 必须是那一份，不是别的。登记值是文件指纹，不是从别处可算出的数，所以写在这里；条数与字节合计
@@ -35,7 +40,7 @@
 from __future__ import annotations
 
 import argparse
-import glob
+import fnmatch
 import gzip
 import os
 import re
@@ -57,20 +62,34 @@ EVIDENCE_LOGS = {
     ".wrapup/mres/m142-qat-gemma31b-q4/code.log": 2751,
 }
 
-# 已声明的可重建缓存类：**(ignore 规则, 该类允许的路径形状)**。
+# 已声明的可重建缓存类：**(类名, 规则, 该类允许的路径形状)**，三件各自写清。
 #   - 规则是 `git check-ignore -v` 印出来的那一条，不是「随便哪条规则命中了」；
-#   - 形状只对 `class` 档的精确路径生效（`None` = 该规则下任何形状都算）：`mres/` 的 catch-all 里
-#     只有逐题样本与 codegen 落盘目录算「可重建」，聚合产物不算；
-#   - 通配（`glob`）一档按规则判：文档用它指「某次运行的一组产物」，粒度到目录/规则级才讲得通。
+#   - 形状只对 `exact` 档的精确路径生效（`None` = 该规则下任何形状都算）：`mres/` 的 catch-all 里
+#     只有下面列出的形状算「可重建」，四份聚合产物不在其中——它们必须入库；
+#   - `pattern` 与 `dir` 两档按**规则**判（形状换成代表路径后再问一次规则），因为模式指的是「一批」。
 # README 的 Ships / Does not ship 两栏引用这张表，不另写一份类清单（一处为准）。
+_MRES_RULES = (".wrapup/mres/*", ".wrapup/mres/*/*")
 REBUILDABLE_CLASSES = (
     ("venv / 评测环境（`bootstrap_venv.sh` 重建）",
      (".wrapup/evalpy/", ".wrapup/msenv/", ".wrapup/wres/", ".wrapup/lmenv/",
       ".wrapup/bfclenv/", ".wrapup/mplenv/", ".wrapup/jars/"),
      None),
+    ("wrapup 顶层运行目录（`.wrapup/*/`：运行期产物，重跑即重生成）",
+     (".wrapup/*/",),
+     None),
     ("mres 逐题原始产物 / codegen 落盘目录（重跑即重生成）",
-     (".wrapup/mres/*", ".wrapup/mres/*/*"),
+     _MRES_RULES,
      r"(?:\.jsonl$|/codegen/)"),
+    ("mres 运行目录本身（运行期产物，重跑即重生成）",
+     _MRES_RULES,
+     r"(?:^|/)[^./]+$"),
+    ("props 目录（服务端 `/props` 回读，重跑即重取）",
+     _MRES_RULES,
+     r"/props(?:/|$)"),
+    ("per-run 结果文件（数字的载体是 `experiments.sqlite` 与入库的 panel 聚合，per-run 文件不入库）",
+     _MRES_RULES,
+     r"(?:/lmeval_(?!panel\.json$).+\.json$|_eval\.json$"
+     r"|/(?:spec_panel|variant_panel)\.json$|/histograms\.jsonl$|/cmd\.txt$)"),
     ("ppl_corpora（按上游命令重下）",
      (".wrapup/ppl_corpora/",),
      None),
@@ -85,11 +104,13 @@ REBUILDABLE_CLASSES = (
      None),
 )
 
-# 通配符：token **紧跟**这些字符之一时，文档写的是模式，不是一条精确路径。
-WILDCARD_LEAD = "*?[{"
+# 形状里带通配符的 token：文档写的是模式，不是一条精确路径。
+WILDCARD_CHARS = "*?[{"
 
-# `.wrapup/…` 路径 token（在通配符处截断，模式性由后面的字符判定）。
-PATH_RE = re.compile(r"\.wrapup/[A-Za-z0-9._/-]*[A-Za-z0-9_-]")
+# `.wrapup/…` 路径 token。通配符、花括号组、尾斜杠都**留在 token 里**（旧版在通配符处截断，把
+# `.wrapup/a01_type_probe_*.log` 取成 `.wrapup/a01_type_probe_`，正则认不出这个形状）。花括号组整体
+# 是一个单元：`{gsm8k-r*,gsm8k-noReasoning-flag-r*,bfcl-r*}` 连同内部的逗号与通配一起取。
+PATH_RE = re.compile(r"\.wrapup/(?:[A-Za-z0-9._/\[\]*?-]|\{[^{}\s`]*\})+")
 
 
 def git(*args: str) -> subprocess.CompletedProcess:
@@ -134,13 +155,12 @@ def ignored_rule(path: str) -> str:
 DECLARED_RULES = {rule for _, rules, _ in REBUILDABLE_CLASSES for rule in rules}
 
 
-def ignored_by_declared_rule(path: str) -> bool:
-    """通配一档用：命中的规则在已声明的类里即可（不看形状）。"""
-    return ignored_rule(path) in DECLARED_RULES
+def declared_rule(rule: str) -> bool:
+    return bool(rule) and rule in DECLARED_RULES
 
 
 def class_label(path: str) -> str:
-    """`class` 这一档：命中的规则必须是已声明的类，且路径形状属于那一类。返回类名或空串。"""
+    """`exact` 这一档：命中的规则必须是已声明的类，且路径形状属于那一类。返回类名或空串。"""
     rule = ignored_rule(path)
     if not rule:
         return ""
@@ -150,47 +170,135 @@ def class_label(path: str) -> str:
     return ""
 
 
-def glob_matches_are_declared(pattern: str) -> bool:
-    """通配/花括号写法：展开到的每个命中都必须是入库文件、目录，或已声明的类。"""
-    hits = glob.glob(os.path.join(REPO, pattern))
-    if not hits:
-        return False
-    for hit in hits:
-        rel = os.path.relpath(hit, REPO)
-        if tracked(rel) or os.path.isdir(hit) or ignored_by_declared_rule(rel):
-            continue
-        return False
-    return True
-
-
 def is_prefix_of_tracked(path: str) -> bool:
-    """`.wrapup/mres/m165-*_eval.json` 这类前缀由它下面的真实文件指认，不是一条能打开的证据行。"""
+    """`.wrapup/res`、`.wrapup/mres/i01-slot-np1-` 这类前缀由它下面的真实文件指认，不是一条能
+    打开的证据行（例如 shell 循环里的 `$f` 或目录名）。"""
     return any(t.startswith(path) for t in tracked_files())
 
 
-def named_paths() -> list[tuple[str, bool]]:
-    """`(token, 是不是通配模式)`。模式性由 token 后面紧跟的字符决定（`*`、`?`、`[`、`{`）。"""
-    found: dict[str, bool] = {}
-    for doc in glob.glob(os.path.join(REPO, "docs", "subprojects", "*", "RESULT.md")):
+def named_paths() -> list[str]:
+    """文档里出现的 `.wrapup/…` token（去重、排序；通配/花括号/尾斜杠原样保留）。"""
+    found: set[str] = set()
+    for doc in sorted(_result_docs()):
         with open(doc, encoding="utf-8") as fh:
-            text = fh.read()
-        for m in PATH_RE.finditer(text):
-            nxt = text[m.end():m.end() + 1]
-            found[m.group()] = found.get(m.group(), False) or nxt in WILDCARD_LEAD
-    return sorted(found.items())
+            found.update(m.group() for m in PATH_RE.finditer(fh.read()))
+    return sorted(found)
 
 
-def disposition(path: str, is_pattern: bool) -> str:
-    if tracked(path):
-        return "tracked"
-    if tracked(path + ".gz"):
-        return "gz"
-    if is_prefix_of_tracked(path) or os.path.isdir(os.path.join(REPO, path)):
+def _result_docs() -> list[str]:
+    root = os.path.join(REPO, "docs", "subprojects")
+    out: list[str] = []
+    for name in sorted(os.listdir(root)):
+        doc = os.path.join(root, name, "RESULT.md")
+        if os.path.isfile(doc):
+            out.append(doc)
+    return out
+
+
+def shape_of(token: str) -> str:
+    """token 的形状：pattern / dir / exact。"""
+    if any(c in token for c in WILDCARD_CHARS):
+        return "pattern"
+    base = token.rstrip("/").rsplit("/", 1)[-1]
+    if token.endswith("/") or "." not in base:
         return "dir"
-    if is_pattern and glob_matches_are_declared(path + "*"):
-        return "glob"
-    if class_label(path):
+    return "exact"
+
+
+def expand_braces(pattern: str) -> list[str]:
+    """展开 `{a,b}`、`{1..7}` 与 `{a,b}{c,d}`；花括号里可以再带通配符。"""
+    start = pattern.find("{")
+    if start < 0:
+        return [pattern]
+    depth = 0
+    for i in range(start, len(pattern)):
+        if pattern[i] == "{":
+            depth += 1
+        elif pattern[i] == "}":
+            depth -= 1
+            if depth == 0:
+                inner = pattern[start + 1:i]
+                tail = expand_braces(pattern[i + 1:])
+                body = pattern[:start]
+                if re.fullmatch(r"-?\d+\.\.-?\d+", inner):
+                    lo, hi = (int(x) for x in inner.split(".."))
+                    alts = [str(n) for n in range(lo, hi + 1)]
+                else:
+                    alts = _split_braces(inner)
+                out: list[str] = []
+                for alt in alts:
+                    for rest in tail:
+                        out.extend(expand_braces(body + alt + rest))
+                return out
+    return [pattern]  # 未闭合：当字面量
+
+
+def _split_braces(inner: str) -> list[str]:
+    parts, depth, cur = [], 0, ""
+    for ch in inner:
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+        if ch == "," and depth == 0:
+            parts.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    parts.append(cur)
+    return parts
+
+
+def representative(alt: str) -> str:
+    """把候选里的通配符换成占位符，得到一个能问 `.gitignore` 的代表路径。"""
+    alt = re.sub(r"\[[^\]]*\]", "x", alt)
+    alt = alt.replace("**", "x").replace("*", "x").replace("?", "x")
+    return alt.rstrip("/")
+
+
+def pattern_disposition(token: str) -> str:
+    """`pattern` 一档：每个花括号候选都要有处置，否则整条无处置。"""
+    for alt in expand_braces(token):
+        rep = representative(alt)
+        if tracked(rep) or declared_rule(ignored_rule(rep)):
+            continue
+        if any(fnmatch.fnmatchcase(t, alt) for t in tracked_files()):
+            continue
+        if is_prefix_of_tracked(rep):
+            continue
+        return ""
+    return "pattern"
+
+
+def dir_disposition(path: str) -> str:
+    """`dir` 一档：目录本身、或它的内容（代表路径）落在一条已声明类的规则下。"""
+    p = path.rstrip("/")
+    if declared_rule(ignored_rule(p)):
+        return "dir"
+    if is_prefix_of_tracked(p) or os.path.isdir(os.path.join(REPO, p)):
+        return "dir"
+    # 目录本身常被 `!.wrapup/mres/*/` 放行（好让里面的文件被单独放行/忽略），规则问不出来；
+    # 那就问它的内容归哪条规则管——运行目录里的内容落在已声明类里，这个目录就是可重建的运行目录。
+    for probe in (p + "/__probe__.jsonl", p + "/__probe__"):
+        if declared_rule(ignored_rule(probe)):
+            return "dir"
+    return ""
+
+
+def disposition(token: str, shape: str) -> str:
+    if tracked(token):
+        return "tracked"
+    if tracked(token + ".gz"):
+        return "gz"
+    if shape == "pattern":
+        return pattern_disposition(token)
+    if shape == "dir":
+        return dir_disposition(token)
+    label = class_label(token)
+    if label:
         return "class"
+    if is_prefix_of_tracked(token) or os.path.isdir(os.path.join(REPO, token)):
+        return "dir"
     return ""
 
 
@@ -202,15 +310,15 @@ def main(argv: list[str] | None = None) -> int:
     _TRACKED = None
 
     named = named_paths()
-    counts = {"tracked": 0, "gz": 0, "dir": 0, "glob": 0, "class": 0, "": 0}
+    counts = {"tracked": 0, "gz": 0, "dir": 0, "pattern": 0, "class": 0, "": 0}
     failures: list[str] = []
-    for path, is_pattern in named:
-        kind = disposition(path, is_pattern)
+    for token in named:
+        kind = disposition(token, shape_of(token))
         counts[kind] += 1
         if not kind:
-            rule = ignored_rule(path)
+            rule = ignored_rule(token)
             why = f"落在未声明的 ignore 规则 `{rule}` 下" if rule else "不在盘上/未入库/不在任何已声明的类里"
-            failures.append(f"FAIL 无处置（{why}）：{path}" + ("*" if is_pattern else ""))
+            failures.append(f"FAIL 无处置（{why}）：{token}")
 
     raw_total = 0
     gz_total = 0
@@ -227,8 +335,8 @@ def main(argv: list[str] | None = None) -> int:
         raw_total += raw_bytes
 
     print(f"点名的 `.wrapup/…` 路径 {len(named)} 条："
-          f"入库 {counts['tracked']}、压缩入库 {counts['gz']}、目录/前缀 {counts['dir']}、通配 {counts['glob']}、"
-          f"按类忽略 {counts['class']}、无处置 {counts['']}")
+          f"入库 {counts['tracked']}、压缩入库 {counts['gz']}、目录 {counts['dir']}、"
+          f"模式 {counts['pattern']}、按类忽略 {counts['class']}、无处置 {counts['']}")
     print(f"登记 {len(EVIDENCE_LOGS)} 个 `.log`：原始 {raw_total} 字节 → gzip 后 {gz_total} 字节"
           f"（逐个解开核对，字节数与登记值相同）")
     for line in failures:

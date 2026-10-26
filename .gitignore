@@ -10,6 +10,9 @@ __pycache__/
 *.sqlite-shm
 
 # wrap-up working dirs (keep the scripts + summaries, ignore venvs/results)
+# `.wrapup/*/` 是运行目录一类（`bfcl_out` 这类逐次运行的落盘目录）：运行期产物，重跑即重生成，
+# 不入库。`checks/evidence_logs.py` 的 `REBUILDABLE_CLASSES` 把它登记为「顶层运行目录」类。
+.wrapup/*/
 .wrapup/evalpy/
 .wrapup/msenv/
 .wrapup/wres/
