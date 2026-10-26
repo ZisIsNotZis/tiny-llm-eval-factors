@@ -1,0 +1,35 @@
+{
+  "tag": "m169-vram-08b-mtp",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-0.8B-MTP-GGUF/blobs/2da9c6ba82ffe7d2a01bdfebd4357662582e48a7f36e8708661207a9edd022f4",
+  "arms": [
+    "none",
+    "draft-mtp:2"
+  ],
+  "rows": [
+    {
+      "arm": "none",
+      "gpu_used_mib": 4530,
+      "gpu_free_mib": 19579,
+      "server_mib": 1126,
+      "n_slots": 1,
+      "n_ctx_slot": 8192,
+      "gpu_minutes": 0.06
+    },
+    {
+      "arm": "draft-mtp:2",
+      "gpu_used_mib": 4626,
+      "gpu_free_mib": 19483,
+      "server_mib": 1222,
+      "n_slots": 1,
+      "n_ctx_slot": 8192,
+      "gpu_minutes": 0.05
+    }
+  ],
+  "gpu_before": [
+    "3403, 20706"
+  ],
+  "errors": [],
+  "pid": 3981693,
+  "started_at": "2026-10-21T10:19:52",
+  "identity": []
+}

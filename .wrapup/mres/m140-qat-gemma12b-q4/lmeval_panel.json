@@ -1,0 +1,127 @@
+{
+  "tag": "m140-qat-gemma12b-q4",
+  "model": "/home/z/hf/models--unsloth--gemma-4-12B-it-qat-GGUF/blobs/90fd44e29e0d7cffeb0fd00dc73cfdab9ed0b0e95306ecf7821ea634c940c370",
+  "tasks": {
+    "mmlu": 0.44627192982456143,
+    "arc_challenge": null,
+    "truthfulqa_mc2": 0.5294873628132398,
+    "gsm8k": 0.95,
+    "ifeval": 0.88
+  },
+  "n": {
+    "mmlu": 912,
+    "arc_challenge": null,
+    "truthfulqa_mc2": 100,
+    "gsm8k": 100,
+    "ifeval": 100
+  },
+  "errors": [
+    {
+      "task": "arc_challenge",
+      "returncode": 1,
+      "metric": null,
+      "output_json": null,
+      "stderr_tail": [
+        "  6%|\u258c         | 22/400 [01:07<19:00,  3.02s/it]",
+        "  6%|\u258c         | 23/400 [01:08<14:56,  2.38s/it]",
+        "  6%|\u258c         | 24/400 [01:14<21:47,  3.48s/it]",
+        "  6%|\u258b         | 25/400 [01:20<27:29,  4.40s/it]",
+        "  6%|\u258b         | 26/400 [01:21<20:30,  3.29s/it]",
+        "  7%|\u258b         | 27/400 [01:25<21:26,  3.45s/it]",
+        "  7%|\u258b         | 28/400 [01:26<17:22,  2.80s/it]",
+        "  7%|\u258b         | 29/400 [01:27<14:13,  2.30s/it]RequestException: 400 Client Error: Bad Request for url: http://127.0.0.1:8901/v1/completions",
+        "RequestException: 400 Client Error: Bad Request for url: http://127.0.0.1:8901/v1/completions",
+        "RequestException: 400 Client Error: Bad Request for url: http://127.0.0.1:8901/v1/completions",
+        "",
+        "  7%|\u258b         | 29/400 [01:59<25:23,  4.11s/it]",
+        "Traceback (most recent call last):",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 57, in <module>",
+        "    cli_evaluate()",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/__main__.py\", line 10, in cli_evaluate",
+        "    parser.execute(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/harness.py\", line 60, in execute",
+        "    args.func(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/run.py\", line 395, in _execute",
+        "    results = simple_evaluate(",
+        "              ^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 363, in simple_evaluate",
+        "    results = evaluate(",
+        "              ^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 600, in evaluate",
+        "    resps = getattr(lm, reqtype)(cloned_reqs)",
+        "            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/models/gguf.py\", line 82, in loglikelihood",
+        "    response = self.gguf_completion(context=context, continuation=continuation)",
+        "               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 49, in gguf_completion",
+        "    raise RuntimeError(f\"Failed to get a valid response after {retries} retries.\")",
+        "RuntimeError: Failed to get a valid response after 3 retries."
+      ]
+    }
+  ],
+  "reasoning": "off",
+  "ctx_size": 8192,
+  "max_gen_toks": 1024,
+  "profile_note": "per-task server profiles; see the `profiles` map",
+  "profiles": {
+    "mmlu": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "arc_challenge": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "truthfulqa_mc2": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "gsm8k": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "ifeval": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    }
+  },
+  "timings_s": {
+    "mmlu": 292.0,
+    "arc_challenge": 131.9,
+    "truthfulqa_mc2": 870.0,
+    "gsm8k": 377.2,
+    "ifeval": 556.9
+  },
+  "llama_server": {
+    "binary": "/home/z/.local/bin/llama-server",
+    "version": "version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64",
+    "port": 8900,
+    "args": [
+      "-c",
+      "per-task (see profiles)",
+      "-np",
+      1,
+      "-ngl",
+      99,
+      "--jinja"
+    ]
+  },
+  "shim": {
+    "port": 8901,
+    "top_n": 100,
+    "top_n_retry": 8000,
+    "llama_requests": 12604
+  },
+  "limit_per_task": 100
+}

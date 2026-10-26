@@ -15,7 +15,8 @@ __pycache__/
 .wrapup/wres/
 .wrapup/lmenv/
 
-# DB backups
+# DB backups：`experiments.sqlite.bak*` 是库的一次性快照（任何一步迁移前的副本），`*.sqlite-wal/-shm`
+# 是 SQLite 的旁路文件；两者都是可再生成的当前态，不是证据。核验见 checks/evidence_logs.py 的类清单。
 experiments.sqlite.bak*
 .pi/
 
@@ -41,6 +42,23 @@ experiments.sqlite.bak*
 !.wrapup/mres/m165-mechanism/*_eval.json
 !.wrapup/mres/m165-mechanism/*_summary.jsonl
 !.wrapup/mres/m165-mechanism/props_*.json
+# p-entry3 的第二半：`docs/subprojects/*/RESULT.md` 里以 `evidence:`/`repro:` **点名**的聚合产物
+# （`evalplus.json` / `lmeval_panel.json` / `ident_control.json` / 探针输出）。判据同 README 的
+# `@regeneration_cost`：它们载着无法从随仓库分发的东西重算的断言，所以入库。mres/ 下**没被点名**的
+# 运行目录产物仍是可重建缓存，按类忽略——被点名的才入库，清单与逐条核验在 checks/evidence_logs.py。
+# 子目录要先放行（`!.wrapup/mres/*/` 与 `.wrapup/mres/*/*` 已在上面），否则这两级的 `!` 不生效。
+!.wrapup/mres/i01-shim-probe/probe-output.txt
+!.wrapup/mres/i01-slot-np1-meta.json
+!.wrapup/mres/m63-qwen-2b-iq3xxs/evalplus.json
+!.wrapup/mres/m64-qwen-2b-q2kxl/evalplus.json
+!.wrapup/mres/m115-phi4mini-q2k/evalplus.json
+!.wrapup/mres/m140-qat-gemma12b-q4/lmeval_panel.json
+!.wrapup/mres/m144-qat-gemma26b-a4b-q4/evalplus.json
+!.wrapup/mres/m144-qat-gemma26b-a4b-q4/lmeval_panel.json
+!.wrapup/mres/m164-a04-uni45/evalplus.json
+!.wrapup/mres/m164-a04-uni45/lmeval_panel.json
+!.wrapup/mres/m169-vram-08b-mtp/ident_control.json
+!.wrapup/mres/m169-vram-9b/ident_control.json
 # p-entry3：被 `docs/subprojects/*/RESULT.md` 点名的 9 个 `.log`，以 gzip 入库（逐条核验见 checks/evidence_logs.py）。
 # 子目录要先放行（`!.wrapup/mres/*/` 与 `.wrapup/mres/*/*` 已在上面），否则这两级的 `!` 不生效。
 !.wrapup/mres/i01-shim-probe/shim_probe.log.gz
@@ -50,8 +68,9 @@ experiments.sqlite.bak*
 # 运行日志与进程戳：暂存不是证据。
 # 例外（下面十四行）：`docs/` 下被点名为 evidence 的 `.out`。判据是「被点名」，不是「体积小」；
 # 没被点名的 `.out` 不入库。
-# `.log` 的处置（p-entry3）：点名了才入库，且以 gzip 原路径旁的那一份入库——9 个文件原始 9339155 字节、
-# gzip 后 1023126 字节；`.gz` 不在 `*.log` 这条类里，所以只有下面九行放行。核验：`python3 checks/evidence_logs.py`。
+# `.log` 的处置（p-entry3）：点名了才入库，且以 gzip 原路径旁的那一份入库。条数与「原始字节 → gzip
+# 字节」的合计**不在这里抄**，由 `python3 checks/evidence_logs.py` 的结论行当场算（抄过的那一份数
+# 曾经三处不同）。`.gz` 不在 `*.log` 这条类里，所以只有下面九行放行。
 .wrapup/*.out
 .wrapup/*.pid
 !.wrapup/a01_t4.out
@@ -80,6 +99,7 @@ experiments.sqlite.bak*
 .wrapup/.keeper.lock
 .wrapup/javac.*.args
 
+# `figures/`：make_report.py 重绘图表时的中间产物，库里一行不差（图可以重新生成），无断言住在这里。
 figures/
 
 # transient buffers: no fact lives here, safe for any agent to delete

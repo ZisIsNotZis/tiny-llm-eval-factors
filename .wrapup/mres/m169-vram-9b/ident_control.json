@@ -1,0 +1,35 @@
+{
+  "tag": "m169-vram-9b",
+  "model": "/home/z/hf/models--unsloth--Qwen3.5-9B-MTP-GGUF/blobs/362f85a2d7dbc0259e926d5ac33ca0d0f17fd3753496d65bfd2106384c929d3f",
+  "arms": [
+    "none",
+    "draft-mtp:2"
+  ],
+  "rows": [
+    {
+      "arm": "none",
+      "gpu_used_mib": 10097,
+      "gpu_free_mib": 14012,
+      "server_mib": 5992,
+      "n_slots": 1,
+      "n_ctx_slot": 8192,
+      "gpu_minutes": 0.06
+    },
+    {
+      "arm": "draft-mtp:2",
+      "gpu_used_mib": 10472,
+      "gpu_free_mib": 13636,
+      "server_mib": 6368,
+      "n_slots": 1,
+      "n_ctx_slot": 8192,
+      "gpu_minutes": 0.07
+    }
+  ],
+  "gpu_before": [
+    "4099, 20009"
+  ],
+  "errors": [],
+  "pid": 3993138,
+  "started_at": "2026-10-21T10:28:20",
+  "identity": []
+}

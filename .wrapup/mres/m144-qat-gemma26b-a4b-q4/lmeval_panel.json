@@ -1,0 +1,175 @@
+{
+  "tag": "m144-qat-gemma26b-a4b-q4",
+  "model": "/home/z/hf/models--unsloth--gemma-4-26B-A4B-it-qat-GGUF/blobs/a7c5bc715f5ff8e99a3e8901ce7d2b42b402c669bf24f7c5250747633d0f5891",
+  "tasks": {
+    "mmlu": 0.7105263157894737,
+    "arc_challenge": null,
+    "truthfulqa_mc2": null,
+    "gsm8k": 0.96,
+    "ifeval": 0.81
+  },
+  "n": {
+    "mmlu": 912,
+    "arc_challenge": null,
+    "truthfulqa_mc2": null,
+    "gsm8k": 100,
+    "ifeval": 100
+  },
+  "errors": [
+    {
+      "task": "arc_challenge",
+      "returncode": 1,
+      "metric": null,
+      "output_json": null,
+      "stderr_tail": [
+        " 36%|\u2588\u2588\u2588\u258c      | 142/400 [04:36<17:58,  4.18s/it]",
+        " 36%|\u2588\u2588\u2588\u258c      | 143/400 [04:41<20:13,  4.72s/it]",
+        " 36%|\u2588\u2588\u2588\u258c      | 144/400 [04:49<23:28,  5.50s/it]",
+        " 36%|\u2588\u2588\u2588\u258b      | 145/400 [04:50<18:22,  4.32s/it]",
+        " 36%|\u2588\u2588\u2588\u258b      | 146/400 [04:52<14:19,  3.39s/it]",
+        " 37%|\u2588\u2588\u2588\u258b      | 147/400 [04:53<11:37,  2.76s/it]",
+        " 37%|\u2588\u2588\u2588\u258b      | 148/400 [04:54<09:51,  2.35s/it]",
+        " 37%|\u2588\u2588\u2588\u258b      | 149/400 [04:55<07:42,  1.84s/it]RequestException: 500 Server Error: Internal Server Error for url: http://127.0.0.1:8901/v1/completions",
+        "RequestException: 500 Server Error: Internal Server Error for url: http://127.0.0.1:8901/v1/completions",
+        "RequestException: 500 Server Error: Internal Server Error for url: http://127.0.0.1:8901/v1/completions",
+        "",
+        " 37%|\u2588\u2588\u2588\u258b      | 149/400 [05:13<08:47,  2.10s/it]",
+        "Traceback (most recent call last):",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 57, in <module>",
+        "    cli_evaluate()",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/__main__.py\", line 10, in cli_evaluate",
+        "    parser.execute(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/harness.py\", line 60, in execute",
+        "    args.func(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/run.py\", line 395, in _execute",
+        "    results = simple_evaluate(",
+        "              ^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 363, in simple_evaluate",
+        "    results = evaluate(",
+        "              ^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 600, in evaluate",
+        "    resps = getattr(lm, reqtype)(cloned_reqs)",
+        "            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/models/gguf.py\", line 82, in loglikelihood",
+        "    response = self.gguf_completion(context=context, continuation=continuation)",
+        "               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 49, in gguf_completion",
+        "    raise RuntimeError(f\"Failed to get a valid response after {retries} retries.\")",
+        "RuntimeError: Failed to get a valid response after 3 retries."
+      ]
+    },
+    {
+      "task": "truthfulqa_mc2",
+      "returncode": 1,
+      "metric": null,
+      "output_json": null,
+      "stderr_tail": [
+        " 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 594/741 [09:43<03:27,  1.41s/it]",
+        " 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 595/741 [09:43<03:00,  1.24s/it]",
+        " 80%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 596/741 [09:44<02:43,  1.12s/it]",
+        " 81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 597/741 [09:45<02:33,  1.07s/it]",
+        " 81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 598/741 [09:51<05:45,  2.42s/it]",
+        " 81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 599/741 [09:55<07:09,  3.02s/it]",
+        " 81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 600/741 [09:56<05:33,  2.36s/it]",
+        " 81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 601/741 [10:00<06:45,  2.89s/it]RequestException: 400 Client Error: Bad Request for url: http://127.0.0.1:8901/v1/completions",
+        "RequestException: 400 Client Error: Bad Request for url: http://127.0.0.1:8901/v1/completions",
+        "RequestException: 400 Client Error: Bad Request for url: http://127.0.0.1:8901/v1/completions",
+        "",
+        " 81%|\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588  | 601/741 [10:25<02:25,  1.04s/it]",
+        "Traceback (most recent call last):",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 57, in <module>",
+        "    cli_evaluate()",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/__main__.py\", line 10, in cli_evaluate",
+        "    parser.execute(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/harness.py\", line 60, in execute",
+        "    args.func(args)",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/_cli/run.py\", line 395, in _execute",
+        "    results = simple_evaluate(",
+        "              ^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 363, in simple_evaluate",
+        "    results = evaluate(",
+        "              ^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/utils.py\", line 580, in _wrapper",
+        "    return fn(*args, **kwargs)",
+        "           ^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/evaluator.py\", line 600, in evaluate",
+        "    resps = getattr(lm, reqtype)(cloned_reqs)",
+        "            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmenv/lib/python3.12/site-packages/lm_eval/models/gguf.py\", line 82, in loglikelihood",
+        "    response = self.gguf_completion(context=context, continuation=continuation)",
+        "               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+        "  File \"/home/z/hf/research/.wrapup/lmeshim/lm_eval_cli.py\", line 49, in gguf_completion",
+        "    raise RuntimeError(f\"Failed to get a valid response after {retries} retries.\")",
+        "RuntimeError: Failed to get a valid response after 3 retries."
+      ]
+    }
+  ],
+  "reasoning": "off",
+  "ctx_size": 8192,
+  "max_gen_toks": 1024,
+  "profile_note": "per-task server profiles; see the `profiles` map",
+  "profiles": {
+    "mmlu": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "arc_challenge": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "truthfulqa_mc2": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "gsm8k": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    },
+    "ifeval": {
+      "reasoning": "off",
+      "max_gen_toks": 1024,
+      "ctx": 8192
+    }
+  },
+  "timings_s": {
+    "mmlu": 359.4,
+    "arc_challenge": 335.3,
+    "truthfulqa_mc2": 650.3,
+    "gsm8k": 266.0,
+    "ifeval": 324.3
+  },
+  "llama_server": {
+    "binary": "/home/z/.local/bin/llama-server",
+    "version": "version: 0.4.1-dev (build 4399, commit 4bc272fd72) | built with GNU 13.3.0 for Linux x86_64",
+    "port": 8900,
+    "args": [
+      "-c",
+      "per-task (see profiles)",
+      "-np",
+      1,
+      "-ngl",
+      99,
+      "--jinja"
+    ]
+  },
+  "shim": {
+    "port": 8901,
+    "top_n": 100,
+    "top_n_retry": 8000,
+    "llama_requests": 11823
+  },
+  "limit_per_task": 100
+}

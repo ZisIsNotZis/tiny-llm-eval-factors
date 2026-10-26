@@ -1,0 +1,47 @@
+{
+  "tag": "m144-qat-gemma26b-a4b-q4",
+  "model": "/home/z/hf/models--unsloth--gemma-4-26B-A4B-it-qat-GGUF/blobs/a7c5bc715f5ff8e99a3e8901ce7d2b42b402c669bf24f7c5250747633d0f5891",
+  "model_arg": "/home/z/hf/gemma-4-26B-A4B-it-qat-UD-Q4_K_XL.gguf",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "np": 1,
+    "ngl": 99,
+    "jinja": true,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": 0.9573170731707317,
+      "plus": 0.9146341463414634,
+      "n": 164,
+      "base_pass": 157,
+      "plus_pass": 150,
+      "bad_rate": 0.0
+    },
+    "mbpp": {
+      "base": 0.9021164021164021,
+      "plus": 0.7698412698412699,
+      "n": 378,
+      "base_pass": 341,
+      "plus_pass": 291,
+      "bad_rate": 0.0
+    }
+  },
+  "errors": [],
+  "timings_s": {
+    "humaneval": 852,
+    "mbpp": 1615,
+    "total": 2467.0
+  },
+  "server": {
+    "binary": "llama-server",
+    "port": 9200,
+    "base_url": "http://127.0.0.1:9200/v1"
+  },
+  "evalplus": "0.3.1",
+  "date": "2026-10-13T13:01:24"
+}

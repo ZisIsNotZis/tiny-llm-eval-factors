@@ -1,0 +1,16 @@
+{
+ "arm_np_flag": 1,
+ "llama_reports": "n_slots = 1, n_ctx_slot = 2048",
+ "ctx_flag": 2048,
+ "model": "/home/z/hf/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+ "lang": "py",
+ "mode": "chat",
+ "greedy": true,
+ "max_tokens": 768,
+ "chat_kwargs": {
+  "enable_thinking": false
+ },
+ "strip_thought": true,
+ "prompt_sha256": "ac14c3b0abfa218c8442807b729acdce30a165d9e2f79b9dfa7bf78e6aa26edb",
+ "server_version": ""
+}

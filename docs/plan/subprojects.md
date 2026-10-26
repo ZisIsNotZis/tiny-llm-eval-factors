@@ -73,15 +73,17 @@ goal、purpose、AC、资源额度、边界（可写哪些路径）、**递归�
 | `r-entry4` | 根目录无未归类路径：运行日志按类忽略，逐题产物按 README 的判据入库 | `git status --porcelain` 无输出 | — |
 | `p-entry1` | `report_inputs/size_claims.json` 与 a02 的产物不一致（`python3 report_inputs/build_size_claims.py --check` exit 1），而 `./reproduce.sh` 只记 WARN 就继续：报告第二节停在这个旧值上仍判绿 | 该命令 exit 0，且报告重建后逐字节相同（或第二节的改动经复核后重新入库） | — |
 | `p-entry2` | **已结项**：13 条「输入与其来源不一致」的判断收进 `checks/report_inputs_drift.py`，`./reproduce.sh` 只把它翻成核对表里的行——漂移=FAIL（整条命令非零退出），看不到来源=SKIP（rc=2 或来源不在场；缺席不是漂移）。判定比对上：只有三个 builder 自报 rc=2，其余十个由脚本先查来源在不在，查不到才 SKIP | `python3 checks/report_inputs_drift_negative_control.py` exit 0：未改动绿 → 改坏 `open_questions.json` 一个字节后 `./reproduce.sh` exit 1 并点名它 → 移走 `gsq.json` 仍 exit 0 且该行为 SKIP → 原字节写回、sha256 不变。负控走 `REPRODUCE_INPUTS_ONLY=1 ./reproduce.sh`（只跑这一节，约 2 秒）：整条链路两分钟且路径由脚本自身位置推出、不能在临时树上跑，故给它一个「只跑这一节」的开关，而不是复制一份判断逻辑 | p-entry1 |
-| `p-entry3` | **已结项**：处置选「入库」而不是清单——被点名的 9 个 `.log` 以 gzip 存到原路径旁的 `.log.gz`（原始 9339155 字节 → 1023126 字节，`gzip -dc | sha256sum` 与原文件逐个相同，原 `.log` 删除），其余 26 个按已声明的类忽略（venv / `mres` 原始逐题产物 / `ppl_corpora`）。清单只给一个本机路径，从 clone 读不到就打不开，而这几份日志载着无法重算的事实（`n_ctx_slot = 4096`、两行 OOM、`creating MTP draft context`、`CORRUPT` 与 `FileNotFoundError` 计数） | `python3 checks/evidence_logs.py` exit 0：被点名的 162 条 `.wrapup/…` 路径逐条有处置（入库 89 / 目录或前缀 39 / 通配 32 / 按类忽略 2 / 无处置 0），且 9 个登记的 `.gz` 解开后字节数与登记值相同；`reproduce.sh` 已按 FAIL 调它 | — |
+| `p-entry3` | **已结项**：处置选「入库」而不是清单——被点名的证据都以能打开的形式随仓库走：9 个 `.log` 以 gzip 存到原路径旁的 `.log.gz`（`gzip -dc | sha256sum` 与原文件逐个相同，原 `.log` 删除），`RESULT.md` 里作 `evidence:`/`repro:` 点名的聚合产物（`evalplus.json` / `lmeval_panel.json` / `ident_control.json` / 探针输出）原样入库，`.gitignore` 里每一份都有一行显式放行；**没被点名**的运行目录产物才按已声明的可重建缓存类忽略（venv / `.jsonl` 逐题原始产物 / codegen 落盘目录 / `ppl_corpora` / 运行日志 / DB 备份 / `.tmp`）。类的唯一清单是 `checks/evidence_logs.py` 的 `REBUILDABLE_CLASSES`：`class` 这一档只认那张表里的规则**加上**该类允许的形状，`mres/` 的 catch-all 不算处置——否则聚合产物又被它吞掉。条数与字节合计不写在这里，由验收命令的结论行当场算。清单只给一个本机路径，从 clone 读不到就打不开，而这几份日志载着无法重算的事实（`n_ctx_slot = 4096`、两行 OOM、`creating MTP draft context`、`CORRUPT` 与 `FileNotFoundError` 计数） | `python3 checks/evidence_logs.py` exit 0：逐条判每条被点名的 `.wrapup/…` 路径有没有处置，并在结论行给出「条数 / 原始字节合计 / gzip 字节合计」（9 个登记的 `.log` 逐个解开与登记值比字节）；负控 `python3 checks/evidence_logs_negative_control.py` exit 0（换字节数→多一条并点名该 `.log`；从索引里拿掉→「无处置」；落到未声明的类下→「无处置」）；两条都由 `./reproduce.sh` 按 PASS/FAIL 调用 | — |
 
-`p-entry3` 的取证：下面这条打印「被 `docs/subprojects/*/RESULT.md` 点名、在盘上、但未入库」的文件清单，行数就是 35，其中 `.log` 9 个、共 9.3 MB。
+`p-entry3` 的取证：下面这条打印「被 `RESULT.md` 点名、在盘上、但未入库」的文件清单——它现在只应剩下可重建缓存（被点名的 `.log` 早已以 `.gz` 入库，被点名的聚合产物已入库），行数由命令当场给出，本文件不抄。每条「有处置 / 无处置」的判定与 `.log` 的字节合计不走这条 shell，走 `python3 checks/evidence_logs.py`：它的结论行就是那两个数。
 
     grep -ho '\.wrapup/[A-Za-z0-9._/-]*' docs/subprojects/*/RESULT.md | sort -u | while read -r p; do if [ -f "$p" ] && ! git ls-files --error-unmatch "$p" >/dev/null 2>&1; then echo "$p"; fi; done
 
 里程碑的验收命令：`python3 checks/router_refs.py && ./reproduce.sh && git status --porcelain`（前两条 exit 0，第三条无输出）。
 
-已结项：`r-entry1`–`r-entry4`、`p-entry1`、`p-entry2`、`p-entry3`。`p-entry1` 的证据在 `ba817d7` 上：`python3 report_inputs/build_size_claims.py --check` exit 0（`size_claims.json` 跟着 a02 重生成到 3364 行 / 170 组 / 77 文件），`./reproduce.sh` exit 0 且末行判「报告可从库重建，且与仓库里的 `report.html` 逐字节相同」。`p-entry2` 与 `p-entry3` 的证据在 `9e89f91` 上：`./reproduce.sh` exit 0（54 条核对里 FAIL/WARN 为 0，含新增的漂移负控与证据处置两条）。未结项：无——里程碑只剩整合复核。
+已结项：`r-entry1`–`r-entry4`、`p-entry1`、`p-entry2`、`p-entry3`。旧绑定 `ba817d7`（`p-entry1`）与 `9e89f91`（`p-entry2`、`p-entry3`）作为历史保留：它们是那次推进当时的读数，在 HEAD 上已不是当前值——`p-entry3` 的那两个字节数与「26 个按类忽略」正是里程碑复核判掉的两条假证据。本次修复的结果 revision 上的七份捕获（每份含被审 revision、脚本 sha256、命令、输出与 `rc=`）在紧接着的证据提交里补进 `docs/plan/evidence/entry/`，并由本节末的表格点名到具体文件。
+
+未结项：无——里程碑只剩整合复核。
 
 ## 共享仓库的写权（避免互相踩）
 

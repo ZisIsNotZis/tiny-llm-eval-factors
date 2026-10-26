@@ -1,0 +1,20 @@
+free VRAM before: 19029 MiB
+[08:12:11] llama-server: llama-server -m /home/z/hf/Qwen3.5-2B-UD-Q3_K_XL.gguf --port 8962 --host 127.0.0.1 -c 8192 -np 1 -ngl 99 --jinja --reasoning off
+after model load: free=17303 MiB used=6805 MiB
+server reports: n_slots = 1
+  OK   server reported n_slots :: n_slots = 1
+  OK   case A argmax token exact :: shim=-0.807629 llama=-0.807629
+  OK   case B rank-2 token exact :: shim=-2.809992 llama=-2.809992
+  OK   case B through the HTTP surface :: http=-2.809992 llama=-2.809992
+  llama-server wide dump: 2000 tokens, min logprob -12.164821
+  OK   out-of-top-N continuation is not a fabricated 0.0 :: value=-17.451372146606445
+  OK   the value is consistent with a token rarer than the dump :: exp(value)=2.636e-08 < 1/2000=5.000e-04
+  FINDING: lmeval_run.py's docstring says an out-of-top-N continuation makes the
+  shim 'raise a hard error'.  Measured: it returned -17.451372 instead.  Escalating
+  until the token is visible is the better behaviour, but the docstring is wrong
+  and this audit records that.  The tail value's exactness is NOT confirmed here
+  (the token is outside a top-2000 dump), so it stays an unmeasured edge.
+[08:12:20] llama-server stopped
+peak VRAM used during the probe: 6805 MiB (free before: 19029 MiB)
+
+SUMMARY: 0 expectation(s) diverged

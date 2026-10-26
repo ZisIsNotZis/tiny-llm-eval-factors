@@ -93,7 +93,7 @@
 - 限制：这条只排除「提示/拼接形状导致 cpp 整体判错」这一种解释，不解释 Q2 为什么写不合法；Q2_K_XL 的输出质量本身是候选原因，本节点不裁决。
 - 复算：`python3 -c "import json;p=json.loads(open('.wrapup/prompts/humaneval-cpp.jsonl').readline());print(repr(p['prompt'][-100:]));print(repr(p['tests'][:40]))"`。
 
-## gemma-4-12b 的 m6b cpp 两格走另一套协议串（ctx=4096、模板未核对）
+## m6b-two-cells :: gemma-4-12b 的 m6b cpp 两格走另一套协议串（ctx=4096、模板未核对）
 
 - 结论：gemma-4-12b chat cpp（m6b 面板）入库时按协议串原样记录，末尾带 `;ctx=4096;tmpl=unverified`：Q2 `4/161=0.0248`、Q3 `130/161=0.8075`。这两格不并入任何 cpp+py 对：m6b 是 `ctx=4096`、没有 `--jinja`、模板路径未核对的一套配置，与 m161/m163 的 `ctx=2048 --jinja` 不同。12b 的同协议 cpp+py 对由 m163 的 canonical chat 两格给出（见「chat cpp 两格」），m6b 这两格继续单独成行。
 - 证据：`.wrapup/m6b.log.gz` 有 `n_ctx_slot = 4096`；`.wrapup/run_m6b.sh` 的 start_server 无 `--jinja`；`.wrapup/run_m161_chat_py.sh` 与 `.wrapup/run_m163_chat_cpp_12b.sh` 都是 `CTX=2048` 加 `--jinja`。m6b 的 summary 留的是旧判分值（Q2 cpp 2/161、Q3 py 5/161），库值取自 `_fixed` 重判，两者的差由旧后处理解释，不由本节点裁决。m161 与 m163 的日志都记下了所用提示集的哈希，与 `.wrapup/prompts/SHA256SUMS` 的 `humaneval-cpp.jsonl` 行一致。

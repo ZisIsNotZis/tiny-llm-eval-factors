@@ -1,0 +1,38 @@
+{
+  "tag": "m115-phi4mini-q2k",
+  "model": "Phi-4-mini-instruct-Q2_K.gguf",
+  "model_arg": "Phi-4-mini-instruct-Q2_K.gguf",
+  "protocol": {
+    "backend": "openai-chat",
+    "temperature": 0.0,
+    "greedy": true,
+    "max_new_tokens": 768,
+    "ctx": 8192,
+    "reasoning": "off"
+  },
+  "benches": {
+    "humaneval": {
+      "base": null,
+      "plus": null,
+      "n": 164,
+      "base_pass": null,
+      "plus_pass": null,
+      "bad_rate": null
+    },
+    "mbpp": {
+      "base": null,
+      "plus": null,
+      "n": 378,
+      "base_pass": null,
+      "plus_pass": null,
+      "bad_rate": null
+    }
+  },
+  "errors": [
+    {
+      "bench": "humaneval+mbpp",
+      "stage": "codegen",
+      "error": "llama-server 500: 'The model produced output that does not match the expected peg-native format' (364 occurrences). evalplus retries each item: 83/164 humaneval items took 82 min, so the full panel would exceed 4 h. --reasoning-format none did not help, so this is llama.cpp's tool-call output parser rejecting Phi-4-mini-Q2 text. Recorded as NO RESULT per SSOT 2b - a missing number is never 0.0."
+    }
+  ]
+}

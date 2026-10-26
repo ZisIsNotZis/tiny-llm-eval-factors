@@ -140,6 +140,14 @@ if out=$(python3 checks/evidence_logs.py 2>&1); then
 else
     record FAIL "$(printf '%s' "$out" | grep -m1 'FAIL' | cut -c1-200)"
 fi
+# 同一条检查的负控：换字节 → 点名 `.log`；从索引里拿掉 / 落在未声明的类下 → 判「无处置」。
+# 没有这一条，上面那行只能证明「它今天打印了绿」。
+if python3 checks/evidence_logs_negative_control.py >/tmp/reproduce_elnc.$$ 2>&1; then
+    record PASS "证据处置的负控（换字节→多一条并点名 .log；从索引拿掉→无处置；未声明类→无处置）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_elnc.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_elnc.$$
 if python3 checks/report_inputs_drift_negative_control.py >/tmp/reproduce_rid.$$ 2>&1; then
     record PASS "报告输入漂移判 FAIL 的负控（改坏一个输入 → 非零退出并点名；缺输入 → SKIP 不误判）"
 else
@@ -170,6 +178,13 @@ case "$rc" in
     2) record BLOCKED "路由文件缺失：$(printf '%s' "$out" | grep -m1 '^BLOCKED:' | sed 's/^BLOCKED: //')" ;;
     *) record FAIL "路由文件里有无法解析的引用（$(printf '%s' "$out" | grep -c -e 'missing-' -e 'unparsed-' -e 'unterminated-')条）：python3 checks/router_refs.py" ;;
 esac
+# 同一条检查的负控（二十一条期望）：没有它，上面那行只证明「它今天打印了绿」。
+if python3 checks/router_refs_negative_control.py >/tmp/reproduce_rrnc.$$ 2>&1; then
+    record PASS "路由引用检查的负控（二十一条期望：缺 id / 缺文件 / 空扫描 / 未闭合遮蔽各自红）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_rrnc.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_rrnc.$$
 
 # 7) 文档检查（含 schema 标准）与它的负控：一个只会打印 PASS 的检查不算检查
 if python3 checks/moe_feasibility_negative_control.py >/tmp/reproduce_mf.$$ 2>&1; then
