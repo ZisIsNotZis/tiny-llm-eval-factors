@@ -6,18 +6,19 @@
 
 做四件事，全部当场跑（不读缓存、不读手抄的数字）：
 
-  1. `pairs.py` → `analysis/pairs.json`（受控对清单）；
-  2. `effects.py` → `analysis/effects.json`（效应与交互）；
-  3. `pairs_negative_control.py`（改身份栏 / 改成 11% 尺寸差 → 该对必须掉、必须点名）；
-  4. `effects_negative_control.py`（把一对分数改成相等 → `resolvable` / `flips` 必须变）。
+  1. `pairs.py` → `analysis/pairs.json`（受控对清单，家族 = `mktables.family_of`）；
+  2. `effects.py` → `analysis/effects.json`（效应与交互，家族结论只落在 family 层 + bpw_matched）；
+  3. `pairs_negative_control.py`（改身份栏 / 改成 11% 尺寸差 / 删真值 → 该对必须掉、必须点名）；
+  4. `effects_negative_control.py`（把一对分数改成相等 / 削平一档 → `family_resolvable` 或 `flips` 必变）。
 
 另加两类自检，都不依赖快照常量，只判关系式与确定性：
 
-  * 账平：候选数 = 被排除的候选数 + 产出受控格的候选数；`cells` 条数 = 打印的受控计数；
-    每一格的 `size_delta` ≤ 容差；每一格的两个模型文件在 `families` 表里都有家族。
-  * 确定性：再跑一遍 `pairs.py` / `effects.py` 到临时文件，与入库的两份 JSON 逐字节比较。
+  * 账平与定义：候选数 = 被排除的候选数 + 产出受控格的候选数；`cells` 条数 = 打印的 label_matched 计数；
+    每一格的 `bpw_matched` 必须等于 `bpw_gap <= 容差`；每个配方对照必须是同权重且位宽匹配；
+    效应侧分析的家族格数必须与清单的 `bpw_matched − same_n_params` 相等。
+  * 确定性：两个负控把同样的输入重跑到临时目录，它们 baseline 的 sha256 必须与入库的两份 JSON 相同。
 
-退出码：0 全绿；1 有任何自检或负控不成立；2 输入不可得（库 / 真值 fixture 缺）。
+退出码：0 全绿；1 有任何自检或负控不成立；2 输入不可得（库 / 真值 fixture / mktables 缺）。
 """
 
 from __future__ import annotations
@@ -36,6 +37,7 @@ LEDGER = HERE / "pairs.json"
 EFFECTS_JSON = HERE / "effects.json"
 DB = REPO / "experiments.sqlite"
 TRUTH = REPO / "docs/subprojects/a02-模型规模/analysis/fixtures/gguf_truth.json"
+MKTABLES = REPO / ".wrapup/mktables.py"
 
 failures: list[str] = []
 checks = 0
@@ -84,12 +86,10 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     t0 = time.time()
 
-    if not DB.is_file():
-        print(f"BLOCKED: dataset not found: {DB}", file=sys.stderr)
-        return 2
-    if not TRUTH.is_file():
-        print(f"BLOCKED: truth fixture not found: {TRUTH}", file=sys.stderr)
-        return 2
+    for path, what in ((DB, "dataset"), (TRUTH, "truth fixture"), (MKTABLES, "mktables")):
+        if not path.is_file():
+            print(f"BLOCKED: {what} not found: {path}", file=sys.stderr)
+            return 2
 
     print("== 1/4 controlled-pair inventory (pairs.py)")
     p = run("pairs.py")
@@ -115,28 +115,50 @@ def main(argv=None) -> int:
 
     print("\n== self-checks: the ledger and the effects agree with themselves")
     lc, ec = ledger["counts"], effects["counts"]
+    tol = ledger["bpw_match_tol"]
     check(lc["candidates"] == lc["excluded"] + lc["candidates_with_controlled_cells"],
           "candidates == excluded + candidates_with_cells",
           f"{lc['candidates']} == {lc['excluded']} + {lc['candidates_with_controlled_cells']}")
-    check(len(ledger["cells"]) == lc["controlled_cells"],
-          "cells rows == printed controlled count", f"{len(ledger['cells'])} vs {lc['controlled_cells']}")
+    check(len(ledger["cells"]) == lc["label_matched_cells"],
+          "cells rows == printed label_matched count",
+          f"{len(ledger['cells'])} vs {lc['label_matched_cells']}")
     check(len(ledger["excluded"]) == lc["excluded"],
           "excluded rows == printed excluded count")
-    tol = ledger["size_tolerance"]
-    over = [c["id"] for c in ledger["cells"] if c["size_delta"] > tol]
-    check(not over, f"every controlled cell obeys size_delta <= {tol}", str(over[:5]))
+    gate_bad = [c["id"] for c in ledger["cells"]
+                if c["bpw_matched"] != (c["bpw_gap"] <= tol)]
+    check(not gate_bad, f"every cell: bpw_matched == (bpw_gap <= {tol})", str(gate_bad[:5]))
+    n_bpw = sum(1 for c in ledger["cells"] if c["bpw_matched"])
+    check(n_bpw == lc["bpw_matched_cells"],
+          "the bpw_matched count matches the rows", f"{n_bpw} vs {lc['bpw_matched_cells']}")
+    recipe_bad = [c["id"] for c in ledger["recipe_controls"]
+                  if not (c["bpw_matched"] and c["same_n_params"])]
+    check(not recipe_bad, "every recipe control is same-weights AND bpw_matched", str(recipe_bad[:5]))
+    check(len(ledger["recipe_controls"]) == lc["recipe_control_cells"],
+          "recipe control rows == printed count")
+    over = [c["id"] for c in ledger["cells"] if c["size_delta"] > ledger["size_tolerance"]]
+    check(not over, "every cell obeys size_delta <= the 10% criterion", str(over[:5]))
     fam = ledger["families"]
     nameless = [c["id"] for c in ledger["cells"]
                 if c["model_a"] not in fam or c["model_b"] not in fam]
-    check(not nameless, "every controlled cell has both families", str(nameless[:5]))
+    check(not nameless, "every cell has both families in the `families` table", str(nameless[:5]))
+    same_family = [c["id"] for c in ledger["cells"] if fam[c["model_a"]] == fam[c["model_b"]]]
+    check(not same_family, "no cell is a within-family pair (that block is recipe_controls)",
+          str(same_family[:5]))
     check(sum(lc["excluded_by_reason"].values()) == lc["excluded"],
           "the per-reason counts add up to the excluded count")
-    check(ec["controlled_cells"] == lc["controlled_cells"],
-          "effects analysed exactly the cells the ledger carries")
-    check(ec["resolvable_bpw_matched"] <= ec["bpw_matched_cells"] <= ec["controlled_cells"],
-          "resolvable_bpw_matched <= bpw_matched <= cells")
-    check(ec["sign_flips_zero_gap"] <= ec["sign_flips_readable"] <= ec["sign_flips_all"],
-          "flips(zero gap) <= flips(constant handicap) <= flips(all)")
+    check(ec["family_bpw_matched"]["cells"] == n_bpw - lc["same_n_params_bpw_matched"],
+          "effects analysed the family cells at matched bpw (bpw_matched minus same-scaffold)",
+          f"{ec['family_bpw_matched']['cells']} vs {n_bpw} - {lc['same_n_params_bpw_matched']}")
+    check(ec["family_label_matched"]["cells"] == lc["label_matched_cells"] - lc["same_n_params_cells"],
+          "effects' label_matched family count matches the ledger")
+    check(ec["same_scaffold_bpw_matched"]["cells"] == lc["same_n_params_bpw_matched"],
+          "the same-scaffold table matches the ledger's flag")
+    check(ec["quant_label_missing_cells"] == lc["quant_label_missing_cells"],
+          "the quant-label-missing count is the same on both sides")
+    check(ec["family_bpw_matched"]["resolvable"] <= ec["family_bpw_matched"]["cells"],
+          "resolvable <= cells on the family claim")
+    check(ec["sign_flips"] >= 0 and ec["sign_flips"] <= ec["groups_with_two_levels"],
+          "flips <= groups with >= 2 levels")
     check(not effects["warnings"], "effects.py raised no self-check warning",
           str(effects["warnings"]))
 
@@ -150,17 +172,19 @@ def main(argv=None) -> int:
           f"temp={baseline_sha(nc2.stdout)} committed={sha256(EFFECTS_JSON)}")
 
     dt = time.time() - t0
+    fb = ec["family_bpw_matched"]
     print()
     if failures:
         print(f"FAILED {len(failures)}/{checks} checks: " + "; ".join(failures))
         return 1
     print(f"OK {checks}/{checks} checks green | candidates={lc['candidates']} "
-          f"controlled={lc['controlled_cells']} excluded={lc['excluded']} "
-          f"cells_with_intervals={ec['cells_with_intervals']} "
-          f"resolvable={ec['resolvable_all']} resolvable_bpw_matched={ec['resolvable_bpw_matched']} "
-          f"bpw_matched={ec['bpw_matched_cells']} flips={ec['sign_flips_all']} "
-          f"flips_constant_gap={ec['sign_flips_readable']} "
-          f"orderings_unstable={ec['orderings_unstable']} | {dt:.1f}s")
+          f"label_matched={lc['label_matched_cells']} bpw_matched={lc['bpw_matched_cells']} "
+          f"family_bpw_matched={fb['cells']} family_resolvable={fb['resolvable']} "
+          f"readable_pairs={ec['family_pairs_readable']}/{ec['family_pairs_with_cells']} "
+          f"flips={ec['sign_flips']} quant_label_missing={lc['quant_label_missing_cells']} "
+          f"same_scaffold={lc['same_n_params_bpw_matched']} "
+          f"recipe_controls={lc['recipe_control_cells']} "
+          f"excluded={lc['excluded']} | {dt:.1f}s")
     return 0
 
 

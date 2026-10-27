@@ -18,21 +18,24 @@
 - 已完成：`WP1`（`p-fam1` 受控对清单：候选 / 受控 / 排除三计数 + 逐条排除原因 + 两个负控，
   `RESULT.md::res2`、`::res3`）、`WP2`（`p-fam2` 效应与交互：逐格 Wilson 区间与可分辨判定、跨量化档符号翻转、
   家族差与量化差同单位比较、逐基准家族排序，`RESULT.md::res4`、`::res5`）、`WP3`（边界与「事后匹配」的口径，
-  `RESULT.md::res6`、`::res7`）。
+  `RESULT.md::res6`、`::res7`）、`WP4`（复核返修：家族改回报告的 `mktables.family_of`、两层口径
+  `label_matched`/`bpw_matched` 与同权重对照表，`RESULT.md::res8` 与末段「记录」）。
 - 在办：无。下一个派给谁：`p-fam3`（文档与报告：`FINDINGS.md` 一行、报告新增一节、`STATUS.md`/README 的当前状态、
   a15 单元行结项）由 meta 派；本层已把 `RESULT.md::res1`–`::res7` 与两份 JSON 交齐，报告节只能引用这些节点，
   不引入 docs 里没有的论断。
-- 已知返工风险：本层的可读家族对只有 11 个（`RESULT.md::res6` 逐条列出），报告若想把「家族轴」写成一张大表，
-  读者会看到大量「测不出」——这是数据现状，不是脚本缺陷，不得为了版面放宽位宽闸门。
+- 已知返工风险：本层的可读家族对只有 10 个、家族层格子只有一百多个（`RESULT.md::res6` 逐条列出），报告若想把
+  「家族轴」写成一张大表，读者会看到大量「测不出」——这是数据现状，不是脚本缺陷，不得为了版面放宽位宽闸门，
+  也不得把 `label_matched` 的一千多个格说成「同比特预算」。
 
 ## 工作包
 
 | 工作包 | owner | AC（可证伪） | 依赖 | 预算 | 状态 |
 |---|---|---|---|---|---|
-| WP1 受控对清单（`p-fam1`） | 本层 worker | 一条命令 exit 0 并打印「候选 / 受控 / 排除」三计数；每个候选要么进受控集、要么带一条点名原因；负控：改掉副本里任一身份栏或把尺寸差改成 11% → 该对必须从受控集消失并以非零退出点名；无人工白名单 | `p-env1`（a02 的 GGUF fixture 已入库） | ≤20 CPU 分钟 | **完成**：`analysis/pairs.py` + `analysis/pairs_negative_control.py`（18/18 绿），数字见 `RESULT.md::res2`–`::res3` |
-| WP2 效应与交互（`p-fam2`） | 本层 worker | 逐格 Δ 与区间；同一对在相邻量化档上的符号翻转被算出来并计数；家族差与同格量化差同单位比较；逐基准家族排序及不稳定项；未达分辨率写「测不出」；负控：把一对分数改成相等 → `resolvable` 或 `flips` 必变 | WP1 | ≤20 CPU 分钟 | **完成**：`analysis/effects.py` + `analysis/effects_negative_control.py`（10/10 绿），数字见 `RESULT.md::res4`–`::res5` |
+| WP1 受控对清单（`p-fam1`） | 本层 worker | 一条命令 exit 0 并打印「候选 / 受控 / 排除」三计数；每个候选要么进受控集、要么带一条点名原因；负控：改掉副本里任一身份栏、把尺寸差改成 11%、删掉真值 → 该对必须从受控集消失并以非零退出点名；无人工白名单 | `p-env1`（a02 的 GGUF fixture 已入库） | ≤20 CPU 分钟 | **完成**：`analysis/pairs.py` + `analysis/pairs_negative_control.py`（20/20 绿），数字见 `RESULT.md::res2`–`::res3` |
+| WP2 效应与交互（`p-fam2`） | 本层 worker | 逐格 Δ 与区间；同一对在相邻量化档上的符号翻转被算出来并计数；家族差与同格量化差同单位比较；逐基准家族排序及不稳定项；未达分辨率写「测不出」；负控：把一对分数改成相等 → `family_resolvable` 或 `flips` 必变 | WP1 | ≤20 CPU 分钟 | **完成**：`analysis/effects.py` + `analysis/effects_negative_control.py`（13/13 绿），数字见 `RESULT.md::res4`–`::res5` |
 | WP3 口径与边界 | 本层 worker | 「家族包」这个混杂、单跑无逐题产物、不可读的家族对清单、以及「事后匹配、不是新测量」四条同时写在结论所在的层 | WP1, WP2 | ≤10 CPU 分钟 | **完成**：`RESULT.md::res6`、`::res7` |
-| WP4 报告与路由（`p-fam3`，不在本层） | meta 派的 worker | `FINDINGS.md` 一行、报告新增一节（只引用 `RESULT.md` 的节点）、`docs/plan/subprojects.md` 的 a15 行结项、`./reproduce.sh` 与 `git status --porcelain` 干净 | WP1–WP3 | ≤40 CPU 分钟 | 待派 |
+| WP4 复核返修：家族定义与口径分层 | 本层 worker | 家族 = `mktables.family_of`；由 `__model` 拆分出来的同权重对（`Qwen3.6`/`Qwen_Qwen3.6`、`LFM2.5-8B-A1B`/`-m55-exq*`）不进家族计数；`label_matched` 与 `bpw_matched` 两层分开计数，家族结论只在后者；同权重对照单列；两个负控在新定义下仍然打红 | WP1–WP3 | ≤30 CPU 分钟 | **完成**：`RESULT.md::res2`、`::res6`、`::res8` 与末段「记录」；`run_all.py` 26/26 绿 |
+| WP5 报告与路由（`p-fam3`，不在本层） | meta 派的 worker | `FINDINGS.md` 一行、报告新增一节（只引用 `RESULT.md` 的节点）、`docs/plan/subprojects.md` 的 a15 行结项、`./reproduce.sh` 与 `git status --porcelain` 干净 | WP1–WP3 | ≤40 CPU 分钟 | 待派 |
 
 调度原则：WP1 是 WP2 的唯一前提（清单错了，效应没有意义），所以它单独先跑；WP2 与 WP3 都在同一份清单上做算术，
 不碰库。三者共用一条验收入口 `analysis/run_all.py`（跑完不到十秒），任何改动都必须让这条命令重新全绿。

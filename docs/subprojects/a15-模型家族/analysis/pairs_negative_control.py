@@ -87,10 +87,18 @@ def main() -> int:
         pairs = ledger.get("cells", [])
         check(bool(pairs), "unmodified run yields a non-empty controlled set",
               f"cells={len(pairs)}")
+        check(ledger.get("counts", {}).get("label_matched_cells") == len(pairs),
+              "the printed label_matched count equals the number of cells")
         if not pairs:
             return 1
         print(f"BASELINE_SHA256 {sha256(base_out)}")
-        target = pairs[0]
+        # 拿第一条**家族层**的格（不同家族、实测参数量不同）：家族计数才是本清单要保的东西。
+        fam_cells = [p for p in pairs if not p["same_n_params"]]
+        check(bool(fam_cells), "the ledger carries at least one family-tier cell",
+              f"cells={len(pairs)}")
+        if not fam_cells:
+            return 1
+        target = fam_cells[0]
         key = pair_key(target)
         ctx = dict(zip(ledger["ctx_columns"], target["ctx"]))
         print(f"    target pair: {target['id']} {target['bench']} "
