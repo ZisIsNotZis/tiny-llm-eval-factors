@@ -137,6 +137,22 @@ revision）、`5e6df26`（第二轮结果 revision）、`e338f4b`（更早一次
 
 未结项：无。里程碑 `entry` 已在 `3287b76` 上通过四轮独立复核（第一轮不接受：p-entry3 的字节数与归类为假、无负控；第二轮不接受：pattern/dir 两档绕开形状表、空扫描仍绿；第三轮不接受：负控不隔离守卫、单选项花括号白名单、dir 判据文档强于代码；第四轮接受）。
 
+## agentic — 下一个里程碑：真实 agentic 基准上的端到端分数
+
+目标（`docs/need/need.yaml::n1`）的 Y 端是「真实的 agentic 基准，多种类型、多种难度」。第一版报告的 Y 以静态代码/知识/指令类为主（覆盖与缺口见 `docs/subprojects/i02-测量基础设施/RESULT.md::res72` 末段）。本里程碑把 Y 端补齐到可以在 X（模型架构/版本/规模/激活、量化、运行时）上扫的水平。
+
+第一批基准与理由（环境事实与可达性见 `docs/subprojects/i02-测量基础设施/RESULT.md::res73`）：**Terminal-Bench 2.0**（终端/运维，`task.toml` 原生 easy/medium/hard 与 `expert_time_estimate_min`，Docker 现成）、**τ-bench v1 / τ²-bench**（多轮规划+用户对话，纯 Python，无 Docker）、**BFCL v4 离线类别**（工具调用，`bfclenv` 已装、数据自带）。AppWorld / SWE-bench / WebArena / OSWorld / GAIA / Cybench 本周不进：数据在 HF（现连不通）或要浏览器/VM 与百 GB 镜像。
+
+| 包 | 内容 | 验收（命令） | 依赖 |
+|---|---|---|---|
+| `p-ag1` | Terminal-Bench 2.0 的 24 题分层子集（easy/medium/hard 各 8）在**一个最小本地模型**上跑通：llama-server + harbor 的 OpenAI 兼容 provider，分数、每题耗时、镜像拉取量、总 GPU 分钟落到本机日志 | 一条可重跑命令产出该模型的 24 题分层分数表（三档各一行），日志在 `.wrapup/agentic/tb2-<model>-<date>/`；本机 `./reproduce.sh` 不受影响（不碰库） | — |
+| `p-ag2` | τ-bench v1 的 airline+retail（165 题）在同一模型上跑通，判分用上游自带 checker | 一条可重跑命令产出两域分数；日志同目录 | p-ag1 |
+| `p-ag3` | BFCL v4 离线类别在同一模型上跑通并产出与库内已有 BFCL 行同口径的分数；`web_search*`（需 SerpAPI key）与 `memory*`（需 embedding 权重）各自登记为「本环境不可得」而不是跳过 | 一条可重跑命令产出各类别分数 + 两条不可得的登记行 | — |
+| `r-ag1` | 难度分层的口径：哪些是基准自带的（TB2 三档 / AppWorld 指示器），哪些要自造（BFCL 轮数 / τ 轮数），以及自造分层与 `ctx_size`/生成长度这类 X 的共线风险必须写清 | 一条判据 + 反例：给出一个「难度其实是被预算卡住」的例子（a08 已有一例：思考开 = 吃生成预算） | — |
+| `p-ag4` | 首条 X 扫描：在 TB2 子集上扫一列 X（先做**量化档**：同族 UD Q2/Q3/Q4 各一档；再做**运行时**：ctx 8k / 32k） | 每个 X 取值一行分数，同一 series 内其余量固定；库内新增行走 `migrate_db.py` 且 `db_check` 绿 | p-ag1 |
+
+里程碑达成的判据：TB2 三档 + τ 两域 + BFCL 离线类别在第一模型上有分数；`p-ag4` 至少给出两档量化与两档 ctx 的同 series 对照；难度分层口径（`r-ag1`）写进 `docs/method/method.yaml`。
+
 ## 共享仓库的写权（避免互相踩）
 
 1. **push 归 meta**：子项目只提交自己的路径，**不 `git push`**、不 `git reset`、不 rebase 共享历史。提交必须带显式路径——`git commit -m … -- <path>…`，**不要用裸 `git commit`**：索引是共享的，别人 `git add` 之后你一提交就会把他的暂存一起定型（已经发生过两次：`i01` 的 PLAN 被扫进 `a06` 的提交，`a06` 的四个文件被扫进 `i01` 的提交）。分支修复只有 meta 做，且在独立 worktree 里做。这条是踩出来的：一次并发 `push` 把远端 rebase 了一份提交、本地又留了一份，另有一次 `reset` 让别人已提交的两个提交从 main 上消失。

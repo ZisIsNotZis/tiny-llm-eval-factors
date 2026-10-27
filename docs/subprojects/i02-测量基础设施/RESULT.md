@@ -469,3 +469,11 @@
   因为它们的成因不同、补测价格也不同，合成一张表会抹掉差别。
 
 - **对目标的覆盖**（目标本身见 `docs/need/need.yaml::n1`，此处只列覆盖，不复述目标）：十六轴的**已覆盖**：量化的位宽/方案/厂商/QAT/第三方（a01/a03/a09/a10）、模型规模与 MoE 分配（a02/a04）、运行时（a05 KV 精度、a06 采样、a08 思考开关、a07 投机）、解码方式（a11 扩散，GATE-FAIL）；**未覆盖**：模型**架构**与**版本**作为 X（没有一条「同一参数量、不同架构/不同代」的受控研究）、**激活规模**只在 a02 的 `plan5` 里以「不可识别」出现；**基准端**以静态代码/知识/指令类为主，agentic 只有 BFCL 工具调用（含多轮），且**没有难度维度**（同一任务族内按难度分层）。补齐这三块才是目标，不是把上述限制逐条清零。
+
+## res73 :: 本机对外可达性与 agentic 评测依赖（2026-10-27 实测）：Docker 与 pypi/GitHub 通，HuggingFace 正站与镜像都不通，所以「数据只在 HF 上」的基准与模型这周进不来。
+
+- kind: measured
+- status: current
+- evidence: Docker Engine 29.8.2 运行中且能从 Hub 拉镜像；pypi / api.github.com / git ls-remote / jsdelivr / modelscope 可达；`huggingface.co` 与 `hf-mirror.com` 均连不通（调研当日实测）；`/home/z/hf` 现有 842 GB / 57 个 `models--*`，`/home/z/hf/datasets--*` 为 0；`llama-server` = llama.cpp `0.4.1-dev build 4399`（含 `--tools`）；`bfclenv` 内 `bfcl_eval==2026.3.23` 自带 21 个 `BFCL_v4_*.json`（4693 条），离线类别可跑，`web_search*` 需 SerpAPI key、`memory*` 需 `all-MiniLM-L6-v2` 权重（未缓存）。
+- producer: 调研工作包的实测记录（采集命令与输出在 `.wrapup/agentic/` 之前的调研日志里）；重申时刻 = 2026-10-27。
+- 影响：模型**版本/架构**这一整类 X 需要新权重，HF 不通时只能走 modelscope；基准侧同理（AppWorld / SWE-bench / GAIA 的数据在 HF）。这条不是缺陷而是资源事实，决策见 `docs/plan/subprojects.md` 的 `agentic` 节。
