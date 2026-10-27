@@ -22,7 +22,7 @@ python3 -m pip install -r requirements.txt   # 本机实测约 1 分钟（含 ma
 
 `./reproduce.sh` 按顺序走完整条链，任何一步失败都以非零退出：运行时依赖 → 提示集 SHA256（`.wrapup/prompts/SHA256SUMS`）→ 报告输入 → 数据库完整性与清洁度 → 是否还有可执行脚本引用已退役的绝对根路径 → 文档检查 → 从 `experiments.sqlite` 重建 `report.html` 并与仓库里那份**逐字节**对比 → 用 `checks/report_check.py` 核对报告与产物一致。最后一行 `OK：报告可从库重建…` 是完成信号。`SKIP` / `BLOCKED` 行表示该项**未**验证（例如干净 clone 里没有本机的 `.wrapup/mres/` 落盘产物），不能当成绿。
 
-本机实测（12 核 CPU、无 GPU）：报告构建约 35 s；`./reproduce.sh` 全流程三次干净 clone 分别为 41.1 / 49.9 / 60.2 s，差异来自字体缓存与负载。依赖实测于 Python 3.12.3（见 `requirements.txt`）。
+本机实测（8 线程 / 4 核 CPU、无 GPU、与其他进程共用）：报告构建 2m31s；一次完整 `./reproduce.sh` 2m44s。依赖实测于 Python 3.14.8（见 `requirements.txt`）；这些数比专用工作站慢，但与 GPU 无关。
 
 需要跑 `lm-eval` 时，按锁定的依赖重建 venv，不要把 venv 入库：
 

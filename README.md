@@ -22,7 +22,7 @@ python3 -m pip install -r requirements.txt   # ~1 min measured on this machine (
 
 `./reproduce.sh` walks the chain in order and stops with a non-zero exit on any failure: runtime dependencies → prompt-set SHA256 (`.wrapup/prompts/SHA256SUMS`) → report inputs → database integrity and cleanliness → no executable script still pointing at a retired absolute root → documentation checks → rebuild `report.html` from `experiments.sqlite` and compare it **byte for byte** with the committed copy → cross-check the report against the artefacts it claims (`checks/report_check.py`). The last line, `OK：报告可从库重建…`, is the completion signal. A `SKIP` or `BLOCKED` line means that item was *not* verified — for example a clean clone has no local `.wrapup/mres/` run outputs — and must not be read as green.
 
-Measured on this machine (12 CPU cores, no GPU): report build ≈ 35 s; the whole `./reproduce.sh` 41.1 / 49.9 / 60.2 s across three clean-clone runs, the spread coming from font cache and load. Dependencies were tested on Python 3.12.3 (`requirements.txt`).
+Measured on this machine (8 CPU threads / 4 cores, no GPU, shared with other processes): report build 2m31s; one full `./reproduce.sh` 2m44s. Dependencies were tested on Python 3.14.8 (`requirements.txt`); the timings are slower than a dedicated workstation but do not depend on a GPU.
 
 If you need `lm-eval` runs, rebuild the venv from the pinned dependencies rather than committing it — venvs stay out of the repo:
 

@@ -153,7 +153,7 @@ revision）、`5e6df26`（第二轮结果 revision）、`e338f4b`（更早一次
 
 | 包 | 内容 | 验收（命令） | 依赖 |
 |---|---|---|---|
-| `p-env1` | 报告附录的「模型来源」列改成随仓库分发的输入（`res77` 记录的缺陷）：来源索引入库，`make_report.py` 不再读 `/home/z/hf`；缺索引或不一致时构建失败而不是静默变「未知」 | `./reproduce.sh` exit 0，且 `sha256sum report.html` 与 `git cat-file -p HEAD:report.html \| sha256sum` 相同；把索引改坏一个字节时报告构建变红并点名（负控）；在 `HFROOT=/nonexistent` 下同样逐字节相同 | — |
+| `p-env1`（**已结项**，`5574f82`，证据 `res78`） | 报告附录的「模型来源」列改成随仓库分发的输入（`res77` 记录的缺陷）：来源索引入库，`make_report.py` 不再读 `/home/z/hf`；缺索引或不一致时构建失败而不是静默变「未知」 | `./reproduce.sh` exit 0，且 `sha256sum report.html` 与 `git cat-file -p HEAD:report.html \| sha256sum` 相同；把索引改坏一个字节时报告构建变红并点名（负控）；在 `HFROOT=/nonexistent` 下同样逐字节相同 | — |
 | `p-fam1` | 受控对清单：从 `experiments.sqlite` 枚举所有跨 `__model` 且「基准、协议、量化档、ctx、slots、temp/top_p/top_k/min_p/presence、reasoning、spec、KV、max_tokens、`n_items`」全同、实测参数量（a02 的 GGUF fixture，不用文件名标签）相差 ≤10% 的格；输出机器可读清单与逐条排除原因（缺真值、尺寸超界、身份栏不一致） | 一条命令 exit 0 并打印「候选 / 受控 / 排除」三计数；负控：改掉副本里任一身份栏（或把尺寸差改成 11%）→ 该对必须从受控集消失并以非零退出点名；无人工白名单 | — |
 | `p-fam2` | 效应与交互：逐对逐基准给 Δ 与 Wilson 区间；检验同一对在相邻量化档（Q2 vs Q3）上的符号是否翻转并计数；把「家族差」与同一格内的「量化差」放在同一单位下比较；给出每个基准上家族排序及不稳定项 | 一条命令产出上述全部数值；每条结论都能追到它自己的命令；未达分辨率的格写「测不出」，不写 0；脚本有负控（把一对的分数改成相等 → 「翻转」计数必须变） | `p-fam1` |
 | `p-fam3` | 文档与报告：`docs/subprojects/a15-模型家族/` 的 PLAN/RESULT 节点（结论、边界、复现命令）、`FINDINGS.md` 一行、报告新增一节（从库与派生索引生成，不引入 docs 里没有的论断）、`STATUS.md`/README 的当前状态；`docs/plan/subprojects.md` 的 a15 行结项 | `python3 docs/check_docs.py` exit 0；`./reproduce.sh` exit 0 且报告重建后逐字节相同；`git status --porcelain` 无输出；`python3 checks/router_refs.py` exit 0 | `p-env1`、`p-fam2` |

@@ -500,4 +500,14 @@
 - status: current
 - evidence: 在 `HEAD=1dbab2e` 上 `./reproduce.sh` 的其余 55 项全 PASS/SKIP，唯一 FAIL 是报告逐字节比对：仓库 `7159de4480f6…`、重建 `fe3fe237bdad…`；`diff` 只落在附录「模型文件与来源」表：旧文件有 `mscache/…` 机构/仓库/相对路径，新文件是 `未知（本地文件，未找到下载来源）` / `—`。成因在 `make_report.py::_load_provenance` 读 `HFROOT=/home/z/hf` 的目录列表与 `realpath`；该目录在新机器上不存在，`PROV` 为空，于是 `model_meta` 走 `_VENDOR_FALLBACK`。数据库行数与内容未变（3379 行，`git status` 只有 `report.html`）。
 - producer: 本次换机后跑 `PATH=.wrapup/lmenv/bin:$PATH ./reproduce.sh` 的捕获；`diff <(git cat-file -p HEAD:report.html) report.html` 的头部差异。
-- 影响：`STATUS.md` 与 README 声称的「干净 clone 一条命令逐字节重建报告」只在带 `/home/z/hf` 的机器上成立，附录的来源列是可复现性缺口；修复归 `p-env1`（把来源索引变成随仓库分发的输入，并给它一条会变红的检查）。
+- 影响：`STATUS.md` 与 README 声称的「干净 clone 一条命令逐字节重建报告」只在带 `/home/z/hf` 的机器上成立，附录的来源列是可复现性缺口；修复归 `p-env1`（把来源索引变成随仓库分发的输入，并给它一条会变红的检查）——**已修复**，见 `res78`。
+
+## res78 :: 报告附录的「模型来源」列已脱离采集机目录：来源索引随仓库分发，缺索引、索引坏了、某个被渲染的模型没有条目都让构建非零退出并点名；本机 `./reproduce.sh` exit 0，重建的 `report.html` 与 HEAD 逐字节相同。
+
+- kind: measured
+- status: current
+- from: result.res77
+- evidence: 缺陷（res77 的记录）：`make_report.py::_load_provenance()` 读 `HFROOT=/home/z/hf` 的目录列表并对每个 `*.gguf` 做 `realpath`，从符号链接目标反推机构/仓库/相对路径；换机后该目录不存在 → `PROV` 空 → `model_meta` 走 `_VENDOR_FALLBACK`，附录三列（量化发布方 / GGUF 仓库 / 加载路径）退化成「未知（本地文件，未找到下载来源）」/「—」，重建的报告因此与仓库里那份不同字节。修法：把 HEAD `report.html` 附录 15 张复现表里那 70 个模型的 (file, vendor, repo, path) 冻结成 `report_inputs/model_sources.json`（按 `file` 排序＝确定性要求，`repo` 为「—」的写 `null`，三条 m55 自建文件的 `path` 保留采集机上的 `/home/z/hf/…gguf`，因为那正是当时实际加载的入口），`make_report.py` 只读这份索引：文件缺失 / 非法 JSON / 重复条目 / 失序 / 缺条目一律 `SystemExit` 点名；「未知（本地文件，未找到下载来源）」这个字符串已从代码里消失，所以这条缺陷在代码里不可再表达。`require_sources()` 在画第一张图之前先跑一遍正文表格（各节表格的超集），缺条目在那里一次点名——失败以秒计，不是等 2m31s 的作图跑完。
+- producer: `PATH="$PWD/.wrapup/lmenv/bin:$PATH" ./reproduce.sh` → exit 0，53 PASS / 2 SKIP / 0 FAIL（两条 SKIP 是本机既有的「来源不可得」`build_kv_evidence` 与「refresh 删行不可验证」，与本包无关）；`report.html` 从库重建 10468938 字节、sha256 `7159de4480f65bbdd5b92526bd8b2c531fce7d1c59cbfce74d0a56baa7211725`，与 `git cat-file -p HEAD:report.html | sha256sum` 相同（修复前同一条命令重建出 `fe3fe237bdad…`，见 res77）；单次构建 2m31s / 86 图；`report_inputs/model_sources.json` sha256 `56651d64abb5a2138b64100646d6b92ed3ad1e1da87eb16633b13e85136b64b8`；修复提交 `5574f82`。
+- 负控: `python3 checks/model_sources_negative_control.py` exit 0（4.6 s，就地注入、`finally` 里按原字节写回）：① `checks/model_sources.py` 在未改动的树上 exit 0；② 改坏 `gemma-4-E2B-it-UD-Q2_K_XL.gguf` 的仓库名 → 检查 exit 1 并同时点名该模型与那句假仓库名；③ 删掉 `Qwen3.5-2B-UD-Q2_K_XL.gguf` 的条目 → **真的** `python3 make_report.py` exit 1，打印「1 个模型文件在 report_inputs/model_sources.json 里没有来源条目（正文表格）：Qwen3.5-2B-UD-Q2_K_XL.gguf」；④ 索引写成非法 JSON → 构建 exit 1 并点名 `model_sources.json`；⑤ 索引整个不在场 → 构建 exit 1 并点名路径。五次注入之后索引 sha256 复核一致、`report.html` 的 sha256 全程未变（失败都发生在写盘之前，不留半份报告）。
+- 边界（写下来免得被当成覆盖）：索引只覆盖**报告渲染到的 70 个模型**。库里有 212 个模型名，其余 142 个从未进过附录；它们的来源在采集机上就已不可得，也无法从文件名可靠反推仓库，所以不写、不猜。`checks/model_sources.py` 因此只要求「被印出的模型都有条目」，并额外验「渲染集 ⊆ 库内模型集」与「报告里不许出现老缺陷那句『未知』」。新增模型要同时在索引里加一条（否则构建红并点名），这是有意的：宁可构建失败，也不让来源列退回猜。
