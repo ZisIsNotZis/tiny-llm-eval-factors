@@ -36,6 +36,8 @@
 
 `entry` 的七个工作包全部结项（`r-entry1`–`r-entry4`、`p-entry1`–`p-entry3`），里程碑复核已在 `3287b76` 上通过（第四轮判接受）。每条 AC 的命令、捕获输出与产物 sha256 由 `docs/plan/subprojects.md` 的 `entry` 节末表格点名到文件；本节不复写那份计数。
 
-**当前里程碑是 `fam`**：把「模型家族（架构代理）」这条目标里最大的未覆盖 X 变成有受控读法（受控对清单 + 逐基准效应 + 与量化档的交互 + 报告一节）。顺序 `p-env1` → `p-fam1` → `p-fam2` → `p-fam3`，验收命令在 `docs/plan/subprojects.md` 的 `fam` 节。**`agentic` 与 a11 等需要 GPU 的路线标为 BLOCKED-on-GPU**（`docs/subprojects/i02-测量基础设施/RESULT.md::res76`），等设备，不改写成 CPU 版。
+**`fam` 与 `recap` 已结项**：`fam` 把「模型家族（架构代理）」变成有受控读法（152 格、69 格可分辨、6 个可读家族对、8 次排序翻转；报告第十六节）；`recap` 把报告末尾那张已经和各节矛盾的手写结论表换成 16 行索引，并加 `checks/recap_consistency.py` 守着。两者的证据在 `docs/plan/subprojects.md` 的 `fam` / `recap` 节与 `docs/subprojects/a15-模型家族/RESULT.md::res1`–`::res9`、`docs/subprojects/i02-测量基础设施/RESULT.md::res79`。
+
+下一个里程碑是 `synth`：把已结项的受控对照放进同一张效应账（同一基准/协议内比较，不跨基准相加），回答「哪个旋钮最值得动、当前数据的分辨率到哪」；它只读库与已入库产物，不需要 GPU。**`agentic`、a11 与「架构净效应 / 版本 / 激活」的补测仍是 BLOCKED-on-GPU**（`docs/subprojects/i02-测量基础设施/RESULT.md::res76`），等设备，不改写成 CPU 版。
 
 未测项按 `docs/plan/subprojects.md` 的三类读法对待，不并入本文件的「当前状态」。

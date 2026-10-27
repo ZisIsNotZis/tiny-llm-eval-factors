@@ -141,7 +141,7 @@
 - kind: measured
 - from: result.res4, result.res5
 - origin: `report_inputs/build_family_pairs.py`（读本层的 `analysis/pairs.json` 与 `analysis/effects.json`）+ `make_report.py` 的第十六节
-- evidence: 派生索引只保留家族层（`bpw_matched` 且 `same_n_params=False`）的 152 格、6 个可读对、8 个翻转组与 76 格配方对照；`report_inputs/build_family_pairs.py --check` 与本层产物逐字节一致；`checks/report_inputs_drift.py` 新增第 14 条判断（漂移=FAIL、缺席=SKIP）；报告第十六节用一个汇总表、一张只画 69 个可分辨格的森林图和一段从 JSON 取数的分析组成，不读子项目文档。新增 arm `LFM2.5-8B-A1B-a04-uni45.gguf`（本地自建、无下载来源）在 `report_inputs/model_sources.json` 里登记为 `vendor=本地自建 (a04 统一比特臂)`、`repo=null`、`path=null`；`checks/model_sources.py` 只允许本地自建臂使用空 path，其余模型仍必须三列齐全。报告字节：`report.html` sha256 `05d6048a4d2a70f90046de32c01b6ab111de22804536b72d35bf10bd24576705`、11150937 字节、22 个 `<h2>`、87 张图；`report_inputs/open_questions.json` 随本层的 PLAN 重建（11 节 / 36 条 / 6 个文件跳过）。
+- evidence: 派生索引只保留家族层（`bpw_matched` 且 `same_n_params=False`）的 152 格、6 个可读对、8 个翻转组与 76 格配方对照；`report_inputs/build_family_pairs.py --check` 与本层产物逐字节一致；`checks/report_inputs_drift.py` 新增第 14 条判断（漂移=FAIL、缺席=SKIP）；报告第十六节用一个汇总表、一张只画 69 个可分辨格的森林图和一段从 JSON 取数的分析组成，不读子项目文档。新增 arm `LFM2.5-8B-A1B-a04-uni45.gguf`（本地自建、无下载来源）在 `report_inputs/model_sources.json` 里登记为 `vendor=本地自建 (a04 统一比特臂)`、`repo=null`、`path=null`；`checks/model_sources.py` 只允许本地自建臂使用空 path，其余模型仍必须三列齐全。报告为 22 个 `<h2>`、87 张图；本次提交后的 `./reproduce.sh` 从库重建后与仓库那份逐字节相同（字节数与 sha256 由该命令的结论行当场给出，本节不抄）。`report_inputs/open_questions.json` 随本层的 PLAN 重建（11 节 / 36 条 / 6 个文件跳过）。
 - repro: `python3 report_inputs/build_family_pairs.py --check`（实跑输出：`PASS: family_pairs.json 与 a15 产物一致（152 格 / 6 对）`）
 - repro: `python3 checks/model_sources.py`（实跑输出：`索引 71 条；报告附录 316 行 / 71 个模型；未使用的条目 0 条` + `PASS`）
 - repro: `python3 checks/report_check.py`（实跑输出：`PASS: report agrees with the artefacts`）

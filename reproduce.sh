@@ -381,6 +381,16 @@ if [ "$BUILD_OK" = 1 ]; then
     else
         record FAIL "报告与产物不一致：python3 checks/report_check.py"
     fi
+    if python3 checks/recap_consistency.py >/tmp/reproduce_recap.$$ 2>&1; then
+        record PASS "结论索引与 16 个编号节一一对应，且不含已撤回措辞"
+    else
+        record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_recap.$$ | cut -c1-200)"
+    fi
+    if python3 checks/recap_consistency_negative_control.py >/tmp/reproduce_recapnc.$$ 2>&1; then
+        record PASS "结论索引检查的负控（撤回措辞 / 删行 / 错节号各自红）"
+    else
+        record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_recapnc.$$ | cut -c1-200)"
+    fi
 else
     record SKIP "报告与产物一致（第 9 步没有产出本次报告，不拿仓库里那份旧文件比对）"
 fi

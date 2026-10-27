@@ -511,3 +511,11 @@
 - producer: `PATH="$PWD/.wrapup/lmenv/bin:$PATH" ./reproduce.sh` → exit 0，53 PASS / 2 SKIP / 0 FAIL（两条 SKIP 是本机既有的「来源不可得」`build_kv_evidence` 与「refresh 删行不可验证」，与本包无关）；`report.html` 从库重建 10468938 字节、sha256 `7159de4480f65bbdd5b92526bd8b2c531fce7d1c59cbfce74d0a56baa7211725`，与 `git cat-file -p HEAD:report.html | sha256sum` 相同（修复前同一条命令重建出 `fe3fe237bdad…`，见 res77）；单次构建 2m31s / 86 图；`report_inputs/model_sources.json` sha256 `56651d64abb5a2138b64100646d6b92ed3ad1e1da87eb16633b13e85136b64b8`；修复提交 `5574f82`。
 - 负控: `python3 checks/model_sources_negative_control.py` exit 0（4.6 s，就地注入、`finally` 里按原字节写回）：① `checks/model_sources.py` 在未改动的树上 exit 0；② 改坏 `gemma-4-E2B-it-UD-Q2_K_XL.gguf` 的仓库名 → 检查 exit 1 并同时点名该模型与那句假仓库名；③ 删掉 `Qwen3.5-2B-UD-Q2_K_XL.gguf` 的条目 → **真的** `python3 make_report.py` exit 1，打印「1 个模型文件在 report_inputs/model_sources.json 里没有来源条目（正文表格）：Qwen3.5-2B-UD-Q2_K_XL.gguf」；④ 索引写成非法 JSON → 构建 exit 1 并点名 `model_sources.json`；⑤ 索引整个不在场 → 构建 exit 1 并点名路径。五次注入之后索引 sha256 复核一致、`report.html` 的 sha256 全程未变（失败都发生在写盘之前，不留半份报告）。
 - 边界（写下来免得被当成覆盖）：索引只覆盖**报告渲染到的 70 个模型**。库里有 212 个模型名，其余 142 个从未进过附录；它们的来源在采集机上就已不可得，也无法从文件名可靠反推仓库，所以不写、不猜。`checks/model_sources.py` 因此只要求「被印出的模型都有条目」，并额外验「渲染集 ⊆ 库内模型集」与「报告里不许出现老缺陷那句『未知』」。新增模型要同时在索引里加一条（否则构建红并点名），这是有意的：宁可构建失败，也不让来源列退回猜。
+
+## res79 :: 报告末尾的结论表曾与各节矛盾（a03 撤回的「同大小下方案有差」、a10 的「全部测不出」、a05 的长上下文未测、a07 的「分数无差别」仍留在表里，且缺 MultiPL-E / BFCL / 部分给分 / 判分有效性四轴）；现在它改成 16 行索引，只写「能说 / 不能说 / 未测 / 详见」，并由 `checks/recap_consistency.py` 守着。
+
+- kind: measured
+- status: current
+- evidence: 旧表是 `make_report.py` 里一段手写 HTML，共 12 行；它与 §3（方案/厂商 9/9 跨 0）、§11（36 格 1 格露信号）、§5（长上下文 8k/16k/32k 已测）、§8（输出 73/164 不同）四节相抵，且漏了 §13/§14/§15 与判分边界。新表 16 行，每行只给一句判断和一个「详见 §N」，不写数字；`checks/recap_consistency.py` 断言：编号节 16 个、表 16 行、详见编号 1..16 各一次、表里不出现上述已撤回措辞；`checks/recap_consistency_negative_control.py` 证明注入撤回措辞 / 删一行 / 把详见改成 §99 各自变红（5/5）。两条都接进 `./reproduce.sh` 的 PASS/FAIL。
+- producer: `PATH="$PWD/.wrapup/lmenv/bin:$PATH" python3 checks/recap_consistency.py` → `PASS`；`... checks/recap_consistency_negative_control.py` → `NEGATIVE CONTROL OK: 5/5`；`./reproduce.sh` 在本机 exit 0。
+- 边界：这张表仍是**手写的索引**，不是从各节自动生成的结论；它能保证编号一一对应与四条已知撤回措辞不回来，但不能保证未来每一句都与新证据同步。自动生成（从 FINDINGS 的节点状态与各节输入）是下一层的事，记录在这里而不是假装已经做到。

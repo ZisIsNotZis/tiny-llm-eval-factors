@@ -3,7 +3,7 @@
 这个目录归 i02（测量基础设施）。每个脚本证明一件事，都以退出码说话。「谁调它」这一栏只有两种：
 `./reproduce.sh`（一条命令核全部，`PASS`/`FAIL` 成对——负控不接进来的检查只证明「今天打印了绿」），
 或「按需」= 由某个结果节点在它的 `producer:` 行里点名、需要时才跑（不是每次都跑的守卫）。
-`checks/*.py` 有 41 个文件，下表逐条覆盖，一个不漏。
+`checks/*.py` 有 43 个文件，下表逐条覆盖，一个不漏。
 
 | 命令 | 证明什么 | 谁调它 |
 |---|---|---|
@@ -12,8 +12,10 @@
 | `python3 checks/stale_roots.py` | 没有可执行脚本再引用已退役的绝对根路径（`--fix` 是幂等迁移，改完自动 `bash -n` / `py_compile`） | `./reproduce.sh`（第 6 步） |
 | `python3 checks/readme_counts.py` | 根 `README.md` 关于「哪些产物入库」的说法与 `git ls-files` 一致（数字由命令当场数） | `./reproduce.sh` |
 | `python3 checks/report_inputs_drift.py` | 报告输入是否还跟它的来源一致：13 条判断的**唯一** home，漂移=FAIL、看不到来源=SKIP | `./reproduce.sh`（第 4 步，经 `check_report_inputs` 翻成核对表的行） |
-| `python3 checks/model_sources_negative_control.py` | 上一条真的会红：改坏 `open_questions.json` 一个字节 → `./reproduce.sh` 非零退出并点名；移走 `gsq.json` → 该行 SKIP 且整体仍绿 | `./reproduce.sh` |
+| `python3 checks/report_inputs_drift_negative_control.py` | 上一条真的会红：改坏 `open_questions.json` 一个字节 → `./reproduce.sh` 非零退出并点名；移走 `gsq.json` → 该行 SKIP 且整体仍绿 | `./reproduce.sh` |
 | `python3 checks/model_sources.py` | 报告附录的「模型来源」列只由随仓库分发的 `report_inputs/model_sources.json` 决定（`res77` 的守卫）：每个被印出的 gguf 都有条目，量化发布方 / GGUF 仓库 / 加载路径三列与索引逐字相同，渲染集是库内模型集的子集，报告里不许再出现「未知（本地文件，未找到下载来源）」；空扫描判 FAIL，`report.html` 不在场报 `BLOCKED`（exit 2） | `./reproduce.sh`（第 11 步）与 `model_sources_negative_control.py` |
+| `python3 checks/recap_consistency.py` | 报告末尾的结论索引只做索引：16 行与 16 个编号节一一对应，每行「详见 §N」都落在真实节上，且表里不出现已撤回/被推翻的措辞（「同大小下方案有差」「全部差值都测不出」「所有深度分数无差别」）；空扫描判 FAIL | `./reproduce.sh` 与 `recap_consistency_negative_control.py` |
+| `python3 checks/recap_consistency_negative_control.py` | 上一条真的会红：注入撤回措辞 → 红；删一行 → 红；把「详见」改成不存在的节号 → 红；未改动副本 → 绿 | `./reproduce.sh` |
 | `python3 checks/model_sources_negative_control.py` | 上一条真的会红：改坏一条条目的仓库名 → 检查非零退出并点名该模型；删一条条目 / 索引写成非法 JSON / 索引整个不在场 → **真的** `python3 make_report.py` 非零退出并点名（缺条目在画图之前由 `require_sources()` 点名，几秒内失败）；每次失败都发生在写盘之前，`report.html` 的 sha256 全程不变，索引按原字节写回 | `./reproduce.sh` |
 | `python3 checks/router_refs.py` | 三个路由文件（`STATUS.md`/`FINDINGS.md`/`README.md`）里印出的每条 `docs/…::id` 引用与每个 `docs/…` 路径都在树里解析得到；扫空不算通过 | `./reproduce.sh`（第 6b 步） |
 | `python3 checks/router_refs_negative_control.py` | 上一条真的会红：二十一条期望逐条列在脚本头部（缺 id、缺文件、围栏/注释里的假 id、跨行与带空格的 `::`、空扫描、缺路由文件、未闭合遮蔽） | `./reproduce.sh` |
