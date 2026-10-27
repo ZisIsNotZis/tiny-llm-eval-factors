@@ -1,0 +1,14 @@
+done det1 rc=0 peak=21474 elapsed=9.320621124
+done det2 rc=0 peak=21472 elapsed=9.630882809
+done det3 rc=0 peak=21470 elapsed=9.689856573
+done n64 rc=0 peak=21474 elapsed=9.229852133
+done n256 rc=0 peak=21474 elapsed=9.809797192
+done n512 rc=0 peak=21752 elapsed=9.790279741
+done greedy-he0 rc=0 peak=21222 elapsed=16.878669326
+ALL DONE 2026-10-27T16:08:03+08:00
+done eb-he0 rc=0 elapsed=11.157010020
+done greedy-he0-128 rc=0 elapsed=39.719916220
+ALL DONE2 2026-10-27T16:09:34+08:00
+done seed1234 rc=0
+done seed-1 rc=0
+ALL DONE3 2026-10-27T16:10:08+08:00

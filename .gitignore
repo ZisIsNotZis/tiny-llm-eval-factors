@@ -123,6 +123,10 @@ experiments.sqlite.bak*
 !.wrapup/axis11-diffusion-retest-2026-10-27/
 !.wrapup/axis11-diffusion-retest-2026-10-27/protocol-report.md
 !.wrapup/axis11-diffusion-retest-2026-10-27/gpu_samples.txt
+!.wrapup/axis11-diffusion-retest-2026-10-27/protocol_runs.sh
+!.wrapup/axis11-diffusion-retest-2026-10-27/protocol_runs2.sh
+!.wrapup/axis11-diffusion-retest-2026-10-27/protocol_runs3.sh
+!.wrapup/axis11-diffusion-retest-2026-10-27/protocol_runs.status
 .wrapup/*.log
 # 运行日志与进程戳：暂存不是证据。
 # 例外（下面十四行）：`docs/` 下被点名为 evidence 的 `.out`。判据是「被点名」，不是「体积小」；
