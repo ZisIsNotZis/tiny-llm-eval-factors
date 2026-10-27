@@ -477,3 +477,11 @@
 - evidence: Docker Engine 29.8.2 运行中且能从 Hub 拉镜像；pypi / api.github.com / git ls-remote / jsdelivr / modelscope 可达；`huggingface.co` 与 `hf-mirror.com` 均连不通（调研当日实测）；`/home/z/hf` 现有 842 GB / 57 个 `models--*`，`/home/z/hf/datasets--*` 为 0；`llama-server` = llama.cpp `0.4.1-dev build 4399`（含 `--tools`）；`bfclenv` 内 `bfcl_eval==2026.3.23` 自带 21 个 `BFCL_v4_*.json`（4693 条），离线类别可跑，`web_search*` 需 SerpAPI key、`memory*` 需 `all-MiniLM-L6-v2` 权重（未缓存）。
 - producer: 调研工作包的实测记录（采集命令与输出在 `.wrapup/agentic/` 之前的调研日志里）；重申时刻 = 2026-10-27。
 - 影响：模型**版本/架构**这一整类 X 需要新权重，HF 不通时只能走 modelscope；基准侧同理（AppWorld / SWE-bench / GAIA 的数据在 HF）。这条不是缺陷而是资源事实，决策见 `docs/plan/subprojects.md` 的 `agentic` 节。
+
+## res74 :: agentic 基准的取用代价实测（2026-10-27）：BFCL 零网络可用；Terminal-Bench 2.0 的仓库今天取不下来（git clone 与 codeload tar 都超时，只有 `git ls-remote` 通），Docker Hub 与镜像站可拉、单题镜像数百 MB。
+
+- kind: measured
+- status: current
+- evidence: `git clone --depth 1 https://github.com/harbor-framework/terminal-bench-2` 与 `curl codeload …/tar.gz` 各自 300 秒/90 秒超时；`git ls-remote` 同一仓库 2 秒返回 HEAD；`docker pull alexgshaw/fix-git:20251031` 成功（493 MB）；`/home/z/.venvs/tb` 里 `pip install terminal-bench` 走 pypi 仍在下载（当时未完成）；`.wrapup/bfclenv` 内 `bfcl_eval==2026.3.23` 与 21 个 `BFCL_v4_*.json` 就在盘上，`.wrapup/bfcl_run.py` 可直接跑 `--mode tools|prompt`。
+- producer: 命令与日志见 `.wrapup/agentic/`（tb2 探路）与本条记录的时长；重申时刻 = 2026-10-27。
+- 影响：agentic 第一批的顺序改成「BFCL 先、TB2 后」——这不是偏好，是当日可达性决定的；TB2 一旦仓库可取，`p-ag1` 的三题探路照原样做。
