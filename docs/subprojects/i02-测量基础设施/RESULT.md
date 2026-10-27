@@ -482,6 +482,6 @@
 
 - kind: measured
 - status: current
-- evidence: `git clone --depth 1 https://github.com/harbor-framework/terminal-bench-2` 与 `curl codeload …/tar.gz` 各自 300 秒/90 秒超时；`git ls-remote` 同一仓库 2 秒返回 HEAD；`docker pull alexgshaw/fix-git:20251031` 成功（493 MB）；`/home/z/.venvs/tb` 里 `pip install terminal-bench` 走 pypi 仍在下载（当时未完成）；`.wrapup/bfclenv` 内 `bfcl_eval==2026.3.23` 与 21 个 `BFCL_v4_*.json` 就在盘上，`.wrapup/bfcl_run.py` 可直接跑 `--mode tools|prompt`。
+- evidence: `git clone --depth 1 https://github.com/harbor-framework/terminal-bench-2` 与 `curl codeload …/tar.gz` 各自 300 秒/90 秒超时；`git ls-remote` 同一仓库 2 秒返回 HEAD；`docker pull alexgshaw/fix-git:20251031` 成功（493 MB）；`pip install terminal-bench` 走默认 pypi 源时大 wheel 读超时（`files.pythonhosted.org` ReadTimeout），换 `https://pypi.tuna.tsinghua.edu.cn/simple` 后 3 分 26 秒装成 `terminal-bench==0.2.18`，`tb run/tasks/runs` 可用；但该 harness 的题集来自 registry 或 `--dataset-path`，仓库本体与题集今天都取不下来；`.wrapup/bfclenv` 内 `bfcl_eval==2026.3.23` 与 21 个 `BFCL_v4_*.json` 就在盘上，`.wrapup/bfcl_run.py` 可直接跑 `--mode tools|prompt`。
 - producer: 命令与日志见 `.wrapup/agentic/`（tb2 探路）与本条记录的时长；重申时刻 = 2026-10-27。
 - 影响：agentic 第一批的顺序改成「BFCL 先、TB2 后」——这不是偏好，是当日可达性决定的；TB2 一旦仓库可取，`p-ag1` 的三题探路照原样做。
