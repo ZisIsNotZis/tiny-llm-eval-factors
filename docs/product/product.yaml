@@ -1,24 +1,24 @@
 prod1:
-  _text: "项目定位：研究对象是本地模型的各种设置/超参数选择对基准实际跑分的影响；把整个项目说成「量化研究」是错的，量化只是其中一个子项。"
+  _text: "项目定位：benchmark 开源模型。自变量不止「设置」——模型本身（架构 / 版本 / 规模 / 激活规模）、量化（provider / 风格如 UD / 配置）、全部运行时参数，三类都是 X；把整个项目说成「量化研究」是错的，量化只是其中一个子项。"
   author: user
-  origin: ".scratch/originals/L0-要求.md items 1-2; .scratch/originals/README.md 项目定位"
+  origin: "用户 2026-10-27 对话原话（此条此前由旧文档写成「各种设置/超参数」，漏了模型本身这一整类自变量）"
   scope: general
   status: current
   domain:
     kind: scope
 prod2:
-  _text: "每一项设置单列一项研究：该设置为自变量 X，基准分数为因变量 Y，其余被固定的量构成系列（series）。"
+  _text: "每一项设置单列一项研究：该设置为自变量 X，基准分数为因变量 Y，其余被固定的量构成系列（series）。控制变量原则（一次只变一个）是对比的方式，不是范围的上限：模型的架构/版本/规模/激活规模各自可以成为一项研究的 X。"
   from: "product.prod1"
   author: user
-  origin: ".scratch/originals/L0-要求.md item 3"
+  origin: ".scratch/originals/L0-要求.md item 3 + 用户 2026-10-27 对话"
   scope: general
   status: current
   domain:
     kind: scope
 prod3:
-  _text: "研究问题与范围：量化如何映射到实测任务分数；非目标 = 排行榜、产品推荐、自我训练、以 PPL 为目标（PPL 只作参考）。"
+  _text: "研究问题与范围：这些 X 如何端到端地映射到「真实的 agentic 基准（多种类型、多种难度）」的最终跑分；非目标 = 排行榜、产品推荐、自我训练、以 PPL 为目标（PPL 只作参考）。"
   author: user
-  origin: ".scratch/originals/METHOD.md §1"
+  origin: ".scratch/originals/METHOD.md §1 + 用户 2026-10-27 对话（基准这一端明确为真实 agentic 基准，按类型与难度分）"
   scope: general
   status: current
   domain:
