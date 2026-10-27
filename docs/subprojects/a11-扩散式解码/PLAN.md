@@ -82,4 +82,12 @@
 - do: 在独立目录 checkout PR 头、`-DGGML_CUDA=ON` 编 `llama-diffusion-cli`；用本机已存的 `diffusiongemma-26B-A4B-it-Q4_K_M.gguf`（16.8 GB）跑最小提示；能出 token 再对齐协议（见 `docs/method/method.yaml`）。
 - do not: 不改仓库代码、不因「能加载」就给分数（协议不可对齐时结论只到 `LOADS-ONLY`）。
 - ac: 结论三选一且各带一条可重跑命令——`STILL-GATE-FAIL`（不能编/仍不认架构）/ `LOADS-ONLY`（能出 token，协议不可对齐）/ `MEASURABLE`（能按协议跑出与库可比的分数）。日志落 `.wrapup/axis11-diffusion-retest-<日期>/`。
-- status: 进行中（2026-10-27）。
+- status: 完成（2026-10-27）：结论是 `LOADS-ONLY` 的前半——门槛解除、能加载能生成、24 GB 装得下（`RESULT.md::res13`），但运行器只有 CLI、没有 server，协议对齐未做，所以**不给分数**。下一步是定生成协议（`plan4`：能否用同一提示集逐题生成、与库内对照臂 m144 的采样协议差在哪、差到能不能算同一系列）。
+
+## plan4 :: 给扩散轴一个分数之前，先定「CLI 逐题生成」与库内对照臂之间的协议差，差到哪一步就不能算同一系列。
+
+- why: `res13` 只证明能生成。库里的对照臂（`m144`，gemma-4-26B-A4B QAT Q4）走的是 `llama-server` + `exp.py` 固定采样协议；扩散侧是 `llama-diffusion-cli` 的 entropy-bound 采样（`max_steps=48`、`t=[0.4,0.8]`、`entropy_bound=0.1`、`stability=1`、`confidence=0.005`），没有 `temperature/top_k` 这套参数。
+- do: 逐项列出协议差（提示/模板、采样器、步数、生成长度上限、判分器），给出「可对齐」与「不可对齐」两栏；不可对齐的项说明它把两个数变成不同系列还是仍可比。
+- do not: 在协议差没写清之前往库写任何扩散分数；不因「输出看起来对」就记一行。
+- ac: 一张协议差表 + 一句判定（同一系列 / 不同系列 / 只能当 reference）+ 若要测，最小可行格（哪个基准、多少题、预计 GPU 分钟）。
+- status: 下一步（等 GPU 空出来）。

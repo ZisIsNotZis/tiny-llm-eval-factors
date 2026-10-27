@@ -7,7 +7,9 @@
 ## res1 :: 扩散这一轴在本机是「模型在、对照在、缺运行时」：库内 0 行、无产物、两个运行时都在架构查表处非零退出，所以它是 GATE-FAIL（非测量），不是低分。
 
 - kind: citation
-- status: current
+- status: superseded
+- superseded_by: "res13（2026-10-27：上游 PR 分支的运行时能加载并生成，门槛已解除；本条的「缺运行时」只对 mainline 构建成立）"
+- superseded_note: "本条保留为当时读数：mainline 构建确实不认该架构。门槛的复现命令仍在 res1 的 producer 里。"
 - evidence: 模型文件 `/home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf`（16,806,810,208 B，指向 HF blob `24523b6c833c9ce9f5f34f9b333ab1517d73d6f1e76a103645353114c8028bc5`）；库内该模型 0 行；`.wrapup/mres` 无该模型的任何产物；`llama-server` 与 `llama-diffusion-cli` 都打印 `unknown model architecture: 'diffusion-gemma'` 后退出 1
 - producer: `sqlite3 experiments.sqlite "select count(*) from experiments where lower(model) like '%diffusion%'"` → `0`；`python3 docs/subprojects/a11-扩散式解码/analysis/gate.py`
 - 对照侧不是空的：同家族自回归 68 行（`res4`），所以缺口只在运行时一侧。
@@ -111,3 +113,15 @@
 - evidence: `analysis/fixtures/transformers_code.json`（`transformers-5.17.0.dist-info`、三个文件的 sha256、四个标记、`configuration_diffusion_gemma.py:170`）
 - producer: `python3 docs/subprojects/a11-扩散式解码/analysis/transformers_code.py`（`--record` 落夹具，`--check` 与 live venv 比漂移）
 - 这是 `res7(c)` 的依据，也是后续接手人的入口：要提取扩散解码协议，读 `generation_diffusion_gemma.py` 的 `max_denoising_steps` 与 `accept_canvas`，而不是猜；本子项目没有做这一步（未测，不冒充）。
+
+## res13 :: 门槛解除：上游 PR #24423 分支的 `llama-diffusion-cli` 能加载本机这份 diffusion-gemma 并生成，24 GB 卡装得下（峰值 21.1 GiB）；但它只有 CLI、没有 server，所以静态基准可逐题生成，工具调用那类需要 OpenAI 端点与 `tools=` 的基准不可测。
+
+- kind: measured
+- status: current
+- evidence:
+  - 构建：`/home/z/llama-diffusion-pr`（PR `ggml-org/llama.cpp#24423` 头 `dd7f73b`，`-DGGML_CUDA=ON`，编译 973 秒），二进制 sha256 `f47ce12bcf6b1b50a03aa07289870d7354d2ad4742083db3f02e11f6b3ce9b8f`。
+  - 加载与生成：本机 `/home/z/hf/diffusiongemma-26B-A4B-it-Q4_K_M.gguf`（16,806,810,208 B）`-n 64 -ngl 99` 提示 `1+1=` → 输出含 `2`，rc=0；两次独立运行同一答案（`352.2 tok/s` 与 `201.3 tok/s`，同 6 步、同 1 block）。
+  - 显存峰值 21,131 MiB（基线 729 MiB），`canvas_length=256`，`n_ctx` 按 `-n` 铺（`-n 64` → 2304）。
+  - 运行器差异：mainline `0.4.1-dev build 4399` 仍然 `unknown model architecture: 'diffusion-gemma'`（即 `res1` 的读数在 mainline 上仍成立）。
+- producer: `.wrapup/axis11-diffusion-retest-2026-10-27/{build.log,smoke.log,run_determinism.log,gpu_samples.txt}`；`git -C /home/z/llama-diffusion-pr rev-parse --short HEAD`。
+- 限制：**还没有分数**。协议未对齐（CLI 逐题生成 vs 库里 a11 的对照臂 m144 走 server + 固定采样），所以本条只把「GATE-FAIL」改成「可加载可生成、待协议对齐后测量」；给分数要先定生成协议（见 `PLAN.md::plan3`）。
