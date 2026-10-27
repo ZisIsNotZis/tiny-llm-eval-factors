@@ -138,46 +138,78 @@ def tag_bpw(tag):
 
 
 # ---------- 模型来源 / 复现信息 ----------
-# /home/z/hf/<basename>.gguf 是 exp.py 实际加载的入口；它是 mscache 或 HF 缓存快照的
-# 符号链接。解析符号链接目标即可知道“这份 gguf 到底来自哪个机构 / 哪个仓库”。
-HFROOT = "/home/z/hf"
-_VENDOR_FALLBACK = [
-    ("UD-TQ", "unsloth (Unsloth Dynamic)"), ("TSL", "unsloth"), ("UD-", "unsloth (Unsloth Dynamic)"),
-    ("it-qat", "unsloth (QAT)"), ("m55", "本地自建 (m55 补丁)"), ("GSQ-RCO", "ISTA-DASLab"),
-    ("Ternary", "prism-ml / dealignai"), ("Bonsai", "prism-ml / dealignai"),
-]
+# 来源索引随仓库分发：report_inputs/model_sources.json。它是附录「模型来源」列的唯一来源。
+#
+# 老做法是在采集机上把 /home/z/hf/<basename>.gguf（exp.py 实际加载的入口，指向 mscache 目录或
+# HF 缓存快照的符号链接）现场 realpath，从符号链接目标反推机构 / 仓库 / 相对路径。换机后那个目录
+# 不存在，PROV 为空，来源列静默退化成「未知（本地文件，未找到下载来源）」/「—」，于是从库重建的
+# 报告与仓库里那份不再逐字节相同——这是可复现性缺陷（RESULT.md::res77），不是数据漂移。
+#
+# 现在索引是输入：缺文件、索引坏了、或某个被渲染的模型没有条目，一律构建失败并点名，绝不静默打印
+# 「未知」。「未知」这个字符串在本文件里已经不存在，所以这条缺陷在代码里不可再表达。
+MODEL_SOURCES = "report_inputs/model_sources.json"
+_SOURCE_FIELDS = ("file", "vendor", "repo", "path")
 
 
-def _parse_origin(target):
-    """从符号链接目标推 (机构, 仓库, 相对路径)。"""
-    if "/mscache/" in target:
-        rel = target.split("/mscache/", 1)[1]
-        parts = rel.split("/")
-        org = parts[0]
-        repo = parts[1] if len(parts) >= 3 else org
-        return org, repo, "mscache/" + rel
-    for part in target.split("/"):
-        if part.startswith("models--"):
-            bits = part.split("--")
-            org = bits[1] if len(bits) > 1 else part
-            repo = bits[2] if len(bits) > 2 else org
-            return org, repo, part
-    return None, None, target
-
-
-def _load_provenance():
-    prov = {}
+def _load_model_sources(path=MODEL_SOURCES):
+    """读来源索引 → {file: 条目}。任何结构问题都以 SystemExit 点名，不降级。"""
+    if not os.path.exists(path):
+        raise SystemExit(
+            f"报告无法构建：模型来源索引缺失 {path}\n"
+            f"  该索引随仓库分发，是附录「模型来源」列的唯一来源；没有它来源列只能打印「未知」，"
+            f"报告就不再可复现。")
     try:
-        names = os.listdir(HFROOT)
-    except OSError:
-        return prov
-    for fn in names:
-        if fn.endswith(".gguf"):
-            prov[fn] = _parse_origin(os.path.realpath(os.path.join(HFROOT, fn)))
-    return prov
+        with open(path, encoding="utf-8") as fh:
+            doc = json.load(fh)
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"报告无法构建：模型来源索引读不出来（{path}）：{exc}")
+    entries = doc.get("sources") if isinstance(doc, dict) else None
+    if not isinstance(entries, list) or not entries:
+        raise SystemExit(f"报告无法构建：模型来源索引里没有非空的 sources 列表（{path}）")
+    out, dup, order = {}, [], []
+    for i, ent in enumerate(entries):
+        if not isinstance(ent, dict) or any(k not in ent for k in _SOURCE_FIELDS):
+            raise SystemExit(f"报告无法构建：模型来源索引第 {i + 1} 条缺字段"
+                             f"（要 {', '.join(_SOURCE_FIELDS)}）：{ent!r}")
+        name = ent["file"]
+        if not isinstance(name, str) or not name.endswith(".gguf"):
+            raise SystemExit(f"报告无法构建：模型来源索引第 {i + 1} 条的 file 不是 .gguf 文件名：{name!r}")
+        if name in out:
+            dup.append(name)
+        out[name] = ent
+        order.append(name)
+    if dup:
+        raise SystemExit("报告无法构建：模型来源索引里有重复条目：" + ", ".join(sorted(set(dup))))
+    if order != sorted(order):
+        first = next((a for a, b in zip(order, sorted(order)) if a != b), "")
+        raise SystemExit(f"报告无法构建：模型来源索引不是按 file 排序（确定性要求）："
+                         f"{path} 里第一条失序的是 {first!r}")
+    return out
 
 
-PROV = _load_provenance()
+SOURCES = _load_model_sources()
+
+
+def _no_source(names, where):
+    """缺条目 → SystemExit 并逐条点名；这是来源列唯一的失败方式。"""
+    names = sorted({n if n.endswith(".gguf") else n + ".gguf" for n in names})
+    raise SystemExit(
+        f"报告无法构建：{len(names)} 个模型文件在 {MODEL_SOURCES} 里没有来源条目（{where}）：\n  "
+        + "\n  ".join(names)
+        + f"\n  给每个加一条 {{{', '.join(_SOURCE_FIELDS)}}} 并按 file 排序。"
+          f"  来源列不允许退回「未知」：那会让重建的报告与仓库里那份不同字节（RESULT.md::res77）。")
+
+
+def require_sources(tables, where="正文表格"):
+    """构建早期的快速失败：先算一遍报告会渲染哪些模型，缺条目就在这里一次点名。"""
+    names = set()
+    for t in tables:
+        for ms in (t.get("row_models") or []):
+            names.update(m for m in ms if m)
+    missing = sorted(n for n in names
+                     if (n if n.endswith(".gguf") else n + ".gguf") not in SOURCES)
+    if missing:
+        _no_source(missing, where)
 
 
 def model_meta(model):
@@ -188,20 +220,15 @@ def model_meta(model):
     _, size = mktables.lineage_and_size(base)
     if size == fam:
         size = "—"
-    org, repo, rel = PROV.get(base, (None, None, None))
-    if org is None:
-        vendor = "未知（本地文件，未找到下载来源）"
-        for pat, name in _VENDOR_FALLBACK:
-            if pat in base:
-                vendor = name
-                break
-    else:
-        vendor = org
+    src = SOURCES.get(base)
+    if src is None:
+        _no_source([base], "渲染附录时")
     qat = "是" if ("qat" in base.lower() or "-qat-" in base.lower()) else "否"
     return {
         "file": base, "family": fam, "size": size, "quant": quant or "—",
         "bpw": ("%.3f" % BPWMAP[base]) if base in BPWMAP else "—",
-        "qat": qat, "vendor": vendor, "repo": repo or "—", "path": rel or "—",
+        "qat": qat, "vendor": src["vendor"],
+        "repo": src["repo"] or "—", "path": src["path"] or "—",
     }
 
 
@@ -2165,6 +2192,10 @@ def main():
     T_MPL = table_mpl_langs()
     T_BFCL = table_bfcl()
     T_TF = table_testfrac()
+    # 先算来源，再画图：缺条目的模型在这里一次性点名，不让两分钟的作图白白跑完再失败。
+    # 这里的表是各节表格的超集（sections 只用 T[...] / T_MPL / T_BFCL / T_TF），
+    # 所以画图前就能把「某个被渲染的模型没有来源」这件事变成非零退出。
+    require_sources([*T.values(), T_MPL, T_BFCL, T_TF], "正文表格")
     sections = [
         ("一、量化位宽（每个权重平均几个比特）",
          "X = 有效位宽（越大表示每个权重平均比特越多）；Y = 各基准分数；系列 = 模型家族（同家族 = 同一套 base 权重，只换量化文件）。",

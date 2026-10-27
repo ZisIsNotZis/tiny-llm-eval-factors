@@ -94,11 +94,12 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/bfcl_gap.json report_inputs/moe_feasibility.json \
          report_inputs/bfcl_judge.json report_inputs/gsq.json \
          report_inputs/sampling_collapse.json report_inputs/spec_decode.json \
+         report_inputs/model_sources.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do
     [ -f "$f" ] || { missing_inputs=1; say "missing report input: $f"; }
 done
 if [ "$missing_inputs" = 0 ]; then
-    record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / docs@1）"
+    record PASS "报告输入（mktables / bpw_map / eval_status / open_questions / paired_deltas / reproducibility / 非测量登记册 / model_sources / docs@1）"
 else
     record FAIL "报告输入缺失（见上）"
 fi
@@ -157,6 +158,14 @@ else
     record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_rid.$$ | cut -c1-200)"
 fi
 rm -f /tmp/reproduce_rid.$$
+# 模型来源索引同理：它是输入，不是现场解析本机目录的产物（res77）。改坏一条仓库名 → 检查红并点名；
+# 删一条条目 / 写成非法 JSON / 整个文件不在场 → 报告构建非零退出并点名，不静默变「未知」。
+if python3 checks/model_sources_negative_control.py >/tmp/reproduce_msnc.$$ 2>&1; then
+    record PASS "模型来源索引的负控（改仓库名→检查红并点名；删条目/坏 JSON/缺索引→构建红并点名）"
+else
+    record FAIL "$(grep -m1 'FAIL' /tmp/reproduce_msnc.$$ | cut -c1-200)"
+fi
+rm -f /tmp/reproduce_msnc.$$
 
 # 5) 数据库
 if python3 checks/db_check.py >/tmp/reproduce_db_check.$$ 2>&1; then
@@ -374,6 +383,15 @@ if [ "$BUILD_OK" = 1 ]; then
 else
     record SKIP "报告与产物一致（第 9 步没有产出本次报告，不拿仓库里那份旧文件比对）"
 fi
+
+# 11) 模型来源列：每个被印出的 gguf 都要有条目，且「量化发布方 / GGUF 仓库 / 加载路径」三列与
+#     report_inputs/model_sources.json 逐字相同（res77 的守卫）。报告里印「未知」＝这条缺陷回来了。
+out=$(python3 checks/model_sources.py 2>&1); rc=$?
+case "$rc" in
+    0) record PASS "模型来源列与随仓库分发的索引逐字一致（$(printf '%s' "$out" | head -1)）" ;;
+    2) record BLOCKED "模型来源列：$(printf '%s' "$out" | grep -m1 '^BLOCKED' | sed 's/^BLOCKED //')" ;;
+    *) record FAIL "$(printf '%s' "$out" | grep -m1 -e '^FAIL' -e '  - ' | cut -c1-200)" ;;
+esac
 
 say ""
 say "== 复现核对 =="
