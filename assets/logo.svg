@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" width="200" height="40" role="img" aria-label="tiny-llm-eval-factors">
+  <title>tiny-llm-eval-factors</title>
+  <style>
+    .mark { fill: #2f81f7; }
+    .mark-soft { fill: #2f81f7; opacity: .35; }
+    .rule { stroke: #8b949e; stroke-width: 1.2; }
+    .word { fill: #1f2328; font-family: ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 12.5px; font-weight: 600; letter-spacing: .2px; }
+    .sub  { fill: #6e7781; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 6.4px; letter-spacing: .6px; }
+    @media (prefers-color-scheme: dark) {
+      .word { fill: #e6edf3; }
+      .sub  { fill: #8b949e; }
+      .rule { stroke: #6e7781; }
+    }
+  </style>
+
+  <!-- mark: four bit-width steps on a score axis, with the knee marked -->
+  <rect class="mark-soft" x="3"  y="22" width="4" height="10" rx="1"/>
+  <rect class="mark-soft" x="9"  y="18" width="4" height="14" rx="1"/>
+  <rect class="mark"      x="15" y="12" width="4" height="20" rx="1"/>
+  <rect class="mark"      x="21" y="8"  width="4" height="24" rx="1"/>
+  <path class="rule" d="M2 34 H32" stroke-linecap="round"/>
+  <circle class="mark" cx="23" cy="6" r="2"/>
+
+  <text class="word" x="39" y="22">tiny-llm-eval-factors</text>
+  <text class="sub"  x="39.5" y="32">ONE FACTOR AT A TIME</text>
+</svg>
