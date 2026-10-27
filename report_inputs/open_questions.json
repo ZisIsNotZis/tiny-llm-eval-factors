@@ -171,6 +171,36 @@
    "text": "**第三条路是「代码在、权重不在」**：`transformers 5.17.0` 的 `diffusion_gemma` 就在本机 venv 里（模型类、生成循环、48 步默认、`accept_canvas`，见 `RESULT.md::res12`），缺的是 bf16 权重（`n_params×2 = 47.03 GiB`，本机只有 Q4_K_M 一份 GGUF）与其许可证（许可证未查，不是已知不可用）。"
   },
   {
+   "subproject": "a15-模型家族",
+   "path": "docs/subprojects/a15-模型家族/PLAN.md",
+   "heading": "未解问题",
+   "text": "同权重不同架构 :: 要让「架构」与「家族包」分开，需要一对**同一份权重**分别以稠密与 MoE 形态存在的受控点。"
+  },
+  {
+   "subproject": "a15-模型家族",
+   "path": "docs/subprojects/a15-模型家族/PLAN.md",
+   "heading": "未解问题",
+   "text": "高档位上的家族排序 :: 可读的量化档基本只有相邻两档（Q2、Q3）。再往上一档，两家族的实测 bpw 差就超过"
+  },
+  {
+   "subproject": "a15-模型家族",
+   "path": "docs/subprojects/a15-模型家族/PLAN.md",
+   "heading": "未解问题",
+   "text": "单跑噪声 :: 每个受控格是一条（或若干条同分）run，Wilson 区间只覆盖抽样误差，不覆盖重测误差。"
+  },
+  {
+   "subproject": "a15-模型家族",
+   "path": "docs/subprojects/a15-模型家族/PLAN.md",
+   "heading": "未解问题",
+   "text": "拆不开的三份 :: 架构、训练配方、tokenizer 在这份数据里永远同时变。本轮找到的唯一「半控」是同一份权重换"
+  },
+  {
+   "subproject": "a15-模型家族",
+   "path": "docs/subprojects/a15-模型家族/PLAN.md",
+   "heading": "未解问题",
+   "text": "agentic 基准上的家族差 :: BFCL 只有单轮五个类别构成跨家族受控对，多轮找不到跨家族对照（a13 的边界），"
+  },
+  {
    "subproject": "i02-测量基础设施",
    "path": "docs/subprojects/i02-测量基础设施/PLAN.md",
    "heading": "未解问题",
@@ -243,6 +273,12 @@
    "path": "docs/subprojects/a11-扩散式解码/PLAN.md",
    "heading": "未解问题",
    "count": 4
+  },
+  {
+   "subproject": "a15-模型家族",
+   "path": "docs/subprojects/a15-模型家族/PLAN.md",
+   "heading": "未解问题",
+   "count": 5
   },
   {
    "subproject": "i02-测量基础设施",

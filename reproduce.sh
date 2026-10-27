@@ -93,6 +93,7 @@ for f in .wrapup/mktables.py .wrapup/bpw_map.json report_inputs/eval_status.json
          report_inputs/size_claims.json report_inputs/kv_evidence.json \
          report_inputs/bfcl_gap.json report_inputs/moe_feasibility.json \
          report_inputs/bfcl_judge.json report_inputs/gsq.json \
+         report_inputs/family_pairs.json \
          report_inputs/sampling_collapse.json report_inputs/spec_decode.json \
          report_inputs/model_sources.json \
          docs/subprojects/i02-测量基础设施/non_measurements.tsv docs/docs.schema.yaml; do

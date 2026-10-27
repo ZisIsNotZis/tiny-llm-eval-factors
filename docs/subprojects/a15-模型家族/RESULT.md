@@ -132,3 +132,18 @@
 4. **`family_of` 不剥「家族名 + 供应商/配方尾巴」**：`Qwen3.8-27B` / `-GSQ-RCO-IQ3_S-mtp` / `-IQ3_XXS-mtp` 与 `LFM2.5-8B-A1B` / `-a04-uni45` 被当成不同家族，于是同一个家族对比被数了 3 次（`GLM` vs `Qwen3.8`）与 2 次（`LFM2.5` vs `Qwen3.5`），「10 个可读家族对」是虚高。现在按「同参数量 + 名字加尾巴」合并到不动点（54 个规范家族 / 58 个原始标签），可读家族对因此从 10 掉到 6。合并顺带暴露了第二个错：合并后同一家族的臂落进同一个交互组，`换臂`（a04 的比特分配、a10 的第三方量化、面板配方）被当成「提位宽」，凭空造出 3 个翻转（`Qwen3.8-27B | gemma-4-26B-A4B` 的 mbpp/mbpp-plus、`LFM2.5-8B-A1B | Qwen3.5-9B` 的 truthfulqa_mc2）；现在交互组的分组键里带两侧的 **arm id**（剥掉量化 token 的主干；面板配方与无量化 token 的臂保留整名），翻转回到 8 次，且 8 次都是在「同一份配方、只提位宽」的两档之间。
 
 四处都被 `run_all.py` 的关系式断言与两个负控盯着：候选数 = 排除数 + 有格候选数、每格的 `bpw_matched` 必须等于闸门、清单里不许有同族格、规范家族映射必须闭合、配方对照必须落在同一规范家族内、改身份栏/改尺寸/删真值必掉对并点名、同权重尾巴必须并成一个家族而不同参数量的尾巴必须不并、把一对分数改成相等则 `family_resolvable` 或 `flips` 必变。
+
+### res9 :: 报告第十六节已由随仓库分发的派生索引生成：6 个可读家族对 / 152 格 / 69 格区间可分辨 / 8 次翻转；报告从 21 节 86 图变为 22 节 87 图，本机重建逐字节相同
+
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- from: result.res4, result.res5
+- origin: `report_inputs/build_family_pairs.py`（读本层的 `analysis/pairs.json` 与 `analysis/effects.json`）+ `make_report.py` 的第十六节
+- evidence: 派生索引只保留家族层（`bpw_matched` 且 `same_n_params=False`）的 152 格、6 个可读对、8 个翻转组与 76 格配方对照；`report_inputs/build_family_pairs.py --check` 与本层产物逐字节一致；`checks/report_inputs_drift.py` 新增第 14 条判断（漂移=FAIL、缺席=SKIP）；报告第十六节用一个汇总表、一张只画 69 个可分辨格的森林图和一段从 JSON 取数的分析组成，不读子项目文档。新增 arm `LFM2.5-8B-A1B-a04-uni45.gguf`（本地自建、无下载来源）在 `report_inputs/model_sources.json` 里登记为 `vendor=本地自建 (a04 统一比特臂)`、`repo=null`、`path=null`；`checks/model_sources.py` 只允许本地自建臂使用空 path，其余模型仍必须三列齐全。报告字节：`report.html` sha256 `05d6048a4d2a70f90046de32c01b6ab111de22804536b72d35bf10bd24576705`、11150937 字节、22 个 `<h2>`、87 张图；`report_inputs/open_questions.json` 随本层的 PLAN 重建（11 节 / 36 条 / 6 个文件跳过）。
+- repro: `python3 report_inputs/build_family_pairs.py --check`（实跑输出：`PASS: family_pairs.json 与 a15 产物一致（152 格 / 6 对）`）
+- repro: `python3 checks/model_sources.py`（实跑输出：`索引 71 条；报告附录 316 行 / 71 个模型；未使用的条目 0 条` + `PASS`）
+- repro: `python3 checks/report_check.py`（实跑输出：`PASS: report agrees with the artefacts`）
+- repro: `./reproduce.sh`（本机 exit 0；报告从库重建后与仓库那份逐字节相同，见本次提交后的复现捕获）
+- 边界：报告第十六节只写本层 res4/res5/res6/res8 已有的数；它不把「家族包」改写成「架构」，也不把 69 个可分辨格当成 69 次独立重复。图只画区间不相交的格，未画出的 83 格不是 0。

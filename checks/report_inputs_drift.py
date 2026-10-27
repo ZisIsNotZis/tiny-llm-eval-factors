@@ -67,6 +67,9 @@ CHECKS = [
     ("report_inputs/eval_status.json", "build_eval_status.py",
      "eval_status.json 与现有落盘产物一致",
      "eval_status.json 与落盘产物不一致：python3 report_inputs/build_eval_status.py"),
+    ("report_inputs/family_pairs.json", "build_family_pairs.py",
+     "family_pairs.json 与 a15 的家族效应产物一致",
+     "family_pairs.json 与 a15 的产物不一致：python3 report_inputs/build_family_pairs.py"),
 ]
 
 # 来源不在盘上时这些输入**无法**当场核对：这是缺席，不是漂移。登记的是来源路径，

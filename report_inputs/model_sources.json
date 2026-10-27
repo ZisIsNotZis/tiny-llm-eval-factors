@@ -4,7 +4,7 @@
     "command": "git cat-file -p HEAD:report.html",
     "commit": "912ad53ecd3b92c1df7048bae333809883a51db2",
     "report_sha256": "7159de4480f65bbdd5b92526bd8b2c531fce7d1c59cbfce74d0a56baa7211725",
-    "how": "取附录「全部模型文件」15 张复现表的 <code>file</code>/量化发布方/GGUF 仓库/加载路径四列；repo 为「—」的写 null（本地自建 m55 文件在采集机上没有下载来源）"
+    "how": "取附录「全部模型文件」15 张复现表的 <code>file</code>/量化发布方/GGUF 仓库/加载路径四列；repo 为「—」的写 null（本地自建 m55 文件在采集机上没有下载来源）；另有 1 条本地自建臂（LFM2.5-8B-A1B-a04-uni45.gguf）是后加的：它没有下载来源，vendor 记「本地自建 (a04 统一比特臂)」、repo/path 为 null"
   },
   "sources": [
     {
@@ -42,6 +42,12 @@
       "vendor": "unsloth",
       "repo": "LFM2.5-8B-A1B-GGUF",
       "path": "mscache/unsloth/LFM2.5-8B-A1B-GGUF/LFM2.5-8B-A1B-UD-Q3_K_XL.gguf"
+    },
+    {
+      "file": "LFM2.5-8B-A1B-a04-uni45.gguf",
+      "vendor": "本地自建 (a04 统一比特臂)",
+      "repo": null,
+      "path": null
     },
     {
       "file": "LFM2.5-8B-A1B-m55-Q3_K_M.gguf",

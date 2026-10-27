@@ -72,7 +72,11 @@ def load_sources() -> dict:
             errors.append(f"{name}：vendor 为空")
         if ent["repo"] is not None and not isinstance(ent["repo"], str):
             errors.append(f"{name}：repo 只能是字符串或 null")
-        if not isinstance(ent["path"], str) or not ent["path"]:
+        if ent["path"] is None:
+            # 本地自建臂没有下载来源，也没有可记录的加载入口；只允许这一类用 null。
+            if ent["repo"] is not None or not str(ent["vendor"]).startswith("本地自建"):
+                errors.append(f"{name}：path=null 只允许用于本地自建臂（且 repo 必须为 null）")
+        elif not isinstance(ent["path"], str) or not ent["path"]:
             errors.append(f"{name}：path 为空")
         if name in out:
             errors.append(f"{name}：重复条目")

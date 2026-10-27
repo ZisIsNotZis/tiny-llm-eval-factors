@@ -96,6 +96,7 @@ LBL = {
 }
 
 BPWMAP = json.load(open(".wrapup/bpw_map.json"))
+FAMILY = json.load(open("report_inputs/family_pairs.json"))
 QAT_PAIRS = [
     ("gemma-4-12B-it", "UD-Q4_K_XL", "m140-qat-gemma12b-q4", "m141-native-gemma12b-q4"),
     ("gemma-4-31B-it", "UD-Q4_K_XL", "m142-qat-gemma31b-q4", "m143-native-gemma31b-q4"),
@@ -919,6 +920,10 @@ def render_table(t):
             c = cells.get(k)
             if c is None or c[0] is None:
                 tds.append("<td class='nr'>—</td>")
+            elif unit == "count":
+                tds.append("<td>%d</td>" % c[0])
+            elif unit == "pp":
+                tds.append("<td>%+.1f%s</td>" % (c[0], (" <span class='nr'>" + str(c[1]) + "</span>") if c[1] else ""))
             elif unit == "tok_s":
                 tds.append("<td>%.1f <span class='nr'>(%s)</span></td>" % (c[0], c[1] if c[1] else 0))
             elif c[1] is None:
@@ -1402,6 +1407,117 @@ def fig_testfrac(t):
         out.append(save(fig, f"testfrac_{lang}",
                         "纵轴不是 pass@1 而是“测试通过比例”：用于区分三元模型是“错得更多”还是“错得不同”。"))
     return out
+
+
+def table_family():
+    """家族对 × 控制格/可分辨格/基准数；row_models 让附录列出用到的 arm 文件。"""
+    rows = []
+    for p in FAMILY["pairs"]:
+        cells = {"cells": (p["cells"], None), "res": (p["resolvable"], None),
+                 "bench": (len(p["benches"]), None)}
+        rows.append((f'{p["family_a"]} − {p["family_b"]}', "|Δbpw|≤0.25", cells, p["models"]))
+    return {"title": "模型家族：每个家族对的控制格与可分辨格", "c1_name": "家族对（A − B）",
+            "c2_name": "匹配层", "col_keys": ["cells", "res", "bench"],
+            "col_labels": ["控制格", "区间可分辨", "基准数"], "unit": "count",
+            "rows": [(a, b, c) for a, b, c, _m in rows],
+            "row_models": [m for *_, m in rows],
+            "counts": {k: sum(1 for _a, _b, c, _m in rows if c.get(k)) for k in ("cells", "res", "bench")},
+            "data_cols": 3}
+
+
+def fig_family():
+    """可分辨的家族差森林图（一条 = 一对家族在一个基准上的一格）。"""
+    cells = [c for c in FAMILY["cells"] if c["resolvable"]]
+    cells.sort(key=lambda c: (c["family_a"], c["family_b"], c["bench"], c["bpw_mean"]))
+    ys = list(range(len(cells)))
+    fig, ax = plt.subplots(figsize=(11.2, 0.21 * len(cells) + 2.2))
+    last = None
+    for y, c in zip(ys, cells):
+        lo = (c["ci_b"][0] - c["ci_a"][1]) * 100
+        hi = (c["ci_b"][1] - c["ci_a"][0]) * 100
+        col = "#b3261e" if c["delta_pp"] > 0 else "#2c6fbb"
+        ax.plot([lo, hi], [y, y], color=col, lw=2.0, solid_capstyle="round", zorder=2)
+        ax.plot([c["delta_pp"]], [y], "o", color=col, ms=6.2, zorder=3)
+        if last and (c["family_a"], c["family_b"]) != last:
+            ax.axhline(y - 0.5, color="#d7dde5", lw=.8, zorder=0)
+        last = (c["family_a"], c["family_b"])
+    ax.axvline(0, color="#333", lw=1, ls="--")
+    ax.set_yticks(ys)
+    ax.set_yticklabels([f'{c["family_a"]} → {c["family_b"]} · {LBL.get(c["bench"], c["bench"])}'
+                        f' @ {c["bpw_mean"]:.2f}bpw' for c in cells], fontsize=6.4)
+    ax.invert_yaxis()
+    ax.set_xlabel("B − A（基准分数差，百分点；线 = 两条 Wilson 区间合成的非配对区间）")
+    ax.set_title("可分辨的家族差：69 格；红 = B 更高，蓝 = B 更低", fontsize=11.5)
+    from matplotlib.lines import Line2D
+    ax.legend(handles=[Line2D([], [], marker="o", ls="none", color="#b3261e", label="B 更高"),
+                       Line2D([], [], marker="o", ls="none", color="#2c6fbb", label="B 更低")],
+              fontsize=7.5, loc="lower right")
+    return [save(fig, "FAMILY_deltas",
+                 "只画 95% 区间不相交的格；横线由两侧 Wilson 区间合成，未做配对。"
+                 "一条 = 一对家族在一个基准上的一个位宽匹配格，不是独立重复。")]
+
+
+def family_html():
+    c = FAMILY["counts"]
+    res = [x for x in FAMILY["cells"] if x["resolvable"]]
+    dmin = min(x["delta_pp"] for x in res)
+    dmax = max(x["delta_pp"] for x in res)
+    rmax = max(res, key=lambda x: x["delta_pp"])
+    rmin = min(res, key=lambda x: x["delta_pp"])
+    flip_rows = []
+    for f in FAMILY["flips"]:
+        lv = sorted(f["levels"], key=lambda x: x["bpw_mean"])
+        if len(lv) < 2:
+            continue
+        flip_rows.append(
+            f'{f["family_a"]} − {f["family_b"]} · {LBL.get(f["bench"], f["bench"])}：'
+            + " → ".join(f'{x["delta_pp"]:+.1f} pp @ {x["bpw_mean"]:.2f}bpw' for x in lv))
+    rec = FAMILY["recipe"]
+    lg = [f for f in FAMILY["flips"]
+          if f["family_a"] == "Llama-3.2-3B" and f["family_b"] == "granite-4.1-3b"]
+    lg_gaps = [x["bpw_gap"] for x in FAMILY["cells"]
+               if x["family_a"] == "Llama-3.2-3B" and x["family_b"] == "granite-4.1-3b"]
+    unstable = [o for o in FAMILY["orderings"] if not o["stable"]]
+    missing_n = c["family_cells"] - c["family_cells_with_intervals"]
+    return (
+        "<ul>"
+        f"<li><b>怎么读。</b>X 是<b>模型家族</b>——架构、训练配方、tokenizer 的整包，"
+        "不是单一“架构”变量。控制条件是：同基准、同协议、同其余运行时参数、两侧实测参数量相差 ≤10%、"
+        f"两侧实测位宽差 ≤0.25 bpw。库里 <b>{c['label_matched_cells']}</b> 个格满足“身份栏相同”，"
+        f"但其中 <b>{c['quant_label_missing_cells']}</b> 个的量化档标签是 NULL，"
+        f"所以“同档位”不能当同比特预算用；加位宽闸门后剩 <b>{c['bpw_matched_cells']}</b> 格，"
+        f"再去掉同权重（同张量形状）的格，家族层是 <b>{c['family_cells']}</b> 格、"
+        f"<b>{c['family_resolvable']}</b> 格两侧区间不相交，来自 "
+        f"<b>{c['family_pairs_readable']}/{c['family_pairs_with_cells']}</b> 个有格的家族对。</li>"
+        f"<li><b>量级。</b>可分辨格从 <b>{dmin:+.1f} pp</b> 到 <b>{dmax:+.1f} pp</b>："
+        f'最大正差是 <code>{rmax["family_a"]} → {rmax["family_b"]}</code> 在 '
+        f'{LBL.get(rmax["bench"], rmax["bench"])}（{rmax["delta_pp"]:+.1f} pp，'
+        f'{rmax["bpw_mean"]:.2f} bpw）；最大负差是 '
+        f'<code>{rmin["family_a"]} → {rmin["family_b"]}</code> 在 '
+        f'{LBL.get(rmin["bench"], rmin["bench"])}（{rmin["delta_pp"]:+.1f} pp，'
+        f'{rmin["bpw_mean"]:.2f} bpw）。这些差都远大于同一格里的量化档噪声，'
+        "但它们不是架构的净效应。</li>"
+        f"<li><b>排序会随量化档翻。</b>在固定家族对、固定其余身份栏、且<b>两档都</b>通过位宽闸门的 "
+        f"{c['interaction_groups']} 个交互组里（{c['groups_with_two_levels']} 组有 ≥2 个档），"
+        f"家族差的符号翻转 <b>{c['sign_flips']}</b> 次。最整齐的一组是 "
+        f"<code>Llama-3.2-3B — granite-4.1-3b</code>：在 {len(lg)} 个基准上同时从低档的负翻到高档的正"
+        f"（Q2_K 的 granite 在代码上接近地板，Q3_K_M 抬起；两档位宽差只有 {min(lg_gaps):.2f}–{max(lg_gaps):.2f} bpw）。"
+        "这更像“两个家族对量化的鲁棒性不同”，而不是普遍意义上的排序不稳；"
+        f"逐基准排序里只有 {len(unstable)} 个可比组真的换了序"
+        f"（{', '.join(o['bench'] for o in unstable) or '—'}；HumanEval Python 两档都是 Llama 更高）。</li>"
+        f"<li><b>为什么不能写成“架构效应”。</b>同一份权重、同样位宽预算，只换配方就能挪 "
+        f"<b>{rec['resolvable_delta_min']:+.1f} … {rec['resolvable_delta_max']:+.1f} pp</b>"
+        f"（{rec['resolvable']}/{rec['cells']} 格可分辨）；这是本数据里唯一“已知同权重”的对照。"
+        "跨家族时训练配方与 tokenizer 也跟着换，且库里无法把配方匹配掉。"
+        "所以任何一个 Δ 只能读成“家族包”的差；这份读法能回答“同尺寸换家族值不值”，"
+        "不能回答“架构单独值多少”。</li>"
+        + (f"<li><b>翻转逐条：</b>{'；'.join(flip_rows)}。</li>" if flip_rows else "")
+        + f"<li><b>边界。</b>① 单跑、无逐题产物，“可分辨”只表示两条 Wilson 区间不相交，不是重测稳定；"
+        f"② {c['quant_label_missing_family_cells']}/{c['family_cells']} 个家族格的量化档标签为 NULL，"
+        f"位宽取 GGUF 张量实测、不取档位名；③ {missing_n} 格题量未测，只能记“未测”，不记 0；"
+        "④ 这是对已测格的事后匹配，不新起测量——换协议或换新家族都需要新跑。"
+        "验收装置：<code>python3 「docs/subprojects/a15-模型家族/analysis/run_all.py」 --selftest</code>。</li>"
+        "</ul>")
 
 
 def section(H, title, definition, tables, figures, analysis_html):
@@ -2338,6 +2454,11 @@ def main():
          "因此与标准列同源，不引入新协议。</li>"
          + testfrac_corpus_note() +
          "</ul>"),
+        ("十六、模型家族（架构代理）：同尺寸换家族的代价与量化档交互",
+         "X = 模型家族（架构 + 训练配方 + tokenizer 的整包；不是单一架构变量）；Y = 各基准分数；"
+         "控制 = 同基准、同生成协议、同其余运行时参数、两侧实测参数量相差 ≤10%、两侧实测位宽差 ≤0.25 bpw。"
+         "行 = 家族对；逐格值只在两侧区间不相交时画进森林图。",
+         [table_family()], fig_family(), family_html()),
     ]
     all_tables = []
     for title, defn, tables, figs, analysis in sections:
@@ -2387,9 +2508,14 @@ def main():
              "<tr><td>思考开关</td><td class='sig'>小预算下开思考更低</td><td>多数配置接近</td><td>—</td></tr>"
              "<tr><td>量化感知训练 QAT</td><td class='sig'>2-bit 下 QAT 更低；4-bit 中 12B 的 MMLU 显著更低</td><td>4-bit 其余配对</td><td>31B（显存不足）</td></tr>"
              "<tr><td>GSQ-RCO 方案</td><td>—</td><td class='sig'>全部差值都测不出</td><td>—</td></tr>"
-             "<tr><td>扩散式解码</td><td>—</td><td>—</td><td class='nr'>可加载但不可比（缺同宽对照臂）</td></tr></table>")
+             "<tr><td>扩散式解码</td><td>—</td><td>—</td><td class='nr'>可加载但不可比（缺同宽对照臂）</td></tr>"
+            "<tr><td>模型家族（架构代理）</td><td class='sig'>同尺寸换家族的差可达数十 pp；家族排序可随量化档翻转</td>"
+            "<td>同权重换配方也能挪同量级的分数（配方是未匹配的混杂）</td>"
+            "<td class='nr'>架构的净效应不可识别（无同权重不同架构对）</td></tr></table>")
     H.append("<p class='def'><b>一句话总结：</b>量化损失在代码、推理、指令上明显，在选择题知识与事实性上很小；"
-             "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>量化位宽至少约 4 比特/权重，再往上除非能测出收益否则不必多花比特</b>。</p>"
+             "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>量化位宽至少约 4 比特/权重，再往上除非能测出收益否则不必多花比特</b>。"
+             "同尺寸换家族可以比一个量化档的差更大，而且排序会随量化档翻转；但这是“家族包”的差，"
+             "不能拆成架构的净效应——同一份权重只换配方就已经能挪动同量级的分数。</p>"
          "<ul>" + scheme_effects_html() + "</ul>")
     H.append("</body></html>")
     open("report.html", "w").write("\n".join(H))

@@ -15,6 +15,7 @@
 | KV 缓存精度：短上下文改变个别题的判定，净值双向且方向不单调；长上下文由针检索覆盖到受测上限，未观察到差异 | `docs/subprojects/a05-KV 缓存精度/RESULT.md::kv-short-panel`、`docs/subprojects/a05-KV 缓存精度/RESULT.md::kv-long-ctx-needle` | 成立（旧措辞「短上下文无可测差异」已撤，理由在 `docs/subprojects/a05-KV 缓存精度/RESULT.md::kv-short-wording`） |
 | 采样 / 解码：温度抬高压低代码通过率；`top_k` 只在温度为零时惰性；MMLU 对采样完全无反应 | `docs/subprojects/a06-采样与解码参数/RESULT.md::res10` | 成立 |
 | 投机解码：草稿深度换速度，但既不是单调、也不是到处成立；输出与不开投机不逐字节相同，MMLU 逐位相同是结构事实而不是质量证据 | `docs/subprojects/a07-投机解码/RESULT.md::res11` | 未核实（`docs/subprojects/a07-投机解码/RESULT.md` 的节点没有 status 行） |
+| 模型家族（架构代理）：同尺寸、同基准、同协议、同有效位宽下，换家族的差可达数十 pp，且家族排序可随量化档翻转；但该差是「架构+训练配方+tokenizer」的家族包，不能读成架构净效应 | `docs/subprojects/a15-模型家族/RESULT.md::res4`、`docs/subprojects/a15-模型家族/RESULT.md::res5` | 部分（post-hoc 匹配、单跑；家族包与配方混杂见 `docs/subprojects/a15-模型家族/RESULT.md::res6`、`docs/subprojects/a15-模型家族/RESULT.md::res8`） |
 | 规模盘点（引用，非测量；随入库变化） | `docs/subprojects/i02-测量基础设施/RESULT.md::res15` | 成立（`kind: citation`） |
 
 ## 二、负结果（看起来合理的设计在这里输了 / 测不出差异）

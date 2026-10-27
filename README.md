@@ -30,16 +30,17 @@ If you need `lm-eval` runs, rebuild the venv from the pinned dependencies rather
 ./bootstrap_venv.sh .wrapup/lmenv requirements.txt
 ```
 
-**The CJK font is a reproduction condition, not a nicety.** Its path and expected sha256 have exactly one home: `CJK_FONT` / `CJK_FONT_SHA256` in `make_report.py`. The build prints the font it actually used as `cjk font: <path> sha256=<hash>`, and `./reproduce.sh` checks that line as its own step. A missing or different font makes the build **fail** and say what to install; it never silently substitutes one, because 86 figures would change their glyphs and metrics and the report would stop being byte-identical.
+**The CJK font is a reproduction condition, not a nicety.** Its path and expected sha256 have exactly one home: `CJK_FONT` / `CJK_FONT_SHA256` in `make_report.py`. The build prints the font it actually used as `cjk font: <path> sha256=<hash>`, and `./reproduce.sh` checks that line as its own step. A missing or different font makes the build **fail** and say what to install; it never silently substitutes one, because 87 figures would change their glyphs and metrics and the report would stop being byte-identical.
 
 What a clean clone cannot rebuild: model weights (`.gguf` files are not in the repo and the original weight files are no longer on this machine — the repo has no `artifacts.tsv` for them and does not plan one, those bytes are lost), the `/tmp/MultiPL-E` prompt cache, the CJK font (a system package — install it with the command above), and the evaluation runs themselves (they need a GPU and model files).
 
 ## What it can do now
 
-Sixteen research units are closed, and the first delivered report is 21 sections / 86 figures (`report.html`, rebuilt by one command). The measured factors:
+Seventeen research units are closed, and the delivered report is 22 sections / 87 figures (`report.html`, rebuilt by one command). The measured factors:
 
 - **Quantization bit width** — a recomputable score curve per model family with breakpoints and intervals; only Qwen3.5-2B has a non-degenerate breakpoint in the recorded data. Ternary and extreme-low-bit variants have explicit supported / refuted / bounded verdicts, and the 12B MMLU anomaly is attributed to a file/protocol property by a bit-identical repeat.
 - **Model size** — the legacy "size" column is audited per row and only partly credible; size is replaced as a factor by GGUF tensor parameter counts from shipped fixtures, with 63 same-family same-recipe curves registered and the multi-variable regression judged unidentifiable.
+- **Model family (architecture proxy)** — at matched true parameter count, protocol and effective bit width, switching families moves scores by tens of points and can flip the family ordering between quantization levels; the contrast is a *family bundle* (architecture + training recipe + tokenizer), not an isolated architecture effect.
 - **Quantization scheme vs vendor label** — at equal bytes the two are indistinguishable at this design's resolution; the label turns out to be a proxy for bit allocation.
 - **MoE layer bit allocation** — uniform beats expert-first in a pinned-budget contrast, and the budget term is separable from the allocation term; the win is *n=1* against a known-pathological arm, and that is written down as such.
 - **KV-cache precision** — short context moves individual item verdicts in both directions while aggregate scores look unchanged; long context is covered by needle retrieval up to 32k with no observed difference and a measurable floor.
@@ -60,7 +61,7 @@ tiny-llm-eval-factors/
 ├── make_report.py         # renders report.html + figures from the DB and report_inputs/ (opens the DB read-only)
 ├── migrate_db.py          # schema upgrades and ingestion of run artefacts into the DB
 ├── exp.py                 # DB helper the experiment scripts share
-├── report.html            # generated report, 21 sections / 86 figures — never hand-edited
+├── report.html            # generated report, 22 sections / 87 figures — never hand-edited
 ├── report_inputs/         # derived indices the report reads besides the DB, plus their builders
 ├── checks/                # 39 infrastructure checks, each with a negative control
 ├── docs/                  # pain / need / product / architecture / method / plan / subprojects
@@ -125,8 +126,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). In short: a change that moves a number m
 
 **Implemented**
 
-- Sixteen research units closed, covering bit width, model size, scheme/vendor, MoE allocation, KV cache, sampling, speculative decoding, thinking toggle, QAT, third-party quantization, diffusion decoding, per-language code, tool calling, partial credit, scoring validity and measurement infrastructure.
-- First delivered report: 21 sections / 86 figures, byte-identically rebuildable from `experiments.sqlite` in a clean clone.
+- Seventeen research units closed, covering bit width, model size, model family, scheme/vendor, MoE allocation, KV cache, sampling, speculative decoding, thinking toggle, QAT, third-party quantization, diffusion decoding, per-language code, tool calling, partial credit, scoring validity and measurement infrastructure.
+- Delivered report: 22 sections / 87 figures, byte-identically rebuildable from `experiments.sqlite` in a clean clone.
 - Milestone `entry`: the two reader-facing route tables (`STATUS.md`, `FINDINGS.md`) point at nodes that exist, and the property is guarded by `checks/router_refs.py` with a 21-expectation negative control. Accepted on result revision `3287b76`.
 - 39 infrastructure checks, each paired with a control that proves it can fail; report inputs are drift-checked so a stale index is a hard failure rather than a warning.
 
