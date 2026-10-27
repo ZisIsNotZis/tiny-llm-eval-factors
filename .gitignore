@@ -194,3 +194,13 @@ figures/
 
 # transient buffers: no fact lives here, safe for any agent to delete
 .tmp/
+
+# editor / OS junk (never carries a fact)
+.DS_Store
+*~
+*.swp
+*.swo
+.#*
+.idea/
+.vscode/
+.venv/
