@@ -152,7 +152,7 @@ revision）、`5e6df26`（第二轮结果 revision）、`e338f4b`（更早一次
 |---|---|---|---|
 | `p-ag1`（**取用受阻 2026-10-27**：仓库 `git clone`/codeload 超时，仅 `git ls-remote` 通，见 `i02 RESULT.md::res74`；先做 `p-ag3`） | Terminal-Bench 2.0 的 24 题分层子集（easy/medium/hard 各 8）在**一个最小本地模型**上跑通：llama-server + harbor 的 OpenAI 兼容 provider，分数、每题耗时、镜像拉取量、总 GPU 分钟落到本机日志 | 一条可重跑命令产出该模型的 24 题分层分数表（三档各一行），日志在 `.wrapup/agentic/tb2-<model>-<date>/`；本机 `./reproduce.sh` 不受影响（不碰库） | — |
 | `p-ag2` | τ-bench v1 的 airline+retail（165 题）在同一模型上跑通，判分用上游自带 checker | 一条可重跑命令产出两域分数；日志同目录 | p-ag1 |
-| `p-ag3` | BFCL v4 离线类别在同一模型上跑通并产出与库内已有 BFCL 行同口径的分数；`web_search*`（需 SerpAPI key）与 `memory*`（需 embedding 权重）各自登记为「本环境不可得」而不是跳过 | 一条可重跑命令产出各类别分数 + 两条不可得的登记行 | — |
+| `p-ag3` | **已结项（2026-10-27）**：BFCL v4 离线的 7 个类别在 `Qwen3.5-0.8B-UD-Q4_K_XL` 上跑通（tools 协议）+ 其中 3 类做了 prompt 协议对照 + 5 类做了 KV f16/q8_0 对照；15 行入库（`m171`/`m172`，`db_check` 绿），`web_search*`/`memory*` 各自登记不可得 | `python3 docs/subprojects/a13-工具调用\ BFCL/audits/run_all.py` exit 0；`python3 checks/db_check.py` 绿；结论与每格数在 `docs/subprojects/a13-工具调用 BFCL/RESULT.md` | — |
 | `r-ag1` | 难度分层的口径：哪些是基准自带的（TB2 三档 / AppWorld 指示器），哪些要自造（BFCL 轮数 / τ 轮数），以及自造分层与 `ctx_size`/生成长度这类 X 的共线风险必须写清 | 一条判据 + 反例：给出一个「难度其实是被预算卡住」的例子（a08 已有一例：思考开 = 吃生成预算） | — |
 | `p-ag4` | 首条 X 扫描：在 TB2 子集上扫一列 X（先做**量化档**：同族 UD Q2/Q3/Q4 各一档；再做**运行时**：ctx 8k / 32k） | 每个 X 取值一行分数，同一 series 内其余量固定；库内新增行走 `migrate_db.py` 且 `db_check` 绿 | p-ag1 |
 
