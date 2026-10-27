@@ -146,6 +146,25 @@ def main(argv=None) -> int:
           str(same_family[:5]))
     check(sum(lc["excluded_by_reason"].values()) == lc["excluded"],
           "the per-reason counts add up to the excluded count")
+    check(not ledger["closure_violations"],
+          "canonical families are closed (no same-n_params arm left unmerged)",
+          str(ledger["closure_violations"][:3]))
+    check(lc["families"] == lc["raw_family_labels"] - lc["labels_absorbed"],
+          "canonical families == raw family_of labels - absorbed labels",
+          f"{lc['families']} vs {lc['raw_family_labels']} - {lc['labels_absorbed']}")
+    merged_ok = all(len(v) == len({ledger["raw_families"][m] for m in ledger["families"]
+                                   if ledger["families"][m] == k}) for k, v in
+                    ledger["family_merges"].items())
+    check(merged_ok, "every recorded merge lists exactly the raw labels of that canonical family")
+    recipe_same_fam = [c["id"] for c in ledger["recipe_controls"]
+                       if fam[c["model_a"]] != fam[c["model_b"]]]
+    check(not recipe_same_fam, "every recipe control sits inside one canonical family",
+          str(recipe_same_fam[:5]))
+    check(ec["family_pairs_with_cells"] == lc["family_pairs_with_cells"],
+          "pairs.py and effects.py count the same number of family pairs",
+          f"{lc['family_pairs_with_cells']} vs {ec['family_pairs_with_cells']}")
+    check(ec["family_pairs_readable"] == lc["family_pairs_bpw_matched"],
+          "pairs.py and effects.py count the same number of readable family pairs")
     check(ec["family_bpw_matched"]["cells"] == n_bpw - lc["same_n_params_bpw_matched"],
           "effects analysed the family cells at matched bpw (bpw_matched minus same-scaffold)",
           f"{ec['family_bpw_matched']['cells']} vs {n_bpw} - {lc['same_n_params_bpw_matched']}")
@@ -182,6 +201,7 @@ def main(argv=None) -> int:
           f"family_bpw_matched={fb['cells']} family_resolvable={fb['resolvable']} "
           f"readable_pairs={ec['family_pairs_readable']}/{ec['family_pairs_with_cells']} "
           f"flips={ec['sign_flips']} quant_label_missing={lc['quant_label_missing_cells']} "
+          f"canonical_families={lc['families']}/{lc['raw_family_labels']} "
           f"same_scaffold={lc['same_n_params_bpw_matched']} "
           f"recipe_controls={lc['recipe_control_cells']} "
           f"excluded={lc['excluded']} | {dt:.1f}s")

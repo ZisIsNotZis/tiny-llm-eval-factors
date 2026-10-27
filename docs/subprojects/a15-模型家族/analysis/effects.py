@@ -3,6 +3,9 @@
 """家族效应与家族×量化档交互：从 `pairs.py` 的清单算，不碰库。
 
 输入是 `analysis/pairs.json`（`pairs.py` 产出，一行一个受控格），输出人读文本 + `analysis/effects.json`。
+家族 = **规范家族**：`mktables.family_of` 再把「同参数量 + 家族名加尾巴」的臂合并到不动点（见 `pairs.py`）；
+位宽阶梯的一步还要求两侧的 arm id 不变（arm = 剥掉量化 token 的主干；面板配方与无量化 token 的臂整名保留），
+所以「换臂」永远不会被当成「提位宽」。
 本脚本自己不做筛选，只做算术；但**读法分三层**，每个数字都标明它落在哪一层：
 
   * `label_matched`：16 个身份栏相等（`__quant` 可以是 NULL，NULL==NULL 也算相等）。名字只说明标签
@@ -68,6 +71,7 @@ def ctx_key(p: dict) -> str:
 def decode(ledger: dict) -> tuple[list[dict], list[dict]]:
     """把清单里的 `cells` / `recipe_controls` 展开（落盘时家族名与 ctx 是压缩存的）。"""
     fam = ledger["families"]
+    arms = ledger.get("arms", {})
     out = []
     for name in ("cells", "recipe_controls"):
         rows = []
@@ -75,6 +79,8 @@ def decode(ledger: dict) -> tuple[list[dict], list[dict]]:
             q = dict(p)
             q["family_a"] = fam[p["model_a"]]
             q["family_b"] = fam[p["model_b"]]
+            q["arm_a"] = arms.get(p["model_a"], p["model_a"])
+            q["arm_b"] = arms.get(p["model_b"], p["model_b"])
             q["ctx_sig"] = dict(zip(CTX_COLS, p["ctx"]))
             q["protocol"] = q["ctx_sig"].get("protocol")
             rows.append(q)
@@ -93,6 +99,8 @@ def measure(p: dict) -> dict:
         "quant": p["quant"],
         "family_a": p["family_a"],
         "family_b": p["family_b"],
+        "arm_a": p.get("arm_a"),
+        "arm_b": p.get("arm_b"),
         "model_a": p["model_a"],
         "model_b": p["model_b"],
         "score_a": p["score_a"],
@@ -134,15 +142,17 @@ def analyse(ledger: dict) -> dict:
     sized: dict[tuple, list[dict]] = defaultdict(list)
     for c in family:
         r = family_raw[c["id"]]
+        # 分组键里带两侧的 arm id：同一对家族里「换臂」（a04 的比特分配臂、a10 的第三方量化臂、
+        # 面板配方）不是「提位宽」，不能算成相邻两档。
         sized[(c["bench"], ctx_of[c["id"]], c["family_a"], r["n_params_a"],
-               c["family_b"], r["n_params_b"])].append(c)
+               c["family_b"], r["n_params_b"], c["arm_a"], c["arm_b"])].append(c)
 
     # 一个「档」= 平均 bpw 的 `level_width_bpw` 宽的桶：同一档上「换了配方但落在同一位宽」的两个文件
     # 落进同一个桶，不会被当成两个相邻档。桶内符号不统一时该档记 `sign=None`（不可判），不猜。
     level_w = ledger["level_width_bpw"]
     interaction = []
     for key, cs in sorted(sized.items(), key=lambda kv: tuple(str(v) for v in kv[0])):
-        bench, ck, fa, npa, fb, npb = key
+        bench, ck, fa, npa, fb, npb, arm_a, arm_b = key
         buckets: dict[int, list[dict]] = defaultdict(list)
         for c in cs:
             buckets[int(c["bpw_mean"] // level_w)].append(c)
@@ -177,6 +187,8 @@ def analyse(ledger: dict) -> dict:
             "family_b": fb,
             "n_params_a": npa,
             "n_params_b": npb,
+            "arm_a": arm_a,
+            "arm_b": arm_b,
             "n_levels": len(levels),
             "levels": levels,
             "signs": signs,
@@ -339,7 +351,7 @@ def file_line(c: dict) -> str:
 def report(res: dict) -> None:
     c = res["counts"]
     lm, fb = c["family_label_matched"], c["family_bpw_matched"]
-    print("family effects (from analysis/pairs.json; family = mktables.family_of)")
+    print("family effects (from analysis/pairs.json; family = canonical family_of)")
     print(f"  bpw gate                     : |bpw_a − bpw_b| <= {res['bpw_match_tol']} bpw "
           f"(half a {res['bpw_match_tol'] * 2} bpw quant level, measured tensor bpw)")
     print(f"  label_matched cells (tier 1) : {c['label_matched_cells']['cells']} "
@@ -376,8 +388,11 @@ def report(res: dict) -> None:
             continue
         lv = " ".join(f"{'+' if l['sign'] > 0 else ('-' if l['sign'] < 0 else ('0' if l['sign'] == 0 else '?'))}"
                       f"@{l['bpw_mean']:.2f}" for l in g["levels"])
-        print(f"    {g['bench']:<22} {g['family_a']:<38} vs {g['family_b']:<38} "
-              f"n_levels={g['n_levels']} signs {lv} → {'FLIP' if g['flips'] else 'same'}")
+        arm = ""
+        if g["arm_a"] != g["family_a"] or g["arm_b"] != g["family_b"]:
+            arm = f" [arms: {g['arm_a']} | {g['arm_b']}]"
+        print(f"    {g['bench']:<22} {g['family_a']:<32} vs {g['family_b']:<32} "
+              f"n_levels={g['n_levels']} signs {lv} → {'FLIP' if g['flips'] else 'same'}{arm}")
         if g["flips"]:
             for i in range(len(g["levels"]) - 1):
                 a, b = g["levels"][i], g["levels"][i + 1]

@@ -10,7 +10,10 @@
   3. 尺寸：把 fixture 副本里同一个模型文件的 `n_params` 改成使尺寸差 = 11%，该对必须消失并以
      `size_gt_10pct` 点名；脚本打印它重算出来的尺寸差，不写死。
   4. 缺真值：把 fixture 副本里那个模型文件整条删掉，该对必须消失并以 `no_truth` 点名。
-  5. 真库与真 fixture 的字节哈希前后相同（负控没有污染被审对象）。
+  5. 规范家族：同权重（同实测参数量）的「家族名 + 尾巴」必须并成一个家族——`GLM-4.7-Flash` 对
+     `Qwen3.8-27B` 在原始标签下是 3 对、合并后是 1 对；闭合性自检必须在未改动运行里为空。
+  6. 反向：把那条尾巴的 `n_params` 改掉 5%（参数量不同的尾巴），它必须**不**被合并、重新变成一对。
+  7. 真库与真 fixture 的字节哈希前后相同（负控没有污染被审对象）。
 
 退出码：0 全部成立；1 有断言不成立（并指出是哪一条）。
 """
@@ -174,10 +177,15 @@ def main() -> int:
         if named:
             print(f"    excluded entry: {named[0]['reason']} "
                   f"(size_delta={named[0].get('size_delta')})")
-        # 参照：只改真值不会改变候选集（候选只看库，不看真值），只会改变哪些候选成为受控格。
-        check(sz_ledger["counts"]["candidates"] == ledger["counts"]["candidates"],
-              "a truth mutation does not change the candidate set",
-              f"{ledger['counts']['candidates']} → {sz_ledger['counts']['candidates']}")
+        # 参照：真值只通过「规范家族合并」影响候选的**划分**（跨家族 vs 同家族池），不影响
+        # (基准, 量化档, 文件对) 的总数。所以断言的是那个总和不变，而不是候选数不变。
+        def pool_total(lg):
+            c = lg["counts"]
+            return c["candidates"] + c["same_family_pairs_pool"]
+        check(pool_total(sz_ledger) == pool_total(ledger),
+              "a truth mutation does not change the number of (bench, quant, file-pair)s "
+              "considered (candidates + same-family pool)",
+              f"{pool_total(ledger)} → {pool_total(sz_ledger)}")
         # 定义检查（不是快照常量）：清单里每一格的尺寸差都必须 ≤ 容差。
         tol = ledger["size_tolerance"]
         over = [p["id"] for p in sz_ledger["cells"] if p["size_delta"] > tol]
@@ -208,7 +216,62 @@ def main() -> int:
         check(bool(named), "it is named in `excluded` with no_truth",
               str(sorted({e["reason"] for e in decode_excluded(nt_ledger)})[:6]))
 
-        # ---- 5. no pollution ---------------------------------------------------
+        # ---- 5. canonical family: same weights ⇒ ONE family, not three --------
+        fam, raw = ledger["families"], ledger["raw_families"]
+        merges = ledger["family_merges"]
+        tier = [p for p in pairs if not p["same_n_params"]]
+        canon_pairs = {(fam[p["model_a"]], fam[p["model_b"]]) for p in tier}
+        raw_pairs = {(raw[p["model_a"]], raw[p["model_b"]]) for p in tier}
+        gl_canon = [x for x in canon_pairs if {x[0], x[1]} == {"GLM-4.7-Flash", "Qwen3.8-27B"}]
+        gl_raw = [x for x in raw_pairs
+                  if "GLM-4.7-Flash" in x and any(y.startswith("Qwen3.8-27B") for y in x)]
+        print(f"[5] canonical merge: `Qwen3.8-27B` absorbs {merges.get('Qwen3.8-27B')}; "
+              f"GLM vs Qwen3.8 is {len(gl_raw)} raw-label pair(s) → {len(gl_canon)} canonical pair")
+        check(len(merges.get("Qwen3.8-27B", [])) >= 3,
+              "the ledger records that Qwen3.8-27B absorbed >= 3 raw labels",
+              str(merges.get("Qwen3.8-27B")))
+        check(len(gl_canon) == 1, "GLM-4.7-Flash vs Qwen3.8-27B is ONE canonical family pair",
+              f"canonical pairs: {gl_canon}")
+        check(len(gl_raw) >= 3, "the same comparison would have been >= 3 raw-label pairs",
+              f"raw pairs: {gl_raw}")
+        check(not ledger["closure_violations"],
+              "the canonical map is closed in the unmodified run",
+              str(ledger["closure_violations"][:3]))
+        same_fam_recipe = [p["id"] for p in ledger["recipe_controls"]
+                           if fam[p["model_a"]] != fam[p["model_b"]]]
+        check(not same_fam_recipe, "every recipe control is inside one canonical family",
+              str(same_fam_recipe[:5]))
+
+        # ---- 6. a genuinely different-parameter tail must NOT merge -----------
+        arm = "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf"
+        doc = json.loads(TRUTH.read_text(encoding="utf-8"))
+        before = doc["models"][arm]["n_params"]
+        doc["models"][arm]["n_params"] = int(round(before * 1.05))
+        print(f"[6] perturbing n_params[{arm}] {before} → {doc['models'][arm]['n_params']} (+5%): "
+              "it must stop merging")
+        truth_arm = tmp / "truth-arm.json"
+        truth_arm.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
+        arm_out = tmp / "arm.json"
+        arm_run = run_pairs(DB, truth_arm, arm_out)
+        arm_ledger = json.loads(arm_out.read_text(encoding="utf-8"))
+        check(arm_run.returncode == 0, "perturbed-tail run still exits 0", arm_run.stderr[-400:])
+        arm_fam, arm_raw = arm_ledger["families"], arm_ledger["raw_families"]
+        arm_tier = [p for p in arm_ledger["cells"] if not p["same_n_params"]]
+        arm_canon = {(arm_fam[p["model_a"]], arm_fam[p["model_b"]]) for p in arm_tier}
+        gl_arm = [x for x in arm_canon if {x[0], x[1]} == {"GLM-4.7-Flash", "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp"}]
+        merged_labels = arm_ledger["family_merges"].get("Qwen3.8-27B", [])
+        check(arm_fam[arm] == "Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp",
+              "a tail with different n_params is NOT merged into the base family",
+              f"canonical = {arm_fam[arm]}")
+        check(len(merged_labels) <= 2, "the base family keeps absorbing only the still-identical tail",
+              str(merged_labels))
+        check(bool(gl_arm), "GLM vs that tail is now a separate family pair again",
+              f"canonical pairs seen: {sorted(arm_canon)[:4]}")
+        check(not arm_ledger["closure_violations"],
+              "the canonical map is still closed after the perturbation",
+              str(arm_ledger["closure_violations"][:3]))
+
+        # ---- 7. no pollution ---------------------------------------------------
         check(sha256(DB) == db_before, "the real database is byte-identical before and after")
         check(sha256(TRUTH) == truth_before, "the real truth fixture is byte-identical before and after")
     finally:

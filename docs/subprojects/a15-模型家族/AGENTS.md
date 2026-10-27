@@ -3,23 +3,32 @@
 本文件只写给在本层干活的 worker / reviewer。全局规则在仓库根的 `AGENTS.md`，本文件不复述也不覆盖它，
 只补本轴的特别条款。计划与派工在 `PLAN.md`，结果与证据在 `RESULT.md`，可复算脚本在 `analysis/`。
 
-## 1. 家族只有一个定义：`mktables.family_of`
+## 1. 家族只有一个定义：规范家族（canonical family）
 
-家族 = `.wrapup/mktables.py::family_of(model)`，也就是报告里用的那一套：剥掉量化/配方后缀、归一化 `Qwen_`
-前缀、保留尺寸 token。**不要**用 `experiments.__model`——它是 `exp.py` 从文件名解析的标签，会把同一份权重
-拆成两个「家族」（`Qwen3.6-35B-A3B` / `Qwen_Qwen3.6-35B-A3B`，实测参数量都是 35505251456；
-`LFM2.5-8B-A1B` / `-m55-exq2` / `-m55-exq4`，都是 8467856832），于是配方对被当成跨家族对。
-拿不到 `mktables.py` 就 exit 2，不要自己再写一套解析。
+家族 = `mktables.family_of(model)` 再做**后缀合并到不动点**：若两个文件的实测 `n_params` 相等、且 B 的文件名
+主干以 `canonical(A) + "-"` 开头，则 `canonical(B) := canonical(A)`。理由：`family_of` 不剥「家族名 + 供应商/
+配方尾巴」（`Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp`、`LFM2.5-8B-A1B-a04-uni45`、`gemma-4-26B-A4B-it-qat`），而同样的
+张量形状说明它只是同一份基座权重的一个**臂**。合并只由「文件名前缀 + 参数量相等」两条机械条件决定，没有标签
+白名单；`pairs.py` 打印合并表与「每个规范家族吃掉了几个原始标签」，并有闭合性自检（不存在「同参数量、名字加
+尾巴却未合并」的对）。**不要**用 `experiments.__model`——它是 `exp.py` 从文件名解析的标签，会把同一份权重拆成
+两个「家族」。拿不到 `mktables.py` 就 exit 2，不要自己再写一套解析。
+
+## 1b. 位宽阶梯的一步不许换臂
+
+交互分析里「相邻两档」要求**两侧的 arm id 都不变**。arm id 由 `pairs.py::arm_of` 给：普通文件取
+`mktables.split_quant` 剥掉量化 token 的主干；`is_recipe` 认出的面板配方（`mNN-…`）与没有量化 token 的臂
+（`-a04-uni45`、`-GSQ-RCO-…-mtp`）保留整名。所以「同家族、同规模、只是提位宽」才是阶梯的一步；「换臂」不是。
+没有这条，合并后的家族会把臂之间的差当成位宽效应（本层真出过：凭空多出 3 个翻转）。
 
 ## 2. 三层口径，名字不许串用
 
 - `label_matched`：16 个身份栏相等（`__quant` 可以是 NULL，NULL==NULL 也算相等）。**只作清单**：
-  `__quant` 为 NULL 时这一栏什么都没钉住，库里这样的格有一千五百多个。
+  `__quant` 为 NULL 时这一栏什么都没钉住，库里这样的格有一千四百多个。
 - `bpw_matched`：`|bpw_a − bpw_b| ≤ bpw_match_tol`（0.25 bpw = 半个档宽 `level_width_bpw` = 0.5 bpw）。
   位宽是 GGUF 张量实测值（a02 的 fixture），不是标签。**家族差、可分辨数、可读家族对、翻转计数只在这一层算。**
 - 家族层：`bpw_matched` 且**两侧实测参数量不同**。同参数量 = 同一套张量形状（同一架构脚手架），那样的对子
-  （a04 的比特分配臂、a10 的第三方量化臂、同权重换标签）进 `same_scaffold` / `recipe_controls` 表，
-  数值照给，但**不进家族计数**。
+  要么已被规范家族合并吃掉（臂），要么进 `same_scaffold` 表；「同规范家族 + 同参数量 + 位宽匹配」的进
+  `recipe_controls` 表。两张表数值照给，但**不进家族计数**（家族层在 bpw 层的 `same_n_params` 计数当前是 0）。
 
 两个常量只有一处：`analysis/pairs.py` 的 `LEVEL_W` / `BPW_MATCH_TOL`，写进 `pairs.json` 的
 `level_width_bpw` / `bpw_match_tol`；`effects.py` 从清单里读，不另设一份。

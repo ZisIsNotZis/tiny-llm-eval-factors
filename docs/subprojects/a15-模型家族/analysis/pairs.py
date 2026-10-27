@@ -8,11 +8,25 @@
     python3 "docs/subprojects/a15-模型家族/analysis/pairs.py"            # 写 analysis/pairs.json
     python3 "docs/subprojects/a15-模型家族/analysis/pairs.py" --print   # 只打印人读摘要
 
-**家族用报告的那一套**：`mktables.family_of(model)`（`.wrapup/mktables.py`，随仓库分发）。
-它把量化/配方后缀剥掉并归一化 `Qwen_` 前缀，所以「同一份权重的两个标签」与「同一份权重换专家分配」
-都不是跨家族对。本脚本第一版用 `experiments.__model`（`exp.py` 从文件名解析的标签）当家族，于是
-`Qwen3.6-35B-A3B` / `Qwen_Qwen3.6-35B-A3B` 与 `LFM2.5-8B-A1B` / `-m55-exq2` 这类**同一份权重**的
-配方对混进了家族计数；现在它们在 `recipe_controls` 里单独出现，数值照样给，但不进家族计数。
+**家族 = `mktables.family_of` 的规范形（canonical family）**：先取 `.wrapup/mktables.py::family_of(model)`
+（随仓库分发，剥掉量化/配方后缀并归一化 `Qwen_` 前缀），再做一次**后缀合并到不动点**：
+
+> 若两个文件的实测参数量完全相同（a02 fixture 的 `n_params`），且 B 的文件名主干以
+> `canonical_family(A) + "-"` 开头，则 canonical(B) := canonical(A)；反复做到不再变化。
+
+理由：`family_of` 不剥「家族名 + 供应商/配方尾巴」这类后缀（`Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp`、
+`LFM2.5-8B-A1B-a04-uni45`、`gemma-4-26B-A4B-it-qat`），而**同样的张量形状**说明它就是同一份基座权重的一个
+臂（arm），不是另一个家族。合并完全由「文件名前缀 + 实测参数量相等」两条机械条件决定，没有标签白名单；
+脚本打印合并表与「每个规范家族吃掉了几个原始标签」，并用一条闭合性自检盯着（不存在「同一参数量、B 以
+`canon(A) + "-"` 开头却仍未合并」的文件对）。
+
+会因此被合并的原始标签（本库当前）：`LFM2.5-8B-A1B-a04-uni45` → `LFM2.5-8B-A1B`；
+`Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp`、`Qwen3.8-27B-GSQ-RCO-IQ3_XXS-mtp` → `Qwen3.8-27B`；
+`gemma-4-26B-A4B-it-qat` → `gemma-4-26B-A4B`。反过来，参数量不同的尾巴**不会**被合并（`Ornith-1.5-9B`
+与 `Qwen3.5-9B` 参数量相同但互不为前缀；`Qwen3.5-9B-DeepSeek-V4-Flash` 参数量不同），它们仍算不同家族。
+
+家族标签曾错过一次：第一版用 `experiments.__model`（`exp.py` 从文件名解析的标签），于是
+`Qwen3.6-35B-A3B` / `Qwen_Qwen3.6-35B-A3B` 这类同一份权重的标签对被当成跨家族对。
 
 两层口径，本文件与 `effects.py` 与 `RESULT.md` 一律按名字区分：
 
@@ -200,6 +214,84 @@ def cell_from_group(bench, quant, a, b, fam_a, fam_b, gp, truth) -> dict | None:
     }
 
 
+def model_stem(model: str) -> str:
+    return model[:-len(".gguf")] if model.endswith(".gguf") else model
+
+
+def canonical_families(files: list[str], truth: dict, mktables) -> tuple[dict, dict, int]:
+    """`family_of` → 规范家族（后缀合并到不动点）。
+
+    返回 (canonical: model→family, merges: canonical→原始标签集合, rounds)。合并条件只有两条：
+    两个文件的实测参数量相等，且 B 的主干以 `canonical(A) + "-"` 开头。没有标签白名单：任何
+    「家族名 + 尾巴」且张量形状相同的文件都会被并进去。反复做到不动点，所以链式尾巴
+    （`X-y-z` 先并成 `X-y` 再并成 `X`）也能收敛。
+    """
+    raw = {m: mktables.family_of(m) for m in files}
+    canon = dict(raw)
+    rounds = 0
+    while True:
+        rounds += 1
+        changed = False
+        for b in files:
+            if b not in truth:
+                continue
+            stem_b = model_stem(b)
+            for a in files:
+                if a == b or a not in truth:
+                    continue
+                if truth[a]["n_params"] != truth[b]["n_params"]:
+                    continue
+                if not stem_b.startswith(canon[a] + "-"):
+                    continue
+                if canon[b] != canon[a]:
+                    canon[b] = canon[a]
+                    changed = True
+        if not changed:
+            break
+        if rounds > 50:                      # 不动点应当几步内到达；到了上限说明规则自相矛盾
+            raise RuntimeError("canonical family iteration did not converge in 50 rounds")
+    merges: dict[str, set] = defaultdict(set)
+    for m in files:
+        merges[canon[m]].add(raw[m])
+    return canon, {k: sorted(v) for k, v in merges.items()}, rounds
+
+
+def arm_of(model: str, mktables) -> str:
+    """一条量化阶梯的 id：同一 id 的两个文件只差比特预算（同一配方、同一位宽阶梯）。
+
+    `mktables.split_quant` 把文件名拆成 (去掉量化 token 的主干, 量化 token)；`is_recipe` 认出
+    `mNN-…` 这种**面板/配方标签**（它变的不是位宽，而是配方本身）。所以：
+
+    * 普通文件（`…-UD-Q2_K_XL`、`…-Q3_K_M`）→ 主干，量化 token 被剥掉：同一台阶链上的文件同 id；
+    * 配方标签文件（`…-m55-exq4`）或无量化 token 的文件（`…-a04-uni45`、`…-GSQ-RCO-IQ3_S-mtp`）
+      → 整个主干保留：它是**臂**，不与同一家族的位宽阶梯混成「相邻两档」。
+
+    交互分析因此只在「两侧的 arm id 都不变、只有位宽变」的格之间算相邻档——合并家族名（canonical）
+    之后仍然不会把「换臂」当成「提位宽」。
+    """
+    stem, quant = mktables.split_quant(model)
+    if quant is not None and mktables.is_recipe(model):
+        return model_stem(model)
+    return stem
+
+
+def canonical_closure_violations(files: list[str], canon: dict, truth: dict) -> list[tuple]:
+    """闭合性自检：按照合并规则，**不应该**还剩「同参数量 + B 以 canon(A) + '-' 开头却未合并」的对。"""
+    out = []
+    for b in files:
+        if b not in truth:
+            continue
+        stem_b = model_stem(b)
+        for a in files:
+            if a == b or a not in truth:
+                continue
+            if truth[a]["n_params"] != truth[b]["n_params"]:
+                continue
+            if stem_b.startswith(canon[a] + "-") and canon[b] != canon[a]:
+                out.append((a, b))
+    return sorted(out)
+
+
 def build(rows: list[dict], truth: dict, mktables) -> dict:
     # 1) 每个 (bench, model, __quant) 的 run 列表。候选本身就在一个 (bench, __quant) 上，所以只拿
     #    同 `__quant` 的行来配对：`__quant` 那一栏因此恒等，与「16 栏全等」的判据一致。
@@ -207,7 +299,11 @@ def build(rows: list[dict], truth: dict, mktables) -> dict:
     for r in rows:
         by_bench_model[(r["_bench"], r["model"], r["__quant"])].append(r)
     files = sorted({r["model"] for r in rows})
-    family_of = {m: mktables.family_of(m) for m in files}
+    canon, merges, merge_rounds = canonical_families(files, truth, mktables)
+    raw_family = {m: mktables.family_of(m) for m in files}
+    arms = {m: arm_of(m, mktables) for m in files}
+    closure_bad = canonical_closure_violations(files, canon, truth)
+    family_of = canon
 
     # 2) 按 (bench, quant) 枚举模型文件对，按「家族是否相同」分成两条池子。
     by_bench_quant: dict[tuple, set] = defaultdict(set)
@@ -367,14 +463,19 @@ def build(rows: list[dict], truth: dict, mktables) -> dict:
                       if e["model_a"] in truth and e["model_b"] in truth else None]
                      for e in excluded]
     bpw_matched = [c for c in cells if c["bpw_matched"]]
-    family_pairs_all = sorted({f"{family_of[c['model_a']]} | {family_of[c['model_b']]}" for c in cells})
+    # 家族对只在**家族层**上数（两侧实测参数量不同）：同参数量的对子是「同一脚手架换权重/配方」，
+    # 不是家族对比。`effects.py` 用同一个定义，所以两边的 `family_pairs_with_cells` 必须相等。
+    fam_tier = [c for c in cells if not c["same_n_params"]]
+    family_pairs_all = sorted({f"{family_of[c['model_a']]} | {family_of[c['model_b']]}" for c in fam_tier})
     family_pairs_readable = sorted({f"{family_of[c['model_a']]} | {family_of[c['model_b']]}"
-                                    for c in bpw_matched})
+                                    for c in bpw_matched if not c["same_n_params"]})
     return {
         "what": ("跨家族受控对清单：同基准、同量化档（标签）、16 个身份栏全等、实测参数量差 ≤10%；"
                  "家族 = mktables.family_of；两层口径 label_matched / bpw_matched"),
         "generated_by": "docs/subprojects/a15-模型家族/analysis/pairs.py",
-        "family_definition": "mktables.family_of(model)（.wrapup/mktables.py，随仓库分发）",
+        "family_definition": ("canonical = mktables.family_of(model)，再做后缀合并到不动点：若两文件实测 "
+                              "n_params 相等且 B 的主干以 canonical(A) + '-' 开头，则 canonical(B) := "
+                              "canonical(A)"),
         "truth_fixture": "docs/subprojects/a02-模型规模/analysis/fixtures/gguf_truth.json",
         "size_tolerance": SIZE_TOL,
         "level_width_bpw": LEVEL_W,
@@ -405,14 +506,25 @@ def build(rows: list[dict], truth: dict, mktables) -> dict:
             "db_rows_read": len(rows),
             "files": len(files),
             "families": len(set(family_of.values())),
+            "raw_family_labels": len(set(raw_family.values())),
+            "merged_raw_labels": sum(1 for v in merges.values() if len(v) > 1),
+            "labels_absorbed": sum(len(v) - 1 for v in merges.values()),
+            "merge_rounds": merge_rounds,
+            "closure_violations": len(closure_bad),
             "excluded_by_reason": dict(sorted(reasons.items())),
             "family_pairs_with_cells": len(family_pairs_all),
+            "family_pairs_with_cells_all_tiers": len({f"{family_of[c['model_a']]} | "
+                                                      f"{family_of[c['model_b']]}" for c in cells}),
             "family_pairs_bpw_matched": len(family_pairs_readable),
             "benches_with_cells": sorted({c["bench"] for c in cells}),
             "family_pairs_rejected_by_size": dict(sorted(size_rejected.items(),
                                                          key=lambda kv: (-kv[1], kv[0]))),
         },
         "families": {m: f for m, f in sorted(family_of.items())},
+        "raw_families": {m: f for m, f in sorted(raw_family.items())},
+        "arms": {m: a for m, a in sorted(arms.items())},
+        "family_merges": {k: v for k, v in sorted(merges.items()) if len(v) > 1},
+        "closure_violations": [list(x) for x in closure_bad],
         "ctx_columns": CTX_COLS,
         "cells": cells,
         "recipe_controls": recipe,
@@ -449,8 +561,28 @@ def main(argv=None) -> int:
         print("BLOCKED: zero candidates — refusing to report an empty inventory", file=sys.stderr)
         return 2
 
-    print("cross-family controlled-pair inventory (family = mktables.family_of)")
-    print(f"  db rows read / files / families : {c['db_rows_read']} / {c['files']} / {c['families']}")
+    print("cross-family controlled-pair inventory (family = canonical family_of)")
+    print(f"  db rows read / files / families : {c['db_rows_read']} / {c['files']} / {c['families']} "
+          f"(canonical; {c['raw_family_labels']} raw family_of labels, "
+          f"{c['labels_absorbed']} absorbed in {c['merge_rounds']} round(s))")
+    for canon_name, labels in ledger["family_merges"].items():
+        print(f"      merged: {canon_name:<40} ← {', '.join(labels)}")
+    # 完整规范家族列表：每个家族吃掉几个原始标签、有几个文件、几格（label / bpw）。
+    fam_files: Counter = Counter(ledger["families"].values())
+    fam_cells: Counter = Counter();
+    fam_cells_bpw: Counter = Counter()
+    for x in ledger["cells"]:
+        k = ledger["families"][x["model_a"]] + " | " + ledger["families"][x["model_b"]]
+        fam_cells[ledger["families"][x["model_a"]]] += 1
+        fam_cells[ledger["families"][x["model_b"]]] += 1
+        if x["bpw_matched"]:
+            fam_cells_bpw[ledger["families"][x["model_a"]]] += 1
+            fam_cells_bpw[ledger["families"][x["model_b"]]] += 1
+    print(f"  canonical families ({len(fam_files)}): raw labels / files / cells(label) / cells(bpw)")
+    for name in sorted(fam_files):
+        nraw = len(ledger["family_merges"].get(name, [name]))
+        print(f"      {name:<44} {nraw:>2} / {fam_files[name]:>2} / "
+              f"{fam_cells[name]:>4} / {fam_cells_bpw[name]:>3}")
     print(f"  candidates (bench+quant+filepair): {c['candidates']}")
     print(f"  label_matched cells             : {c['label_matched_cells']}")
     print(f"  bpw_matched cells (<= {BPW_MATCH_TOL} bpw): {c['bpw_matched_cells']}")
@@ -484,6 +616,7 @@ def main(argv=None) -> int:
     balanced = c["candidates"] == c["excluded"] + c["candidates_with_controlled_cells"]
     gate_ok = all(x["bpw_matched"] == (x["bpw_gap"] <= BPW_MATCH_TOL) for x in ledger["cells"])
     recipe_ok = all(x["bpw_matched"] and x["same_n_params"] for x in ledger["recipe_controls"])
+    closure_ok = not ledger["closure_violations"]
     print(f"SELFCHECK candidates == excluded + candidates_with_cells: "
           f"{c['candidates']} == {c['excluded']} + {c['candidates_with_controlled_cells']} "
           f"{'ok' if balanced else 'MISMATCH'}")
@@ -491,7 +624,10 @@ def main(argv=None) -> int:
           f"{'ok' if gate_ok else 'MISMATCH'}")
     print(f"SELFCHECK every recipe control is same-weights AND bpw_matched: "
           f"{'ok' if recipe_ok else 'MISMATCH'}")
-    if not (balanced and gate_ok and recipe_ok):
+    print(f"SELFCHECK canonical families are closed (no same-n_params arm left unmerged): "
+          f"{'ok' if closure_ok else 'MISMATCH'} "
+          f"{ledger['closure_violations'][:3] if not closure_ok else ''}")
+    if not (balanced and gate_ok and recipe_ok and closure_ok):
         return 1
 
     if args.show:
