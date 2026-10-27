@@ -284,3 +284,202 @@
 - evidence: 两句为「同一配方下，参数量越大分数越高」和「小模型之间（0.8B→2B→4B）的差距通常比大模型之间更大——大模型已接近各自的分数上限，规模带来的边际收益变小」；源码位置 `make_report.py:1674-1675`。§2 的面板是 30 格（家族 @ 配方 × 规模），来自 `mktables.py` 的表，规模列用的是 `__size` 派生出的标签（`E2B`/`12b`/`26B-A4B` 等），因此 §2 的两个数字结论同时依赖 `size-not-one-thing` 判定的那条通道。
 - repro: `grep -n "同一配方下，参数量越大分数越高\|小模型之间（0.8B→2B→4B）" make_report.py`（实跑输出：`1674`、`1675` 两行）
 - repro: `python3 -c "import re;h=open('report.html',encoding='utf-8').read();i=h.find('<h2>二、模型规模');print(len(re.findall(r'<tr>',h[i:h.find('<h2>',i+10)])))"`（实跑输出：`62`，即 §2 的两张表各 2 行表头，30 格原始数据 + 30 行模型文件清单）
+
+## 版本/代际轴：库里四对候选、没有一对是受控对
+
+### version-axis :: 「模型版本/代际」这条 X 在本库里没有可用的受控对：库内 3 对名字级版本对（27B UD 的 Q2_K_XL 与 Q3_K_XL 两档、Ornith 9B 的 Q4_K_M）旧侧都没有规范协议行，而唯一把 8 项身份栏对上 6 项的 Qwen3.5→3.6（35B-A3B）同时把位宽从 1.995 抬到 3.857 bit（+1.862），所以它那 12 个基准的差是「换代 + 位宽」的合成，判不了纯代际效应。
+
+- author: measurement
+- scope: general
+- status: current
+- kind: measured
+- from: result.size-not-one-thing, result.fixture-gguf-truth, result.size-channel-inventory
+- origin: 全库名字级版本对扫描（同 stem、只有版本号不同）+ `experiments.sqlite` 身份栏逐项对照 + `analysis/fixtures/gguf_truth.json`（GGUF 张量求和）与 `.wrapup/bpw_map.json`（有效位宽）
+- evidence: 4 对候选与逐项身份栏（P0/P0' 的 11 行对照表、P1 的 8 组对照）；`fixtures/gguf_truth.json` 的 27.321B / 34.661B / 35.505B 与 `bpw_map` 的 2.878 / 3.850 / 1.995 / 3.857；P1 的 12 格差表（其中 5 格区间分开）；同代位宽阶梯 12 格（全重叠）；盘上 77 个 GGUF / 21 个同总参组 / 0 个混合组
+- producer: 本文末「可复算命令」里的两条 SQL + 一段 python（均逐字实跑过）；P1 差表的 SQL 输出里 `temp`/`reasoning`/`kv`/`ctx`/`maxtok`/`spec`/`rep` 七列左右两侧相同，就是这 6 组身份栏对齐的证据
+- 方法：把「只换代」拆成 8 个可查的身份栏（①参数量 ②位宽 ③provider ④`protocol` ⑤`n_ctx` ⑥`temp`+`max_tokens` ⑦`spec_type`+`rep` ⑧`reasoning`+KV 精度），任何一栏不一致就不叫受控对。分母一律用该行自己的 `n_items`；判「差得动没」用本层现行判据（逐题 Wilson 区间，`analysis/size_curves.py::verdict`，`n = n_items`），不另造。
+- 库内一共 **3 对名字级版本对** + **1 对协议全对齐但名字里档位不同的对**，逐对判定在下表。这三对的问题不是「格子里没有数」，而是「旧侧那批行成文于 `protocol` 列存在之前」：全库 3364 行里有 1881 行的 `protocol` 是 NULL，而且旧侧那几行连 `source_file`/`run_tag`/`completed_at` 都是空的，盘上找不到任何产物。
+
+| # | 对（旧 → 新） | 尺寸/档位 | 旧侧 GGUF 在盘? | 旧侧规范协议行 | 结论 |
+|---|---|---|---|---|---|
+| P0 | Qwen3.6-27B-UD-**Q2_K_XL** → Qwen3.8-27B-UD-Q2_K_XL | 27B / UD / Q2_K_XL | 否（也不在 fixture、不在 bpw_map） | 0（humaneval 3 行 + mbpp 2 行，全为 `protocol=NULL`） | **不可比** |
+| P0' | Qwen3.6-27B-UD-**Q3_K_XL** → Qwen3.8-27B-UD-Q3_K_XL | 27B / UD / Q3_K_XL | 否 | 0（同上，5 行） | **不可比** |
+| P1 | Qwen_Qwen3.5-35B-A3B-IQ1_M → Qwen_Qwen3.6-35B-A3B-Q3_K_M | 35B-A3B / 官方 IQ_M→Q_M | 是 | 12（12 个基准；新侧 humaneval-cpp/py 各 2 行） | 可算，但**代际 × 位宽**混杂 |
+| P2 | ornith-1.0-9b-Q4_K_M → Ornith-1.5-9B-Q4_K_M | 9B / Q4_K_M | 否 | 0（旧侧 4 行全是 `protocol=NULL`、`temp=0.3`） | **不可比** |
+
+#### P0/P0' 的受控性核对（27B UD，Q2_K_XL 与 Q3_K_XL 两档逐项同结论）
+
+| 项 | 旧侧 3.6 | 新侧 3.8 | 受控? |
+|---|---|---|---|
+| 参数量（GGUF 张量求和，非标签） | **未测**：`Qwen3.6-27B-UD-Q2_K_XL.gguf` 不在 `/home/z/hf`、不在 `fixtures/gguf_truth.json`、不在 `bpw_map.json` | 27.321B（Q2/Q3 同文件族，dense，`expert_count=0`） | ✗ 无法核 |
+| 量化位宽 | 未测；Q2 文件 12.041 GB、Q3 文件 14.788 GB | Q2 = 2.878 bit、Q3 = 3.850 bit | ✗ |
+| provider | `__quant=UD-Q2_K_XL` | `UD-Q2_K_XL` | ✓ |
+| `protocol` | NULL（Q2/Q3 各 5 行全空） | `evalplus-0.3.1-openai-chat-greedy-base`/`-plus`、`lmeval-0.4.13-{chat,gguf-shim}-reasoning-off`、`multipl-e-raw-greedy-768` | ✗ |
+| `n_ctx` | NULL | 8192（MultiPL-E 4096） | ✗ |
+| `temp` | 0.0 / 0.3 / 0.3（三行三个值） | 0.0 | ✗ |
+| `max_tokens` | NULL | 768 / 1024 | ✗ |
+| `spec_type` | none | none | ✓ |
+| `rep` | NULL | 1 | ✗ |
+| `reasoning` + KV 精度 | (auto, fp16/fp16) / (off, q8_0/q8_0) / (off, q8_0/q5_1) | (off, q8_0/q8_0) | ✗ |
+| 产物出处 | `source_file`/`run_tag`/`completed_at` 全空，盘上没有任何 mres 目录 | `mres/m91-qwen38-27b-q2kxl/evalplus.json`（带 base/plus 通过题数 152/164、336/378）、`lmeval_panel.json` | ✗ |
+
+按上面那 8 组身份栏数：**只有 provider 一组一致，其余 7 组不一致**（其中 `spec_type` 一致但同组的 `rep` 不一致，故该组记不一致），所以 P0/P0' 不是受控对——要求是 8 组全一致。前两组不一致是**在库内就能证伪的算术矛盾**，不依赖「文件丢了」这件事：
+- Q2_K_XL 档：两个文件字节比 3.6/3.8 = **1.2250**。若两侧参数量相同（27.321B），旧侧位宽 = **3.526 bit**，比新侧 2.878 高 0.648 bit——「同档位」不成立；若两侧位宽相同（2.878 bit），旧侧参数量必须是 **33.468B**——「同 27B」不成立。**两者不可兼得。**
+- Q3_K_XL 档：字节比 1.1249；同参数则旧侧 4.330 vs 新侧 3.850 bit，同位宽则旧侧需 30.732B。同样不可兼得。
+- 旁证：家族内 UD-Q2_K_XL 的位宽带是 2.83–2.88 bit（`Qwen3.6-35B-A3B-UD-Q2_K_XL` 2.831、`Qwen3.8-27B-UD-Q2_K_XL` 2.878），3.526 落在 Q2 与 Q3（3.85）之间，不属于任何一档。
+- 有人会拿「3.6 那 3 行里有一行是 `temp=0.0`，和新侧一样」来主张可比。它同时是 `reasoning=auto` + `fp16/fp16` KV，而新侧是 `reasoning=off` + `q8_0/q8_0`——**新侧占住 (0.0, off, q8_0/q8_0) 这一格，旧侧三个点分别落在 (0.0, auto, fp16/fp16)、(0.3, off, q8_0/q8_0)、(0.3, off, q8_0/q5_1)，没有点落在新侧的格上**。另外 `reasoning='auto'` 在代码类基准上不可解释：`a08::res1` 已判「`auto` 的 619 个 EvalPlus 格不能说成开或关，它们的 `protocol` 是 NULL，reasoning 设置不可知」——这 3 行正是那一类。
+
+#### 每基准代际差：P0 / P0'（两档都必须写「不可比，缺什么」）
+
+12 个基准逐格：**10 个基准旧侧一行都没有；humaneval/mbpp 旧侧有行但身份不齐**。因此不存在「差」这一列——写成差就是把变量移动当效应。
+
+| 基准 | 新侧 3.8（Q2_K_XL）值 / n / 协议 | 旧侧 Q2_K_XL | 旧侧 Q3_K_XL | 判定 |
+|---|---|---|---|---|
+| arc_challenge | 0.6100 / 100 / lmeval-shim | 0 行 | 0 行 | 不可比：缺旧侧该基准测量 |
+| gsm8k | 0.9800 / 100 / lmeval-chat | 0 行 | 0 行 | 同上 |
+| gsm8k-strict | 0.9800 / 100 / lmeval-chat | 0 行 | 0 行 | 同上 |
+| mmlu | 0.8037 / 912 / lmeval-shim | 0 行 | 0 行 | 同上 |
+| truthfulqa_mc2 | 0.5210 / 100 / lmeval-shim | 0 行 | 0 行 | 同上 |
+| ifeval | 0.8300 / 100 / lmeval-chat | 0 行 | 0 行 | 同上 |
+| humaneval | 0.9268 (Q3: 0.8720) / 164 / evalplus-base | 3 行，`protocol=NULL` | 3 行，`protocol=NULL` | 不可比：protocol/temp/reasoning/KV 无一对齐 |
+| humaneval-plus | 0.8963 (Q3: 0.8354) / 164 / evalplus-plus | 0 行 | 0 行 | 不可比：缺旧侧 |
+| mbpp | 0.8889 (Q3: 0.8704) / 378 / evalplus-base | 2 行，`protocol=NULL`、`temp=0.3`（旧侧无 temp=0 的 mbpp 行） | 2 行，同 | 不可比 |
+| mbpp-plus | 0.7619 (Q3: 0.7381) / 378 / evalplus-plus | 0 行 | 0 行 | 不可比：缺旧侧 |
+| humaneval-cpp / -py（MultiPL-E） | 新侧有（m10/m26/m161 三条协议串） | 0 行 | 0 行 | 不可比：缺旧侧 |
+
+- 「两档方向是否一致」在 P0 上**无从判**：两档在 12 个基准上都只有一侧的数，任何「Q2 涨、Q3 跌」的说法都只能来自把旧侧那 3 行硬配上新侧——那 3 行的身份不齐（见上表），配出来的数不是代际差。为了让复核者知道这个陷阱长什么样：硬配会给出 **Q2 humaneval +3.66…+4.88pp（新侧更高）、Q3 humaneval −3.66…−5.49pp（新侧更低）**，方向相反、且四个数里三个区间重叠。这是「变量移动」的指纹，不是「代际差随位宽变」的证据。
+
+#### 每基准代际差：P1（唯一可算的一对，但只能读成合成差）
+
+P1 的 8 组身份栏里**只有 2 组不一致**：①参数量 +2.44%（34.661B → 35.505B）与②位宽 +1.862 bit（1.9950 → 3.8570）。其余 6 组全对齐：③provider 两侧都是官方 `Q_*` 档（`Qwen_` 前缀，`IQ1_M`/`Q3_K_M`，不是 UD 重打包）；④`protocol` 串逐字相同；⑤`n_ctx` 8192（MultiPL-E 4096）；⑥`temp=0.0`、`max_tokens` 768/1024；⑦`spec_type=none`、`rep=1`；⑧`reasoning=off`、KV 都是 q8_0/q8_0。另外 GGUF 头的 arch tag 两侧都是 `qwen35moe`，专家数都是 8/256。
+
+| 基准 | 旧 3.5 | 新 3.6 | Δ | n | 是否超过地板（i01::res32 地板=0 题） | 二项区间 |
+|---|---|---|---|---|---|---|
+| humaneval | 0.8476 | 0.9268 | **+7.93pp** | 164 | 超过 | 重叠（测不出） |
+| humaneval-plus | 0.8110 | 0.8841 | +7.32pp | 164 | 超过 | 重叠（测不出） |
+| mbpp | 0.7910 | 0.9153 | **+12.43pp** | 378 | 超过 | 分开 |
+| mbpp-plus | 0.6614 | 0.7778 | **+11.64pp** | 378 | 超过 | 分开 |
+| mmlu | 0.7675 | 0.8454 | **+7.79pp** | 912 | 超过 | 分开 |
+| arc_challenge | 0.5500 | 0.6200 | +7.00pp | 100 | 超过 | 重叠（测不出） |
+| gsm8k | 0.8900 | 0.9700 | +8.00pp | 100 | 超过 | 重叠（测不出） |
+| gsm8k-strict | 0.8800 | 0.9700 | +9.00pp | 100 | 超过 | 重叠（测不出） |
+| ifeval | 0.8200 | 0.8300 | +1.00pp | 100 | 超过 | 重叠（测不出） |
+| truthfulqa_mc2 | 0.5109 | 0.5032 | −0.77pp | 100 | 超过 | 重叠（测不出） |
+| humaneval-cpp | 0.4907 | 0.7578 | **+26.71pp** | 161 | 超过 | 分开 |
+| humaneval-py | 0.5652 | 0.7391 | **+17.39pp** | 161 | 超过 | 分开 |
+
+- **两个「超地板」要分开读**：`i01::res32` 的地板是「同配置重复跑 = 0 道题」，所以这 12 格**全部**超过地板（差不是重复噪声）；但要问「这个差能不能分辨」，本层用的是逐题 Wilson 区间——**只有 5 格（mbpp、mbpp-plus、mmlu、humaneval-cpp、humaneval-py）区间分开**，其余 7 格按库内现行口径记「测不出」。
+- 半宽参照（p=0.5）：n=100 → ±9.62pp、161 → ±7.63pp、164 → ±7.56pp、378 → ±5.02pp、912 → ±3.24pp。新侧 `m91/m100/m101` 面板的 arc/gsm8k/ifeval/truthfulqa 四格带 `limit_spec='100'`，本来就只够分辨 ≥10pp 的差。
+- **这 12 个差不能读成代际效应**（推断，`status: provisional`）：位宽项扣不掉，理由是本库自己量过的那一段——`a01::ternary-offcurve`：GLM-4.7-Flash 从 2.226 bit 抬到 3.176 bit，HumanEval+ 抬 **29.9pp**、GSM8K 抬 33.0pp。P1 在 HumanEval+ 上的合成差只有 +7.3pp，**完全落在「位宽一项就能造出」的量级内**。唯一能用来「扣」的同代阶梯是 3.6-35B-A3B 的 UD-Q2_K_XL(2.831)→UD-Q3_K_XL(3.879)，+1.048 bit，12 个基准上**全部区间重叠、|Δ|≤6.21pp**；但这一段根本不覆盖 P1 旧侧所在的亚 2 bit 区（1.995 bit，`run_tag=m35-sub2bit`），所以它既不能支持也不能否证「位宽解释了这些差」。按本层规矩（`AGENTS.md` §2：「不可识别时给缺哪类受控对，不给凑出来的数」），这里给的是**不可识别 + 缺哪一对**，不是一个扣除后的代际差。
+- 顺带一条可用的：同一代内部的位宽阶梯（上一条那 12 格）在 2.83→3.88 bit 之间测不出任何基准的移动，这本身是 `a01` 位宽轴的复现（中等位宽区平坦），与代际无关。
+- **最小补测（两个都开价，不排队）**：①把 `Qwen3.5-35B-A3B` 量化到 3.85±0.05 bit 再跑同一 panel（现有的是 1.995 bit 的官方 IQ1_M，同族没有第二个点）——这一条直接把位宽项做成 0，是唯一能把「代际」从这个混合里分出来的做法；②把 `Qwen3.6-35B-A3B-UD-IQ1_M` 的同一 panel 跑出来（库里有它 5 行、全是 `protocol=NULL` 的 humaneval/mbpp），但该文件不在盘上、且它自己是 2.56 bit 而不是 1.99 bit，所以就算跑通也只能把位宽差缩到 0.57 bit，不能归零。①比②值钱。
+
+#### 架构（dense vs MoE）这一类 X：同样没有受控对
+
+- 盘上 77 个 GGUF 里 17 个 `expert_count>0`；**21 个「实测总参相同」的组里，组内 `expert_count` 混合的组 = 0**——即库与本机都没有「同一份权重、分别以 dense 与 MoE 两种形态存在」的一对文件。
+- 名字层面最像的两组都不是受控对：`GLM-4.7-Flash`（实测 **MoE 4/64**，29.94B/激活 3.90B）与 `GLM-4.7-Flash-REAP-23B-A3B`（标签 23/3）之间是 **REAP 剪枝**，权重与总参都变了；Qwen3.6 的 27B（dense，27.32B）与 35B-A3B（MoE 8/256，35.51B）同代不同权重、总参差 30%。
+- 缺什么：同一份权重导出 dense/MoE 两形态，或同一 MoE 换 `expert_used`（这就是 `moe-design-not-identified` 里登记的同一条最小补测，本节点不新增结论）。旁证：`qwen35`/`qwen35moe` 两个 arch tag 在库里都存在，但跨 tag 的每一对同时换了尺寸。
+
+#### 复核者会反对的地方（逐条先认）
+
+1. **「你只是没找到」**：名字级扫描只有 3 对，P1 是我按 (size token, provider, 专家数) 另外找出来的，因为它的档位在名字里不同（`IQ1_M` vs `Q3_K_M`）。反向也查过：全库没有任何一对模型文件名只差版本号且有规范协议行（名字级 3 对里 2 对是 27B UD，1 对是 Ornith，全部旧侧无协议）。
+2. **「P1 的 +26.71pp 那么大，位宽不可能解释」**：可能，也可能不是——`a01::ternary-offcurve` 在 2.226→3.176 bit 这一段量到 29.9pp。我不拿「大到不像位宽」当论据，这正是它不可识别的理由。
+3. **参数量差 2.44% 算不算「同规模」**：这是我自己判的，标准是「同一标签、同一专家结构、差 <3%」。若复核者要求完全同参，则 P1 连「同规模」也不成立，四条候选对全部作废——结论只会更强（一条受控对都没有），不会更弱。
+4. **`humaneval-cpp/py` 新侧 rep=2**：两条同协议同分不同 `run_tag`（`m25-vendor`/`m37-vendor-matched-size`）。按 `size_curves.py::cells()` 的库内口径取均值（分数相同，均值不改变值）与 `min(n_items)`，所以不影响数字；但它说明这两格有重复入库，引用时要知道。
+5. **本层没有逐题行，`humaneval`/`mbpp` 的聚合口径不是我定的**：库内 `humaneval` 的 `n_items` 恒为 164、`mbpp` 恒 378，**没有逐题行**，每行本身就是「分子/`n_items`」；同一格多行时的库内口径是 `size_curves.py::cells()` 的「分数取均值、分母取最小 `n_items`、`replicates` 记行数」。我没有另造口径，也没有把身份不同的旧侧三行平均成「一个 3.6 的值」。
+6. **判分通道的已知缺陷**（引 `i01`，`size_curves.py::CAVEAT`）：EvalPlus 不做后处理（围栏不过即判错）；gsm8k 用 `flexible-extract`；mmlu/arc 似然打平静默取下标 0 且无逐题样本；`truthfulqa_mc2` 的 acc 是归一化后的概率质量（地板 0.4484），所以表中 `truthfulqa_mc2` 的 −0.77pp 连方向都不该读。
+7. **「差是否超过地板」有两种答案**：按 `i01::res32` 的重复地板（0 题）全部超过；按二项区间只有 5 格分开。我在表里两列都给了，没有选一个更好看的。
+8. **P2 才是最便宜的那一对，但它的旧侧不是同一口径**：Ornith 这一对的字节比是 0.9739（若同参 9.197B，位宽 4.896 vs 5.028，只差 0.13 bit），所以规模/位宽这一层比 P0/P1 都干净；但旧侧 4 行是 `protocol=NULL`、`temp=0.3`（采样），新侧是 `temp=0.0` 规范协议——差不是「小」，是**不可比**。修它比修 P0 便宜（一次重跑，但 `ornith-1.0-9b-Q4_K_M.gguf` 不在盘上，需先重新取权重）。
+
+#### 可复算命令
+
+一条 SQL 出 P1 的差表与全部身份栏（P1 是唯一能出数的对；`min()` 列左右两边相同即表示该身份栏一致）：
+
+```
+sqlite3 -header -column experiments.sqlite <<'SQL'
+WITH canon(b,proto) AS (VALUES
+ ('humaneval','evalplus-0.3.1-openai-chat-greedy-base'),
+ ('humaneval-plus','evalplus-0.3.1-openai-chat-greedy-plus'),
+ ('mbpp','evalplus-0.3.1-openai-chat-greedy-base'),
+ ('mbpp-plus','evalplus-0.3.1-openai-chat-greedy-plus'),
+ ('mmlu','lmeval-0.4.13-gguf-shim-reasoning-off'),
+ ('arc_challenge','lmeval-0.4.13-gguf-shim-reasoning-off'),
+ ('truthfulqa_mc2','lmeval-0.4.13-gguf-shim-reasoning-off'),
+ ('gsm8k','lmeval-0.4.13-chat-reasoning-off'),
+ ('gsm8k-strict','lmeval-0.4.13-chat-reasoning-off'),
+ ('ifeval','lmeval-0.4.13-chat-reasoning-off'),
+ ('humaneval-cpp','multipl-e-raw-greedy-768'),
+ ('humaneval-py','multipl-e-raw-greedy-768'))
+SELECT c.b bench, o.n_items n, round(avg(o._score),4) old, round(avg(n._score),4) new,
+       round(100*(avg(n._score)-avg(o._score)),2) delta_pp, count(*) pairs,
+       min(o.temp||'/'||n.temp) temp, min(o.reasoning||'/'||n.reasoning) reasoning,
+       min(o.cache_type_k||o.cache_type_v||'/'||n.cache_type_k||n.cache_type_v) kv,
+       min(ifnull(o.ctx_size,'-')||'/'||n.ctx_size) ctx,
+       min(ifnull(o.max_tokens,'-')||'/'||n.max_tokens) maxtok,
+       min(o.spec_type||'/'||n.spec_type) spec, min(o.rep||'/'||n.rep) rep
+FROM experiments o JOIN experiments n
+  ON n._bench=o._bench AND n.protocol=o.protocol AND n.n_items=o.n_items
+JOIN canon c ON c.b=o._bench AND c.proto=o.protocol
+WHERE o.model='Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf' AND n.model='Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf'
+GROUP BY c.b, o.n_items ORDER BY o.n_items, c.b;
+SQL
+```
+
+一条 SQL 出 P0/P0' 的「不可比」证据（旧侧 5 行全 `NULL` 协议，新侧每基准 1 行）：
+
+```
+sqlite3 -header -column experiments.sqlite "SELECT _bench,model,protocol,temp,reasoning||'/'||cache_type_k||'/'||cache_type_v idents,n_items,round(_score,4) s FROM experiments WHERE model GLOB 'Qwen3.[68]-27B-UD-Q[23]_K_XL.gguf' ORDER BY _bench,model,_score"
+```
+
+一段 python 重打本节点所有派生数（参数量/位宽反解、区间、半宽、同代阶梯、架构轴；只读库与入库 fixture）：
+
+```
+python3 - <<'PY'
+import json,math,sqlite3
+con=sqlite3.connect("file:experiments.sqlite?mode=ro",uri=True);con.row_factory=sqlite3.Row
+R=[dict(r) for r in con.execute("select * from experiments")]
+F=json.load(open("docs/subprojects/a02-模型规模/analysis/fixtures/gguf_truth.json"))["models"]
+B=json.load(open(".wrapup/bpw_map.json"))
+C={"humaneval":"evalplus-0.3.1-openai-chat-greedy-base","humaneval-plus":"evalplus-0.3.1-openai-chat-greedy-plus",
+   "mbpp":"evalplus-0.3.1-openai-chat-greedy-base","mbpp-plus":"evalplus-0.3.1-openai-chat-greedy-plus",
+   "mmlu":"lmeval-0.4.13-gguf-shim-reasoning-off","arc_challenge":"lmeval-0.4.13-gguf-shim-reasoning-off",
+   "truthfulqa_mc2":"lmeval-0.4.13-gguf-shim-reasoning-off","gsm8k":"lmeval-0.4.13-chat-reasoning-off",
+   "gsm8k-strict":"lmeval-0.4.13-chat-reasoning-off","ifeval":"lmeval-0.4.13-chat-reasoning-off",
+   "humaneval-cpp":"multipl-e-raw-greedy-768","humaneval-py":"multipl-e-raw-greedy-768"}
+def w(p,n,z=1.96):
+    d=1+z*z/n;c=(p+z*z/(2*n))/d;h=z*math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d;return max(0,c-h),min(1,c+h)
+def cell(m,b):                       # 库内口径 = analysis/size_curves.py::cells()
+    h=[r for r in R if r["model"]==m and r["_bench"]==b and r["protocol"]==C[b]]
+    return (sum(r["_score"] for r in h)/len(h),min(r["n_items"] for r in h),len(h)) if h else None
+A="Qwen3.6-27B-UD-%s.gguf";Bz="Qwen3.8-27B-UD-%s.gguf"
+for q in ("Q2_K_XL","Q3_K_XL"):
+    a=[r["_file_size"] for r in R if r["model"]==A%q][0];b=[r["_file_size"] for r in R if r["model"]==Bz%q][0]
+    p=F[Bz%q]["n_params"]
+    print(f"27B {q}: 字节比 {a/b:.4f} | 同参数({p/1e9:.3f}B)→旧侧 bpw={8*a*1e9/p:.3f} vs 新侧 {8*b*1e9/p:.3f}"
+          f" | 同位宽→旧侧需 {8*a*1e9/(8*b*1e9/p)/1e9:.3f}B")
+for name,o,n in (("P0 Q2",A%"Q2_K_XL",Bz%"Q2_K_XL"),("P0 Q3",A%"Q3_K_XL",Bz%"Q3_K_XL"),
+                 ("P1 35B-A3B","Qwen_Qwen3.5-35B-A3B-IQ1_M.gguf","Qwen_Qwen3.6-35B-A3B-Q3_K_M.gguf")):
+    print("---",name)
+    for b in C:
+        x,y=cell(n,b),cell(o,b)
+        if x and y:
+            l1,h1=w(y[0],y[1]);l2,h2=w(x[0],x[1])
+            print(f"  {b:15s} {y[0]:.4f}->{x[0]:.4f} Δ={100*(x[0]-y[0]):+.2f}pp n={y[1]} "
+                  f"{'区间分开' if (h1<l2 or h2<l1) else '区间重叠'}")
+        else:
+            print(f"  {b:15s} 不可比（旧侧规范协议行 {len([r for r in R if r['model']==o and r['_bench']==b])} 行，"
+                  f"新侧 {len([r for r in R if r['model']==n and r['_bench']==b])} 行）")
+print("--- 同代位宽阶梯 3.6-35B-A3B UD-Q2_K_XL->UD-Q3_K_XL (+1.048bit)")
+for b in C:
+    x,y=cell("Qwen3.6-35B-A3B-UD-Q3_K_XL.gguf",b),cell("Qwen3.6-35B-A3B-UD-Q2_K_XL.gguf",b)
+    if x and y:
+        l1,h1=w(y[0],y[1]);l2,h2=w(x[0],x[1])
+        print(f"  {b:15s} {y[0]:.4f}->{x[0]:.4f} Δ={100*(x[0]-y[0]):+.2f}pp {'分开' if (h1<l2 or h2<l1) else '重叠'}")
+print("半宽(p=0.5):",{n:round(100*(w(.5,n)[1]-w(.5,n)[0])/2,2) for n in (100,161,164,378,912)})
+print("协议 NULL 行:",sum(1 for r in R if not r["protocol"]),"/",len(R))
+g={}
+for v in F.values(): g.setdefault(v["n_params"],[]).append(v["expert_count"])
+print("盘上 GGUF",len(F),"MoE",sum(1 for v in F.values() if v["expert_count"]>0),
+      "同总参组",sum(1 for v in g.values() if len(v)>1),"混合组",sum(1 for v in g.values() if len(set(v))>1))
+PY
+```
