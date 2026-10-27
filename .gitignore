@@ -118,6 +118,10 @@ experiments.sqlite.bak*
 !.wrapup/mres/i01-shim-probe/shim_probe.log.gz
 !.wrapup/mres/m128-spec-9b/server.log.gz
 !.wrapup/mres/m142-qat-gemma31b-q4/code.log.gz
+# a11 扩散轴的协议判词（res13/res14 的证据）：不重跑 PR 分支就重算不出来，故随仓库走；
+# 同目录的 .log/.mem 是运行期日志，按类忽略。
+!.wrapup/axis11-diffusion-retest-2026-10-27/
+!.wrapup/axis11-diffusion-retest-2026-10-27/protocol-report.md
 .wrapup/*.log
 # 运行日志与进程戳：暂存不是证据。
 # 例外（下面十四行）：`docs/` 下被点名为 evidence 的 `.out`。判据是「被点名」，不是「体积小」；
