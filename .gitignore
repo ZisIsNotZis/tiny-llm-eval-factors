@@ -132,6 +132,8 @@ experiments.sqlite.bak*
 # 曾经三处不同）。`.gz` 不在 `*.log` 这条类里，所以只有下面九行放行。
 .wrapup/*.out
 .wrapup/*.pid
+# 显存采样旁路文件（与 .log 一起跑出来的测量辅助，重跑即重生成）
+*.mem
 !.wrapup/a01_t4.out
 !.wrapup/a01_wp5_r1.out
 !.wrapup/a01_wp5_r2.out
