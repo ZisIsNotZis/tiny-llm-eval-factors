@@ -2259,8 +2259,13 @@ def main():
         ("十二、扩散式解码（DiffusionGemma）",
          "X = 解码范式（扩散 vs 自回归），对照为同尺寸自回归 gemma-4-26B-A4B；Y = 各基准分数。",
          [], None,
-         "<ul><li>本机的 llama.cpp（含 diffusion-cli）不认 <code>diffusion-gemma</code> 架构，处理侧完全没有数据。</li>"
-         "<li>因此这一项是<b>未测</b>（不是 0，也不是 null）：需要另建支持该架构的运行时才能比较。</li></ul>"),
+         "<ul><li><b>运行时门槛已解除</b>：上游 PR #24423 分支的 diffusion CLI 能加载本机这份 diffusion-gemma 并生成"
+         "（<code>1+1=</code>→<code>2</code>，两次独立运行同答案，352 tok/s，显存峰值 21.1 GiB / 24 GiB），但它只有 CLI、没有 server。"
+         "mainline 构建仍然不认该架构——旧的 <code>GATE-FAIL</code> 读数只对 mainline 成立。</li>"
+         "<li><b>但还没有可比分数</b>：扩散侧是 entropy-bound 采样，对照臂 <code>m144</code> 是贪心，采样器不可对齐；"
+         "且对照臂位宽不匹配（m144 4.5176 比特/权重 vs 扩散文件 5.3247，位宽最近的同族自回归臂 m145 5.3932 因显存未买、从未测）。</li>"
+         "<li>因此这一项仍是<b>未测 / 不可比</b>（不是 0，也不是低分）：扩散分数只能当 reference，不能与 m144 逐列相减；"
+         "要得到可比数字，缺的是同宽同族的自回归对照臂（m145）。</li></ul>"),
         ("十三、多语言代码（MultiPL-E）：逐语言与生成协议",
          "X = 语言（cpp/py/js/java/rs/rb）与生成协议（raw / chat）；Y = 通过率；行 = 模型文件。"
          "这不是“量化位宽”的轴，而是把代码能力的语言维度与协议维度摆出来，用来说明为什么标准列必须固定语言集。",
@@ -2351,7 +2356,7 @@ def main():
              "<tr><td>思考开关</td><td class='sig'>小预算下开思考更低</td><td>多数配置接近</td><td>—</td></tr>"
              "<tr><td>量化感知训练 QAT</td><td class='sig'>2-bit 下 QAT 更低；4-bit 中 12B 的 MMLU 显著更低</td><td>4-bit 其余配对</td><td>31B（显存不足）</td></tr>"
              "<tr><td>GSQ-RCO 方案</td><td>—</td><td class='sig'>全部差值都测不出</td><td>—</td></tr>"
-             "<tr><td>扩散式解码</td><td>—</td><td>—</td><td class='nr'>运行时缺失</td></tr></table>")
+             "<tr><td>扩散式解码</td><td>—</td><td>—</td><td class='nr'>可加载但不可比（缺同宽对照臂）</td></tr></table>")
     H.append("<p class='def'><b>一句话总结：</b>量化损失在代码、推理、指令上明显，在选择题知识与事实性上很小；"
              "同文件大小时“换方案”比“数字数”更值得关注。日常选择：<b>量化位宽至少约 4 比特/权重，再往上除非能测出收益否则不必多花比特</b>。</p>"
          "<ul>" + scheme_effects_html() + "</ul>")

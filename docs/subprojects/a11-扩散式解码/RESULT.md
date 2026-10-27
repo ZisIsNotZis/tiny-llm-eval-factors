@@ -125,3 +125,17 @@
   - 运行器差异：mainline `0.4.1-dev build 4399` 仍然 `unknown model architecture: 'diffusion-gemma'`（即 `res1` 的读数在 mainline 上仍成立）。
 - producer: `.wrapup/axis11-diffusion-retest-2026-10-27/{build.log,smoke.log,run_determinism.log,gpu_samples.txt}`；`git -C /home/z/llama-diffusion-pr rev-parse --short HEAD`。
 - 限制：**还没有分数**。协议未对齐（CLI 逐题生成 vs 库里 a11 的对照臂 m144 走 server + 固定采样），所以本条只把「GATE-FAIL」改成「可加载可生成、待协议对齐后测量」；给分数要先定生成协议（见 `PLAN.md::plan3`）。
+
+## res14 :: 扩散解码的分数不能进本库的同 series：采样器不可对齐（对照臂贪心、扩散是 entropy-bound），且对照臂位宽不匹配（m144 4.5176 bpw vs 扩散 5.3247，最近的 m145 5.3932 未测）——所以只当 reference，不与 m144 逐列相减。
+
+- kind: citation
+- status: current
+- evidence（每项带出处，上游代码指 PR 头 `dd7f73b`，库内数值用 SQL 可查）:
+  - **采样器**：对照臂 `m144` 是贪心（`experiments.temp = 0.0`、`--greedy True`）；扩散是 entropy-bound——`examples/diffusion/diffusion-cli.cpp:320-331` 的默认 `max_steps=48`、`t=[0.4,0.8]`、`entropy_bound=0.1`、`stability=1`、`confidence=0.005`，DB 无对应 metadata 键故取代码默认。EB 没有 temperature/top_k；实测改成「逐位置贪心」会退化并 30.4 秒/块，不能当对齐。
+  - **位宽**：`m144` 4.5176 bpw（QAT Q4_K_XL）vs 扩散文件 5.3247 bpw（Q4_K_M，`.wrapup/bpw_map.json`），Δ +0.807；位宽最近的同族自回归臂 `m145`（5.3932）从未测（`nm3`，`BLOCKED-on-VRAM`）。
+  - **提示**：gsm8k 侧对照臂是 5-shot + `fewshot_as_multiturn=true`，扩散 CLI 只能给一条 user 消息（`diffusion-cli.cpp:488-497`）→ 不可对齐；humaneval 侧 evalplus 的 system+instruction 可逐字节复现（`-sys` + `-p`）。
+  - **长度/ctx**：对照臂 `max_tokens` 1024/768、`ctx 8192`、KV q8_0、单槽；扩散 `-n` 只定块数（每块 256），`-c 8192 -ctk q8_0 -ctv q8_0 -np 1` 可对齐，输出不按 `-n` 裁剪（`-n 64` 与 `-n 256` 实测逐字节相同）。
+  - **确定性**：同一命令 3 次进程返回串逐字节相同（sha256 `cb72997455df749d`×3）；`-s` 是活开关，默认 `-1` 在 `diffusion.cpp:465` 展开为固定种子 `0xFFFFFFFF`，不是随机。
+  - **无 logprob**：CLI 不吐 logprob ⇒ mmlu / arc / truthfulqa 这三类「靠 logprob 打分」的基准**没有格**。
+- producer: `.wrapup/axis11-diffusion-retest-2026-10-27/protocol-report.md` 与同目录 11 份 `protocol-*.log/.mem`；`sqlite3 experiments.sqlite "select temp,protocol from experiments where run_tag='m144-native-gemma26b-a4b-q4' limit 1"`；`git -C /home/z/llama-diffusion-pr rev-parse --short HEAD`。
+- 结论：要给扩散轴一个**可比**数字，缺的是同宽同族自回归臂（`m145`，5.3932 bpw）——那是显存/钱的决定，不是本轴还能自己解的；本轴内部仍可做「运行时参数 → 分数」的自比较（`PLAN.md::plan5`）。
