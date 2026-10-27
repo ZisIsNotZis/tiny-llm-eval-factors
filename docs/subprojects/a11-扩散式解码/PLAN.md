@@ -75,3 +75,11 @@
 - 已用：0 GPU 分钟（门槛与价格全部在 CPU 侧，`-ngl 0`，不持 `/tmp/llama_gpu.lock`）。
 - 若将来有人买到能加载该架构的运行时：按真值算独占需求是 15.911 GiB（权重 15.638 + 真 KV 0.273@4096），
   加上 compute buffer 后是否仍能与非本仓库的任务共卡**未测**；先实测占用再报预算，不预先承诺 GPU 分钟数。
+
+## plan3 :: nm4 复测：上游 PR #24423 的 `llama-diffusion-cli` 能否把这条轴从 GATE-FAIL 变成可测。
+
+- why: `res1` 的 `GATE-FAIL` 依据是旧二进制（2026-09-17）架构表里没有 `diffusion-gemma`；上游把支持放在 `ggml-org/llama.cpp#24423`（`llama-diffusion-cli`）与 `#24427`（架构），据 2026-06-22 公开说明两者都未进 mainline。
+- do: 在独立目录 checkout PR 头、`-DGGML_CUDA=ON` 编 `llama-diffusion-cli`；用本机已存的 `diffusiongemma-26B-A4B-it-Q4_K_M.gguf`（16.8 GB）跑最小提示；能出 token 再对齐协议（见 `docs/method/method.yaml`）。
+- do not: 不改仓库代码、不因「能加载」就给分数（协议不可对齐时结论只到 `LOADS-ONLY`）。
+- ac: 结论三选一且各带一条可重跑命令——`STILL-GATE-FAIL`（不能编/仍不认架构）/ `LOADS-ONLY`（能出 token，协议不可对齐）/ `MEASURABLE`（能按协议跑出与库可比的分数）。日志落 `.wrapup/axis11-diffusion-retest-<日期>/`。
+- status: 进行中（2026-10-27）。
