@@ -31,9 +31,9 @@
   "of_total_rows": 3364
  },
  "protocol_rows": {
-  "total": 1483,
+  "total": 1498,
   "with_size": 291,
-  "null": 1192,
+  "null": 1207,
   "with_size_by_protocol": [
    {
     "protocol": "multipl-e-raw-greedy-768",
