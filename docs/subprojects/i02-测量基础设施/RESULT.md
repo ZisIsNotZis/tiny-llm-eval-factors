@@ -485,3 +485,19 @@
 - evidence: `git clone --depth 1 https://github.com/harbor-framework/terminal-bench-2` 与 `curl codeload …/tar.gz` 各自 300 秒/90 秒超时；`git ls-remote` 同一仓库 2 秒返回 HEAD；`docker pull alexgshaw/fix-git:20251031` 成功（493 MB）；`pip install terminal-bench` 走默认 pypi 源时大 wheel 读超时（`files.pythonhosted.org` ReadTimeout），换 `https://pypi.tuna.tsinghua.edu.cn/simple` 后 3 分 26 秒装成 `terminal-bench==0.2.18`，`tb run/tasks/runs` 可用；但该 harness 的题集来自 registry 或 `--dataset-path`，仓库本体与题集今天都取不下来；`.wrapup/bfclenv` 内 `bfcl_eval==2026.3.23` 与 21 个 `BFCL_v4_*.json` 就在盘上，`.wrapup/bfcl_run.py` 可直接跑 `--mode tools|prompt`。
 - producer: 命令与日志见 `.wrapup/agentic/`（tb2 探路）与本条记录的时长；重申时刻 = 2026-10-27。
 - 影响：agentic 第一批的顺序改成「BFCL 先、TB2 后」——这不是偏好，是当日可达性决定的；TB2 一旦仓库可取，`p-ag1` 的三题探路照原样做。
+
+## res76 :: 运行环境换机（2026-10-27 实测）：本机已无 GPU，只有 8 线程 CPU / 22 GiB 内存 / 384 GB 可用盘；本地 GGUF 库与 `/home/z/hf` 不在盘上；外网 HuggingFace / GitHub / pypi 当日可达。
+
+- kind: measured
+- status: current
+- evidence: `nvidia-smi` 不存在（command not found）；`lscpu` 报 `Intel(R) Core(TM) i5-8350U`、4 核 8 线程；`free -g` 报 total 22、available 17；`df -h .` 报 384 GB 可用；`find / -name '*.gguf' -size +100M` 无命中，`/home/z/hf` 不存在；`curl -sI https://huggingface.co` / `https://github.com` / `https://pypi.org/simple/` 均返回 200；`docker ps` 可用（daemon 在跑）。依赖用 `uv venv .wrapup/lmenv --python 3.14` + `uv pip install -r requirements.txt` 重建成功；仓库自带的 `bootstrap_venv.sh` 在这台机器上失败（`ensurepip` 不可用，Python 3.14 缺 `python3.14-venv`），这是工具链事实，不改变依赖清单。
+- producer: 换机后的首次环境核对；命令与输出由本次会话实跑。
+- 影响：所有需要 ≥24 GB 显存的测量在本机**不可执行**（a11 扩散、a02 的版本/激活大模型对、agentic 第一批的模型）——这是「当前无设备」，不是「测不出」，也不是 0。可执行的是：库内数据的再分析、报告/检查构建、以及需要 ≤22 GiB 内存的 CPU 工作。路线改写见 `docs/plan/subprojects.md` 的 `fam` 里程碑与 `agentic` 的 `BLOCKED-on-GPU` 标注。
+
+## res77 :: 报告附录的「模型来源」列从 `/home/z/hf` 的符号链接现场解析，换机后从库重建的 `report.html` 不再与仓库里那份逐字节相同——这是可复现性缺陷，不是数据漂移。
+
+- kind: measured
+- status: current
+- evidence: 在 `HEAD=1dbab2e` 上 `./reproduce.sh` 的其余 55 项全 PASS/SKIP，唯一 FAIL 是报告逐字节比对：仓库 `7159de4480f6…`、重建 `fe3fe237bdad…`；`diff` 只落在附录「模型文件与来源」表：旧文件有 `mscache/…` 机构/仓库/相对路径，新文件是 `未知（本地文件，未找到下载来源）` / `—`。成因在 `make_report.py::_load_provenance` 读 `HFROOT=/home/z/hf` 的目录列表与 `realpath`；该目录在新机器上不存在，`PROV` 为空，于是 `model_meta` 走 `_VENDOR_FALLBACK`。数据库行数与内容未变（3379 行，`git status` 只有 `report.html`）。
+- producer: 本次换机后跑 `PATH=.wrapup/lmenv/bin:$PATH ./reproduce.sh` 的捕获；`diff <(git cat-file -p HEAD:report.html) report.html` 的头部差异。
+- 影响：`STATUS.md` 与 README 声称的「干净 clone 一条命令逐字节重建报告」只在带 `/home/z/hf` 的机器上成立，附录的来源列是可复现性缺口；修复归 `p-env1`（把来源索引变成随仓库分发的输入，并给它一条会变红的检查）。
