@@ -1324,6 +1324,71 @@ def _ingest_bfcl(con, path, run_tag, protocol, source, model_map=None):
     return n
 
 
+# 0.8B 的 BFCL 单轮双臂面板（2026-10-27）：同一模型文件、同一批题，只改两件事——
+# 工具调用协议（native `tools=` vs schema 写进 system 消息）与 KV 缓存类型（f16 vs q8_0）。
+# `_score` 取逐类 `*_eval.json` 里的自研匹配器分数；同一批预测过官方 AST checker 的重判值在
+# 同目录 `scores-official.json` 里，**不入库**（两条判分器身份不合并，见 `RESULT.md::res13`）。
+# 逐类题量取实测 `n`，不是数据集行数。
+BFCL08_RUNDIR = "agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027"
+BFCL08_PATH = os.path.join(".wrapup", BFCL08_RUNDIR)  # `source_file` 记相对 `.wrapup/` 的路径
+BFCL08_MODEL = "Qwen3.5-0.8B-UD-Q4_K_XL.gguf"
+BFCL08_TOOLS_PROTOCOL = "bfcl-native-tools-nothink-greedy-homegrown-matcher"
+BFCL08_PROMPT_PROTOCOL = "bfcl-prompt-nothink-greedy-homegrown-matcher"
+
+# (run_tag, 文件前缀, protocol, cache_type_k/v, 类别)。KV 类型是**列**，不是 run_tag：
+# m171 的 f16 与 q8_0 两组行因此同 run_tag、不同 cache_type_k/_v。
+BFCL08_ARMS = (
+    ("m171-bfcl08-tools", "native", BFCL08_TOOLS_PROTOCOL, "f16",
+     ("simple_python", "simple_java", "simple_javascript", "multiple",
+      "parallel", "parallel_multiple", "irrelevance")),
+    # q8_0 那轮在 parallel_multiple 第 172 题后 server 退出、irrelevance 整轮 0 响应
+    # （`run-nativeq8-{parallel_multiple,irrelevance}.log` 里逐条 `Connection refused`），
+    # 落盘的 0.32 / 1.0 是「没有生成」的产物而不是测量，所以这两类不入库、也不记 0。
+    ("m171-bfcl08-tools", "nativeq8", BFCL08_TOOLS_PROTOCOL, "q8_0",
+     ("simple_python", "simple_java", "simple_javascript", "multiple", "parallel")),
+    ("m172-bfcl08-prompt", "prompt", BFCL08_PROMPT_PROTOCOL, "f16",
+     ("simple_python", "simple_java", "simple_javascript")),
+)
+
+
+def ingest_bfcl08(con, run_tag):
+    """一个臂一行（模型 × 协议 × KV × 类别）。先删本 run_tag 的行再重插：
+    ONCE 注册下第二次运行已被 `once()` 短路，直接调用时靠这条删除保持幂等。"""
+    con.execute("DELETE FROM experiments WHERE run_tag = ?", (run_tag,))
+    n = 0
+    for tag, prefix, protocol, kv, cats in BFCL08_ARMS:
+        if tag != run_tag:
+            continue
+        for cat in cats:
+            src = f"{BFCL08_RUNDIR}/samples-{prefix}-{cat}_eval.json"
+            path = os.path.join(BFCL08_PATH, f"samples-{prefix}-{cat}_eval.json")
+            if not os.path.exists(path):
+                note_skip(run_tag, "缺逐类评测产物", src)
+                continue
+            d = json.load(open(path, encoding="utf-8"))
+            if cat not in d.get("per_category", {}):
+                note_skip(run_tag, "产物里没有该类别", src)
+                continue
+            row = base_row(BFCL08_MODEL, f"bfcl-{cat}", 0.0, d["score"], None)
+            row.update({"cache_type_k": kv, "cache_type_k_draft": kv,
+                        "cache_type_v": kv, "cache_type_v_draft": kv,
+                        "run_tag": run_tag, "rep": 1, "ctx_size": 8192,
+                        "parallel_slots": 1, "protocol": protocol,
+                        "language": "python", "bench_family": "bfcl",
+                        "max_tokens": 512, "n_items": d["n"], "source_file": src})
+            insert(con, row)
+            n += 1
+    return n
+
+
+def ingest_m171(con):
+    return ingest_bfcl08(con, "m171-bfcl08-tools")
+
+
+def ingest_m172(con):
+    return ingest_bfcl08(con, "m172-bfcl08-prompt")
+
+
 M23_MODELS = {
     "iq3-4b": "Qwen3.5-4B-UD-IQ3_XXS.gguf",
     "iq3-2b": "Qwen3.5-2B-UD-IQ3_XXS.gguf",
@@ -2024,6 +2089,8 @@ def main():
         ("m4b", "m4b-tool-calling-native", ingest_m4b), ("m5", "m5-family-ladder", ingest_m5),
         ("m6", "m6-family-ladder", ingest_m6), ("m7", "m7-tool-calling-native", ingest_m7),
         ("m8", "m8-bfcl-live", ingest_m8), ("m10", "m10-family-ladder", ingest_m10),
+        ("m171", "m171-bfcl08-tools", ingest_m171),
+        ("m172", "m172-bfcl08-prompt", ingest_m172),
         ("m10g", "m10-granite-q34", ingest_m10g),
         ("m23", "m23-scheme-iqk", ingest_m23), ("m25", "m25-vendor", ingest_m25),
     ]

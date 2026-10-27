@@ -12,7 +12,7 @@
 
 ## 当前状态
 
-- 已完成：`WP1`（文档归位）、`WP2`（单轮判分器替换，res11）、`WP3`（覆盖/聚合/排序，res1/res3/res9/res11/res12）、`WP7`（n_items 回填，res2/res4）、`WP8`（官方分入库，res13）。
+- 已完成：`WP1`（文档归位）、`WP2`（单轮判分器替换，res11）、`WP3`（覆盖/聚合/排序，res1/res3/res9/res11/res12）、`WP7`（n_items 回填，res2/res4）、`WP8`（官方分入库，res13）、`WP9`（0.8B 协议×KV 面板入库，res16）。
 - 在办：无。`WP4` 的有界结论已达成，2×2 受控对不买（见上表）；`WP5` 已完成（res14）。剩余只有 `WP6`（meta 派 fresh-context reviewer）。
 - **判定入口**：`python3 "docs/subprojects/a13-工具调用 BFCL/audits/run_all.py"`（实跑 `EXIT=0`），它就是里程碑 done 判据；行数/哈希只作快照打印，判据是「库与证据一致」的关系。
 - **终审 ACCEPT WITH NOTES 的七处已改（待复审）**：①`official_vs_homegrown.py` 改成「先校验后写证据」（写 tmp + `os.replace`，绑定漂移时 exit 3 且证据字节不变）、`run_all.py` 把子检查崩溃记 FAIL 不抛异常；②`res14` 的边界按实测重写（类别被 entry id 覆盖、`long_context` 支路未触及、`miss_func`/`miss_param` 各有 203/934 空 GT 轮被 `continue`、`multi_turn_irrelevance_checker` 无调用点）；③`res12` 加 ctx/`-partial` 条件，跨族受控只剩 base@98304 三行；④`未测#3` 改为已测并写残留；⑤`res9` 计数改为 base 11 行/10 模型、long_context 7 行/4 模型，审计表头改「5 non-live」；⑥「不可分」补上 0.0125 摆动的推导并标明 macro/micro；⑦新增 `res15` 类别覆盖表，把 7/11 模型与 prompt 的 `live_*` 缺口明确写成「未测」而非「协议不产出」。
@@ -29,11 +29,12 @@
 |---|---|---|---|---|---|
 | WP1 文档归位 | a13 编排者 | `PLAN.md`/`RESULT.md`/`AGENTS.md` 存在；`plan.yaml` 的 `plan4` 已迁入并删除该 yaml；`git grep -n 'a13-工具调用 BFCL/plan.yaml'` 无输出；按路径提交在 main | — | 1 会话 | **完成** |
 | WP2 单轮：官方 AST checker vs 自研匹配器 | a13 编排者 | 用同一批落盘预测重判 15 个存活 cell，逐 (模型, 类别) 给出「自研准确率 / 官方准确率 / 向上翻 / 向下翻」，并给出每条已知会动的已报数字；负控两侧都观测到（正确调用判对、错名/缺参/多参/布尔数字混用各判错）；缺输入 exit≠0 | WP1 | ≤90 CPU 分钟 | **完成**（res11：60 可比格全上行，中位 +0.04~+0.33，34 上行 / 2788 下行，2534 条是 missing_optional；4/55 对逆序） |
-| WP3 覆盖表 + 聚合口径 + 排序稳定性 | a13 编排者 | 族×协议×类别矩阵 + 每格 n 的来源；micro/macro 复算值与面板 summary 对齐（或说明为何对不齐）；跨类别排序逆序数；native vs prompt 协议下排序是否变 | WP1 | ≤90 CPU 分钟 | **完成**（res1/res3/res9 覆盖与聚合、res11 排序 4/55 逆序、res12 按 handler 的可比性分组）；残留：native vs prompt 的排序对照只有库里 20 行、无预测可重判 |
+| WP3 覆盖表 + 聚合口径 + 排序稳定性 | a13 编排者 | 族×协议×类别矩阵 + 每格 n 的来源；micro/macro 复算值与面板 summary 对齐（或说明为何对不齐）；跨类别排序逆序数；native vs prompt 协议下排序是否变 | WP1 | ≤90 CPU 分钟 | **完成**（res1/res3/res9 覆盖与聚合、res11 排序 4/55 逆序、res12 按 handler 的可比性分组）；残留：native vs prompt 的**跨模型**排序对照仍只有 m4 的 4 个模型（20 行），0.8B 的 m171/m172 只给同模型内的协议受控对（res16） |
 | WP4 多轮跨家族（`plan4`） | a13 编排者 | **有界结论已达**：跨族差与模板差不可分离、库内只有 4 个 handler 组内可比、granite 无对照、gemma 补了也只补覆盖（res12）。可选的 2×2 受控对**已定价、未测**：4 臂 × 200 题 ≈ 50 GPU 分钟，买的是「跨族可比」，现不买（GPU 排队给 a01 的 12B MMLU 与 a06 剩余五格） | WP3、GPU | 50 GPU 分钟（未授权） | **有界结论达成** |
 | WP5 多轮判分器的可执行负控 | a13 编排者 | 用官方 `multi_turn_checker` 对构造的坏实例判错、对正确实例判对，两侧都观测到 | WP2 | ≤60 CPU 分钟 | **完成**（res14：正控 PASS，改错/坏格式/空答三条全 FAIL；A 与 B 的 `error_type` 相同，所以失败原因不可按 error_type 归因） |
 | WP6 独立复核 | fresh-context reviewer（meta 派） | 每包一份裁决（接受 / 接受带注解 / 不接受），阻塞项带位置与复现 | 对应包完成 | ≤30 CPU 分钟/份 | 待派 |
 | WP8 单轮官方分入库（取代自研分） | a13 编排者 | 79 格 `_score` 换官方值、协议串区分两套判分器、编号备份 + `integrity_check` + `db_check` PASS、重跑幂等、REFRESH 收敛在库副本上实测；列级新旧对照与「4/55 逆序」的复算命令进 `RESULT.md` | WP2 | ≤30 CPU 分钟 | **完成**（res13：旧值 retracted） |
+| WP9 0.8B 协议×KV 面板入库 | a13 编排者 | 15 行入库（tools·f16 7 + tools·q8_0 5 + prompt·f16 3）、`protocol` 写明判分器身份、`n_items` 取实测 n、编号备份 + `db_check` PASS、重跑幂等；`web_search*`/`memory*` 登记为「本机没有依赖」而非跳过 | WP1 | ≤10 CPU 分钟 | **完成**（res16） |
 | WP7 `n_items` 回填 | a13 编排者 → `migrations/backfill_n_items.py` | `bfcl%` 的 NULL 从 29 降到 15，剩下的每一行有写定的原因；编号备份 + integrity_check ok + 第二次 dry-run 幂等 0 行 | WP3 | ≤30 CPU 分钟 | **完成**（res2/res4：14 行回填，剩 15 行多轮因台账只留最后一次运行而不可溯源） |
 
 调度原则：`WP2`/`WP3` 全 CPU、无 GPU、互相独立，先并行；`WP4` 要 GPU 且要等锁，放在 `WP3` 之后；`WP5` 复用 `WP2` 的判分器加载装置。

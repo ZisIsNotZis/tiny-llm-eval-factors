@@ -127,6 +127,31 @@ experiments.sqlite.bak*
 !.wrapup/axis11-diffusion-retest-2026-10-27/protocol_runs2.sh
 !.wrapup/axis11-diffusion-retest-2026-10-27/protocol_runs3.sh
 !.wrapup/axis11-diffusion-retest-2026-10-27/protocol_runs.status
+# a13 的 0.8B BFCL 面板（m100/m101）：库里的 15 行以逐类 `*_eval.json` 为唯一来源，`RESULT.md::res16`
+# 的 evidence/repro 直接点名它们，所以逐份入库（逐份列名，不用通配：同目录里 q8 臂的
+# `parallel_multiple`/`irrelevance` 两份是 server 退出后的无效产物、`probe` 是 10 题爬烟样本，
+# 三者不入库也不应因一条通配而看起来像证据）。同目录的 `samples-*.jsonl`、运行日志、显存采样与
+# `scores*.json` 仍是可重建的运行期产物，按 `.wrapup/*/` 这一类留在盘上（`.wrapup/agentic/` 是
+# 两级目录，先放行目录再放行文件，否则下面的 `!` 不生效）。
+!.wrapup/agentic/
+.wrapup/agentic/*
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/
+.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/*
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-native-simple_python_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-native-simple_java_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-native-simple_javascript_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-native-multiple_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-native-parallel_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-native-parallel_multiple_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-native-irrelevance_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-nativeq8-simple_python_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-nativeq8-simple_java_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-nativeq8-simple_javascript_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-nativeq8-multiple_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-nativeq8-parallel_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-prompt-simple_python_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-prompt-simple_java_eval.json
+!.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/samples-prompt-simple_javascript_eval.json
 .wrapup/*.log
 # 运行日志与进程戳：暂存不是证据。
 # 例外（下面十四行）：`docs/` 下被点名为 evidence 的 `.out`。判据是「被点名」，不是「体积小」；

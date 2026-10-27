@@ -9,8 +9,9 @@
   2. 多轮判分器的可执行负控（`multiturn_checker_negative_control.py`）必须 exit 0：正确回放判
      PASS，改错的/格式坏的/什么都不做的三条都必须判 FAIL。
   3. **库与证据必须一致**（不比对易变的行数，而比对不变量）：每个可比格在 `experiments` 里的
-     `_score` 必须逐位等于重打分产物里的 `official_acc` 且 `protocol` 是官方身份；prompt 那 20
-     行必须是自研身份；bfcl 行的协议串只能取已知的四个值；`n_items` 为 NULL 的行必须全是多轮。
+     `_score` 必须逐位等于重打分产物里的 `official_acc` 且 `protocol` 是官方身份；不许有行停在两条
+     退役协议串（`bfcl-native-tools-nothink-greedy` / `bfcl-prompt-nothink-greedy`）上；bfcl 行的
+     协议串只能取已知的五个值；`n_items` 为 NULL 的行必须全是多轮。
 
 子检查崩溃（非 0 退出、读不到产物、绑定缺项）都只记 FAIL 并继续走完，不向调用者抛异常：
 判定入口自己崩掉，等于把一个可诊断的不一致变成一条 traceback。
@@ -39,12 +40,18 @@ BFCLENV = REPO / ".wrapup/bfclenv/bin/python"
 
 KNOWN_PROTOCOLS = {
     "bfcl-native-tools-nothink-greedy-official-ast-checker",
+    "bfcl-native-tools-nothink-greedy-homegrown-matcher",
     "bfcl-prompt-nothink-greedy-homegrown-matcher",
     "bfcl-official-multiturn-temp0",
     "bfcl-official-multiturn-temp0-partial",
 }
 OFFICIAL = "bfcl-native-tools-nothink-greedy-official-ast-checker"
 PROMPT_HOMEGROWN = "bfcl-prompt-nothink-greedy-homegrown-matcher"
+# 两条退役串：值与身份脱钩的旧串。任何一行停在这里都算「身份未标」。
+RETIRED_PROTOCOLS = (
+    "bfcl-native-tools-nothink-greedy",
+    "bfcl-prompt-nothink-greedy",
+)
 
 missing = [str(p) for p in (DB, ARTIFACT, BFCLENV, *SCRIPTS) if not p.exists()]
 if missing:
@@ -104,16 +111,20 @@ if doc is not None:
                                 f"db={row[0]} artifact={rec['official_acc']}")
 
     stale = con.execute(
-        "SELECT count(*) FROM experiments WHERE bench_family='bfcl' "
-        "AND protocol='bfcl-native-tools-nothink-greedy'").fetchone()[0]
+        "SELECT protocol, count(*) FROM experiments WHERE bench_family='bfcl' "
+        f"AND protocol IN ({','.join('?' * len(RETIRED_PROTOCOLS))}) GROUP BY 1",
+        RETIRED_PROTOCOLS).fetchall()
     if stale:
-        problems.append(f"仍有 {stale} 行停在历史协议串 bfcl-native-tools-nothink-greedy（身份未标）")
+        problems.append(f"仍有行停在退役协议串（判分器身份未标）：{stale}")
 
+    # prompt 协议的身份是全有全无：行数会随面板增减（a13 的判据是关系，不是行数），
+    # 所以这里不钉死条数，只要求没有一行停在退役串上（上面的 stale）+ 没有未知串（下面的
+    # bad_proto），两条合起来就是「prompt 行的 `protocol` 只能是自研身份」。
     n_prompt = con.execute(
         "SELECT count(*) FROM experiments WHERE bench_family='bfcl' AND protocol=?",
         (PROMPT_HOMEGROWN,)).fetchone()[0]
-    if n_prompt != 20:
-        problems.append(f"prompt 协议应 20 行自研身份，实得 {n_prompt}")
+    if n_prompt == 0:
+        problems.append("prompt 协议一行都没有（身份串 " + PROMPT_HOMEGROWN + " 在库里不存在）")
 
     bad_proto = con.execute(
         f"SELECT protocol, count(*) FROM experiments WHERE bench_family LIKE 'bfcl%' "

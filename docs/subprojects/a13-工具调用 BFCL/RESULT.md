@@ -21,12 +21,13 @@
 
 ## 数据形状
 
-### res1 BFCL 的 123 行是四个测量，不是一列
+### res1 BFCL 的 138 行是五个测量，不是一列
 
-- 库侧分布：`bfcl` / `bfcl-native-tools-nothink-greedy` = 79 行、11 模型；`bfcl` / `bfcl-prompt-nothink-greedy` = 20 行、4 模型；`bfcl-multiturn` / `bfcl-official-multiturn-temp0` = 22 行、10 模型；`bfcl-multiturn` / `bfcl-official-multiturn-temp0-partial` = 2 行、1 模型。
-- 单轮 11 个模型里只有 4 个（Qwen3.5-2B 的 q2/q3、Qwen3.5-4B 的 q2/q3）同时有 native-tools 与 prompt 两个协议；其余 7 个只有 native-tools。
+- 库侧分布（按协议串）：`bfcl-native-tools-nothink-greedy-official-ast-checker` = 79 行、11 模型；`bfcl-native-tools-nothink-greedy-homegrown-matcher` = 12 行、1 模型（0.8B 的 f16 + q8_0 两臂，res16）；`bfcl-prompt-nothink-greedy-homegrown-matcher` = 23 行、5 模型；`bfcl-official-multiturn-temp0` = 22 行、10 模型；`bfcl-official-multiturn-temp0-partial` = 2 行、1 模型。
+- 单轮 12 个模型里只有 5 个同时有 native-tools 与 prompt 两个协议：Qwen3.5-2B 的 q2/q3、Qwen3.5-4B 的 q2/q3（m4；native 侧是官方 checker 值、prompt 侧是自研值）与 Qwen3.5-0.8B-Q4（m171/m172；两侧都是自研值）；其余 7 个只有 native-tools。
+- **五条协议串的判分器身份不同**：tools 协议下库里同时存了官方 AST checker 的值与自研匹配器的值（两条串），prompt 协议只存自研值；跨串比较先看身份（res13 的规则），不是先看模型。
 - 证据：`experiments.sqlite`。
-- 复现：`sqlite3 -readonly -header -column experiments.sqlite "SELECT bench_family, protocol, count(*) rows, count(n_items) n_notnull, count(DISTINCT model) models FROM experiments WHERE bench_family LIKE 'bfcl%' GROUP BY bench_family, protocol ORDER BY 1,2"`（实跑输出即上表四行）。
+- 复现：`sqlite3 -readonly -header -column experiments.sqlite "SELECT bench_family, protocol, count(*) rows, count(n_items) n_notnull, count(DISTINCT model) models FROM experiments WHERE bench_family LIKE 'bfcl%' GROUP BY bench_family, protocol ORDER BY 1,2"`（实跑输出即上表五行）。
 - 状态：current。
 
 ### res2 `n_items` 的 15 个 NULL 全是多轮行（已回填 14 行：单轮 5 + 多轮 9）
@@ -67,7 +68,7 @@
 - `.wrapup/mres/m8-*.jsonl` 4 个文件（`qwen2b-q2 qwen2b-q3 gr3b-q2 gr3b-q3`），每个 **2251** 条，覆盖 `live_simple:258 live_multiple:1053 live_parallel:16 live_parallel_multiple:24 live_irrelevance:884 live_relevance:16`。
 - 每条记录形如 `{"id","category","calls","raw"}`，正是 `bfcl_run.py eval` 的输入，所以**每个 cell 的自研分数都能原样重算**，也能喂给官方 AST checker 重判。
 - 对 i01 `res27`/`Q3` 的修正：i01 写「`.wrapup/bfcl_out` 为空、没有任何 bfcl 预测文件留存、历史分数无法重判」，其检索式是 `find .wrapup -name "*bfcl*"`，只匹配到脚本与目录；预测文件按 panel 命名为 `m4-*`/`m8-*`，被漏检。**一致率未测的原因是检索式太窄，不是文件不存在。** 本条不修改 i01 的目录。
-- prompt 协议（20 行）没有对应的预测文件，那 4 个模型的 prompt 侧仍无法重判。
+- prompt 协议里 m4 的 20 行没有对应的预测文件，那 4 个模型的 prompt 侧仍无法重判；0.8B 的 3 行 prompt（m172）有自己的预测文件，但它的官方重判值没有入库（res16）。
 - 证据：`.wrapup/mres/m4-*.jsonl`、`.wrapup/mres/m8-*.jsonl`。
 - 复现：`cd /home/z/vibe/local_lm_research/.wrapup/mres && for f in *.jsonl; do head -1 "$f" | grep -q '"calls"' && echo "$f $(wc -l < "$f")"; done`（实跑输出 15 行，行数为 1240 或 2251）。
 - 状态：current。
@@ -140,7 +141,7 @@
 - **方向修正 i01 的叙述**：i01 `res27` 实测的宽容通道（`arg_ok(10,["10"])`、`arg_ok(True,[1])`、多余参数不检查）真实存在，但它们的总量是 **34 条**；同一个匹配器的「可选参数必须出现」这条**严格**通道是 **2534 条**。所以净效应是自研**系统性低估**，不是高估。
 - **对排序的影响**：11 个单轮模型的 5 个 non-live 类别合并分（micro，22,644 题里非 live 的 13,640 题），自研→官方共 **4/55 对逆序**：gemma-E2B-Q3 跨过 Qwen3.5-4B-Q3、gemma-E4B-Q2 跨过 Qwen3.5-4B-Q3、gemma-E4B-Q3 跨过 Bonsai、granite-4.1-3b-Q3 跨过 Qwen3.5-4B-Q2。其余 51 对保序。结论：**排序大体可用，分数与邻近间距不可用**。复算命令见 res13。
 - **三个存在性类别是实测出来的 0，不是推断的 0**：`irrelevance`（11 格 / 2,640 题）与 `live_irrelevance`（4 格 / 3,536 题）新旧完全一致、翻转 0；`live_relevance`（4 格 / 64 题）差 1 题（`-0.0625`）——自研把 `arguments` 不是 dict 的调用也算「有调用」，官方解码失败即不算。这条差 1 题同时说明了「同构」的边界。
-- **prompt 协议 20 行不可重判**：那 4 个模型的 prompt 预测文件不存在（res5），所以「换成官方 checker」对它只能写未测。
+- **prompt 协议里 m4 的 20 行不可重判**：那 4 个模型的 prompt 预测文件不存在（res5），所以「换成官方 checker」对它只能写未测；0.8B 的 3 行 prompt（m172）有预测文件、官方值也算过，但按 res16 的入库口径只存自研值。
 - 负控两侧都观测到（`correct_call` 两判对，`wrong_name` / `empty_calls` / `missing_required` 两判错），脚本 `exit=0`；每条测试文件绑定到一个 DB (model, protocol) 行靠的是「重算的自研分与库里 `_score` 逐位相同」这个检验（4 个文件不确定就会 exit 3，实跑 15/15 全部绑定成功）。
 - 证据：`audits/official_vs_homegrown.py`、`audits/official_vs_homegrown.json`（逐格明细 + 每个输入文件的 sha256 + 15 个绑定）。
 - 复现：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/official_vs_homegrown.py"`（实跑 `EXIT=0`，打 60 行逐格表、负控四行 `ok`、15 行绑定）。
@@ -152,7 +153,7 @@
 
 - **撤回什么**：`experiments.sqlite` 里 79 个单轮 native-tools 格的旧 `_score`（自研匹配器的值）不再是当前事实。它们偏低，每一列都偏低，其中位幅度见下表；旧值仍可从 git 历史、`.wrapup/m*_summary.jsonl` 与 `audits/official_vs_homegrown.json` 的 `home_acc` 取回，但**不得再当当前值引用**。
 - **为什么**：`possible_answer` 用 `["units", ""]` 表示「该参数可省略」，官方 checker 只校验函数声明里的 `required`；自研 `call_ok` 要求标准答案里**每个**键都出现在预测里。2,788 条「自研判错、官方判对」里 **2,534 条**是这个原因，254 条是类型/取值宽容度（官方按声明做类型检查）。
-- **替换后的入库形状**：79 格 `_score` ← 官方值，`protocol` ← `bfcl-native-tools-nothink-greedy-official-ast-checker`；prompt 协议 20 行没有预测文件可重判，值不动，`protocol` ← `bfcl-prompt-nothink-greedy-homegrown-matcher`（身份写明是自研匹配器）。**两条身份不合并**：任何一行存的分数，其 `protocol` 都说明了是哪套判分器给的。
+- **替换后的入库形状**：79 格 `_score` ← 官方值，`protocol` ← `bfcl-native-tools-nothink-greedy-official-ast-checker`；prompt 协议 20 行没有预测文件可重判，值不动，`protocol` ← `bfcl-prompt-nothink-greedy-homegrown-matcher`（身份写明是自研匹配器）。**两条身份不合并**：任何一行存的分数，其 `protocol` 都说明了是哪套判分器给的。（m172 的 3 行 0.8B prompt 是后来入库的，用的是同一条 prompt 身份串；m171 的 12 行 tools 用的是新加的 `...-homegrown-matcher` 串——见 res16。）
 - **逐列旧 → 新**（每列 11 或 4 个 cell 的中位数；`d_min/d_max` 是该列各 cell 的极差）：
 
 | 报告列 | cell | 题数 | 旧中位 | 新中位 | 中位 Δ | Δ 最小 | Δ 最大 | 上行 | 下行 |
@@ -177,7 +178,7 @@
 - 证据：`experiments.sqlite`、`audits/official_vs_homegrown.json`、`migrate_db.py::ingest_bfcl_official_rescore`。
 - 复现：
   1. 重打分与逐格表：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/official_vs_homegrown.py"`（实跑 `EXIT=0`，末尾打印 11 行排序表与 `pairwise inversions homegrown -> official: 4/55`）。
-  2. 入库值对照：`sqlite3 -readonly -header -column experiments.sqlite "SELECT protocol,count(*),round(avg(_score),4) FROM experiments WHERE bench_family LIKE 'bfcl%' GROUP BY 1"`（实跑：官方 79 行均值 0.62、prompt 自研 20 行 0.5732、多轮 22 + 2）。
+  2. 入库值对照：`sqlite3 -readonly -header -column experiments.sqlite "SELECT protocol,count(*),round(avg(_score),4) FROM experiments WHERE bench_family LIKE 'bfcl%' GROUP BY 1"`（实跑：官方 79 行均值 0.62、prompt 自研 23 行 0.5687、tools 自研 12 行 0.374、多轮 22 + 2；这四个均值只是分组校验，**不是任何总分**）。
   3. 幂等：`python3 -c "import sqlite3,migrate_db as m; con=sqlite3.connect(m.DB); print(m.ingest_bfcl_official_rescore(con))"`（实跑 `rescored 0`）。
 - 状态：current（旧值状态：retracted，死因是 `missing_optional` 等判据差异）。
 
@@ -229,10 +230,42 @@
 - 复现：`.wrapup/bfclenv/bin/python "docs/subprojects/a13-工具调用 BFCL/audits/multiturn_checker_negative_control.py"`（实跑 `EXIT=0`，四行控制表即上表）。
 - 状态：current。
 
+## 协议 vs KV：0.8B 的受控双因子面板（m171 / m172）
+
+### res16 同一 0.8B 上，工具调用协议造成的差是 16–27pp，KV 类型（f16 → q8_0）造成的差是 0–4pp（后者落在单次运行的二项误差内）
+
+- **结论一行**：同一模型文件（`Qwen3.5-0.8B-UD-Q4_K_XL.gguf`）、同一批题、同一判分器（自研匹配器）下，把工具声明从 native `tools=` 改成「schema 写进 system 消息、模型自己吐 JSON」，`simple_python` 0.4675→0.7375（**+27.0pp**，n=400）、`simple_java` 0.27→0.48（**+21.0pp**，n=100）、`simple_javascript` 0.24→0.40（**+16.0pp**，n=50）；同一协议内把 KV 缓存从 f16 换成 q8_0，五个可比类别的差是 **−4.0…+2.0pp**（−2…+4 题）。**协议轴的最小差（16pp）是 KV 轴最大差（4pp）的 4 倍，在 `simple_python` 上是 27.0pp 对 0.2pp。**
+- **逐类三组数**（`_score` 直接来自逐类 `*_eval.json`；`n` 是实测题量，不是数据集行数）：
+
+| 类别 | n | tools·f16 | tools·q8_0 | prompt·f16 | Δ 协议（prompt−tools,f16） | Δ KV（q8−f16） |
+|---|---|---|---|---|---|---|
+| simple_python | 400 | 0.4675 | 0.4700 | 0.7375 | **+27.0pp**（+108 题） | +0.2pp（+1 题） |
+| simple_java | 100 | 0.2700 | 0.2800 | 0.4800 | **+21.0pp**（+21 题） | +1.0pp（+1 题） |
+| simple_javascript | 50 | 0.2400 | 0.2000 | 0.4000 | **+16.0pp**（+8 题） | −4.0pp（−2 题） |
+| multiple | 200 | 0.4250 | 0.4250 | 未测 | — | 0.0pp（0 题） |
+| parallel | 200 | 0.2300 | 0.2500 | 未测 | — | +2.0pp（+4 题） |
+| parallel_multiple | 200 | 0.3800 | 未测 | 未测 | — | — |
+| irrelevance | 240 | 0.8500 | 未测 | 未测 | — | — |
+
+- **三组都有数的只有三个 `simple_*` 类**：q8_0 那轮在 `parallel_multiple` 第 172 题后 server 退出、`irrelevance` 整轮 0 响应（运行日志里逐条 `Connection refused`），落盘的 0.32 与 1.0 是「没有生成」的产物而不是测量，所以**这两个值不入库、也不记 0**；prompt 臂只跑了 `simple_python`/`simple_java`/`simple_javascript`。因此协议轴上只有三类是受控对，KV 轴上只有五类。
+- **噪声地板与可分辨性（「噪声内」指的是哪一层）**：本面板每格只有**一次**运行，所以可用的地板有两层——(a) `i01::res32` 的重复地板：确定性解码 + 同一提示集下，BFCL 单轮同配置重复（`simple_python` native tools、`--limit 40`）两跑 **0/40 题不同**，地板是 **0 题**，即 KV 那 0–4 题的差**不是重复噪声**；(b) 单次运行的逐题二项标准误：n=50–400 时 `SE_diff` 为 **3.5–8.3pp**，KV 的每一条 `|Δ|/SE ≤ 0.48`，协议的两条 `+27.0pp`/`+21.0pp` 是 **8.1 / 3.1 个 SE**。所以正确的读法是「**KV 轴在这一题量下单次运行分辨不出，协议轴分辨得出**」；`simple_javascript` 的 +16pp 是唯一边界项（n=50，Wilson 区间重叠，`Δ/SE=1.7`），它单独不足以定论，另两类撑起了「协议 ≫ KV」这句话。
+- **不要把它读成「KV 无害」**：a05 的规则是两臂可以分数相同而通过集交换；这里比的是分数差，逐题通过集对照要用同目录的 `kv_compare.py`（读未入库的 `samples-*.jsonl`，不在干净 clone 里能跑）。
+- **判分器身份**：这 15 行存的是**自研匹配器**的值，`protocol` 里写明 `-homegrown-matcher`，与库里 79 行 official-checker 值同属 tools 协议但**不是同一身份**；同一批预测的官方重判值在同目录 `scores-official.json`（例如 `simple_python` 0.5725 vs 自研 0.4675），**未入库**。所以这 15 行只能与彼此比，不能与 official 那 79 行直接相减。
+- **入库形状**：15 行 = 7（tools·f16）+ 5（tools·q8_0）+ 3（prompt·f16）；`run_tag` `m171-bfcl08-tools`（12 行，KV 用 `cache_type_k`/`cache_type_v` 列区分，不塞进 run_tag）与 `m172-bfcl08-prompt`（3 行）；`ctx_size 8192`、`max_tokens 512`、`temp 0`、`bench_family bfcl`、`n_items` 取实测 `n`、`source_file` 指向对应的逐类 `*_eval.json`（已入库）。入径是 `migrate_db.py::ingest_bfcl08`（ONCE，按 run_tag 记账），编号备份 `experiments.sqlite.bak83`（3364 行），改动 15 行（3364 → 3379），第二次运行改动 **0** 行。
+- **不可得登记（判据是「本机没有」，不是「跳过」）**：
+  - `web_search*`（`BFCL_v4_web_search.json` 在 bundled 数据里）**未测**：执行路径 `bfcl_eval/eval_checker/multi_turn_eval/func_source_code/web_search.py:139` 读 `os.getenv("SERPAPI_API_KEY")`，本机没有这个变量、也没有 `bfcl_eval/.env`（`python3 -c "import os;print('SERPAPI_API_KEY' in os.environ)"` → `False`）。
+  - `memory*`（`BFCL_v4_memory.json` + `memory_prereq_conversation/`）**未测**：`memory_vector.py:26` 在 import 时 `SentenceTransformer("all-MiniLM-L6-v2", device="cpu")`，本机 `HF_HOME=/home/z/hf` 下没有这个权重（`ls -d /home/z/hf/models--*MiniLM*` 无命中），离线加载直接 `OSError: … couldn't find them in the cached files`。两条都不是「该协议不产出这些类别」，而是本机缺外部依赖。
+- 证据：`.wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/`（其中 15 份逐类 `*_eval.json` 全部入库）；`experiments.sqlite`；`migrate_db.py::ingest_bfcl08`。
+- 复现：
+  1. 库侧（生产者，一条 SQL）：`sqlite3 -readonly -header -column experiments.sqlite "SELECT _bench, max(CASE WHEN cache_type_k='f16' AND protocol LIKE 'bfcl-native%' THEN _score END) tools_f16, max(CASE WHEN cache_type_k='q8_0' THEN _score END) tools_q8, max(CASE WHEN protocol LIKE 'bfcl-prompt%' THEN _score END) prompt_f16, max(n_items) n FROM experiments WHERE run_tag IN ('m171-bfcl08-tools','m172-bfcl08-prompt') GROUP BY _bench ORDER BY _bench"`（实跑即上表 7 行）。
+  2. 产物侧（不经库）：`python3 -c 'import json,os;D=".wrapup/agentic/bfcl-Qwen3.5-0.8B-UD-Q4_K_XL-20261027/";[print(t,c,json.load(open(D+"samples-%s-%s_eval.json"%(t,c)))["score"]) for t in ("native","nativeq8","prompt") for c in ("simple_python","simple_java","simple_javascript","multiple","parallel","parallel_multiple","irrelevance") if os.path.exists(D+"samples-%s-%s_eval.json"%(t,c))]'`（实跑 17 行 = 7 + 7 + 3；其中 q8 的 `parallel_multiple` 0.32 与 `irrelevance` 1.0 就是上面说的无效产物，所以库只有 15 行）。
+- kind: measured
+- 状态：current。
+
 ## 判定入口与快照边界
 
-- **判据是脚本，不是本文件里的数**：`python3 "docs/subprojects/a13-工具调用 BFCL/audits/run_all.py"` 一条命令跑完三项——单轮换判分器的对照（必须 exit 0）、多轮判分器的四条负控（必须 exit 0）、以及**库与证据一致**（每个可比格的 `_score` 必须逐位等于 `audits/official_vs_homegrown.json` 的 `official_acc` 且 `protocol` 是官方身份；prompt 20 行必须是自研身份；不许出现未知协议串；`n_items` 为 NULL 的行必须全是多轮）。实跑 `EXIT=0`，末行 `PASS: 判分器对照、多轮负控、库与证据一致`。
-- **行数与哈希是快照**：`experiments.sqlite` 仍被 `a06`/`i02` 写，所以任何具体行数（123 行 bfcl、79/20/24、15 行缺题量）都只在指定 revision 上成立。`run_all.py` 因此**不把行数当判据**，只打印快照（含 `artifact sha256[:16]`），判据是上面那些**关系**：别的子项目加行不会把它弄红，本轴自己的值一旦漂移就会红。本文件里引用的库数字均取自 `b8cc7c1` 之后的库状态，重算以 `run_all.py` 的输出为准。
+- **判据是脚本，不是本文件里的数**：`python3 "docs/subprojects/a13-工具调用 BFCL/audits/run_all.py"` 一条命令跑完三项——单轮换判分器的对照（必须 exit 0）、多轮判分器的四条负控（必须 exit 0）、以及**库与证据一致**（每个可比格的 `_score` 必须逐位等于 `audits/official_vs_homegrown.json` 的 `official_acc` 且 `protocol` 是官方身份；不许有行停在两条退役协议串 `bfcl-native-tools-nothink-greedy` / `bfcl-prompt-nothink-greedy` 上；不许出现五条已知协议串之外的串；`n_items` 为 NULL 的行必须全是多轮）。实跑 `EXIT=0`，末行 `PASS: 判分器对照、多轮负控、库与证据一致`。
+- **行数与哈希是快照**：`experiments.sqlite` 仍被 `a06`/`i02` 写，所以任何具体行数（138 行 bfcl、79/12/23/24、15 行缺题量）都只在指定 revision 上成立。`run_all.py` 因此**不把行数当判据**，只打印快照（含 `artifact sha256[:16]`），判据是上面那些**关系**：别的子项目加行不会把它弄红，本轴自己的值一旦漂移就会红。本文件里引用的库数字均取自 `b8cc7c1` 之后的库状态，重算以 `run_all.py` 的输出为准。
 - **「先验证后写证据」的负控（实测）**：把库复制一份、给全部官方行加 0.01 制造绑定漂移，再跑两条路径——
   1. `.wrapup/bfclenv/bin/python audits/official_vs_homegrown.py`（`A13_DB` 指向副本）：`EXIT=3`，只打印一行 `FAIL: 15 prediction file(s) could not be bound ... evidence file NOT rewritten`，**证据文件字节不变**（sha256 `90ea2050…` 前后相同）。旧版在这里会先覆盖证据（`binding` 15→14）再抛未捕获的 `KeyError` 退出 1，文档里写的 exit 3 根本到不了——现在写入改成「先写 `.json.tmp`、全部校验通过才 `os.replace`」。
   2. `python3 audits/run_all.py`（同一副本）：`EXIT=1`，先打 `[FAIL] official_vs_homegrown.py: FAIL: 15 prediction file(s) ...` 再逐格列出 `db=… artifact=…`，**没有 traceback**（子检查崩溃只记 FAIL），证据文件同样不变。
@@ -240,28 +273,31 @@
 
 ## 类别覆盖表（AC 条目：哪格有数、哪格没有，以及没有的性质）
 
-### res15 11 个类别 × 3 个协议：79 + 20 + 24 = 123 行，缺的格分两类
+### res15 17 个类别 × 3 个协议：91 + 23 + 24 = 138 行（5 条协议串），缺的格分两类
 
-| 类别 | native-tools（11 模型） | prompt（4 模型） | multi-turn（10 模型） |
+| 类别 | native-tools（12 个模型） | prompt（5 个模型） | multi-turn（10 个模型） |
 |---|---|---|---|
-| simple_python / multiple / parallel / parallel_multiple / irrelevance | **11/11** | **4/4** | 不适用（该类只存在于单轮） |
-| live_simple / live_multiple / live_parallel / live_parallel_multiple / live_irrelevance / live_relevance | **4/11** | **0/4** | 不适用 |
+| simple_python | **12/12** | **5/5** | 不适用（该类只存在于单轮） |
+| multiple / parallel / parallel_multiple / irrelevance | **12/12** | **4/5**（0.8B 的 prompt 臂只跑了三个 `simple_*`） | 不适用 |
+| simple_java / simple_javascript | **1/12**（只有 0.8B） | **1/5**（只有 0.8B） | 不适用 |
+| live_simple / live_multiple / live_parallel / live_parallel_multiple / live_irrelevance / live_relevance | **4/12** | **0/5** | 不适用 |
 | multi_turn_base | 不适用 | 不适用 | **11 行 / 10 模型** |
 | multi_turn_long_context | 不适用 | 不适用 | **7 行 / 4 模型** |
 | multi_turn_miss_func / miss_param | 不适用 | 不适用 | 各 **3 行 / 3 模型** |
 
 - **两类缺口必须分开写**：
-  1. native 的 `live_*` 只有 4 个模型有（2B-q2/q3、granite-q2/q3），另外 **7 个模型（4B-q2/q3、gemma×4、Bonsai）是「未测」**——m8 面板只跑了 4 个 panel，不是这些模型的协议不支持 `live_*`。所以「这 7 个模型在 live 类别上没有数」不能读成「它们在 live 类别上差」。
-  2. prompt 协议的 20 行**全部落在 5 个 non-live 类别**，`live_*` 一个都没有：prompt 面板（`run_m4.sh`/`run_m7.sh` 的 `CATS=`）从定义上就只跑这 5 类，因此 prompt 侧的 `live_*` 是**未测**（面板从未尝试），不是「该协议不产出该类别」。
-- **有数的格也不是都能比**：多轮的 ctx / `-partial` 条件见 res12；单轮的 native 与 prompt 是两套工具呈现方式，跨协议不可比（res1）。
-- 证据与复现：`sqlite3 -readonly -header -column experiments.sqlite "SELECT model, sum(_bench LIKE 'bfcl-live%') live_rows, sum(_bench NOT LIKE 'bfcl-live%') nonlive_rows FROM experiments WHERE bench_family='bfcl' AND protocol LIKE '%official-ast-checker' GROUP BY model"`（实跑：4 个模型 `live_rows=6`，7 个模型 `live_rows=0`）；prompt 侧的类别集合：`sqlite3 -readonly experiments.sqlite "SELECT group_concat(DISTINCT _bench) FROM experiments WHERE protocol LIKE '%homegrown-matcher'"`（实跑只列出 5 个 non-live 类别）。
+  1. native 的 `live_*` 只有 4 个模型有（2B-q2/q3、granite-q2/q3），另外 **8 个模型（4B-q2/q3、gemma×4、Bonsai、0.8B）是「未测」**——m8 面板只跑了 4 个 panel，0.8B（m171/m172）没有 `live_*` 臂，不是这些模型的协议不支持 `live_*`。所以「这 8 个模型在 live 类别上没有数」不能读成「它们在 live 类别上差」。
+  2. prompt 协议的 23 行里，m4 的 20 行**全部落在 5 个 non-live 类别**、`live_*` 一个都没有（prompt 面板 `run_m4.sh`/`run_m7.sh` 的 `CATS=` 从定义上就只跑这 5 类）；0.8B 的 3 行只跑 `simple_python`/`simple_java`/`simple_javascript`，所以 prompt 侧的 `multiple`/`parallel`/`parallel_multiple`/`irrelevance` 与全部 `live_*` 对 0.8B 是**未测**（面板没跑），不是「该协议不产出该类别」。
+- **`simple_java` / `simple_javascript` 是 0.8B 才第一次测的类别**：库内其余 11 个模型这两列 0 行，所以这两类现在只有 1 个模型有数，**不能**跨模型读。
+- **有数的格也不是都能比**：多轮的 ctx / `-partial` 条件见 res12；单轮的 native 与 prompt 是两套工具呈现方式，跨协议不可比（res1）；tools 协议下官方值与自研值也不可混（res13/res16）。
+- 证据与复现：`sqlite3 -readonly -header -column experiments.sqlite "SELECT model, sum(_bench LIKE 'bfcl-live%') live_rows, sum(_bench NOT LIKE 'bfcl-live%') nonlive_rows FROM experiments WHERE bench_family='bfcl' AND protocol LIKE 'bfcl-native-tools-nothink-greedy%' GROUP BY model"`（实跑：4 个模型 `live_rows=6`，8 个模型 `live_rows=0`）；prompt 侧的类别集合：`sqlite3 -readonly experiments.sqlite "SELECT group_concat(DISTINCT _bench) FROM experiments WHERE protocol='bfcl-prompt-nothink-greedy-homegrown-matcher'"`（实跑列出 8 个类别 = m4 的 5 个 non-live + 0.8B 的 3 个 `simple_*`）。
 - 状态：current。
 
 ## 未测（不得当成通过）
 
-1. ~~官方 AST checker 与自研匹配器在单轮上的一致率~~ **已测（res11/res13）**：79 格、35 上行 / 2,788 下行。残留：prompt 协议 20 行仍不可重判（无预测文件）。
+1. ~~官方 AST checker 与自研匹配器在单轮上的一致率~~ **已测（res11/res13）**：79 格、35 上行 / 2,788 下行。残留：m4 的 prompt 20 行仍不可重判（无预测文件）；0.8B 的 m172 有预测也没用它重判分（res16）。
 2. **多轮的重复地板**：没有任何同配置两次的同格对照（res7 的 `0.095` vs `0.11` 只能算线索）。`WP4` 出数。
 3. ~~多轮判分器的可执行负控~~ **已测（res14）**：正控 PASS、三条坏预测全 FAIL。残留边界：只在 `multi_turn_base` 上构造，`long_context` 分支、空 GT 轮跳过规则、多轮 irrelevance 的归属均未验证。
-4. **prompt 协议的 4 个模型**：预测文件不存在（res5），协议效应只能从库里的 20 行读，重判不可能。
-5. **`multi_turn` 之外的多轮类别**（`web_search`、`memory`）与 `simple_java`/`simple_javascript`：库里 0 行，本轴不覆盖。
+4. **m4 的 4 个模型在 prompt 协议上**：预测文件不存在（res5），协议效应只能从库里的 20 行读，重判不可能。0.8B 的 3 行 prompt 有预测文件、官方值也算过，但**没入库**（res16）。
+5. **`web_search*` 与 `memory*`**（多轮）以及 0.8B 的 `parallel_multiple`/`irrelevance` 在 q8_0 臂：库里 0 行。前两类不是「跳过」而是**本机没有**执行依赖（SerpAPI key / `all-MiniLM-L6-v2` 权重），后两类是 server 中途退出留下的无效产物——依据逐条写在 res16。
 6. **跨 handler 的族间比较**：未测且不可由库内数据补救，需要 res12 的 2×2 重跑（≈50 GPU 分钟）。
